@@ -32,7 +32,7 @@ function RemitoSidePreview({ row }: { row: RemitoRow | null }) {
   }
 
   return (
-    <Card className="sticky top-4 flex h-[calc(100vh-8rem)] flex-col">
+    <Card className="flex max-h-[min(720px,calc(100vh-8rem))] flex-col">
       <SectionTitle
         right={
           <Link
@@ -217,8 +217,8 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px] 2xl:grid-cols-[1fr_380px]">
-      <Card>
+    <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_min(380px,32vw)]">
+      <Card className="min-w-0 overflow-hidden">
         <SectionTitle
           right={
             <Link
@@ -251,7 +251,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         )}
       </Card>
 
-      <div className="hidden xl:block">
+      <div className="hidden min-w-0 xl:block">
         <RemitoSidePreview row={selected} />
       </div>
     </div>

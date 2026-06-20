@@ -85,26 +85,32 @@ export default async function AgentPage({
         <FlowSteps steps={agent.flow} />
       </Card>
 
-      {/* Datos + Conversación */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2">
+      {/* Datos + Conversación (remitos usa tabla+foto a ancho completo) */}
+      {slug === "remitos" ? (
+        <div className="min-w-0">
           <AgentData slug={slug} />
         </div>
-        <div className="space-y-4">
-          <SectionTitle>
-            {convos[0]?.channel === "Email" ? "Bandeja del agente" : "Conversación del agente"}
-          </SectionTitle>
-          {convos.length > 0 ? (
-            convos.map((c) => <WhatsAppChat key={c.id} conversation={c} />)
-          ) : (
-            <Card>
-              <p className="text-sm text-[var(--text-dim)]">
-                Sin conversaciones activas en este momento.
-              </p>
-            </Card>
-          )}
+      ) : (
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <div className="min-w-0 xl:col-span-2">
+            <AgentData slug={slug} />
+          </div>
+          <div className="min-w-0 space-y-4">
+            <SectionTitle>
+              {convos[0]?.channel === "Email" ? "Bandeja del agente" : "Conversación del agente"}
+            </SectionTitle>
+            {convos.length > 0 ? (
+              convos.map((c) => <WhatsAppChat key={c.id} conversation={c} />)
+            ) : (
+              <Card>
+                <p className="text-sm text-[var(--text-dim)]">
+                  Sin conversaciones activas en este momento.
+                </p>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
