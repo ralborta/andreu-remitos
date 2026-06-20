@@ -1,0 +1,16 @@
+{
+  "name": "andreu-remitos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "procesar": "node scripts/procesar-remito.mjs",
+    "procesar:all": "node scripts/procesar-remito.mjs --all",
+    "lectura:frio": "node scripts/lectura-frio.mjs",
+    "api:dev": "npm run dev --prefix backend",
+    "api:start": "npm start --prefix backend"
+  },
+  "dependencies": {
+    "@google-cloud/documentai": "^4.1.0",
+    "dotenv": "^16.4.7"
+  }
+}

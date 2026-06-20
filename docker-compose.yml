@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: andreu
+      POSTGRES_PASSWORD: andreu
+      POSTGRES_DB: andreu
+    ports:
+      - "5433:5432"
+    volumes:
+      - andreu_pg:/var/lib/postgresql/data
+
+volumes:
+  andreu_pg:

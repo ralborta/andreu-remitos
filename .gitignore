@@ -1,0 +1,32 @@
+node_modules/
+backend/node_modules/
+.env
+backend/.env
+backend/uploads/
+backend/data/
+.DS_Store
+.cursor/
+__pycache__/
+*.pyc
+
+# Fotos locales (no subir)
+TSB/
+Beraldi/
+WhatsApp*
+*.jpg
+*.jpeg
+*.png
+
+# JSON generados
+*.json
+!package.json
+!package-lock.json
+!backend/package.json
+!backend/package-lock.json
+!scripts/gcp/schema-beraldi.json
+!scripts/gcp/schema-tsb.json
+!scripts/gcp/dataset-init.json
+
+samples/remitos/*
+!samples/remitos/.gitkeep
+samples/lectura-frio-resultados.json

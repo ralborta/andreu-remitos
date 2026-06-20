@@ -1,0 +1,32 @@
+{
+  "name": "projects/kiev-prueba/locations/us/processors/5b510d4ae17e6aba/dataset/datasetSchema",
+  "documentSchema": {
+    "displayName": "Guia TSB",
+    "description": "Campos guia de transporte TSB",
+    "entityTypes": [
+      {
+        "name": "custom_extraction_document_type",
+        "baseTypes": ["document"],
+        "properties": [
+          { "name": "nro_guia", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "fecha", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "conductor", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "chasis", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "acoplado", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "peso", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "procedencia", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "destino", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "malla", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "remito_cliente", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "nro_interno", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "hora_carga_entrada", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "hora_carga_salida", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "hora_descarga_llegada", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "hora_descarga_inicio", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} },
+          { "name": "hora_descarga_fin", "valueType": "string", "occurrenceType": "OPTIONAL_ONCE", "propertyMetadata": {} }
+        ],
+        "entityTypeMetadata": {}
+      }
+    ]
+  }
+}
