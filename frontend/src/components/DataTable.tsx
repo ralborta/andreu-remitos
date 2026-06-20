@@ -12,10 +12,14 @@ export function DataTable<T extends object>({
   columns,
   rows,
   minWidth = 640,
+  rowClassName,
+  onRowClick,
 }: {
   columns: Column<T>[];
   rows: T[];
   minWidth?: number;
+  rowClassName?: (row: T) => string;
+  onRowClick?: (row: T) => void;
 }) {
   return (
     <div className="-mx-2 overflow-x-auto">
@@ -35,8 +39,13 @@ export function DataTable<T extends object>({
         <tbody>
           {rows.map((row, i) => (
             <tr
-              key={i}
-              className="border-t border-[var(--border-soft)] transition-colors hover:bg-white/[0.03]"
+              key={(row as { id?: string }).id ?? i}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={clsx(
+                "border-t border-[var(--border-soft)] transition-colors hover:bg-white/[0.03]",
+                onRowClick && "cursor-pointer",
+                rowClassName?.(row),
+              )}
             >
               {columns.map((c) => (
                 <td key={c.key} className={clsx("px-3 py-3 align-middle", c.className)}>

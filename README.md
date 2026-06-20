@@ -35,6 +35,8 @@ En BuilderBot configurás una **Petición HTTP** apuntando a:
 
 `https://TU-API/api/webhooks/builderbot`
 
+Guía completa: [docs/builderbot-andreu.md](docs/builderbot-andreu.md) (proyectos Arianna TSB/Beraldi ya creados en BuilderBot).
+
 La respuesta JSON incluye `message` para que BuilderBot le responda al chofer.
 
 Variables opcionales en el body del webhook:

@@ -4,14 +4,27 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRemito, imagenUrl, patchRemitoCampos } from "@/lib/api";
 import type { RemitoRow } from "@/lib/types";
-import { conductorNombre, destinoNombre, estadoColor, estadoLabel, numeroRemito, tenantLabel } from "@/lib/remitos-ui";
+import {
+  acopladoPatente,
+  campoLabel,
+  chasisPatente,
+  conductorNombre,
+  destinoNombre,
+  estadoColor,
+  estadoLabel,
+  fechaHoraRemito,
+  numeroRemito,
+  origenNombre,
+  pesoKg,
+  tenantLabel,
+} from "@/lib/remitos-ui";
 import { Card, Pill, SectionTitle } from "./ui";
 
 const CAMPOS_TSB = [
   "nro_guia",
   "conductor",
-  "destino",
   "procedencia",
+  "destino",
   "chasis",
   "acoplado",
   "peso_kg",
@@ -23,8 +36,8 @@ const CAMPOS_TSB = [
 const CAMPOS_BERALDI = [
   "nro_remito",
   "chofer",
-  "destino",
   "origen",
+  "destino",
   "patente_chasis",
   "patente_acoplado",
   "peso_kg",
@@ -84,15 +97,26 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
   const validacion = row.validacion;
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <Card>
-        <SectionTitle>Imagen del remito</SectionTitle>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imagenUrl(id)}
-          alt="Remito"
-          className="max-h-[520px] w-full rounded-xl border border-[var(--border)] object-contain bg-black/20"
-        />
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      {/* Imagen al costado — como el CRM viejo pero horizontal */}
+      <Card className="lg:sticky lg:top-4 lg:self-start">
+        <SectionTitle>Foto del remito (WhatsApp)</SectionTitle>
+        <p className="mb-3 text-xs text-[var(--text-faint)]">
+          Compará la lectura de la IA con el papel manuscrito
+        </p>
+        <div className="max-h-[calc(100vh-10rem)] overflow-y-auto rounded-xl border border-[var(--border)] bg-black/30">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imagenUrl(id)}
+            alt="Remito"
+            className="w-full object-contain"
+          />
+        </div>
+        {row.telefono_chofer && (
+          <p className="mt-3 text-xs text-[var(--text-dim)]">
+            Enviado por WhatsApp · {row.telefono_chofer} · {fechaHoraRemito(row)}
+          </p>
+        )}
       </Card>
 
       <div className="space-y-4">
@@ -100,17 +124,33 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
           <SectionTitle
             right={<Pill color={estadoColor(row.estado)}>{estadoLabel(row.estado)}</Pill>}
           >
-            {numeroRemito(row)} · {tenantLabel(row.tenant)}
+            Editar remito {tenantLabel(row.tenant)} · {numeroRemito(row)}
           </SectionTitle>
-          <p className="mb-4 text-sm text-[var(--text-dim)]">
-            {conductorNombre(row)} → {destinoNombre(row)}
-          </p>
 
-          <div className="space-y-3">
+          <div className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-white/5 p-3 text-sm">
+            <div>
+              <span className="text-xs text-[var(--text-faint)]">Chofer</span>
+              <p className="text-white">{conductorNombre(row)}</p>
+            </div>
+            <div>
+              <span className="text-xs text-[var(--text-faint)]">Ruta</span>
+              <p className="text-white">{origenNombre(row)} → {destinoNombre(row)}</p>
+            </div>
+            <div>
+              <span className="text-xs text-[var(--text-faint)]">Unidad</span>
+              <p className="text-white">{chasisPatente(row)} / {acopladoPatente(row)}</p>
+            </div>
+            <div>
+              <span className="text-xs text-[var(--text-faint)]">Peso leído</span>
+              <p className="text-white">{pesoKg(row)} kg</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {campos.map((k) => (
-              <label key={k} className="block">
+              <label key={k} className="block sm:col-span-2 sm:[&:nth-child(-n+4)]:col-span-1">
                 <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--text-faint)]">
-                  {k.replace(/_/g, " ")}
+                  {campoLabel(k)}
                 </span>
                 <input
                   className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
@@ -134,7 +174,7 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
             disabled={saving}
             className="mt-4 w-full rounded-xl bg-[var(--violet)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--violet)]/90 disabled:opacity-50"
           >
-            {saving ? "Guardando…" : "Guardar correcciones"}
+            {saving ? "Guardando…" : "Guardar cambios"}
           </button>
           {msg && <p className="mt-2 text-sm text-[var(--green)]">{msg}</p>}
           {error && <p className="mt-2 text-sm text-[var(--red)]">{error}</p>}

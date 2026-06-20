@@ -58,3 +58,81 @@ export function horaCorta(iso?: string) {
 export function tenantLabel(t: string) {
   return t === "tsb" ? "TSB" : t === "beraldi" ? "Beraldi" : t.toUpperCase();
 }
+
+function datos(row: RemitoRow) {
+  return row.datos as Record<string, unknown>;
+}
+
+export function origenNombre(row: RemitoRow) {
+  const d = datos(row);
+  return (d.procedencia || d.origen || "—") as string;
+}
+
+export function chasisPatente(row: RemitoRow) {
+  const d = datos(row);
+  return (d.chasis || d.patente_chasis || "—") as string;
+}
+
+export function acopladoPatente(row: RemitoRow) {
+  const d = datos(row);
+  return (d.acoplado || d.patente_acoplado || "—") as string;
+}
+
+export function pesoKg(row: RemitoRow) {
+  const d = datos(row);
+  const p = d.peso_kg ?? d.peso;
+  if (p == null || p === "") return "—";
+  const n = Number(p);
+  return Number.isFinite(n) ? n.toLocaleString("es-AR") : String(p);
+}
+
+export function fechaRemito(row: RemitoRow) {
+  const d = datos(row);
+  const f = d.fecha ?? d.fecha_remito;
+  if (f) return String(f);
+  if (row.created_at) {
+    try {
+      return new Date(row.created_at).toLocaleDateString("es-AR");
+    } catch {
+      return "—";
+    }
+  }
+  return "—";
+}
+
+export function fechaHoraRemito(row: RemitoRow) {
+  if (!row.created_at) return "—";
+  try {
+    return new Date(row.created_at).toLocaleString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
+}
+
+const CAMPO_LABEL: Record<string, string> = {
+  nro_guia: "Nro remito / guía",
+  nro_remito: "Nro remito",
+  conductor: "Chofer",
+  chofer: "Chofer",
+  procedencia: "Origen",
+  origen: "Origen",
+  destino: "Destino",
+  chasis: "Tractor / chasis",
+  acoplado: "Semi / acoplado",
+  patente_chasis: "Patente chasis",
+  patente_acoplado: "Patente acoplado",
+  peso_kg: "Peso (kg)",
+  malla: "Malla",
+  remito_cliente: "Remito cliente",
+  nro_interno: "Nro interno",
+};
+
+export function campoLabel(key: string) {
+  return CAMPO_LABEL[key] ?? key.replace(/_/g, " ");
+}
