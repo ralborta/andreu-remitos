@@ -15,7 +15,8 @@ __pycache__/
 # Fotos locales (no subir)
 TSB/
 Beraldi/
-WhatsApp*
+WhatsApp Image*/
+WhatsApp/
 *.jpg
 *.jpeg
 *.png
@@ -26,6 +27,7 @@ WhatsApp*
 !package-lock.json
 !backend/package.json
 !backend/package-lock.json
+!frontend/tsconfig.json
 !scripts/gcp/schema-beraldi.json
 !scripts/gcp/schema-tsb.json
 !scripts/gcp/dataset-init.json
