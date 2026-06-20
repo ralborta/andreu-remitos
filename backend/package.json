@@ -8,6 +8,7 @@
     "db:migrate": "node src/db/migrate.mjs"
   },
   "dependencies": {
+    "@fastify/cors": "^11.2.0",
     "@fastify/multipart": "^9.0.3",
     "@google-cloud/documentai": "^4.1.0",
     "dotenv": "^16.4.7",

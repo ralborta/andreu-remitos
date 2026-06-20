@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 
 export default async function remitosRoutes(fastify) {
@@ -31,6 +33,16 @@ export default async function remitosRoutes(fastify) {
       estado,
       limit: limit ? parseInt(limit, 10) : 50,
     });
+  });
+
+  fastify.get("/:id/imagen", async (request, reply) => {
+    const row = await obtenerRemito(request.params.id);
+    if (!row?.imagen_path || !fs.existsSync(row.imagen_path)) {
+      return reply.code(404).send({ error: "Imagen no encontrada" });
+    }
+    const ext = path.extname(row.imagen_path).toLowerCase();
+    const mime = ext === ".png" ? "image/png" : ext === ".pdf" ? "application/pdf" : "image/jpeg";
+    return reply.type(mime).send(fs.createReadStream(row.imagen_path));
   });
 
   fastify.get("/:id", async (request, reply) => {

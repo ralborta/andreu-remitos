@@ -7,7 +7,8 @@ Backend Fastify + Google Document AI para ingestar fotos de remitos, extraer cam
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | GET | `/health` | Health check |
-| POST | `/api/remitos/ingest` | Subir remito (`tenant` + `file`) |
+| POST | `/api/webhooks/builderbot` | **WhatsApp** — BuilderBot manda la foto del chofer |
+| POST | `/api/remitos/ingest` | Subir remito manual / pruebas (`tenant` + `file`) |
 | GET | `/api/remitos` | Listar remitos |
 | GET | `/api/remitos/:id` | Detalle |
 | PATCH | `/api/remitos/:id` | Corregir campos |
@@ -21,6 +22,40 @@ curl -X POST http://localhost:3001/api/remitos/ingest \
 ```
 
 `tenant`: `tsb` | `beraldi`
+
+## Flujo WhatsApp (producción)
+
+```
+Chofer manda foto → BuilderBot Cloud → POST /api/webhooks/builderbot
+       → Document AI + validación → respuesta al chofer (message)
+       → mesa de control ve el remito en /remitos (web)
+```
+
+En BuilderBot configurás una **Petición HTTP** apuntando a:
+
+`https://TU-API/api/webhooks/builderbot`
+
+La respuesta JSON incluye `message` para que BuilderBot le responda al chofer.
+
+Variables opcionales en el body del webhook:
+- `tenant`: `tsb` o `beraldi`
+- O mapeo por teléfono: `TENANT_BY_PHONE_JSON` en el backend
+
+## Frontend (UI logística)
+
+Basado en el prototipo `/Users/ralborta/logistica/plataforma`, adaptado a la API Andreu.
+
+```bash
+cp frontend/.env.local.example frontend/.env.local
+npm ci --prefix frontend
+npm run dev --prefix frontend   # http://localhost:3000
+```
+
+Rutas:
+- `/remitos` — listado en vivo
+- `/remitos/[id]` — revisión y corrección manual
+- `/subir` — solo pruebas (en prod llega por WhatsApp)
+- `/agentes/remitos` — misma tabla conectada a la API
 
 ## Desarrollo local
 

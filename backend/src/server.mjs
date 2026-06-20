@@ -2,8 +2,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import remitosRoutes from "./routes/remitos.mjs";
+import webhooksRoutes from "./routes/webhooks.mjs";
 
 const backendRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(backendRoot, ".env") });
@@ -11,11 +13,13 @@ dotenv.config({ path: path.join(backendRoot, "../.env") });
 
 const app = Fastify({ logger: true });
 
+await app.register(cors, { origin: true });
 await app.register(multipart, { limits: { fileSize: 15 * 1024 * 1024 } });
 
 app.get("/health", async () => ({ ok: true, service: "andreu-api" }));
 
 await app.register(remitosRoutes, { prefix: "/api/remitos" });
+await app.register(webhooksRoutes, { prefix: "/api/webhooks" });
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const host = process.env.HOST || "0.0.0.0";
