@@ -1,9 +1,14 @@
 import type { RemitoRow } from "./types";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+/** En Easypanel: proxy /backend → API_INTERNAL_URL (sin rebuild). */
+export function apiBase() {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  if (typeof window !== "undefined") return "/backend";
+  return (process.env.API_INTERNAL_URL || "http://localhost:3001").replace(/\/$/, "");
+}
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${apiBase()}${path}`, {
     ...init,
     headers: {
       ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
@@ -13,13 +18,14 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const detail = (err as { error?: string }).error;
+    throw new Error(detail || `HTTP ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
 
 export function imagenUrl(id: string) {
-  return `${API}/api/remitos/${id}/imagen`;
+  return `${apiBase()}/api/remitos/${id}/imagen`;
 }
 
 export function listRemitos(params?: { tenant?: string; estado?: string; limit?: number }) {
