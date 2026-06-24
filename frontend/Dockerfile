@@ -9,7 +9,8 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG NEXT_PUBLIC_API_URL=
+# Producción Easypanel — override con build arg si cambia el dominio
+ARG NEXT_PUBLIC_API_URL=https://logistica-andreu-remitos.wd75db.easypanel.host
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 

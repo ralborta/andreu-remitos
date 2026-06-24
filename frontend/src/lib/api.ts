@@ -9,17 +9,13 @@ function isUsableApiUrl(url: string | undefined): url is string {
   return true;
 }
 
-/** En Easypanel: navegador usa /backend → API_INTERNAL_URL (runtime). */
+/** En Easypanel: URL pública de la API (CORS habilitado). Local: .env.local */
 export function apiBase() {
-  if (typeof window !== "undefined") {
-    const pub = process.env.NEXT_PUBLIC_API_URL;
-    if (isUsableApiUrl(pub)) return pub.replace(/\/$/, "");
-    return "/backend";
-  }
-  const internal = process.env.API_INTERNAL_URL;
-  if (internal) return internal.replace(/\/$/, "");
   const pub = process.env.NEXT_PUBLIC_API_URL;
   if (isUsableApiUrl(pub)) return pub.replace(/\/$/, "");
+  if (typeof window !== "undefined") return "/backend";
+  const internal = process.env.API_INTERNAL_URL;
+  if (internal) return internal.replace(/\/$/, "");
   return "http://localhost:3001";
 }
 
