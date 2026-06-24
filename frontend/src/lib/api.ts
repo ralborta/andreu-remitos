@@ -1,10 +1,30 @@
 import type { RemitoRow } from "./types";
 
-/** En Easypanel: proxy /backend → API_INTERNAL_URL (sin rebuild). */
+const PLACEHOLDER_RE =
+  /CAMBIAR|url-publica|tu-api|ejemplo|placeholder|localhost:3001/i;
+
+function isUsableApiUrl(url: string | undefined): url is string {
+  if (!url?.startsWith("http")) return false;
+  if (PLACEHOLDER_RE.test(url)) return false;
+  return true;
+}
+
+/** En Easypanel: navegador usa /backend → API_INTERNAL_URL (runtime). */
 export function apiBase() {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
-  if (typeof window !== "undefined") return "/backend";
-  return (process.env.API_INTERNAL_URL || "http://localhost:3001").replace(/\/$/, "");
+  if (typeof window !== "undefined") {
+    const pub = process.env.NEXT_PUBLIC_API_URL;
+    if (isUsableApiUrl(pub)) return pub.replace(/\/$/, "");
+    return "/backend";
+  }
+  const internal = process.env.API_INTERNAL_URL;
+  if (internal) return internal.replace(/\/$/, "");
+  const pub = process.env.NEXT_PUBLIC_API_URL;
+  if (isUsableApiUrl(pub)) return pub.replace(/\/$/, "");
+  return "http://localhost:3001";
+}
+
+export function apiBaseLabel() {
+  return apiBase();
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {

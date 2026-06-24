@@ -110,7 +110,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         setRows(data);
         if (data.length > 0) setSelectedId(data[0].id);
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(`${e.message} (API: ${typeof window !== "undefined" ? window.location.origin : ""}/backend)`))
       .finally(() => setLoading(false));
   }, [tenant]);
 
