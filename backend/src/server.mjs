@@ -7,6 +7,7 @@ import multipart from "@fastify/multipart";
 import remitosRoutes from "./routes/remitos.mjs";
 import webhooksRoutes from "./routes/webhooks.mjs";
 import conversacionesRoutes from "./routes/conversaciones.mjs";
+import parametrosRoutes from "./routes/parametros.mjs";
 
 const backendRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(backendRoot, ".env") });
@@ -22,6 +23,7 @@ app.get("/health", async () => ({ ok: true, service: "andreu-api" }));
 await app.register(remitosRoutes, { prefix: "/api/remitos" });
 await app.register(webhooksRoutes, { prefix: "/api/webhooks" });
 await app.register(conversacionesRoutes, { prefix: "/api/conversaciones" });
+await app.register(parametrosRoutes, { prefix: "/api/parametros" });
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const host = process.env.HOST || "0.0.0.0";

@@ -12,6 +12,7 @@ import {
   Upload,
   ChevronDown,
   MessageCircle,
+  Settings2,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -154,6 +155,19 @@ export function Sidebar({
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación
           </p>
+          <Link
+            href="/parametros"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/parametros")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <Settings2 size={18} />
+            Parámetros maestros
+          </Link>
           <Link
             href="/contactos"
             onClick={onClose}

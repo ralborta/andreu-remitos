@@ -70,12 +70,12 @@ export function origenNombre(row: RemitoRow) {
 
 export function chasisPatente(row: RemitoRow) {
   const d = datos(row);
-  return (d.chasis || d.patente_chasis || "—") as string;
+  return (d.chasis || d.tractor || d.patente_chasis || "—") as string;
 }
 
 export function acopladoPatente(row: RemitoRow) {
   const d = datos(row);
-  return (d.acoplado || d.patente_acoplado || "—") as string;
+  return (d.acoplado || d.semi || d.patente_acoplado || "—") as string;
 }
 
 export function pesoKg(row: RemitoRow) {
