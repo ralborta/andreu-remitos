@@ -13,6 +13,8 @@ import {
   estadoColor,
   estadoLabel,
   fechaRemito,
+  horasResumen,
+  horasCompletas,
   numeroRemito,
   origenNombre,
   pesoKg,
@@ -99,6 +101,16 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
       header: "Fecha",
       className: "tabular-nums text-[var(--text-dim)]",
       render: (r) => fechaRemito(r),
+    },
+    {
+      key: "horas",
+      header: "Horarios",
+      className: "tabular-nums text-[var(--text-dim)] whitespace-nowrap",
+      render: (r) => (
+        <span className={horasCompletas(r) ? "text-[var(--green)]" : "text-[var(--amber)]"}>
+          {horasResumen(r)}
+        </span>
+      ),
     },
     {
       key: "peso",

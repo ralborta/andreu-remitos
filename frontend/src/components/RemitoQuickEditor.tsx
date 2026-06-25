@@ -6,13 +6,17 @@ import { Check, ExternalLink, X } from "lucide-react";
 import { imagenUrl, patchRemitoCampos } from "@/lib/api";
 import type { RemitoRow } from "@/lib/types";
 import {
+  buildHorariosBody,
   campoLabel,
   estadoColor,
   estadoLabel,
+  fechaBaseHorarios,
+  horasFromRow,
   numeroRemito,
   tenantLabel,
 } from "@/lib/remitos-ui";
 import { Card, Pill, SectionTitle } from "./ui";
+import { RemitoHorariosFields } from "./RemitoHorariosFields";
 
 const CAMPOS_TSB = [
   "fecha_guia",
@@ -60,12 +64,14 @@ function EditorBody({
   onSaved?: (updated: RemitoRow) => void;
 }) {
   const [form, setForm] = useState(() => formFromRow(row));
+  const [horas, setHoras] = useState(() => horasFromRow(row));
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setForm(formFromRow(row));
+    setHoras(horasFromRow(row));
     setMsg(null);
     setError(null);
   }, [row.id, row.updated_at]);
@@ -82,6 +88,7 @@ function EditorBody({
       for (const [k, v] of Object.entries(form)) {
         body[k] = k === "peso_kg" ? (v ? Number(v) : null) : v || null;
       }
+      Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
       const updated = await patchRemitoCampos(row.id, body);
       onSaved?.(updated);
       setMsg(updated.estado === "confirmado" ? "Guardado — validado" : "Guardado");
@@ -143,6 +150,13 @@ function EditorBody({
         ))}
       </div>
 
+      <div className="mt-3 border-t border-[var(--border-soft)] pt-3">
+        <RemitoHorariosFields
+          horas={horas}
+          onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
+        />
+      </div>
+
       {validacion && (validacion.faltantes?.length || validacion.errores?.length) ? (
         <div className="mt-3 rounded-lg bg-[var(--amber)]/10 p-3 text-xs text-[var(--amber)]">
           {validacion.faltantes?.map((f) => (
@@ -169,7 +183,7 @@ function EditorBody({
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] py-2.5 text-sm font-medium text-[var(--text-dim)] hover:border-[var(--violet)]/40 hover:text-white"
         >
           <ExternalLink size={16} />
-          Revisión completa (horarios)
+          Revisión completa
         </Link>
         {msg && <p className="text-center text-sm text-[var(--green)]">{msg}</p>}
         {error && <p className="text-center text-sm text-[var(--red)]">{error}</p>}

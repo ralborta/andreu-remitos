@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { leerRemito } from "../../../lib/lectura.mjs";
+import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
+import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
 import * as store from "../db/file-store.mjs";
 
 function uploadDir() {
@@ -46,9 +47,38 @@ export async function actualizarCampos(id, datosParciales) {
   const row = await store.getRemito(id);
   if (!row) return null;
 
-  const datos = { ...row.datos, ...datosParciales, _editado_manual: true };
-  const validacion = datosParciales.horarios?.validacion ?? row.validacion;
-  const estado = validacion?.valido ? "confirmado" : "incompleto";
+  const { horarios: horariosIncoming, ...resto } = datosParciales;
+  const datos = { ...row.datos, ...resto, _editado_manual: true };
+
+  if (horariosIncoming?.horarios) {
+    const fechaBase =
+      normalizarFecha(horariosIncoming.fecha_remito) ??
+      normalizarFecha(datos.fecha_guia) ??
+      normalizarFecha(datos.fecha_remito) ??
+      datos.horarios?.fecha_remito ??
+      null;
+
+    /** @type {Record<string, { fecha?: string|null, hora?: string|null }>} */
+    const horariosRaw = {};
+    for (const [campo, slot] of Object.entries(horariosIncoming.horarios)) {
+      horariosRaw[campo] = {
+        fecha: normalizarFecha(slot?.fecha) ?? fechaBase,
+        hora: normalizarHora(slot?.hora),
+      };
+    }
+
+    const validacion = validarOrdenHorarios(horariosRaw);
+    datos.horarios = {
+      ...(datos.horarios ?? {}),
+      tenant: datos.tenant ?? row.tenant,
+      fecha_remito: fechaBase,
+      horarios: horariosRaw,
+      validacion,
+    };
+  }
+
+  const validacion = datos.horarios?.validacion ?? row.validacion;
+  const estado = calcularEstado(datos);
 
   return store.updateRemito(id, {
     datos,

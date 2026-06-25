@@ -138,3 +138,60 @@ const CAMPO_LABEL: Record<string, string> = {
 export function campoLabel(key: string) {
   return CAMPO_LABEL[key] ?? key.replace(/_/g, " ");
 }
+
+export const ORDEN_HORARIOS = [
+  { key: "carga_entrada", label: "Carga — hora entrada" },
+  { key: "carga_salida", label: "Carga — hora salida" },
+  { key: "descarga_llegada", label: "Descarga — hora llegada" },
+  { key: "descarga_inicio", label: "Descarga — hora inicio" },
+  { key: "descarga_fin", label: "Descarga — hora fin" },
+] as const;
+
+type HorariosBlock = {
+  horarios?: Record<string, { hora?: string | null; fecha?: string | null }>;
+  fecha_remito?: string | null;
+};
+
+export function fechaBaseHorarios(row: RemitoRow) {
+  const d = datos(row);
+  const h = (d.horarios as HorariosBlock | undefined)?.fecha_remito;
+  return (d.fecha_guia ?? d.fecha_remito ?? h ?? null) as string | null;
+}
+
+export function horasFromRow(row: RemitoRow): Record<string, string> {
+  const slots = (datos(row).horarios as HorariosBlock | undefined)?.horarios ?? {};
+  const out: Record<string, string> = {};
+  for (const { key } of ORDEN_HORARIOS) {
+    const h = slots[key]?.hora;
+    if (h) out[key] = h;
+  }
+  return out;
+}
+
+export function buildHorariosBody(horas: Record<string, string>, fechaBase: string | null) {
+  const horarios: Record<string, { fecha: string | null; hora: string | null }> = {};
+  for (const { key } of ORDEN_HORARIOS) {
+    const v = horas[key]?.trim();
+    horarios[key] = { fecha: fechaBase, hora: v || null };
+  }
+  return {
+    horarios: {
+      tenant: null,
+      fecha_remito: fechaBase,
+      horarios,
+    },
+  };
+}
+
+/** Resumen para tabla: "07:45 → 10:10" o "3/5 hs" */
+export function horasResumen(row: RemitoRow) {
+  const horas = horasFromRow(row);
+  const vals = ORDEN_HORARIOS.map(({ key }) => horas[key]).filter(Boolean);
+  if (vals.length === 0) return "—";
+  if (vals.length >= 2) return `${vals[0]} → ${vals[vals.length - 1]}`;
+  return `${vals.length}/5 hs`;
+}
+
+export function horasCompletas(row: RemitoRow) {
+  return ORDEN_HORARIOS.every(({ key }) => Boolean(horasFromRow(row)[key]));
+}

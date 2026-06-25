@@ -6,19 +6,23 @@ import { getRemito, imagenUrl, patchRemitoCampos } from "@/lib/api";
 import type { RemitoRow } from "@/lib/types";
 import {
   acopladoPatente,
+  buildHorariosBody,
   campoLabel,
   chasisPatente,
   conductorNombre,
   destinoNombre,
   estadoColor,
   estadoLabel,
+  fechaBaseHorarios,
   fechaHoraRemito,
+  horasFromRow,
   numeroRemito,
   origenNombre,
   pesoKg,
   tenantLabel,
 } from "@/lib/remitos-ui";
 import { Card, Pill, SectionTitle } from "./ui";
+import { RemitoHorariosFields } from "./RemitoHorariosFields";
 
 const CAMPOS_TSB = [
   "fecha_guia",
@@ -48,6 +52,7 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
   const router = useRouter();
   const [row, setRow] = useState<RemitoRow | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
+  const [horas, setHoras] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +69,7 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
           if (d[k] != null) initial[k] = String(d[k]);
         }
         setForm(initial);
+        setHoras(horasFromRow(r));
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -79,6 +85,7 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
       for (const [k, v] of Object.entries(form)) {
         body[k] = k === "peso_kg" ? (v ? Number(v) : null) : v || null;
       }
+      Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
       const updated = await patchRemitoCampos(id, body);
       setRow(updated);
       setMsg(updated.estado === "confirmado" ? "Guardado — remito validado" : "Guardado — revisar horarios");
@@ -160,6 +167,13 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
                 />
               </label>
             ))}
+          </div>
+
+          <div className="mt-4 border-t border-[var(--border-soft)] pt-4">
+            <RemitoHorariosFields
+              horas={horas}
+              onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
+            />
           </div>
 
           {validacion && (validacion.faltantes?.length || validacion.errores?.length) ? (
