@@ -19,13 +19,20 @@ Chofer WhatsApp → BuilderBot "Andreu Remitos"
 | **Nombre** | Andreu Remitos |
 | **Project ID** | `aeeef7d8-024c-4aab-ba3f-d8a8fa5f193f` |
 
-Flujos ya creados:
-- **Bienvenida** — saludo y pide foto o audio
-- **Foto remito** — `EVENTS.MEDIA` → HTTP a la API
-- **Audio chofer** — `EVENTS.AUDIO` (o media audio) → HTTP a la API → Speech-to-Text
-- **Ayuda remito** — si escriben "remito" sin foto
+Flujos en BuilderBot (proyecto `aeeef7d8-024c-4aab-ba3f-d8a8fa5f193f`):
 
-> Los proyectos viejos *Andreu - Arianna TSB/Beraldi* podés ignorarlos o borrarlos en BB.
+| Flujo | Trigger | Qué hace |
+|-------|---------|----------|
+| **Foto remito** | `EVENTS.MEDIA` | Foto → API → Document AI |
+| **Audio chofer** | `EVENTS.VOICE_NOTE` | Nota de voz → Speech-to-Text → correcciones |
+| **Bienvenida** | `EVENTS.WELCOME`, hola, ok… | Texto → API (saludo / confirmación) |
+| **Ayuda remito** | remito, guía | Texto → API |
+
+URL HTTP (todos los flujos):
+
+```
+https://logistica-andreu-remitos.wd75db.easypanel.host/api/webhooks/builderbot
+```
 
 **Deploy** → escaneá QR con el WhatsApp del bot (un solo número para todos los choferes).
 
@@ -74,6 +81,12 @@ La API transcribe con **Google Speech-to-Text** y procesa como mensaje de texto 
 Requisito GCP: habilitar **Cloud Speech-to-Text API** en `kiev-prueba` y mismo service account con rol `roles/speech.client` o ampliar permisos.
 
 ## 3. Variables Easypanel (API)
+
+```env
+# Para que operadores respondan desde /contactos
+BUILDERBOT_BOT_ID=aeeef7d8-024c-4aab-ba3f-d8a8fa5f193f
+BUILDERBOT_API_KEY=tu-api-key-de-builderbot
+```
 
 Opcionales — solo si querés forzar cliente sin leer el papel:
 
