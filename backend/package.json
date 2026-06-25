@@ -11,6 +11,7 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/multipart": "^9.0.3",
     "@google-cloud/documentai": "^4.1.0",
+    "@google-cloud/speech": "^6.7.1",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
     "pg": "^8.13.3"

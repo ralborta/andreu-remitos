@@ -21,6 +21,7 @@ import {
 import { Card, Pill, SectionTitle } from "./ui";
 
 const CAMPOS_TSB = [
+  "fecha_guia",
   "nro_guia",
   "conductor",
   "procedencia",

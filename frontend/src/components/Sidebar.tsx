@@ -11,6 +11,7 @@ import {
   FileText,
   Upload,
   ChevronDown,
+  MessageCircle,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -148,6 +149,20 @@ export function Sidebar({
           >
             <Upload size={18} />
             Subir remito
+          </Link>
+
+          <Link
+            href="/contactos"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/contactos")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <MessageCircle size={18} />
+            Contactos
           </Link>
 
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">

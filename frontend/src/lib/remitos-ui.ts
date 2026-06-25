@@ -116,6 +116,8 @@ export function fechaHoraRemito(row: RemitoRow) {
 }
 
 const CAMPO_LABEL: Record<string, string> = {
+  fecha_guia: "Fecha",
+  fecha_remito: "Fecha",
   nro_guia: "Nro remito / guía",
   nro_remito: "Nro remito",
   conductor: "Chofer",

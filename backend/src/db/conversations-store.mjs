@@ -27,30 +27,42 @@ function findOrCreate(rows, telefono, tenant) {
       nombre: null,
       mensajes: [],
       ultimo_remito_id: null,
+      bot_pausado: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
     rows.unshift(conv);
   }
   if (tenant && !conv.tenant) conv.tenant = tenant;
+  if (conv.bot_pausado == null) conv.bot_pausado = false;
   return conv;
+}
+
+function actorFromOpts(opts) {
+  if (opts.from === "human" || opts.from === "HUMAN") return "human";
+  if (opts.from === "bot" || opts.from === "BOT") return "bot";
+  if (opts.dir === "out") return opts.from === "human" ? "human" : "bot";
+  return "customer";
 }
 
 export async function appendMensaje(telefono, msg, opts = {}) {
   if (!telefono) return null;
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, opts.tenant);
+  const actor = actorFromOpts(opts);
   const entry = {
     id: `${Date.now()}-${conv.mensajes.length}`,
-    dir: opts.dir ?? "in",
+    dir: opts.dir ?? (actor === "customer" ? "in" : "out"),
+    from: actor,
     texto: msg.texto ?? null,
     tipo: msg.tipo ?? "text",
     remito_id: msg.remito_id ?? null,
     imagen_url: msg.imagen_url ?? null,
+    transcripcion: msg.transcripcion ?? null,
     at: new Date().toISOString(),
   };
   conv.mensajes.push(entry);
-  if (conv.mensajes.length > 200) conv.mensajes = conv.mensajes.slice(-200);
+  if (conv.mensajes.length > 300) conv.mensajes = conv.mensajes.slice(-300);
   if (opts.remito_id) conv.ultimo_remito_id = opts.remito_id;
   if (opts.nombre) conv.nombre = opts.nombre;
   conv.updated_at = new Date().toISOString();
@@ -58,16 +70,30 @@ export async function appendMensaje(telefono, msg, opts = {}) {
   return conv;
 }
 
-export async function listConversaciones({ tenant, limit = 50 } = {}) {
+export async function setBotPausado(telefono, pausado) {
+  const phone = sanitizePhone(telefono);
+  const rows = readAll();
+  const conv = findOrCreate(rows, phone, null);
+  conv.bot_pausado = !!pausado;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function isBotPausado(telefono) {
+  const conv = await getConversacion(telefono);
+  return !!conv?.bot_pausado;
+}
+
+export async function listConversaciones({ tenant, limit = 80 } = {}) {
   let rows = readAll();
   if (tenant) rows = rows.filter((c) => c.tenant === tenant);
-  return rows
-    .slice(0, limit)
-    .map(({ mensajes, ...rest }) => ({
-      ...rest,
-      ultimo_mensaje: mensajes.at(-1) ?? null,
-      total_mensajes: mensajes.length,
-    }));
+  rows.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  return rows.slice(0, limit).map(({ mensajes, ...rest }) => ({
+    ...rest,
+    ultimo_mensaje: mensajes.at(-1) ?? null,
+    total_mensajes: mensajes.length,
+  }));
 }
 
 export async function getConversacion(telefono) {

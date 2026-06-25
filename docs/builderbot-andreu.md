@@ -20,8 +20,9 @@ Chofer WhatsApp → BuilderBot "Andreu Remitos"
 | **Project ID** | `aeeef7d8-024c-4aab-ba3f-d8a8fa5f193f` |
 
 Flujos ya creados:
-- **Bienvenida** — saludo y pide foto
+- **Bienvenida** — saludo y pide foto o audio
 - **Foto remito** — `EVENTS.MEDIA` → HTTP a la API
+- **Audio chofer** — `EVENTS.AUDIO` (o media audio) → HTTP a la API → Speech-to-Text
 - **Ayuda remito** — si escriben "remito" sin foto
 
 > Los proyectos viejos *Andreu - Arianna TSB/Beraldi* podés ignorarlos o borrarlos en BB.
@@ -52,6 +53,25 @@ Body (sin `tenant` — la API lo detecta sola):
 ```
 
 `messageMapping`: **message**
+
+### Flujo Audio (notas de voz)
+
+Duplicá el HTTP de **Foto remito** con trigger `EVENTS.AUDIO` (misma URL y body):
+
+```json
+{
+  "eventName": "audio",
+  "data": {
+    "from": "@phone",
+    "attachment": { "url": "@attachment" },
+    "name": "@name"
+  }
+}
+```
+
+La API transcribe con **Google Speech-to-Text** y procesa como mensaje de texto (correcciones km, patente, OK).
+
+Requisito GCP: habilitar **Cloud Speech-to-Text API** en `kiev-prueba` y mismo service account con rol `roles/speech.client` o ampliar permisos.
 
 ## 3. Variables Easypanel (API)
 

@@ -1,4 +1,5 @@
 import type { RemitoRow } from "./types";
+import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 
 const PLACEHOLDER_RE =
   /CAMBIAR|url-publica|tu-api|ejemplo|placeholder|localhost:3001/i;
@@ -77,4 +78,33 @@ export async function ingestRemito(file: File, tenant: string, telefono?: string
 
 export function healthCheck() {
   return api<{ ok: boolean; service: string }>("/health");
+}
+
+export function listConversaciones(params?: { tenant?: string; limit?: number }) {
+  const q = new URLSearchParams();
+  if (params?.tenant) q.set("tenant", params.tenant);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<ConversacionListItem[]>(`/api/conversaciones${qs ? `?${qs}` : ""}`);
+}
+
+export function getConversacion(telefono: string) {
+  return api<Conversacion>(`/api/conversaciones/${telefono}`);
+}
+
+export function enviarMensajeConversacion(
+  telefono: string,
+  body: { texto: string; nota_interna?: boolean },
+) {
+  return api<{ ok: boolean; sent: boolean; conversacion: Conversacion }>(
+    `/api/conversaciones/${telefono}/mensajes`,
+    { method: "POST", body: JSON.stringify(body) },
+  );
+}
+
+export function setBotPausado(telefono: string, pausado: boolean) {
+  return api<Conversacion>(`/api/conversaciones/${telefono}/bot-pausado`, {
+    method: "PATCH",
+    body: JSON.stringify({ pausado }),
+  });
 }
