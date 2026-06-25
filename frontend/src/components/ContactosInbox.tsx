@@ -121,9 +121,13 @@ export function ContactosInbox() {
           <div className="flex-1 overflow-y-auto scroll-thin">
             {loading && <p className="p-4 text-sm text-[var(--text-dim)]">Cargando…</p>}
             {!loading && lista.length === 0 && (
-              <p className="p-4 text-sm text-[var(--text-dim)]">
-                Sin conversaciones. Llegan cuando un chofer escribe al bot.
-              </p>
+              <div className="p-4 text-center">
+                <p className="text-sm font-medium text-white">Sin conversaciones todavía</p>
+                <p className="mt-2 text-xs leading-relaxed text-[var(--text-dim)]">
+                  Aparecen acá cuando un chofer escribe al bot de WhatsApp. Podés probar mandando
+                  &quot;Hola&quot; al número de Andreu Remitos.
+                </p>
+              </div>
             )}
             {lista.map((c) => (
               <button
@@ -184,8 +188,16 @@ export function ContactosInbox() {
               />
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center p-8 text-sm text-[var(--text-dim)]">
-              {selected ? "Cargando chat…" : "Elegí un contacto"}
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+              <MessageCircle size={40} className="text-[var(--text-faint)]" />
+              <p className="text-sm font-medium text-white">
+                {lista.length === 0 ? "Inbox WhatsApp listo" : "Elegí un contacto"}
+              </p>
+              <p className="max-w-xs text-xs text-[var(--text-dim)]">
+                {lista.length === 0
+                  ? "Cuando haya mensajes de choferes, el chat se muestra acá."
+                  : "Seleccioná un chofer de la lista para ver el historial."}
+              </p>
             </div>
           )}
         </Card>
