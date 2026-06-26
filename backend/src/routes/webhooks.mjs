@@ -10,6 +10,7 @@ import {
   parseCorreccionChofer,
 } from "../../../lib/correcciones-chofer.mjs";
 import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
+import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 
@@ -19,6 +20,23 @@ const webhookSilent = process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
 function respuestaWebhook({ message = "", ...rest } = {}) {
   if (webhookSilent) return { received: true, ...rest };
   return { message, ...rest };
+}
+
+/** Tras OCR: avisa al chofer por WhatsApp (API BB) y guarda en /contactos. */
+async function notificarChofer(phone, message, { tenant, remito_id, log } = {}) {
+  if (!phone || !message?.trim()) return false;
+  try {
+    await sendWhatsAppMessage({ number: phone, message });
+    await convStore.appendMensaje(
+      phone,
+      { texto: message, tipo: "text", remito_id: remito_id ?? null },
+      { tenant, remito_id, dir: "out", from: "bot" },
+    );
+    return true;
+  } catch (err) {
+    log?.warn?.({ err: err.message, phone }, "No se pudo enviar WhatsApp al chofer");
+    return false;
+  }
 }
 
 function mapCorreccionCampo(tenant, campo) {
@@ -177,7 +195,13 @@ export default async function webhooksRoutes(fastify) {
         const message = mensajeWhatsApp(resultado);
         const pausado = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
 
-        if (ev.from && !webhookSilent) {
+        if (ev.from && !pausado) {
+          await notificarChofer(ev.from, message, {
+            tenant: resultado.tenant,
+            remito_id: resultado.id,
+            log: request.log,
+          });
+        } else if (ev.from && resultado.id) {
           await convStore.appendMensaje(
             ev.from,
             { texto: message, tipo: "text", remito_id: resultado.id },
@@ -213,7 +237,10 @@ export default async function webhooksRoutes(fastify) {
           ? "No pude entender el audio. Probá de nuevo más claro, o escribí la corrección."
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
-      if (ev.from && !webhookSilent) {
+      const pausadoErr = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
+      if (ev.from && !pausadoErr) {
+        await notificarChofer(ev.from, errMsg, { tenant: tenantCfg, log: request.log });
+      } else if (ev.from) {
         await convStore.appendMensaje(ev.from, { texto: errMsg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
       }
 
