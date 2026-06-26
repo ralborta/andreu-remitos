@@ -1,5 +1,6 @@
 import {
   downloadMedia,
+  mensajeProcesandoRemito,
   mensajeSaludo,
   mensajeWhatsApp,
   normalizeBuilderBotPayload,
@@ -185,6 +186,15 @@ export default async function webhooksRoutes(fastify) {
           );
         }
 
+        const pausado = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
+
+        if (ev.from && !pausado) {
+          await notificarChofer(ev.from, mensajeProcesandoRemito(), {
+            tenant: tenantCfg,
+            log: request.log,
+          });
+        }
+
         const { buffer, filename } = await downloadMedia(ev.media.url);
         const resultado = await ingestarRemito(buffer, {
           filename,
@@ -193,7 +203,6 @@ export default async function webhooksRoutes(fastify) {
         });
 
         const message = mensajeWhatsApp(resultado);
-        const pausado = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
 
         if (ev.from && !pausado) {
           await notificarChofer(ev.from, message, {
