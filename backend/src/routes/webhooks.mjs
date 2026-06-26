@@ -13,6 +13,14 @@ import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 
+/** En modo IA (webhook de proyecto BB), no devolvemos texto al chofer — responde add_chatpdf. */
+const webhookSilent = process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
+
+function respuestaWebhook({ message = "", ...rest } = {}) {
+  if (webhookSilent) return { received: true, ...rest };
+  return { message, ...rest };
+}
+
 function mapCorreccionCampo(tenant, campo) {
   if (tenant === "beraldi") {
     if (campo === "patente_chasis") return "tractor";
@@ -39,11 +47,10 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
   }
 
   if (pausado) {
-    return {
-      message: "",
+    return respuestaWebhook({
       flow: "bot_pausado",
       hint: "Bot pausado — operador responde desde Contactos",
-    };
+    });
   }
 
   const correccion = parseCorreccionChofer(texto);
@@ -51,8 +58,10 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
   if (correccion && conv?.ultimo_remito_id) {
     if (correccion.campo === "_confirmacion") {
       const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
-      await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
-      return { message: msg, flow: "confirmado" };
+      if (!webhookSilent) {
+        await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+      }
+      return respuestaWebhook({ message: msg, flow: "confirmado" });
     }
 
     const remito = await obtenerRemito(conv.ultimo_remito_id);
@@ -60,12 +69,14 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
       const campo = mapCorreccionCampo(remito.tenant, correccion.campo);
       const updated = await actualizarCampos(remito.id, { [campo]: correccion.valor });
       const msg = mensajeCorreccionAplicada(correccion, updated?.datos);
-      await convStore.appendMensaje(
-        phone,
-        { texto: msg, tipo: "text", remito_id: remito.id },
-        { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
-      );
-      return { message: msg, flow: "correccion", remito_id: remito.id };
+      if (!webhookSilent) {
+        await convStore.appendMensaje(
+          phone,
+          { texto: msg, tipo: "text", remito_id: remito.id },
+          { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
+        );
+      }
+      return respuestaWebhook({ message: msg, flow: "correccion", remito_id: remito.id });
     }
   }
 
@@ -77,11 +88,14 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
       ? "Enviame una *foto clara del remito* o un *audio* con la corrección (ej: km finales 71221)."
       : mensajeSaludo(tenantCfg);
 
-  if (phone) {
+  if (phone && !webhookSilent) {
     await convStore.appendMensaje(phone, { texto: ayuda, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
   }
 
-  return { message: ayuda, flow: conv?.ultimo_remito_id ? "esperando_correccion_o_foto" : "esperando_foto" };
+  return respuestaWebhook({
+    message: ayuda,
+    flow: conv?.ultimo_remito_id ? "esperando_correccion_o_foto" : "esperando_foto",
+  });
 }
 
 export default async function webhooksRoutes(fastify) {
@@ -94,14 +108,32 @@ export default async function webhooksRoutes(fastify) {
 
   fastify.post("/builderbot", async (request, reply) => {
     const ev = normalizeBuilderBotPayload(request.body);
+    request.log.info({ event: ev.event, eventName: ev.eventName, from: ev.from, hasMedia: !!ev.media?.url }, "webhook BB");
+
     const tenantCfg = resolveTenant(ev.from, ev.tenant);
 
     try {
-      if (ev.event === "outgoing" || ev.event === "status") {
+      if (ev.event === "status") {
         return { received: true, event: ev.event };
       }
 
-      // Audio (nota de voz)
+      // Respuestas del agente IA (message.outgoing) — solo historial para /contactos
+      if (ev.event === "outgoing") {
+        if (ev.from && (ev.message || ev.media?.url)) {
+          await convStore.appendMensaje(
+            ev.from,
+            {
+              texto: ev.message || (ev.media?.name ? `[${ev.media.name}]` : "[Archivo adjunto]"),
+              tipo: ev.media?.url && /audio/i.test(ev.media.mime_type ?? "") ? "audio" : ev.media?.url ? "image" : "text",
+              imagen_url: ev.media?.url ?? null,
+            },
+            { tenant: tenantCfg, nombre: ev.nombre, dir: "out", from: "bot" },
+          );
+        }
+        return respuestaWebhook({ ok: true, event: "outgoing" });
+      }
+
+      // Audio (nota de voz) — urlTempFile es la URL más fresca (patrón Mis Reclamos)
       if (ev.event === "audio" && ev.media?.url) {
         const { buffer, mime, filename } = await downloadMedia(ev.media.url);
         const transcripcion = await transcribirAudio(buffer, { mimeType: mime, filename });
@@ -120,7 +152,7 @@ export default async function webhooksRoutes(fastify) {
         }
 
         const out = await procesarTextoChofer(ev, tenantCfg, transcripcion);
-        return { ...out, transcripcion, flow: out.flow ?? "audio" };
+        return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
       }
 
       // Foto / imagen remito
@@ -145,7 +177,7 @@ export default async function webhooksRoutes(fastify) {
         const message = mensajeWhatsApp(resultado);
         const pausado = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
 
-        if (ev.from) {
+        if (ev.from && !webhookSilent) {
           await convStore.appendMensaje(
             ev.from,
             { texto: message, tipo: "text", remito_id: resultado.id },
@@ -153,21 +185,24 @@ export default async function webhooksRoutes(fastify) {
           );
         }
 
-        return {
-          message: pausado ? "" : message,
+        return respuestaWebhook({
+          message,
           remito_id: resultado.id,
           tenant: resultado.tenant,
           estado: resultado.estado,
           guia: resultado.lectura?.nro_guia ?? resultado.lectura?.nro_remito ?? null,
           flow: resultado.estado === "bloqueado" ? "revision" : "ok",
-        };
+          bot_pausado: pausado,
+        });
       }
 
       // Texto
       const texto = ev.message?.trim() || "";
+      if (!texto && !ev.media?.url) {
+        return respuestaWebhook({ ok: true, message: "Mensaje vacío, ignorado" });
+      }
       if (!texto) {
-        const msg = mensajeSaludo(tenantCfg);
-        return { message: msg, flow: "esperando_foto" };
+        return respuestaWebhook({ flow: "esperando_foto" });
       }
 
       return procesarTextoChofer(ev, tenantCfg, texto);
@@ -178,15 +213,17 @@ export default async function webhooksRoutes(fastify) {
           ? "No pude entender el audio. Probá de nuevo más claro, o escribí la corrección."
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
-      if (ev.from) {
+      if (ev.from && !webhookSilent) {
         await convStore.appendMensaje(ev.from, { texto: errMsg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
       }
 
-      return reply.code(200).send({
-        message: errMsg,
-        error: err.message,
-        flow: "error",
-      });
+      return reply.code(200).send(
+        respuestaWebhook({
+          message: errMsg,
+          error: err.message,
+          flow: "error",
+        }),
+      );
     }
   });
 }
