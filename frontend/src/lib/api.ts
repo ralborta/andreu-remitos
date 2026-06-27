@@ -1,3 +1,4 @@
+import type { PlanillaTsbResponse } from "./planilla-types";
 import type { RemitoRow } from "./types";
 import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 import type { Chofer, Distancia, Localidad, Unidad } from "./parametros-types";
@@ -180,4 +181,36 @@ export function updateDistancia(id: string, body: Partial<Distancia>) {
 
 export function deleteDistancia(id: string) {
   return api<{ ok: boolean }>(`/api/parametros/distancias/${id}`, { method: "DELETE" });
+}
+
+export function getPlanillaTsb(params?: {
+  tipoViaje?: string;
+  desde?: string;
+  hasta?: string;
+  estados?: string;
+  limit?: number;
+}) {
+  const q = new URLSearchParams();
+  if (params?.tipoViaje) q.set("tipoViaje", params.tipoViaje);
+  if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
+  if (params?.estados) q.set("estados", params.estados);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<PlanillaTsbResponse>(`/api/planillas/tsb${qs ? `?${qs}` : ""}`);
+}
+
+export function planillaTsbExportUrl(params?: {
+  tipoViaje?: string;
+  desde?: string;
+  hasta?: string;
+  formato?: "delfos" | "proforma";
+}) {
+  const q = new URLSearchParams();
+  if (params?.tipoViaje) q.set("tipoViaje", params.tipoViaje);
+  if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
+  if (params?.formato) q.set("formato", params.formato);
+  const qs = q.toString();
+  return `${apiBase()}/api/planillas/tsb/export${qs ? `?${qs}` : ""}`;
 }

@@ -13,6 +13,7 @@ import {
   ChevronDown,
   MessageCircle,
   Settings2,
+  FileSpreadsheet,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -29,7 +30,10 @@ export function Sidebar({
   const pathname = usePathname();
   const remitosOpen =
     pathname === "/remitos" || pathname.startsWith("/remitos/");
+  const planillasOpen =
+    pathname === "/planillas" || pathname.startsWith("/planillas/");
   const [remitosExpanded, setRemitosExpanded] = useState(remitosOpen);
+  const [planillasExpanded, setPlanillasExpanded] = useState(planillasOpen);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -138,6 +142,53 @@ export function Sidebar({
               </div>
             )}
           </div>
+
+          <div className="mb-1">
+            <button
+              type="button"
+              onClick={() => setPlanillasExpanded((v) => !v)}
+              className={clsx(
+                "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                planillasOpen
+                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <FileSpreadsheet size={18} />
+              <span className="flex-1 text-left">Planillas</span>
+              <ChevronDown
+                size={16}
+                className={clsx(
+                  "shrink-0 transition-transform",
+                  planillasExpanded ? "rotate-180" : "",
+                )}
+              />
+            </button>
+            {planillasExpanded && (
+              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border)] pl-2">
+                <Link
+                  href="/planillas/tsb"
+                  onClick={onClose}
+                  className={clsx(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                    pathname.startsWith("/planillas/tsb")
+                      ? "bg-white/10 font-medium text-white"
+                      : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                  )}
+                >
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: "#38bdf8" }}
+                  />
+                  TSB
+                </Link>
+                <span className="block px-3 py-1.5 text-xs text-[var(--text-faint)]">
+                  Beraldi — próximamente
+                </span>
+              </div>
+            )}
+          </div>
+
           <Link
             href="/subir"
             onClick={onClose}
