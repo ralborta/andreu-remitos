@@ -1,3 +1,5 @@
+export type PlanillaFormato = "delfos" | "proforma";
+
 export interface PlanillaColumn {
   key: string;
   header: string;
@@ -36,7 +38,7 @@ export interface PlanillaFila {
 
 export interface PlanillaTsbResponse {
   tenant: string;
-  formato: string;
+  formato: PlanillaFormato;
   tipo_viaje: string;
   columnas: PlanillaColumn[];
   filas: PlanillaFila[];

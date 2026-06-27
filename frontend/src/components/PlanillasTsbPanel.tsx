@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, RefreshCw, Sheet } from "lucide-react";
 import { getPlanillaTsb, planillaTsbExportUrl } from "@/lib/api";
-import type { PlanillaTsbResponse, TipoViajeTsb } from "@/lib/planilla-types";
+import type { PlanillaFormato, PlanillaTsbResponse, TipoViajeTsb } from "@/lib/planilla-types";
 import { TIPOS_VIAJE_TSB } from "@/lib/planilla-types";
 import { Card, Pill } from "./ui";
 import { PlanillaGrid } from "./PlanillaGrid";
 
 export function PlanillasTsbPanel() {
+  const [vista, setVista] = useState<PlanillaFormato>("delfos");
   const [tipoViaje, setTipoViaje] = useState<TipoViajeTsb>("ARENA");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
@@ -19,11 +20,16 @@ export function PlanillasTsbPanel() {
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    getPlanillaTsb({ tipoViaje, desde: desde || undefined, hasta: hasta || undefined })
+    getPlanillaTsb({
+      formato: vista,
+      tipoViaje,
+      desde: desde || undefined,
+      hasta: hasta || undefined,
+    })
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [tipoViaje, desde, hasta]);
+  }, [vista, tipoViaje, desde, hasta]);
 
   useEffect(() => {
     load();
@@ -32,6 +38,30 @@ export function PlanillasTsbPanel() {
   return (
     <div className="space-y-4">
       <Card className="p-4">
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setVista("delfos")}
+            className={
+              vista === "delfos"
+                ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+            }
+          >
+            Planilla Delfos (25 cols)
+          </button>
+          <button
+            type="button"
+            onClick={() => setVista("proforma")}
+            className={
+              vista === "proforma"
+                ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+            }
+          >
+            Proforma QuadMy (11 cols)
+          </button>
+        </div>
         <div className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
             Tipo de viaje
@@ -80,20 +110,21 @@ export function PlanillasTsbPanel() {
               className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
             >
               <Download size={16} />
-              Planilla TSB
+              Excel Delfos
             </a>
             <a
               href={planillaTsbExportUrl({ tipoViaje, desde, hasta, formato: "proforma" })}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)]/25 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
             >
               <Download size={16} />
-              Proforma
+              Excel Proforma
             </a>
           </div>
         </div>
         {data && (
           <p className="mt-3 text-xs text-[var(--text-faint)]">
-            {data.meta.remitos} remitos → {data.meta.filas} filas (2 por remito: carga + descarga)
+            {data.meta.remitos} remitos → {data.meta.filas} filas · {data.columnas.length} columnas
+            {vista === "delfos" ? " (A–Y, toneladas en Cantidad fila Orden 1)" : " (QuadMy TMS)"}
           </p>
         )}
       </Card>
@@ -111,11 +142,12 @@ export function PlanillasTsbPanel() {
         </Card>
       ) : data ? (
         <div className="space-y-2">
-          <div className="flex items-center gap-2 px-1">
+          <div className="flex flex-wrap items-center gap-2 px-1">
             <Pill color="#38bdf8">TSB</Pill>
             <span className="text-sm text-[var(--text-dim)]">
-              Vista previa — mismo layout que el Excel de exportación
+              {vista === "delfos" ? "Vista Delfos — headers iguales al Excel Arianna" : "Vista Proforma — import QuadMy"}
             </span>
+            <span className="text-xs text-[var(--violet-2)]">← deslizá horizontal para ver todas las columnas</span>
           </div>
           <PlanillaGrid columnas={data.columnas} filas={data.filas} />
         </div>

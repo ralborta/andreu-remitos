@@ -1,4 +1,4 @@
-import type { PlanillaTsbResponse } from "./planilla-types";
+import type { PlanillaTsbResponse, PlanillaFormato } from "./planilla-types";
 import type { RemitoRow } from "./types";
 import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 import type { Chofer, Distancia, Localidad, Unidad } from "./parametros-types";
@@ -184,6 +184,7 @@ export function deleteDistancia(id: string) {
 }
 
 export function getPlanillaTsb(params?: {
+  formato?: PlanillaFormato;
   tipoViaje?: string;
   desde?: string;
   hasta?: string;
@@ -191,6 +192,7 @@ export function getPlanillaTsb(params?: {
   limit?: number;
 }) {
   const q = new URLSearchParams();
+  if (params?.formato) q.set("formato", params.formato);
   if (params?.tipoViaje) q.set("tipoViaje", params.tipoViaje);
   if (params?.desde) q.set("desde", params.desde);
   if (params?.hasta) q.set("hasta", params.hasta);
