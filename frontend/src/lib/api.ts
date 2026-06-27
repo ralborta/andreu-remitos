@@ -1,4 +1,5 @@
 import type { PlanillaTsbResponse, PlanillaFormato } from "./planilla-types";
+import type { TenantSlug } from "./tenants";
 import type { RemitoRow } from "./types";
 import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 import type { Chofer, Distancia, Localidad, Unidad } from "./parametros-types";
@@ -183,14 +184,17 @@ export function deleteDistancia(id: string) {
   return api<{ ok: boolean }>(`/api/parametros/distancias/${id}`, { method: "DELETE" });
 }
 
-export function getPlanillaTsb(params?: {
-  formato?: PlanillaFormato;
-  tipoViaje?: string;
-  desde?: string;
-  hasta?: string;
-  estados?: string;
-  limit?: number;
-}) {
+export function getPlanilla(
+  tenant: TenantSlug,
+  params?: {
+    formato?: PlanillaFormato;
+    tipoViaje?: string;
+    desde?: string;
+    hasta?: string;
+    estados?: string;
+    limit?: number;
+  },
+) {
   const q = new URLSearchParams();
   if (params?.formato) q.set("formato", params.formato);
   if (params?.tipoViaje) q.set("tipoViaje", params.tipoViaje);
@@ -199,20 +203,33 @@ export function getPlanillaTsb(params?: {
   if (params?.estados) q.set("estados", params.estados);
   if (params?.limit) q.set("limit", String(params.limit));
   const qs = q.toString();
-  return api<PlanillaTsbResponse>(`/api/planillas/tsb${qs ? `?${qs}` : ""}`);
+  return api<PlanillaTsbResponse>(`/api/planillas/${tenant}${qs ? `?${qs}` : ""}`);
 }
 
-export function planillaTsbExportUrl(params?: {
-  tipoViaje?: string;
-  desde?: string;
-  hasta?: string;
-  formato?: "delfos" | "proforma";
-}) {
+/** @deprecated use getPlanilla('tsb', ...) */
+export function getPlanillaTsb(params?: Parameters<typeof getPlanilla>[1]) {
+  return getPlanilla("tsb", params);
+}
+
+export function planillaExportUrl(
+  tenant: TenantSlug,
+  params?: {
+    tipoViaje?: string;
+    desde?: string;
+    hasta?: string;
+    formato?: PlanillaFormato;
+  },
+) {
   const q = new URLSearchParams();
   if (params?.tipoViaje) q.set("tipoViaje", params.tipoViaje);
   if (params?.desde) q.set("desde", params.desde);
   if (params?.hasta) q.set("hasta", params.hasta);
   if (params?.formato) q.set("formato", params.formato);
   const qs = q.toString();
-  return `${apiBase()}/api/planillas/tsb/export${qs ? `?${qs}` : ""}`;
+  return `${apiBase()}/api/planillas/${tenant}/export${qs ? `?${qs}` : ""}`;
+}
+
+/** @deprecated use planillaExportUrl('tsb', ...) */
+export function planillaTsbExportUrl(params?: Parameters<typeof planillaExportUrl>[1]) {
+  return planillaExportUrl("tsb", params);
 }

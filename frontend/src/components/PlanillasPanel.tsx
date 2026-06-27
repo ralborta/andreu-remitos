@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Download, RefreshCw, Sheet } from "lucide-react";
-import { getPlanillaTsb, planillaTsbExportUrl } from "@/lib/api";
+import { getPlanilla, planillaExportUrl } from "@/lib/api";
 import type { PlanillaFormato, PlanillaTsbResponse, TipoViajeTsb } from "@/lib/planilla-types";
 import { TIPOS_VIAJE_TSB } from "@/lib/planilla-types";
+import type { TenantSlug } from "@/lib/tenants";
+import { getTenant } from "@/lib/tenants";
 import { Card, Pill } from "./ui";
 import { PlanillaGrid } from "./PlanillaGrid";
 
-export function PlanillasTsbPanel() {
+export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
+  const cfg = getTenant(tenant)!;
   const [vista, setVista] = useState<PlanillaFormato>("delfos");
   const [tipoViaje, setTipoViaje] = useState<TipoViajeTsb>("ARENA");
   const [desde, setDesde] = useState("");
@@ -20,7 +23,7 @@ export function PlanillasTsbPanel() {
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    getPlanillaTsb({
+    getPlanilla(tenant, {
       formato: vista,
       tipoViaje,
       desde: desde || undefined,
@@ -29,11 +32,16 @@ export function PlanillasTsbPanel() {
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [vista, tipoViaje, desde, hasta]);
+  }, [tenant, vista, tipoViaje, desde, hasta]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  const hintCantidad =
+    tenant === "beraldi"
+      ? "Cantidad en Km (Orden 1) — desde Parámetros → Distancias"
+      : "toneladas en Cantidad (Orden 1)";
 
   return (
     <div className="space-y-4">
@@ -106,14 +114,14 @@ export function PlanillasTsbPanel() {
           </button>
           <div className="ml-auto flex flex-wrap gap-2">
             <a
-              href={planillaTsbExportUrl({ tipoViaje, desde, hasta, formato: "delfos" })}
+              href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "delfos" })}
               className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
             >
               <Download size={16} />
               Excel Delfos
             </a>
             <a
-              href={planillaTsbExportUrl({ tipoViaje, desde, hasta, formato: "proforma" })}
+              href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "proforma" })}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)]/25 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
             >
               <Download size={16} />
@@ -123,8 +131,7 @@ export function PlanillasTsbPanel() {
         </div>
         {data && (
           <p className="mt-3 text-xs text-[var(--text-faint)]">
-            {data.meta.remitos} remitos → {data.meta.filas} filas · {data.columnas.length} columnas
-            {vista === "delfos" ? " (A–Y, toneladas en Cantidad fila Orden 1)" : " (QuadMy TMS)"}
+            {data.meta.remitos} remitos → {data.meta.filas} filas · {data.columnas.length} columnas ({hintCantidad})
           </p>
         )}
       </Card>
@@ -143,9 +150,11 @@ export function PlanillasTsbPanel() {
       ) : data ? (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2 px-1">
-            <Pill color="#38bdf8">TSB</Pill>
+            <Pill color={cfg.color}>{cfg.short}</Pill>
             <span className="text-sm text-[var(--text-dim)]">
-              {vista === "delfos" ? "Vista Delfos — headers iguales al Excel Arianna" : "Vista Proforma — import QuadMy"}
+              {vista === "delfos"
+                ? `Vista Delfos — headers iguales al Excel ${cfg.short}`
+                : "Vista Proforma — import QuadMy"}
             </span>
             <span className="text-xs text-[var(--violet-2)]">← deslizá horizontal para ver todas las columnas</span>
           </div>

@@ -166,25 +166,29 @@ export function Sidebar({
             </button>
             {planillasExpanded && (
               <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border)] pl-2">
-                <Link
-                  href="/planillas/tsb"
-                  onClick={onClose}
-                  className={clsx(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                    pathname.startsWith("/planillas/tsb")
-                      ? "bg-white/10 font-medium text-white"
-                      : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-                  )}
-                >
-                  <span
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ background: "#38bdf8" }}
-                  />
-                  TSB
-                </Link>
-                <span className="block px-3 py-1.5 text-xs text-[var(--text-faint)]">
-                  Beraldi — próximamente
-                </span>
+                {REMITO_TENANTS.filter((t) => t.active).map((t) => {
+                  const href = `/planillas/${t.slug}`;
+                  const active = pathname.startsWith(href);
+                  return (
+                    <Link
+                      key={t.slug}
+                      href={href}
+                      onClick={onClose}
+                      className={clsx(
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                        active
+                          ? "bg-white/10 font-medium text-white"
+                          : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                      )}
+                    >
+                      <span
+                        className="h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ background: t.color }}
+                      />
+                      {t.short}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>

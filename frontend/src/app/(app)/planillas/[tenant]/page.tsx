@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
 import { PageHeader, Pill } from "@/components/ui";
-import { PlanillasTsbPanel } from "@/components/PlanillasTsbPanel";
+import { PlanillasPanel } from "@/components/PlanillasPanel";
 import { getTenant, isTenantSlug } from "@/lib/tenants";
 
 export function generateStaticParams() {
-  return [{ tenant: "tsb" }];
+  return [{ tenant: "tsb" }, { tenant: "beraldi" }];
 }
 
 export default async function PlanillasTenantPage({
@@ -14,18 +14,18 @@ export default async function PlanillasTenantPage({
   params: Promise<{ tenant: string }>;
 }) {
   const { tenant: slug } = await params;
-  if (!isTenantSlug(slug) || slug !== "tsb") notFound();
+  if (!isTenantSlug(slug)) notFound();
   const tenant = getTenant(slug)!;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={`Planillas ${tenant.name}`}
-        subtitle="Generación y exportación de planillas — vista previa tipo Excel. Operación de remitos sigue en Remitos TSB."
+        subtitle={`Generación y exportación de planillas ${tenant.short} — vista previa tipo Excel. La mesa de remitos sigue en Remitos ${tenant.short}.`}
         icon={<FileSpreadsheet size={24} />}
         badge={<Pill color={tenant.color}>{tenant.short}</Pill>}
       />
-      <PlanillasTsbPanel />
+      <PlanillasPanel tenant={slug} />
     </div>
   );
 }

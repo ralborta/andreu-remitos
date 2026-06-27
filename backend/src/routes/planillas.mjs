@@ -1,47 +1,53 @@
 import * as XLSX from "xlsx";
 import { buildPlanillaTsb, filasAoa } from "../../../lib/planilla-tsb.mjs";
+import { buildPlanillaBeraldi } from "../../../lib/planilla-beraldi.mjs";
+
+function parseQuery(q) {
+  return {
+    formato: q.formato === "proforma" ? "proforma" : "delfos",
+    tipoViaje: q.tipoViaje || "ARENA",
+    producto: q.producto || "Sin Definir",
+    estados: q.estados || "confirmado,pendiente_revision",
+    desde: q.desde || undefined,
+    hasta: q.hasta || undefined,
+    limit: q.limit ? parseInt(q.limit, 10) : 200,
+  };
+}
+
+async function exportPlanilla(reply, data, { formato, label }) {
+  const sheetName = formato === "proforma" ? "Proforma" : `Planilla ${label}`;
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
+  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+
+  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+  const prefix = formato === "proforma" ? "Proforma" : "Planilla";
+  const fname = `${prefix}_${label}_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+  return reply
+    .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    .header("Content-Disposition", `attachment; filename="${fname}"`)
+    .send(buf);
+}
 
 export default async function planillasRoutes(fastify) {
   fastify.get("/tsb", async (request) => {
-    const q = request.query ?? {};
-    return buildPlanillaTsb({
-      formato: q.formato === "proforma" ? "proforma" : "delfos",
-      tipoViaje: q.tipoViaje || "ARENA",
-      producto: q.producto || "Sin Definir",
-      estados: q.estados || "confirmado,pendiente_revision",
-      desde: q.desde || undefined,
-      hasta: q.hasta || undefined,
-      limit: q.limit ? parseInt(q.limit, 10) : 200,
-    });
+    return buildPlanillaTsb(parseQuery(request.query ?? {}));
   });
 
   fastify.get("/tsb/export", async (request, reply) => {
-    const q = request.query ?? {};
-    const formato = q.formato === "proforma" ? "proforma" : "delfos";
-    const sheetName = formato === "proforma" ? "Proforma" : "Planilla TSB";
-    const data = await buildPlanillaTsb({
-      formato,
-      tipoViaje: q.tipoViaje || "ARENA",
-      producto: q.producto || "Sin Definir",
-      estados: q.estados || "confirmado,pendiente_revision",
-      desde: q.desde || undefined,
-      hasta: q.hasta || undefined,
-      limit: q.limit ? parseInt(q.limit, 10) : 200,
-    });
+    const opts = parseQuery(request.query ?? {});
+    const data = await buildPlanillaTsb(opts);
+    return exportPlanilla(reply, data, { formato: opts.formato, label: "TSB" });
+  });
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
-    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+  fastify.get("/beraldi", async (request) => {
+    return buildPlanillaBeraldi(parseQuery(request.query ?? {}));
+  });
 
-    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-    const fname =
-      formato === "proforma"
-        ? `Proforma_TSB_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`
-        : `Planilla_TSB_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-
-    return reply
-      .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-      .header("Content-Disposition", `attachment; filename="${fname}"`)
-      .send(buf);
+  fastify.get("/beraldi/export", async (request, reply) => {
+    const opts = parseQuery(request.query ?? {});
+    const data = await buildPlanillaBeraldi(opts);
+    return exportPlanilla(reply, data, { formato: opts.formato, label: "Beraldi" });
   });
 }
