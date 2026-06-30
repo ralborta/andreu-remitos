@@ -233,3 +233,38 @@ export function planillaExportUrl(
 export function planillaTsbExportUrl(params?: Parameters<typeof planillaExportUrl>[1]) {
   return planillaExportUrl("tsb", params);
 }
+
+export interface GeocodeResult {
+  formattedAddress: string;
+  lat: number;
+  lng: number;
+  placeId: string | null;
+  locationType?: string;
+  partial?: boolean;
+  inputRaw?: string;
+  mode?: string;
+}
+
+export interface AutocompleteSuggestion {
+  placeId: string;
+  description: string;
+  mainText: string;
+  secondaryText: string;
+}
+
+export function autocompleteDestino(input: string) {
+  const q = encodeURIComponent(input.trim());
+  if (!q) return Promise.resolve([] as AutocompleteSuggestion[]);
+  return api<AutocompleteSuggestion[]>(`/api/destinos/autocomplete?input=${q}`);
+}
+
+export function geocodeDestino(body: {
+  query: string;
+  mode: "direccion" | "coordenadas";
+  placeId?: string;
+}) {
+  return api<GeocodeResult>("/api/destinos/geocode", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

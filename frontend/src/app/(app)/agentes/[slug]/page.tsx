@@ -86,7 +86,7 @@ export default async function AgentPage({
       </Card>
 
       {/* Datos + Conversación (remitos usa tabla+foto a ancho completo) */}
-      {slug === "remitos" ? (
+      {slug === "remitos" || slug === "destinos" ? (
         <div className="min-w-0">
           <AgentData slug={slug} />
         </div>

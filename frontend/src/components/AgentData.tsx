@@ -1,3 +1,4 @@
+import { DestinosDemoPanel } from "./DestinosDemoPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
@@ -122,10 +123,13 @@ export function AgentData({ slug }: { slug: string }) {
       { key: "estado", header: "Estado", render: (r) => estadoPill(r.estado) },
     ];
     return (
-      <Card>
-        <SectionTitle>Destinos en validación</SectionTitle>
-        <DataTable columns={cols} rows={destinosRows} minWidth={820} />
-      </Card>
+      <div className="space-y-4">
+        <DestinosDemoPanel />
+        <Card>
+          <SectionTitle>Cola histórica (demo)</SectionTitle>
+          <DataTable columns={cols} rows={destinosRows} minWidth={820} />
+        </Card>
+      </div>
     );
   }
 
