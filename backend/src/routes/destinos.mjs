@@ -18,6 +18,7 @@ function mapDestino(row) {
     lng: row.lng,
     partial: row.partial,
     correccion: row.correccion,
+    ultimaRespuestaCliente: row.ultima_respuesta_cliente ?? null,
     historial: row.historial ?? [],
     whatsappSent: row.whatsapp_sent ?? row.estado === "esperando_cliente",
     createdAt: row.created_at,

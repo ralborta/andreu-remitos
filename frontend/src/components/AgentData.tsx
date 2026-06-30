@@ -1,4 +1,4 @@
-import { DestinosDemoPanel } from "./DestinosDemoPanel";
+import { DestinosPanel } from "./DestinosPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
@@ -63,20 +63,6 @@ function ConfBar({ v }: { v: number }) {
   );
 }
 
-const destinosRows = [
-  { id: "PD-9921", cliente: "Coca-Cola Andina", direccion: "Av. Mitre 2540, Avellaneda", estado: "Validado", correccion: "Sí", chofer: "M. Ojeda" },
-  { id: "PD-9924", cliente: "Distribuidora del Sur", direccion: "Calle 50 N° 1240, La Plata", estado: "Validado", correccion: "No", chofer: "P. Cardozo" },
-  { id: "PD-9927", cliente: "La Serenísima", direccion: "Ruta 8 km 60, Pilar", estado: "En revisión", correccion: "Sí", chofer: "—" },
-  { id: "PD-9930", cliente: "Arcor S.A.", direccion: "Parque Ind. Ferreyra, Córdoba", estado: "Validado", correccion: "No", chofer: "C. Páez" },
-  { id: "PD-9933", cliente: "Quilmes", direccion: "Av. Luro 3300, Mar del Plata", estado: "Pendiente", correccion: "—", chofer: "—" },
-  { id: "PD-9938", cliente: "Mercado Libre Full", direccion: "Centro de distribución Pilar, módulo 4", estado: "Validado", correccion: "Sí", chofer: "M. Aguirre" },
-  { id: "PD-9940", cliente: "Toyota Argentina", direccion: "Planta Zárate, acceso proveedores 2", estado: "Validado", correccion: "No", chofer: "F. Ledesma" },
-  { id: "PD-9943", cliente: "Newsan", direccion: "Parque Industrial Posadas, nave 7", estado: "Validado", correccion: "Sí", chofer: "L. Cabrera" },
-  { id: "PD-9948", cliente: "Sinteplast", direccion: "Ruta 3 km 695, Bahía Blanca", estado: "En revisión", correccion: "Sí", chofer: "R. Varela" },
-  { id: "PD-9951", cliente: "Andreani Logística", direccion: "Av. Circunvalación 5800, Rosario", estado: "Validado", correccion: "No", chofer: "G. Leiva" },
-  { id: "PD-9954", cliente: "Grupo Logístico Patagónico", direccion: "Puerto Comodoro, depósito fiscal 3", estado: "Pendiente", correccion: "—", chofer: "N. Peralta" },
-];
-
 export function AgentData({ slug }: { slug: string }) {
   if (slug === "remitos") {
     return <RemitosPanel />;
@@ -113,24 +99,7 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "destinos") {
-    type D = (typeof destinosRows)[number];
-    const cols: Column<D>[] = [
-      { key: "id", header: "Pedido", render: (r) => <span className="font-medium text-white">{r.id}</span> },
-      { key: "cliente", header: "Cliente", className: "text-[var(--text-dim)]" },
-      { key: "direccion", header: "Dirección", className: "text-[var(--text-dim)]" },
-      { key: "correccion", header: "Corregido", render: (r) => <span className="text-[var(--text-dim)]">{r.correccion}</span> },
-      { key: "chofer", header: "Chofer", className: "text-[var(--text-dim)]" },
-      { key: "estado", header: "Estado", render: (r) => estadoPill(r.estado) },
-    ];
-    return (
-      <div className="space-y-4">
-        <DestinosDemoPanel />
-        <Card>
-          <SectionTitle>Cola histórica (demo)</SectionTitle>
-          <DataTable columns={cols} rows={destinosRows} minWidth={820} />
-        </Card>
-      </div>
-    );
+    return <DestinosPanel />;
   }
 
   if (slug === "incidencias") {

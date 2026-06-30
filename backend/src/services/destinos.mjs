@@ -146,6 +146,7 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
       place_id: geo.placeId,
       partial: geo.partial ?? false,
       correccion: "ubicación WhatsApp",
+      ultima_respuesta_cliente: "📌 Ubicación WhatsApp",
       historial: [...historial, "Re-enviado al cliente"],
     });
     await enviarWhatsApp(phone, mensaje, { destino_id: pending.id, from: "bot" });
@@ -159,6 +160,7 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
     historial.push("Cliente: SÍ → confirmado");
     const updated = await destinosStore.actualizarDestino(pending.id, {
       estado: "confirmado",
+      ultima_respuesta_cliente: t,
       historial,
     });
 
@@ -202,6 +204,7 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
     place_id: geo.placeId,
     partial: geo.partial ?? false,
     correccion: t,
+    ultima_respuesta_cliente: t,
     historial: [...historial, "Re-enviado al cliente"],
   });
   await enviarWhatsApp(phone, mensaje, { destino_id: pending.id, from: "bot" });

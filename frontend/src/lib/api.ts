@@ -280,6 +280,7 @@ export interface DestinoValidacion {
   lng: number;
   partial?: boolean;
   correccion?: string;
+  ultimaRespuestaCliente?: string | null;
   historial: string[];
   whatsappSent?: boolean;
   mensajeCliente?: string;
