@@ -1,60 +1,47 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, MapPin, MessageCircle, Send, Truck } from "lucide-react";
-import { autocompleteDestino, geocodeDestino, type GeocodeResult } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, Loader2, MapPin, MessageCircle, Truck } from "lucide-react";
+import {
+  autocompleteDestino,
+  getDestino,
+  validarDestino,
+  type DestinoValidacion,
+} from "@/lib/api";
 import { Card, Pill, SectionTitle } from "./ui";
-
-type Estado = "borrador" | "geocodificado" | "esperando_cliente" | "confirmado" | "corregido";
-
-interface DestinoDemo extends GeocodeResult {
-  id: string;
-  estado: Estado;
-  correccion?: string;
-  historial: string[];
-}
 
 function mapsUrl(lat: number, lng: number) {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
 
-function esConfirmacion(texto: string) {
-  const t = texto.trim().toLowerCase();
-  return /^(si|sí|ok|dale|confirmo|correcto|esta bien|está bien|yes)$/i.test(t);
-}
-
-function estadoColor(estado: Estado) {
-  const map: Record<Estado, string> = {
+function estadoColor(estado: string) {
+  const map: Record<string, string> = {
     borrador: "#a79fc9",
     geocodificado: "#38bdf8",
     esperando_cliente: "#f59e0b",
     confirmado: "#22c55e",
     corregido: "#fb923c",
   };
-  return map[estado];
+  return map[estado] ?? "#a79fc9";
 }
 
-function estadoLabel(estado: Estado) {
-  const map: Record<Estado, string> = {
-    borrador: "Borrador",
-    geocodificado: "Geocodificado",
+function estadoLabel(estado: string) {
+  const map: Record<string, string> = {
     esperando_cliente: "Esperando cliente",
     confirmado: "Confirmado",
-    corregido: "Corrección",
   };
-  return map[estado];
+  return map[estado] ?? estado;
 }
 
 export function DestinosDemoPanel() {
   const [modo, setModo] = useState<"direccion" | "coordenadas">("direccion");
   const [input, setInput] = useState("");
   const [placeId, setPlaceId] = useState<string | undefined>();
-  const [cliente, setCliente] = useState("Cliente demo");
-  const [telefonoCliente, setTelefonoCliente] = useState("+54 9 261 555-0101");
-  const [respuestaCliente, setRespuestaCliente] = useState("");
-  const [destino, setDestino] = useState<DestinoDemo | null>(null);
+  const [cliente, setCliente] = useState("");
+  const [telefonoCliente, setTelefonoCliente] = useState("");
+  const [telefonoChofer, setTelefonoChofer] = useState("");
+  const [destino, setDestino] = useState<DestinoValidacion | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingRespuesta, setLoadingRespuesta] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<
     { placeId: string; description: string; mainText: string; secondaryText: string }[]
@@ -93,31 +80,39 @@ export function DestinosDemoPanel() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  const mensajeAlCliente = useMemo(() => {
-    if (!destino || destino.estado === "borrador") return null;
-    return (
-      `📍 Destino propuesto para entrega:\n\n` +
-      `${destino.formattedAddress}\n` +
-      `${mapsUrl(destino.lat, destino.lng)}\n\n` +
-      `¿Es correcto?\nRespondé *SÍ* para confirmar, o escribí la dirección corregida / enviá ubicación por WhatsApp.`
-    );
-  }, [destino]);
+  useEffect(() => {
+    if (!destino?.id || destino.estado !== "esperando_cliente") return;
+    const id = destino.id;
+    const timer = setInterval(async () => {
+      try {
+        const fresh = await getDestino(id);
+        setDestino(fresh);
+      } catch {
+        /* ignore poll errors */
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [destino?.id, destino?.estado]);
 
-  async function aplicarGeocode(query: string, opts?: { placeId?: string; mode?: "direccion" | "coordenadas" }) {
-    const mode = opts?.mode ?? modo;
+  async function enviarValidacion(query: string, opts?: { placeId?: string }) {
+    if (!telefonoCliente.trim()) {
+      setError("Ingresá el WhatsApp del cliente (ej: 5492616168767)");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const geo = await geocodeDestino({ query, mode, placeId: opts?.placeId ?? placeId });
-      setDestino({
-        ...geo,
-        id: `PD-DEMO-${Date.now().toString().slice(-4)}`,
-        estado: "esperando_cliente",
-        historial: [`Google Geocoding: ${geo.formattedAddress}`],
+      const out = await validarDestino({
+        query,
+        mode: modo,
+        placeId: opts?.placeId ?? placeId,
+        cliente: cliente.trim() || undefined,
+        telefonoCliente: telefonoCliente.trim(),
+        telefonoChofer: telefonoChofer.trim() || undefined,
       });
-      setRespuestaCliente("");
+      setDestino(out);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al geocodificar");
+      setError(e instanceof Error ? e.message : "Error al enviar validación");
     } finally {
       setLoading(false);
     }
@@ -125,64 +120,25 @@ export function DestinosDemoPanel() {
 
   function geocodificar() {
     if (!input.trim()) return;
-    void aplicarGeocode(input.trim());
+    void enviarValidacion(input.trim());
   }
 
   function elegirSugerencia(s: { placeId: string; description: string }) {
     setInput(s.description);
     setPlaceId(s.placeId);
     setSuggestionsOpen(false);
-    void aplicarGeocode(s.description, { placeId: s.placeId });
+    void enviarValidacion(s.description, { placeId: s.placeId });
   }
-
-  async function procesarRespuestaCliente() {
-    if (!destino || !respuestaCliente.trim()) return;
-
-    if (esConfirmacion(respuestaCliente)) {
-      setDestino({
-        ...destino,
-        estado: "confirmado",
-        historial: [...destino.historial, "Cliente: SÍ → confirmado"],
-      });
-      return;
-    }
-
-    setLoadingRespuesta(true);
-    setError(null);
-    try {
-      const geo = await geocodeDestino({ query: respuestaCliente.trim(), mode: "direccion" });
-      setDestino({
-        ...destino,
-        ...geo,
-        inputRaw: respuestaCliente.trim(),
-        estado: "esperando_cliente",
-        correccion: respuestaCliente.trim(),
-        historial: [
-          ...destino.historial,
-          `Cliente corrige: "${respuestaCliente.trim()}"`,
-          `Re-geocode: ${geo.formattedAddress}`,
-        ],
-      });
-      setRespuestaCliente("");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al geocodificar corrección");
-    } finally {
-      setLoadingRespuesta(false);
-    }
-  }
-
-  const mensajeChofer =
-    destino?.estado === "confirmado"
-      ? `✅ Destino confirmado por ${cliente}\n${destino.formattedAddress}\n${mapsUrl(destino.lat, destino.lng)}`
-      : null;
 
   return (
     <div className="space-y-4">
       <Card className="p-4">
-        <SectionTitle>Demo funcional — validar destino</SectionTitle>
+        <SectionTitle>Validar destino — WhatsApp real</SectionTitle>
         <p className="mb-4 text-xs text-[var(--text-faint)]">
-          Geocodificación real con Google Maps (Geocoding + Places). El WhatsApp al cliente/chofer se simula abajo;
-          en producción lo envía BuilderBot.
+          Geocodifica con Google Maps y envía WhatsApp al cliente vía BuilderBot. El cliente puede
+          responder <strong className="text-white/80">SÍ</strong>, corregir la dirección por texto,
+          o mandar su <strong className="text-white/80">ubicación</strong> (pin 📌 — en BB:
+          @Latitud / @Longitud).
         </p>
 
         <div className="mb-3 flex flex-wrap gap-2">
@@ -226,7 +182,7 @@ export function DestinosDemoPanel() {
               className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
               placeholder={
                 modo === "direccion"
-                  ? "Ej: Miguel de Cervantes 2289, Guaymallén"
+                  ? "Ej: Miguel de Cervantes 2289, Godoy Cruz, Mendoza"
                   : "Ej: -32.8901, -68.8442"
               }
               value={input}
@@ -261,18 +217,31 @@ export function DestinosDemoPanel() {
             </span>
             <input
               className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
+              placeholder="Nombre del cliente"
               value={cliente}
               onChange={(e) => setCliente(e.target.value)}
             />
           </label>
           <label className="block">
             <span className="mb-1 block text-[10px] font-semibold uppercase text-[var(--text-faint)]">
-              WhatsApp cliente
+              WhatsApp cliente *
             </span>
             <input
               className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
+              placeholder="5492616168767"
               value={telefonoCliente}
               onChange={(e) => setTelefonoCliente(e.target.value)}
+            />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="mb-1 block text-[10px] font-semibold uppercase text-[var(--text-faint)]">
+              WhatsApp chofer (opcional — recibe destino al confirmar)
+            </span>
+            <input
+              className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
+              placeholder="5492615550000"
+              value={telefonoChofer}
+              onChange={(e) => setTelefonoChofer(e.target.value)}
             />
           </label>
         </div>
@@ -288,7 +257,7 @@ export function DestinosDemoPanel() {
           className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--violet)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
-          {loading ? "Geocodificando…" : "Geocodificar y enviar a cliente"}
+          {loading ? "Enviando…" : "Geocodificar y enviar WhatsApp al cliente"}
         </button>
       </Card>
 
@@ -300,6 +269,9 @@ export function DestinosDemoPanel() {
               <Pill color={estadoColor(destino.estado)}>{estadoLabel(destino.estado)}</Pill>
               {destino.partial && <Pill color="#f59e0b">Aproximado</Pill>}
               {destino.correccion && <Pill color="#fb923c">Corregido</Pill>}
+              {destino.whatsappSent && destino.estado === "esperando_cliente" && (
+                <Pill color="#25d366">WhatsApp enviado</Pill>
+              )}
             </div>
             <p className="text-sm text-white">{destino.formattedAddress}</p>
             <p className="mt-1 text-xs tabular-nums text-[var(--text-dim)]">
@@ -323,66 +295,46 @@ export function DestinosDemoPanel() {
           </Card>
 
           <div className="space-y-4">
-            {mensajeAlCliente && destino.estado !== "confirmado" && (
+            {destino.mensajeCliente && (
               <Card className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-xs text-[#25d366]">
                   <MessageCircle size={14} />
-                  WhatsApp → {telefonoCliente} (simulado)
+                  WhatsApp → {destino.telefonoCliente}
                 </div>
-                <pre className="whitespace-pre-wrap text-sm text-[var(--text-dim)]">{mensajeAlCliente}</pre>
-
-                <div className="mt-4 border-t border-[var(--border-soft)] pt-4">
-                  <p className="mb-2 text-[10px] font-semibold uppercase text-[var(--text-faint)]">
-                    Simular respuesta del cliente
-                  </p>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setRespuestaCliente("Sí")}
-                      className="rounded-lg bg-[#25d366]/20 px-3 py-1 text-xs text-[#25d366] ring-1 ring-[#25d366]/40"
-                    >
-                      Sí — confirmar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setRespuestaCliente("Miguel de Cervantes 2300, Guaymallén, Mendoza")
-                      }
-                      className="rounded-lg bg-[var(--amber)]/15 px-3 py-1 text-xs text-[var(--amber)] ring-1 ring-[var(--amber)]/30"
-                    >
-                      Corregir dirección
-                    </button>
-                  </div>
-                  <input
-                    className="mb-2 w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
-                    placeholder="Texto libre o nueva dirección real…"
-                    value={respuestaCliente}
-                    onChange={(e) => setRespuestaCliente(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void procesarRespuestaCliente()}
-                    disabled={!respuestaCliente.trim() || loadingRespuesta}
-                    className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white disabled:opacity-40"
-                  >
-                    {loadingRespuesta ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Send size={14} />
-                    )}
-                    Procesar respuesta
-                  </button>
-                </div>
+                <pre className="whitespace-pre-wrap text-sm text-[var(--text-dim)]">
+                  {destino.mensajeCliente}
+                </pre>
               </Card>
             )}
 
-            {mensajeChofer && (
+            {destino.estado === "esperando_cliente" && (
               <Card className="p-4">
-                <div className="mb-2 flex items-center gap-2 text-xs text-[var(--violet-2)]">
-                  <Truck size={14} />
-                  WhatsApp → chofer (simulado)
+                <div className="flex items-center gap-2 text-sm text-[var(--amber)]">
+                  <Loader2 size={16} className="animate-spin" />
+                  Esperando respuesta del cliente por WhatsApp…
                 </div>
-                <pre className="whitespace-pre-wrap text-sm text-[var(--text-dim)]">{mensajeChofer}</pre>
+                <p className="mt-2 text-xs text-[var(--text-faint)]">
+                  Puede responder SÍ, escribir otra dirección, o compartir ubicación 📌
+                </p>
+              </Card>
+            )}
+
+            {destino.estado === "confirmado" && (
+              <Card className="p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm text-[#22c55e]">
+                  <CheckCircle2 size={16} />
+                  Destino confirmado por el cliente
+                </div>
+                {destino.telefonoChofer ? (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-[var(--violet-2)]">
+                    <Truck size={14} />
+                    WhatsApp enviado al chofer {destino.telefonoChofer}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-[var(--text-faint)]">
+                    Sin teléfono de chofer — no se envió aviso al conductor.
+                  </p>
+                )}
               </Card>
             )}
           </div>

@@ -1,10 +1,29 @@
+import { autocompleteAddress, placeDetails } from "../../../lib/geocoding.mjs";
 import {
-  autocompleteAddress,
-  geocodeAddress,
-  parseCoordInput,
-  placeDetails,
-  reverseGeocode,
-} from "../../../lib/geocoding.mjs";
+  geocodeInput,
+  iniciarValidacionDestino,
+} from "../services/destinos.mjs";
+import * as destinosStore from "../db/destinos-store.mjs";
+
+function mapDestino(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    estado: row.estado,
+    cliente: row.cliente,
+    telefonoCliente: row.telefono_cliente,
+    telefonoChofer: row.telefono_chofer,
+    formattedAddress: row.formatted_address,
+    lat: row.lat,
+    lng: row.lng,
+    partial: row.partial,
+    correccion: row.correccion,
+    historial: row.historial ?? [],
+    whatsappSent: row.whatsapp_sent ?? row.estado === "esperando_cliente",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 export default async function destinosRoutes(fastify) {
   fastify.get("/autocomplete", async (request, reply) => {
@@ -31,6 +50,21 @@ export default async function destinosRoutes(fastify) {
     }
   });
 
+  fastify.get("/", async (request) => {
+    const { limit, estado } = request.query;
+    const rows = await destinosStore.listDestinos({
+      limit: limit ? parseInt(limit, 10) : 50,
+      estado: estado || undefined,
+    });
+    return rows.map(mapDestino);
+  });
+
+  fastify.get("/:id", async (request, reply) => {
+    const row = await destinosStore.getDestino(request.params.id);
+    if (!row) return reply.code(404).send({ error: "Destino no encontrado" });
+    return mapDestino(row);
+  });
+
   fastify.post("/geocode", async (request, reply) => {
     const body = request.body ?? {};
     const mode = body.mode === "coordenadas" ? "coordenadas" : "direccion";
@@ -41,25 +75,32 @@ export default async function destinosRoutes(fastify) {
     }
 
     try {
-      if (mode === "coordenadas") {
-        const coords = parseCoordInput(query);
-        if (!coords) {
-          return reply.code(400).send({ error: "Coordenadas inválidas (usá lat, lng)" });
-        }
-        const result = await reverseGeocode(coords.lat, coords.lng);
-        return { ...result, inputRaw: query, mode };
-      }
-
-      if (body.placeId) {
-        const result = await placeDetails(body.placeId);
-        return { ...result, inputRaw: query, mode };
-      }
-
-      const result = await geocodeAddress(query);
+      const result = await geocodeInput({ query, mode, placeId: body.placeId });
       return { ...result, inputRaw: query, mode };
     } catch (err) {
       request.log.error(err);
-      const code = err.message.includes("No se encontró") ? 404 : 500;
+      const code = err.message.includes("No se encontró") || err.message.includes("inválidas") ? 404 : 500;
+      return reply.code(code).send({ error: err.message });
+    }
+  });
+
+  /** Geocode + envío real WhatsApp al cliente (BuilderBot) */
+  fastify.post("/validar", async (request, reply) => {
+    try {
+      const out = await iniciarValidacionDestino(request.body ?? {}, { log: request.log });
+      return reply.code(201).send({
+        ...mapDestino(out),
+        whatsappSent: true,
+        mensajeCliente: out.mensaje_cliente,
+      });
+    } catch (err) {
+      request.log.error(err);
+      const code =
+        err.message.includes("Falta") || err.message.includes("inválid")
+          ? 400
+          : err.message.includes("BuilderBot")
+            ? 502
+            : 500;
       return reply.code(code).send({ error: err.message });
     }
   });

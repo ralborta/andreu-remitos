@@ -268,3 +268,47 @@ export function geocodeDestino(body: {
     body: JSON.stringify(body),
   });
 }
+
+export interface DestinoValidacion {
+  id: string;
+  estado: string;
+  cliente: string | null;
+  telefonoCliente: string;
+  telefonoChofer: string | null;
+  formattedAddress: string;
+  lat: number;
+  lng: number;
+  partial?: boolean;
+  correccion?: string;
+  historial: string[];
+  whatsappSent?: boolean;
+  mensajeCliente?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export function validarDestino(body: {
+  query: string;
+  mode: "direccion" | "coordenadas";
+  placeId?: string;
+  cliente?: string;
+  telefonoCliente: string;
+  telefonoChofer?: string;
+}) {
+  return api<DestinoValidacion>("/api/destinos/validar", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function getDestino(id: string) {
+  return api<DestinoValidacion>(`/api/destinos/${id}`);
+}
+
+export function listDestinos(params?: { limit?: number; estado?: string }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  const qs = q.toString();
+  return api<DestinoValidacion[]>(`/api/destinos${qs ? `?${qs}` : ""}`);
+}

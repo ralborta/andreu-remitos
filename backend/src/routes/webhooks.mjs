@@ -14,6 +14,7 @@ import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
+import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
 
 /** En modo IA (webhook de proyecto BB), no devolvemos texto al chofer — responde add_chatpdf. */
 const webhookSilent = process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
@@ -127,7 +128,7 @@ export default async function webhooksRoutes(fastify) {
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones"],
+    features: ["foto", "audio", "correcciones", "destinos"],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -234,13 +235,26 @@ export default async function webhooksRoutes(fastify) {
         });
       }
 
-      // Texto
+      // Destinos: cliente confirma / corrige / ubicación (BB: @Latitud @Longitud)
       const texto = ev.message?.trim() || "";
-      if (!texto && !ev.media?.url) {
+      if (ev.from && (ev.location || texto)) {
+        const destinoOut = await procesarRespuestaDestinoCliente(ev.from, {
+          texto,
+          lat: ev.location?.lat,
+          lng: ev.location?.lng,
+          nombre: ev.nombre,
+          log: request.log,
+        });
+        if (destinoOut) {
+          return respuestaWebhook({ ...destinoOut, received: true });
+        }
+      }
+
+      if (!texto && !ev.media?.url && !ev.location) {
         return respuestaWebhook({ ok: true, message: "Mensaje vacío, ignorado" });
       }
       if (!texto) {
-        return respuestaWebhook({ flow: "esperando_foto" });
+        return respuestaWebhook({ flow: ev.location ? "ubicacion_sin_pendiente" : "esperando_foto" });
       }
 
       return procesarTextoChofer(ev, tenantCfg, texto);
