@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { isTenantSlug } from "@/lib/tenants";
+import { isTenantSlug, REMITO_TENANTS, type TenantSlug } from "@/lib/tenants";
 import { ingestRemito } from "@/lib/api";
 import { Card, SectionTitle } from "./ui";
 
@@ -10,7 +10,7 @@ export function RemitoUpload() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTenant = searchParams.get("tenant");
-  const [tenant, setTenant] = useState<"tsb" | "beraldi">(
+  const [tenant, setTenant] = useState<TenantSlug>(
     initialTenant && isTenantSlug(initialTenant) ? initialTenant : "tsb",
   );
   const [telefono, setTelefono] = useState("");
@@ -49,10 +49,13 @@ export function RemitoUpload() {
           <select
             className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
             value={tenant}
-            onChange={(e) => setTenant(e.target.value as "tsb" | "beraldi")}
+            onChange={(e) => setTenant(e.target.value as TenantSlug)}
           >
-            <option value="tsb">TSB</option>
-            <option value="beraldi">Beraldi</option>
+            {REMITO_TENANTS.map((t) => (
+              <option key={t.slug} value={t.slug}>
+                {t.name}
+              </option>
+            ))}
           </select>
         </label>
         <label className="block">

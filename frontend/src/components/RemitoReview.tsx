@@ -8,11 +8,13 @@ import {
   acopladoPatente,
   buildHorariosBody,
   campoLabel,
+  camposEdicion,
   chasisPatente,
   conductorNombre,
   destinoNombre,
   estadoColor,
   estadoLabel,
+  esTenantCorina,
   fechaBaseHorarios,
   fechaHoraRemito,
   horasFromRow,
@@ -24,29 +26,7 @@ import {
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
 
-const CAMPOS_TSB = [
-  "fecha_guia",
-  "nro_guia",
-  "conductor",
-  "procedencia",
-  "destino",
-  "chasis",
-  "acoplado",
-  "peso_kg",
-  "malla",
-  "remito_cliente",
-  "nro_interno",
-] as const;
-
-const CAMPOS_BERALDI = [
-  "nro_remito",
-  "chofer",
-  "origen",
-  "destino",
-  "patente_chasis",
-  "patente_acoplado",
-  "peso_kg",
-] as const;
+const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 
 export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tenantSlug?: string }) {
   const router = useRouter();
@@ -63,7 +43,7 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
       .then((r) => {
         setRow(r);
         const d = r.datos as Record<string, unknown>;
-        const campos = r.tenant === "tsb" ? CAMPOS_TSB : CAMPOS_BERALDI;
+        const campos = camposEdicion(r.tenant);
         const initial: Record<string, string> = {};
         for (const k of campos) {
           if (d[k] != null) initial[k] = String(d[k]);
@@ -83,9 +63,11 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
     try {
       const body: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(form)) {
-        body[k] = k === "peso_kg" ? (v ? Number(v) : null) : v || null;
+        body[k] = NUMERIC_CAMPOS.has(k) ? (v ? Number(v) : null) : v || null;
       }
-      Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
+      if (!esTenantCorina(row.tenant)) {
+        Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
+      }
       const updated = await patchRemitoCampos(id, body);
       setRow(updated);
       setMsg(updated.estado === "confirmado" ? "Guardado — remito validado" : "Guardado — revisar horarios");
@@ -101,7 +83,7 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
   if (error && !row) return <p className="text-sm text-[var(--red)]">{error}</p>;
   if (!row) return null;
 
-  const campos = row.tenant === "tsb" ? CAMPOS_TSB : CAMPOS_BERALDI;
+  const campos = camposEdicion(row.tenant);
   const validacion = row.validacion;
 
   return (
@@ -169,12 +151,14 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
             ))}
           </div>
 
-          <div className="mt-4 border-t border-[var(--border-soft)] pt-4">
-            <RemitoHorariosFields
-              horas={horas}
-              onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
-            />
-          </div>
+          {!esTenantCorina(row.tenant) && (
+            <div className="mt-4 border-t border-[var(--border-soft)] pt-4">
+              <RemitoHorariosFields
+                horas={horas}
+                onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
+              />
+            </div>
+          )}
 
           {validacion && (validacion.faltantes?.length || validacion.errores?.length) ? (
             <div className="mt-4 rounded-lg bg-[var(--amber)]/10 p-3 text-sm text-[var(--amber)]">

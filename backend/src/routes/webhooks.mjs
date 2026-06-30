@@ -45,6 +45,11 @@ function mapCorreccionCampo(tenant, campo) {
     if (campo === "patente_chasis") return "tractor";
     if (campo === "patente_acoplado") return "semi";
   }
+  if (tenant === "corina") {
+    if (campo === "patente_chasis" || campo === "dominio" || campo === "patente") return "tractor";
+    if (campo === "patente_acoplado") return "semi";
+    if (campo === "chofer") return "conductor";
+  }
   if (tenant === "tsb") {
     if (campo === "patente_chasis") return "chasis";
     if (campo === "patente_acoplado") return "acoplado";

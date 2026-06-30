@@ -9,7 +9,7 @@ import {
   updateItem,
 } from "../db/master-data-store.mjs";
 
-const TENANTS = new Set(["tsb", "beraldi"]);
+const TENANTS = new Set(["tsb", "beraldi", "corina"]);
 const UNIDAD_TIPOS = new Set(["tractor", "acoplado"]);
 const LOC_TIPOS = new Set(["origen", "destino", "ambos"]);
 

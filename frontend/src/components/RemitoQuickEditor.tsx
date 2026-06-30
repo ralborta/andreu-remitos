@@ -8,8 +8,10 @@ import type { RemitoRow } from "@/lib/types";
 import {
   buildHorariosBody,
   campoLabel,
+  camposEdicion,
   estadoColor,
   estadoLabel,
+  esTenantCorina,
   fechaBaseHorarios,
   horasFromRow,
   numeroRemito,
@@ -18,30 +20,10 @@ import {
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
 
-const CAMPOS_TSB = [
-  "fecha_guia",
-  "nro_guia",
-  "conductor",
-  "chasis",
-  "acoplado",
-  "procedencia",
-  "destino",
-  "peso_kg",
-] as const;
-
-const CAMPOS_BERALDI = [
-  "fecha_remito",
-  "nro_remito",
-  "chofer",
-  "patente_chasis",
-  "patente_acoplado",
-  "origen",
-  "destino",
-  "peso_kg",
-] as const;
+const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 
 function camposFor(row: RemitoRow) {
-  return row.tenant === "tsb" ? CAMPOS_TSB : CAMPOS_BERALDI;
+  return camposEdicion(row.tenant);
 }
 
 function formFromRow(row: RemitoRow) {
@@ -86,9 +68,11 @@ function EditorBody({
     try {
       const body: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(form)) {
-        body[k] = k === "peso_kg" ? (v ? Number(v) : null) : v || null;
+        body[k] = NUMERIC_CAMPOS.has(k) ? (v ? Number(v) : null) : v || null;
       }
-      Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
+      if (!esTenantCorina(row.tenant)) {
+        Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
+      }
       const updated = await patchRemitoCampos(row.id, body);
       onSaved?.(updated);
       setMsg(updated.estado === "confirmado" ? "Guardado — validado" : "Guardado");
@@ -151,10 +135,12 @@ function EditorBody({
       </div>
 
       <div className="mt-3 border-t border-[var(--border-soft)] pt-3">
-        <RemitoHorariosFields
-          horas={horas}
-          onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
-        />
+        {!esTenantCorina(row.tenant) && (
+          <RemitoHorariosFields
+            horas={horas}
+            onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
+          />
+        )}
       </div>
 
       {validacion && (validacion.faltantes?.length || validacion.errores?.length) ? (

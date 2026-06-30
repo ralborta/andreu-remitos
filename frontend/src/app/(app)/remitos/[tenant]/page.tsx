@@ -6,7 +6,7 @@ import { getTenant, isTenantSlug } from "@/lib/tenants";
 import { RemitosPanel } from "@/components/RemitosPanel";
 
 export function generateStaticParams() {
-  return [{ tenant: "tsb" }, { tenant: "beraldi" }];
+  return [{ tenant: "tsb" }, { tenant: "beraldi" }, { tenant: "corina" }];
 }
 
 export default async function RemitosTenantPage({

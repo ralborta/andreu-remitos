@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { buildPlanillaTsb, filasAoa } from "../../../lib/planilla-tsb.mjs";
 import { buildPlanillaBeraldi } from "../../../lib/planilla-beraldi.mjs";
+import { buildPlanillaCorina, columnasCorina, filasAoa } from "../../../lib/planilla-corina.mjs";
 
 function parseQuery(q) {
   return {
@@ -30,6 +31,17 @@ async function exportPlanilla(reply, data, { formato, label }) {
     .send(buf);
 }
 
+function parseQueryCorina(q) {
+  const fmt = q.formato === "importacion" || q.formato === "delfos" ? "importacion" : "local";
+  return {
+    formato: fmt,
+    estados: q.estados || "confirmado,pendiente_revision",
+    desde: q.desde || undefined,
+    hasta: q.hasta || undefined,
+    limit: q.limit ? parseInt(q.limit, 10) : 200,
+  };
+}
+
 export default async function planillasRoutes(fastify) {
   fastify.get("/tsb", async (request) => {
     return buildPlanillaTsb(parseQuery(request.query ?? {}));
@@ -49,5 +61,25 @@ export default async function planillasRoutes(fastify) {
     const opts = parseQuery(request.query ?? {});
     const data = await buildPlanillaBeraldi(opts);
     return exportPlanilla(reply, data, { formato: opts.formato, label: "Beraldi" });
+  });
+
+  fastify.get("/corina", async (request) => {
+    return buildPlanillaCorina(parseQueryCorina(request.query ?? {}));
+  });
+
+  fastify.get("/corina/export", async (request, reply) => {
+    const opts = parseQueryCorina(request.query ?? {});
+    const data = await buildPlanillaCorina(opts);
+    const sheetName = opts.formato === "importacion" ? "Importacion Local" : "Planilla Local";
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, columnasCorina(opts.formato)));
+    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const prefix = opts.formato === "importacion" ? "Importacion" : "Planilla";
+    const fname = `${prefix}_Corina_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    return reply
+      .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      .header("Content-Disposition", `attachment; filename="${fname}"`)
+      .send(buf);
   });
 }

@@ -10,9 +10,13 @@ import { getTenant } from "@/lib/tenants";
 import { Card, Pill } from "./ui";
 import { PlanillaGrid } from "./PlanillaGrid";
 
+type VistaCorina = "local" | "importacion";
+
 export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
   const cfg = getTenant(tenant)!;
+  const esCorina = tenant === "corina";
   const [vista, setVista] = useState<PlanillaFormato>("delfos");
+  const [vistaCorina, setVistaCorina] = useState<VistaCorina>("local");
   const [tipoViaje, setTipoViaje] = useState<TipoViajeTsb>("ARENA");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
@@ -20,26 +24,31 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const formatoActivo = esCorina ? vistaCorina : vista;
+
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
     getPlanilla(tenant, {
-      formato: vista,
-      tipoViaje,
+      formato: esCorina ? vistaCorina : vista,
+      tipoViaje: esCorina ? undefined : tipoViaje,
       desde: desde || undefined,
       hasta: hasta || undefined,
     })
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [tenant, vista, tipoViaje, desde, hasta]);
+  }, [tenant, vista, vistaCorina, tipoViaje, desde, hasta, esCorina]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const hintCantidad =
-    tenant === "beraldi"
+  const hintCantidad = esCorina
+    ? vistaCorina === "importacion"
+      ? "Delfos 25 cols — Corta Distancia, Cantidad en bultos, Unidad Pallet"
+      : "Planilla Local — tramos, horas y bultos por remito"
+    : tenant === "beraldi"
       ? "Cantidad en Km (Orden 1) — desde Parámetros → Distancias"
       : "toneladas en Cantidad (Orden 1)";
 
@@ -47,44 +56,75 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
     <div className="space-y-4">
       <Card className="p-4">
         <div className="mb-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setVista("delfos")}
-            className={
-              vista === "delfos"
-                ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
-                : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
-            }
-          >
-            Planilla Delfos (25 cols)
-          </button>
-          <button
-            type="button"
-            onClick={() => setVista("proforma")}
-            className={
-              vista === "proforma"
-                ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
-                : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
-            }
-          >
-            Proforma QuadMy (11 cols)
-          </button>
+          {esCorina ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setVistaCorina("local")}
+                className={
+                  vistaCorina === "local"
+                    ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                    : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+                }
+              >
+                Planilla Local (11 cols)
+              </button>
+              <button
+                type="button"
+                onClick={() => setVistaCorina("importacion")}
+                className={
+                  vistaCorina === "importacion"
+                    ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                    : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+                }
+              >
+                Planilla Importación (Delfos 25 cols)
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setVista("delfos")}
+                className={
+                  vista === "delfos"
+                    ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                    : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+                }
+              >
+                Planilla Delfos (25 cols)
+              </button>
+              <button
+                type="button"
+                onClick={() => setVista("proforma")}
+                className={
+                  vista === "proforma"
+                    ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                    : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+                }
+              >
+                Proforma QuadMy (11 cols)
+              </button>
+            </>
+          )}
         </div>
         <div className="flex flex-wrap items-end gap-4">
-          <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
-            Tipo de viaje
-            <select
-              value={tipoViaje}
-              onChange={(e) => setTipoViaje(e.target.value as TipoViajeTsb)}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
-            >
-              {TIPOS_VIAJE_TSB.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!esCorina && (
+            <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+              Tipo de viaje
+              <select
+                value={tipoViaje}
+                onChange={(e) => setTipoViaje(e.target.value as TipoViajeTsb)}
+                className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
+              >
+                {TIPOS_VIAJE_TSB.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
             Desde
             <input
@@ -114,19 +154,39 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
           </button>
           <div className="ml-auto flex flex-wrap gap-2">
             <a
-              href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "delfos" })}
-              className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
-            >
-              <Download size={16} />
-              Excel Delfos
-            </a>
-            <a
-              href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "proforma" })}
+              href={planillaExportUrl(tenant, {
+                tipoViaje: esCorina ? undefined : tipoViaje,
+                desde,
+                hasta,
+                formato: formatoActivo,
+              })}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)]/25 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
             >
               <Download size={16} />
-              Excel Proforma
+              {esCorina
+                ? vistaCorina === "importacion"
+                  ? "Excel Importación"
+                  : "Excel Planilla Local"
+                : "Excel"}
             </a>
+            {!esCorina && (
+              <>
+                <a
+                  href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "delfos" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
+                >
+                  <Download size={16} />
+                  Excel Delfos
+                </a>
+                <a
+                  href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "proforma" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)]/25 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
+                >
+                  <Download size={16} />
+                  Excel Proforma
+                </a>
+              </>
+            )}
           </div>
         </div>
         {data && (
@@ -152,9 +212,13 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
           <div className="flex flex-wrap items-center gap-2 px-1">
             <Pill color={cfg.color}>{cfg.short}</Pill>
             <span className="text-sm text-[var(--text-dim)]">
-              {vista === "delfos"
-                ? `Vista Delfos — headers iguales al Excel ${cfg.short}`
-                : "Vista Proforma — import QuadMy"}
+              {esCorina
+                ? vistaCorina === "importacion"
+                  ? "Importación Local — Tipo Nacional · Producto Corta Distancia"
+                  : "Planilla Local — control operativo de viajes cortos"
+                : vista === "delfos"
+                  ? `Vista Delfos — headers iguales al Excel ${cfg.short}`
+                  : "Vista Proforma — import QuadMy"}
             </span>
             <span className="text-xs text-[var(--violet-2)]">← deslizá horizontal para ver todas las columnas</span>
           </div>

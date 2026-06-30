@@ -12,6 +12,7 @@ import {
   destinoNombre,
   estadoColor,
   estadoLabel,
+  esTenantCorina,
   fechaRemito,
   horasResumen,
   horasCompletas,
@@ -19,7 +20,10 @@ import {
   origenNombre,
   pesoKg,
   tenantLabel,
+  totalBultos,
+  totalLitros,
 } from "@/lib/remitos-ui";
+import { tenantColor } from "@/lib/tenants";
 import { Card, Pill, SectionTitle } from "./ui";
 import { DataTable, type Column } from "./DataTable";
 import { RemitoQuickEditorDrawer, RemitoQuickEditorPanel } from "./RemitoQuickEditor";
@@ -58,7 +62,74 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
     setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
   }
 
-  const cols: Column<RemitoRow>[] = [
+  const cols: Column<RemitoRow>[] = esTenantCorina(tenant ?? "")
+    ? [
+        {
+          key: "nro",
+          header: "Nro remito",
+          render: (r) => (
+            <span className="font-medium text-white">{numeroRemito(r)}</span>
+          ),
+        },
+        {
+          key: "chofer",
+          header: "Chofer",
+          className: "text-[var(--text-dim)]",
+          render: (r) => conductorNombre(r),
+        },
+        {
+          key: "tractor",
+          header: "Tractor",
+          className: "text-[var(--text-dim)] tabular-nums",
+          render: (r) => chasisPatente(r),
+        },
+        {
+          key: "semi",
+          header: "Semi",
+          className: "text-[var(--text-dim)] tabular-nums",
+          render: (r) => acopladoPatente(r),
+        },
+        {
+          key: "origen",
+          header: "Origen",
+          className: "max-w-[140px] truncate text-[var(--text-dim)]",
+          render: (r) => origenNombre(r),
+        },
+        {
+          key: "destino",
+          header: "Destino",
+          className: "max-w-[160px] truncate text-[var(--text-dim)]",
+          render: (r) => destinoNombre(r),
+        },
+        {
+          key: "fecha",
+          header: "Fecha",
+          className: "tabular-nums text-[var(--text-dim)]",
+          render: (r) => fechaRemito(r),
+        },
+        {
+          key: "bultos",
+          header: "Bultos",
+          className: "tabular-nums text-[var(--text-dim)]",
+          render: (r) => totalBultos(r),
+        },
+        {
+          key: "estado",
+          header: "Estado",
+          render: (r) => <Pill color={estadoColor(r.estado)}>{estadoLabel(r.estado)}</Pill>,
+        },
+        {
+          key: "acciones",
+          header: "",
+          render: (r) => (
+            <ChevronRight
+              size={16}
+              className={r.id === selectedId ? "text-[var(--violet-2)]" : "text-[var(--text-faint)]"}
+            />
+          ),
+        },
+      ]
+    : [
     {
       key: "nro",
       header: "Nro remito",
@@ -125,7 +196,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
             key: "tenant",
             header: "Empresa",
             render: (r: RemitoRow) => (
-              <Pill color={r.tenant === "tsb" ? "#38bdf8" : "#a78bfa"}>{tenantLabel(r.tenant)}</Pill>
+              <Pill color={tenantColor(r.tenant)}>{tenantLabel(r.tenant)}</Pill>
             ),
           } as Column<RemitoRow>,
         ]),

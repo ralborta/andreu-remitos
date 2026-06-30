@@ -13,6 +13,7 @@ import {
 import type { Conversacion, ConversacionListItem } from "@/lib/conversaciones-types";
 import type { RemitoRow } from "@/lib/types";
 import { tenantLabel } from "@/lib/remitos-ui";
+import { tenantColor } from "@/lib/tenants";
 import { Card, PageHeader, Pill, SectionTitle } from "./ui";
 import { ContactoChatThread } from "./ContactoChatThread";
 import { ContactoMessageComposer } from "./ContactoMessageComposer";
@@ -81,7 +82,7 @@ export function ContactosInbox() {
       />
 
       <div className="flex flex-wrap gap-2">
-        {["", "tsb", "beraldi"].map((t) => (
+        {["", "tsb", "beraldi", "corina"].map((t) => (
           <button
             key={t || "all"}
             type="button"
@@ -144,7 +145,7 @@ export function ContactosInbox() {
                     {c.nombre || "Chofer"}
                   </p>
                   {c.tenant && (
-                    <Pill color={c.tenant === "tsb" ? "#38bdf8" : "#a78bfa"}>
+                    <Pill color={tenantColor(c.tenant ?? "")}>
                       {tenantLabel(c.tenant)}
                     </Pill>
                   )}

@@ -36,7 +36,7 @@ export function conductorNombre(row: RemitoRow) {
 
 export function destinoNombre(row: RemitoRow) {
   const d = row.datos as Record<string, unknown>;
-  return (d.destino || d.destino_nombre || "—") as string;
+  return (d.destino || d.cliente || d.destino_nombre || "—") as string;
 }
 
 export function confianzaPct(row: RemitoRow) {
@@ -56,7 +56,59 @@ export function horaCorta(iso?: string) {
 }
 
 export function tenantLabel(t: string) {
-  return t === "tsb" ? "TSB" : t === "beraldi" ? "Beraldi" : t.toUpperCase();
+  if (t === "tsb") return "TSB";
+  if (t === "beraldi") return "Beraldi";
+  if (t === "corina") return "Corina";
+  return t.toUpperCase();
+}
+
+export function esTenantCorina(tenant: string) {
+  return tenant === "corina";
+}
+
+export const CAMPOS_TSB = [
+  "fecha_guia",
+  "nro_guia",
+  "conductor",
+  "chasis",
+  "acoplado",
+  "procedencia",
+  "destino",
+  "peso_kg",
+] as const;
+
+export const CAMPOS_BERALDI = [
+  "fecha_remito",
+  "nro_remito",
+  "chofer",
+  "patente_chasis",
+  "patente_acoplado",
+  "origen",
+  "destino",
+  "peso_kg",
+] as const;
+
+export const CAMPOS_CORINA = [
+  "fecha_remito",
+  "nro_remito",
+  "conductor",
+  "tractor",
+  "semi",
+  "origen",
+  "destino",
+  "total_bultos",
+  "hora_inicio",
+  "hora_fin",
+  "total_litros",
+  "pedido",
+  "entrega",
+  "tr_numero",
+] as const;
+
+export function camposEdicion(tenant: string) {
+  if (tenant === "corina") return CAMPOS_CORINA;
+  if (tenant === "tsb") return CAMPOS_TSB;
+  return CAMPOS_BERALDI;
 }
 
 function datos(row: RemitoRow) {
@@ -70,12 +122,31 @@ export function origenNombre(row: RemitoRow) {
 
 export function chasisPatente(row: RemitoRow) {
   const d = datos(row);
-  return (d.chasis || d.tractor || d.patente_chasis || "—") as string;
+  return (d.patente || d.chasis || d.tractor || d.patente_chasis || "—") as string;
 }
 
 export function acopladoPatente(row: RemitoRow) {
   const d = datos(row);
   return (d.acoplado || d.semi || d.patente_acoplado || "—") as string;
+}
+
+export function clienteNombre(row: RemitoRow) {
+  const d = datos(row);
+  return (d.cliente || "—") as string;
+}
+
+export function totalBultos(row: RemitoRow) {
+  const d = datos(row);
+  const v = d.total_bultos;
+  if (v == null || v === "") return "—";
+  return String(v);
+}
+
+export function totalLitros(row: RemitoRow) {
+  const d = datos(row);
+  const v = d.total_litros;
+  if (v == null || v === "") return "—";
+  return String(v);
 }
 
 export function pesoKg(row: RemitoRow) {
@@ -129,6 +200,19 @@ const CAMPO_LABEL: Record<string, string> = {
   acoplado: "Semi / acoplado",
   patente_chasis: "Patente chasis",
   patente_acoplado: "Patente acoplado",
+  patente: "Patente / dominio",
+  cliente: "Cliente",
+  cod_cliente: "Cod. cliente",
+  transportista: "Transportista",
+  total_bultos: "Total bultos",
+  total_litros: "Total litros",
+  pedido: "Pedido",
+  entrega: "Entrega",
+  tr_numero: "TR",
+  tractor: "Tractor",
+  semi: "Semi",
+  hora_inicio: "Hora inicio",
+  hora_fin: "Hora fin",
   peso_kg: "Peso (kg)",
   malla: "Malla",
   remito_cliente: "Remito cliente",

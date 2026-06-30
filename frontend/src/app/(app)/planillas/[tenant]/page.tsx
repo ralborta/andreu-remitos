@@ -5,7 +5,7 @@ import { PlanillasPanel } from "@/components/PlanillasPanel";
 import { getTenant, isTenantSlug } from "@/lib/tenants";
 
 export function generateStaticParams() {
-  return [{ tenant: "tsb" }, { tenant: "beraldi" }];
+  return [{ tenant: "tsb" }, { tenant: "beraldi" }, { tenant: "corina" }];
 }
 
 export default async function PlanillasTenantPage({

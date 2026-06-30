@@ -1,4 +1,4 @@
-export type TenantSlug = "tsb" | "beraldi";
+export type TenantSlug = "tsb" | "beraldi" | "corina";
 
 export interface TenantConfig {
   slug: TenantSlug;
@@ -30,6 +30,15 @@ export const REMITO_TENANTS: TenantConfig[] = [
     whatsappHint: "Foto de remito Beraldi",
     active: true,
   },
+  {
+    slug: "corina",
+    name: "Corina",
+    short: "Corina",
+    description: "Remitos Quilmes / local — tractor, semi, origen, destino y bultos",
+    color: "#fb923c",
+    whatsappHint: "Foto de remito Quilmes",
+    active: true,
+  },
 ];
 
 export function getTenant(slug: string): TenantConfig | undefined {
@@ -38,4 +47,8 @@ export function getTenant(slug: string): TenantConfig | undefined {
 
 export function isTenantSlug(slug: string): slug is TenantSlug {
   return REMITO_TENANTS.some((t) => t.slug === slug && t.active);
+}
+
+export function tenantColor(slug: string) {
+  return getTenant(slug)?.color ?? "#a79fc9";
 }

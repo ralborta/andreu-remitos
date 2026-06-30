@@ -25,6 +25,7 @@ import type {
   TenantSlug,
   Unidad,
 } from "@/lib/parametros-types";
+import { REMITO_TENANTS } from "@/lib/tenants";
 import { tenantLabel } from "@/lib/remitos-ui";
 import { Card, PageHeader, Pill, SectionTitle } from "./ui";
 import { DataTable, type Column } from "./DataTable";
@@ -218,22 +219,22 @@ export function ParametrosPanel() {
     <div className="space-y-4">
       <PageHeader
         title="Parámetros maestros"
-        subtitle="Choferes, patentes, localidades y distancias — como el CRM viejo, por cliente TSB / Beraldi"
+        subtitle="Choferes, patentes, localidades y distancias — por cliente TSB / Beraldi / Corina"
         icon={<Database size={24} />}
       />
 
       <div className="flex flex-wrap gap-2">
-        {(["tsb", "beraldi"] as const).map((t) => (
+        {REMITO_TENANTS.map((t) => (
           <button
-            key={t}
+            key={t.slug}
             type="button"
-            onClick={() => setTenant(t)}
+            onClick={() => setTenant(t.slug)}
             className={clsx(
               "rounded-full px-3 py-1 text-xs font-medium transition",
-              tenant === t ? "bg-[var(--violet)] text-white" : "bg-white/5 text-[var(--text-dim)] hover:text-white",
+              tenant === t.slug ? "bg-[var(--violet)] text-white" : "bg-white/5 text-[var(--text-dim)] hover:text-white",
             )}
           >
-            {tenantLabel(t)}
+            {tenantLabel(t.slug)}
           </button>
         ))}
       </div>
