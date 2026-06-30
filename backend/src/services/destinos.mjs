@@ -8,6 +8,8 @@ import {
 } from "../../../lib/geocoding.mjs";
 import {
   esConfirmacionDestino,
+  extraerDireccionCorreccion,
+  localidadDesdeDireccion,
   mensajeDestinoActualizadoCliente,
   mensajeDestinoConfirmadoChofer,
   mensajePropuestaCliente,
@@ -23,6 +25,26 @@ async function geocodeInput({ query, mode, placeId }) {
   }
   if (placeId) return placeDetails(placeId);
   return geocodeAddress(query);
+}
+
+async function geocodeCorreccion(texto, pending) {
+  const extraida = extraerDireccionCorreccion(texto);
+  const intentos = [extraida];
+  const loc = localidadDesdeDireccion(pending?.formatted_address);
+  if (loc && extraida && !extraida.includes(",")) {
+    intentos.push(`${extraida}, ${loc}`);
+  }
+  if (texto.trim() !== extraida) intentos.push(texto.trim());
+
+  let lastErr = null;
+  for (const q of [...new Set(intentos.filter(Boolean))]) {
+    try {
+      return { geo: await geocodeAddress(q), queryUsada: q };
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr ?? new Error(`No encontré la dirección "${extraida}"`);
 }
 
 async function enviarWhatsApp(numero, mensaje, meta = {}) {
@@ -78,6 +100,8 @@ export async function iniciarValidacionDestino(body, { log } = {}) {
     partial: geo.partial ?? false,
     historial: [`Geocode: ${geo.formattedAddress}`, "WhatsApp enviado al cliente"],
   });
+
+  await destinosStore.cancelarPendientesPorTelefono(telefonoCliente, destino.id);
 
   await enviarWhatsApp(telefonoCliente, mensaje, {
     destino_id: destino.id,
@@ -163,15 +187,15 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
     return { flow: "destinos_confirmado", destino: updated, mensaje_chofer: mensajeChofer };
   }
 
-  const geo = await geocodeAddress(t);
-  historial.push(`Cliente corrige: "${t}"`, `Re-geocode: ${geo.formattedAddress}`);
+  const { geo, queryUsada } = await geocodeCorreccion(t, pending);
+  historial.push(`Cliente corrige: "${t}"`, `Dirección usada: "${queryUsada}"`, `Re-geocode: ${geo.formattedAddress}`);
   const mensaje = mensajeDestinoActualizadoCliente({
     formattedAddress: geo.formattedAddress,
     lat: geo.lat,
     lng: geo.lng,
   });
   const updated = await destinosStore.actualizarDestino(pending.id, {
-    input_raw: t,
+    input_raw: queryUsada,
     formatted_address: geo.formattedAddress,
     lat: geo.lat,
     lng: geo.lng,

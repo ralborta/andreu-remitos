@@ -15,6 +15,7 @@ import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
+import * as destinosStore from "../db/destinos-store.mjs";
 
 /** En modo IA (webhook de proyecto BB), no devolvemos texto al chofer — responde add_chatpdf. */
 const webhookSilent = process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
@@ -123,6 +124,44 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
   });
 }
 
+async function tryProcesarDestinos(ev, { texto, log } = {}) {
+  if (!ev.from) return null;
+  const pending = await destinosStore.getDestinoPendientePorTelefono(ev.from);
+  if (!pending) return null;
+  if (!ev.location && !String(texto ?? "").trim()) {
+    return { flow: "destinos_sin_contenido", destino: pending };
+  }
+
+  try {
+    return await procesarRespuestaDestinoCliente(ev.from, {
+      texto,
+      lat: ev.location?.lat,
+      lng: ev.location?.lng,
+      nombre: ev.nombre,
+      log,
+    });
+  } catch (err) {
+    log?.error?.({ err: err.message, from: ev.from }, "destinos webhook error");
+    const msg =
+      `No pude ubicar esa dirección.\n\n` +
+      `Escribí *calle, número y ciudad* (ej: Echeverría 1200, Pacheco) o enviá tu ubicación 📌`;
+    if (ev.from) {
+      await sendWhatsAppMessage({ number: ev.from, message: msg }).catch(() => {});
+      await convStore.appendMensaje(
+        ev.from,
+        { texto: msg, tipo: "text", destino_id: pending?.id ?? null },
+        { dir: "out", from: "bot" },
+      );
+    }
+    return {
+      flow: "destinos_error",
+      error: err.message,
+      destino: pending,
+      message: msg,
+    };
+  }
+}
+
 export default async function webhooksRoutes(fastify) {
   fastify.get("/builderbot/health", async () => ({
     ok: true,
@@ -158,7 +197,15 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ok: true, event: "outgoing" });
       }
 
-      // Audio (nota de voz) — urlTempFile es la URL más fresca (patrón Mis Reclamos)
+      const texto = ev.message?.trim() || "";
+
+      // Destinos primero — cliente en validación no debe caer en flujo de remitos
+      const destinoOut = await tryProcesarDestinos(ev, { texto, log: request.log });
+      if (destinoOut) {
+        return respuestaWebhook({ ...destinoOut, received: true });
+      }
+
+      // Audio — si hay destino pendiente, transcribir y procesar como corrección
       if (ev.event === "audio" && ev.media?.url) {
         const { buffer, mime, filename } = await downloadMedia(ev.media.url);
         const transcripcion = await transcribirAudio(buffer, { mimeType: mime, filename });
@@ -176,12 +223,32 @@ export default async function webhooksRoutes(fastify) {
           );
         }
 
+        const destinoAudio = await tryProcesarDestinos(ev, {
+          texto: transcripcion,
+          log: request.log,
+        });
+        if (destinoAudio) {
+          return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
+        }
+
         const out = await procesarTextoChofer(ev, tenantCfg, transcripcion);
         return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
       }
 
-      // Foto / imagen remito
+      // Foto — solo remitos si NO hay destino pendiente para este número
       if (ev.media?.url && !esAudioMime(ev.media.mime_type)) {
+        const destinoPendiente = ev.from
+          ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
+          : null;
+        if (destinoPendiente) {
+          const hint =
+            "Recibí una imagen, pero estoy esperando que confirmes el *destino*.\n" +
+            "Respondé *SÍ*, escribí la dirección corregida, o enviá tu ubicación 📌";
+          if (ev.from) {
+            await sendWhatsAppMessage({ number: ev.from, message: hint }).catch(() => {});
+          }
+          return respuestaWebhook({ flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
+        }
         const telefono = ev.from || null;
 
         if (ev.from) {
@@ -235,21 +302,6 @@ export default async function webhooksRoutes(fastify) {
         });
       }
 
-      // Destinos: cliente confirma / corrige / ubicación (BB: @Latitud @Longitud)
-      const texto = ev.message?.trim() || "";
-      if (ev.from && (ev.location || texto)) {
-        const destinoOut = await procesarRespuestaDestinoCliente(ev.from, {
-          texto,
-          lat: ev.location?.lat,
-          lng: ev.location?.lng,
-          nombre: ev.nombre,
-          log: request.log,
-        });
-        if (destinoOut) {
-          return respuestaWebhook({ ...destinoOut, received: true });
-        }
-      }
-
       if (!texto && !ev.media?.url && !ev.location) {
         return respuestaWebhook({ ok: true, message: "Mensaje vacío, ignorado" });
       }
@@ -260,8 +312,12 @@ export default async function webhooksRoutes(fastify) {
       return procesarTextoChofer(ev, tenantCfg, texto);
     } catch (err) {
       request.log.error(err);
-      const errMsg =
-        ev.event === "audio"
+      const destinoPendiente = ev.from
+        ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
+        : null;
+      const errMsg = destinoPendiente
+        ? "Hubo un problema al procesar tu respuesta sobre el destino. Probá de nuevo con calle, número y ciudad."
+        : ev.event === "audio"
           ? "No pude entender el audio. Probá de nuevo más claro, o escribí la corrección."
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 

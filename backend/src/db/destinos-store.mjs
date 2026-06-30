@@ -42,11 +42,33 @@ export async function getDestino(id) {
 export async function getDestinoPendientePorTelefono(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return null;
-  return (
-    readAll().find(
-      (r) => r.telefono_cliente === phone && r.estado === "esperando_cliente",
-    ) ?? null
+  const rows = readAll().filter(
+    (r) => r.telefono_cliente === phone && r.estado === "esperando_cliente",
   );
+  if (rows.length === 0) return null;
+  // El más reciente primero (unshift al crear)
+  return rows[0];
+}
+
+export async function cancelarPendientesPorTelefono(telefono, exceptId) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return 0;
+  const rows = readAll();
+  let n = 0;
+  for (const row of rows) {
+    if (
+      row.telefono_cliente === phone &&
+      row.estado === "esperando_cliente" &&
+      row.id !== exceptId
+    ) {
+      row.estado = "cancelado";
+      row.updated_at = new Date().toISOString();
+      row.historial = [...(row.historial ?? []), "Cancelado — nueva validación iniciada"];
+      n++;
+    }
+  }
+  if (n) writeAll(rows);
+  return n;
 }
 
 export async function actualizarDestino(id, patch) {
