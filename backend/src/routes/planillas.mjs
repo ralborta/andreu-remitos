@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { buildPlanillaTsb, filasAoa } from "../../../lib/planilla-tsb.mjs";
 import { buildPlanillaBeraldi } from "../../../lib/planilla-beraldi.mjs";
-import { buildPlanillaCorina, columnasCorina, filasAoa } from "../../../lib/planilla-corina.mjs";
+import { buildPlanillaCorina, columnasCorina } from "../../../lib/planilla-corina.mjs";
 
 function parseQuery(q) {
   return {
