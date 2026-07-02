@@ -8,7 +8,7 @@ function parseQuery(q) {
     formato: q.formato === "proforma" ? "proforma" : "delfos",
     tipoViaje: q.tipoViaje || "ARENA",
     producto: q.producto || "Sin Definir",
-    estados: q.estados || "confirmado",
+    estados: q.estados || "confirmado,pendiente_revision",
     desde: q.desde || undefined,
     hasta: q.hasta || undefined,
     limit: q.limit ? parseInt(q.limit, 10) : 200,
@@ -35,7 +35,7 @@ function parseQueryCorina(q) {
   const fmt = q.formato === "importacion" || q.formato === "delfos" ? "importacion" : "local";
   return {
     formato: fmt,
-    estados: q.estados || "confirmado",
+    estados: q.estados || "confirmado,pendiente_revision",
     desde: q.desde || undefined,
     hasta: q.hasta || undefined,
     limit: q.limit ? parseInt(q.limit, 10) : 200,

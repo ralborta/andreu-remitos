@@ -191,7 +191,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
         </div>
         {data && (
           <p className="mt-3 text-xs text-[var(--text-faint)]">
-            {data.meta.remitos} remitos procesados → {data.meta.filas} filas · {data.columnas.length} columnas ({hintCantidad})
+            {data.meta.remitos} remitos listos → {data.meta.filas} filas · {data.columnas.length} columnas ({hintCantidad})
           </p>
         )}
       </Card>
