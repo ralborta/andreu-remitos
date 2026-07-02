@@ -104,6 +104,17 @@ export function findChoferByPhone(choferes, telefono) {
   );
 }
 
+/** Chofer en maestros → tenant (fix Castro: Beraldi no cae en TSB). */
+export async function resolverTenantPorTelefono(telefono) {
+  const tel = normalizePhone(telefono);
+  if (!tel) return null;
+  for (const tenant of ["tsb", "beraldi", "corina"]) {
+    const choferes = await listCollection("choferes", { tenant, activo: true });
+    if (findChoferByPhone(choferes, tel)) return tenant;
+  }
+  return null;
+}
+
 /** Import masivo desde array (upsert por teléfono en telefono o documento/DNI) */
 export async function importChoferes(items, { tenant, replace = false } = {}) {
   const db = readDb();

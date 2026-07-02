@@ -25,6 +25,7 @@ import {
 } from "@/lib/remitos-ui";
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
+import { RemitoImagePreview } from "./RemitoImageLightbox";
 
 const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 
@@ -94,14 +95,12 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
         <p className="mb-3 text-xs text-[var(--text-faint)]">
           Compará la lectura de la IA con el papel manuscrito
         </p>
-        <div className="max-h-[calc(100vh-10rem)] overflow-y-auto rounded-xl border border-[var(--border)] bg-black/30">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imagenUrl(id)}
-            alt="Remito"
-            className="w-full object-contain"
-          />
-        </div>
+        <RemitoImagePreview
+          src={imagenUrl(id)}
+          alt={`Remito ${numeroRemito(row)}`}
+          className="w-full object-contain"
+          hint="Ampliar foto"
+        />
         {row.telefono_chofer && (
           <p className="mt-3 text-xs text-[var(--text-dim)]">
             Enviado por WhatsApp · {row.telefono_chofer} · {fechaHoraRemito(row)}

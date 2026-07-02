@@ -3,6 +3,10 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
 import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
+import { normalizarPeso } from "../../../lib/extract-cold.mjs";
+import { validarDestinoConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
+import { evaluarProcesable } from "../../../lib/remito-procesable.mjs";
+import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
 
 function uploadDir() {
@@ -11,28 +15,41 @@ function uploadDir() {
   return dir;
 }
 
+async function validacionCompleta(datos, tenant) {
+  const localidades = await master.listCollection("localidades", { tenant, activo: true });
+  const destinoVal = validarDestinoConMaestros(datos, tenant, localidades);
+  const validacionHorarios = datos.horarios?.validacion ?? null;
+  return mergeValidacionRemito(validacionHorarios, destinoVal);
+}
+
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado }) {
-  const resultado = await leerRemito(buffer, { filename, telefono, tenantForzado });
+  const tenantPorChofer = telefono ? await master.resolverTenantPorTelefono(telefono) : null;
+  const tenantEfectivo = tenantPorChofer ?? tenantForzado ?? undefined;
+
+  const resultado = await leerRemito(buffer, { filename, telefono, tenantForzado: tenantEfectivo });
 
   const id = randomUUID();
   const ext = path.extname(filename || ".jpg") || ".jpg";
   const imagenPath = path.join(uploadDir(), `${id}${ext}`);
   fs.writeFileSync(imagenPath, buffer);
 
+  const validacion = await validacionCompleta(resultado.lectura, resultado.tenant);
+  const estado = calcularEstado(resultado.lectura, validacion);
+
   const row = {
     id,
     tenant: resultado.tenant,
-    estado: resultado.estado,
+    estado,
     telefono_chofer: telefono ?? null,
     imagen_path: imagenPath,
     texto_ocr: resultado.ocr.texto,
     datos: resultado.lectura,
-    validacion: resultado.validacion,
+    validacion,
   };
 
   await store.insertRemito(row);
 
-  return { id, ...resultado };
+  return { id, ...resultado, validacion, estado };
 }
 
 export async function listarRemitos(opts) {
@@ -49,6 +66,17 @@ export async function actualizarCampos(id, datosParciales) {
 
   const { horarios: horariosIncoming, ...resto } = datosParciales;
   const datos = { ...row.datos, ...resto, _editado_manual: true };
+
+  if ("peso_kg" in resto && resto.peso_kg != null && resto.peso_kg !== "") {
+    const normalizado =
+      typeof resto.peso_kg === "number" ? resto.peso_kg : normalizarPeso(String(resto.peso_kg));
+    if (normalizado != null) datos.peso_kg = normalizado;
+  }
+  if ("peso" in resto && resto.peso != null && resto.peso !== "" && !("peso_kg" in resto)) {
+    const normalizado =
+      typeof resto.peso === "number" ? resto.peso : normalizarPeso(String(resto.peso));
+    if (normalizado != null) datos.peso_kg = normalizado;
+  }
 
   if (horariosIncoming?.horarios) {
     const fechaBase =
@@ -77,10 +105,84 @@ export async function actualizarCampos(id, datosParciales) {
     };
   }
 
-  const validacion = datos.horarios?.validacion ?? row.validacion;
-  const estado = calcularEstado(datos);
+  const validacion = await validacionCompleta(datos, row.tenant);
+  const estado = calcularEstado(datos, validacion);
 
   return store.updateRemito(id, {
+    datos,
+    validacion,
+    estado,
+  });
+}
+
+function numeroRemitoRow(row) {
+  const d = row.datos ?? {};
+  return d.nro_guia || d.nro_remito || row.id.slice(0, 8);
+}
+
+export async function procesarRemitosBatch(ids, tenant) {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { procesados: [], errores: [{ id: "", motivos: ["Lista de IDs vacía"] }] };
+  }
+
+  const procesados = [];
+  const errores = [];
+
+  for (const id of ids) {
+    const row = await store.getRemito(id);
+    if (!row) {
+      errores.push({ id, motivos: ["Remito no encontrado"] });
+      continue;
+    }
+    if (tenant && row.tenant !== tenant) {
+      errores.push({ id, nro: numeroRemitoRow(row), motivos: ["Pertenece a otro cliente"] });
+      continue;
+    }
+
+    const evaluacion = evaluarProcesable(row);
+    if (!evaluacion.ok) {
+      errores.push({ id, nro: numeroRemitoRow(row), motivos: evaluacion.motivos });
+      continue;
+    }
+
+    const updated = await store.updateRemito(id, {
+      estado: "confirmado",
+      procesado_at: new Date().toISOString(),
+    });
+    procesados.push({
+      id,
+      nro: numeroRemitoRow(updated),
+      tenant: updated.tenant,
+      estado: updated.estado,
+    });
+  }
+
+  return { procesados, errores, total: ids.length };
+}
+
+const TENANTS_VALIDOS = new Set(["tsb", "beraldi", "corina"]);
+
+export async function cambiarTenantRemito(id, nuevoTenant) {
+  if (!TENANTS_VALIDOS.has(nuevoTenant)) {
+    throw new Error("Tenant inválido");
+  }
+
+  const row = await store.getRemito(id);
+  if (!row) return null;
+  if (row.tenant === nuevoTenant) return row;
+
+  const datos = {
+    ...row.datos,
+    tenant: nuevoTenant,
+    resumen: { ...(row.datos?.resumen ?? {}) },
+  };
+  delete datos.resumen.advertencia_tenant;
+
+  const validacion = await validacionCompleta(datos, nuevoTenant);
+  const estado = calcularEstado(datos, validacion);
+
+  return store.updateRemito(id, {
+    tenant: nuevoTenant,
     datos,
     validacion,
     estado,

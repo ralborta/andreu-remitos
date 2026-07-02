@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
+import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos, procesarRemitosBatch, cambiarTenantRemito } from "../services/remitos.mjs";
 
 export default async function remitosRoutes(fastify) {
   fastify.post("/ingest", async (request, reply) => {
@@ -27,12 +27,21 @@ export default async function remitosRoutes(fastify) {
   });
 
   fastify.get("/", async (request) => {
-    const { tenant, estado, limit } = request.query;
+    const { tenant, estado, pendientes, limit } = request.query;
     return listarRemitos({
       tenant,
       estado,
+      pendientes,
       limit: limit ? parseInt(limit, 10) : 50,
     });
+  });
+
+  fastify.post("/procesar", async (request, reply) => {
+    const { ids, tenant } = request.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return reply.code(400).send({ error: "Se requiere ids: string[]" });
+    }
+    return procesarRemitosBatch(ids, tenant);
   });
 
   fastify.get("/:id/imagen", async (request, reply) => {
@@ -55,5 +64,17 @@ export default async function remitosRoutes(fastify) {
     const row = await actualizarCampos(request.params.id, request.body);
     if (!row) return reply.code(404).send({ error: "Remito no encontrado" });
     return row;
+  });
+
+  fastify.patch("/:id/tenant", async (request, reply) => {
+    const { tenant } = request.body ?? {};
+    if (!tenant) return reply.code(400).send({ error: "tenant requerido" });
+    try {
+      const row = await cambiarTenantRemito(request.params.id, tenant);
+      if (!row) return reply.code(404).send({ error: "Remito no encontrado" });
+      return row;
+    } catch (err) {
+      return reply.code(400).send({ error: err.message });
+    }
   });
 }

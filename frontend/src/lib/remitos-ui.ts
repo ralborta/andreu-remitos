@@ -279,3 +279,44 @@ export function horasResumen(row: RemitoRow) {
 export function horasCompletas(row: RemitoRow) {
   return ORDEN_HORARIOS.every(({ key }) => Boolean(horasFromRow(row)[key]));
 }
+
+export function remitoProcesable(row: RemitoRow): { ok: boolean; motivos: string[] } {
+  const motivos: string[] = [];
+  const d = datos(row);
+
+  if (row.estado === "confirmado") {
+    return { ok: false, motivos: ["Ya procesado"] };
+  }
+  if (row.estado === "error_lectura") {
+    return { ok: false, motivos: ["Error de lectura — corregir campos"] };
+  }
+
+  if (row.tenant === "corina") {
+    for (const k of ["nro_remito", "fecha_remito", "conductor", "tractor"]) {
+      if (d[k] == null || d[k] === "") motivos.push(`Falta ${k.replace(/_/g, " ")}`);
+    }
+    return { ok: motivos.length === 0, motivos };
+  }
+
+  if (!horasCompletas(row)) {
+    motivos.push("Faltan horarios (5 controles carga/descarga)");
+  }
+  const v = row.validacion;
+  if (v?.faltantes?.length) {
+    for (const f of v.faltantes) motivos.push(`Falta: ${f}`);
+  }
+  if (v?.errores?.length) {
+    motivos.push(...v.errores);
+  }
+  if (v && v.valido !== true && motivos.length === 0) {
+    motivos.push("Validación incompleta — revisar horarios y destino");
+  }
+
+  return { ok: motivos.length === 0, motivos };
+}
+
+export function advertenciaTenant(row: RemitoRow): string | null {
+  const adv = (datos(row).resumen as { advertencia_tenant?: { mensaje?: string } } | undefined)
+    ?.advertencia_tenant;
+  return adv?.mensaje ?? null;
+}

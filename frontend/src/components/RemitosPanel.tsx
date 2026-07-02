@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { listRemitos } from "@/lib/api";
+import { CheckSquare, ChevronRight, Loader2, Square } from "lucide-react";
+import { listRemitos, procesarRemitos, type ProcesarRemitosResult } from "@/lib/api";
 import type { RemitoRow } from "@/lib/types";
 import {
   acopladoPatente,
@@ -19,6 +19,7 @@ import {
   numeroRemito,
   origenNombre,
   pesoKg,
+  remitoProcesable,
   tenantLabel,
   totalBultos,
   totalLitros,
@@ -34,12 +35,32 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [soloPendientes, setSoloPendientes] = useState(true);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [procesando, setProcesando] = useState(false);
+  const [batchResult, setBatchResult] = useState<ProcesarRemitosResult | null>(null);
 
   useEffect(() => {
-    listRemitos({ tenant, limit: 100 })
+    setCheckedIds(new Set());
+    setBatchResult(null);
+  }, [tenant, soloPendientes]);
+
+  const procesablesEnPagina = useMemo(
+    () => rows.filter((r) => remitoProcesable(r).ok),
+    [rows],
+  );
+
+  const allProcesablesChecked =
+    procesablesEnPagina.length > 0 &&
+    procesablesEnPagina.every((r) => checkedIds.has(r.id));
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    listRemitos({ tenant, pendientes: soloPendientes, limit: 100 })
       .then((data) => {
         setRows(data);
-        if (data.length > 0) setSelectedId(data[0].id);
+        setSelectedId((prev) => (data.some((r) => r.id === prev) ? prev : data[0]?.id ?? null));
       })
       .catch((e) =>
         setError(
@@ -47,7 +68,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         ),
       )
       .finally(() => setLoading(false));
-  }, [tenant]);
+  }, [tenant, soloPendientes]);
 
   const selected = rows.find((r) => r.id === selectedId) ?? null;
 
@@ -59,11 +80,94 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   }
 
   function handleSaved(updated: RemitoRow) {
+    if (tenant && updated.tenant !== tenant) {
+      setRows((prev) => prev.filter((r) => r.id !== updated.id));
+      setSelectedId((prev) => (prev === updated.id ? null : prev));
+      return;
+    }
     setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
   }
 
+  function toggleCheck(id: string) {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllProcesables() {
+    if (allProcesablesChecked) {
+      setCheckedIds(new Set());
+      return;
+    }
+    setCheckedIds(new Set(procesablesEnPagina.map((r) => r.id)));
+  }
+
+  async function procesarSeleccionados() {
+    const ids = [...checkedIds];
+    if (ids.length === 0) return;
+    setProcesando(true);
+    setBatchResult(null);
+    try {
+      const result = await procesarRemitos(ids, tenant);
+      setBatchResult(result);
+      if (result.procesados.length > 0) {
+        const done = new Set(result.procesados.map((p) => p.id));
+        setRows((prev) =>
+          soloPendientes ? prev.filter((r) => !done.has(r.id)) : prev.map((r) => (done.has(r.id) ? { ...r, estado: "confirmado" as const } : r)),
+        );
+        setCheckedIds((prev) => {
+          const next = new Set(prev);
+          for (const id of done) next.delete(id);
+          return next;
+        });
+      }
+    } catch (e) {
+      setBatchResult({
+        procesados: [],
+        errores: [{ id: "", motivos: [e instanceof Error ? e.message : "Error al procesar"] }],
+        total: ids.length,
+      });
+    } finally {
+      setProcesando(false);
+    }
+  }
+
+  const checkCol: Column<RemitoRow> = {
+    key: "_check",
+    header: (
+      <button
+        type="button"
+        onClick={toggleAllProcesables}
+        className="inline-flex items-center text-[var(--text-faint)] hover:text-white"
+        title={allProcesablesChecked ? "Desmarcar todos" : "Tildar procesables"}
+        aria-label={allProcesablesChecked ? "Desmarcar todos" : "Tildar procesables"}
+      >
+        {allProcesablesChecked ? <CheckSquare size={14} /> : <Square size={14} />}
+      </button>
+    ),
+    className: "w-10",
+    render: (r) => {
+      const { ok, motivos } = remitoProcesable(r);
+      return (
+        <input
+          type="checkbox"
+          checked={checkedIds.has(r.id)}
+          disabled={!ok}
+          title={ok ? "Tildar para procesar" : motivos.join(" · ")}
+          onClick={(e) => e.stopPropagation()}
+          onChange={() => ok && toggleCheck(r.id)}
+          className="rounded border-[var(--border)] bg-white/5 accent-[var(--violet)] disabled:opacity-30"
+        />
+      );
+    },
+  };
+
   const cols: Column<RemitoRow>[] = esTenantCorina(tenant ?? "")
     ? [
+        checkCol,
         {
           key: "nro",
           header: "Nro remito",
@@ -130,6 +234,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         },
       ]
     : [
+    checkCol,
     {
       key: "nro",
       header: "Nro remito",
@@ -223,16 +328,62 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         <Card className="min-w-0 overflow-hidden">
           <SectionTitle
             right={
-              <Link
-                href={tenant ? `/subir?tenant=${tenant}` : "/subir"}
-                className="text-xs font-medium text-[var(--violet-2)] hover:underline"
-              >
-                + Subir remito
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                {checkedIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={procesarSeleccionados}
+                    disabled={procesando}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--green)]/20 px-3 py-1.5 text-xs font-semibold text-[var(--green)] ring-1 ring-[var(--green)]/40 hover:bg-[var(--green)]/30 disabled:opacity-50"
+                  >
+                    {procesando ? <Loader2 size={14} className="animate-spin" /> : <CheckSquare size={14} />}
+                    Procesar ({checkedIds.size})
+                  </button>
+                )}
+                <label className="flex cursor-pointer items-center gap-2 text-xs text-[var(--text-dim)]">
+                  <input
+                    type="checkbox"
+                    checked={soloPendientes}
+                    onChange={(e) => setSoloPendientes(e.target.checked)}
+                    className="rounded border-[var(--border)] bg-white/5 accent-[var(--violet)]"
+                  />
+                  Solo pendientes
+                </label>
+                <Link
+                  href={tenant ? `/subir?tenant=${tenant}` : "/subir"}
+                  className="text-xs font-medium text-[var(--violet-2)] hover:underline"
+                >
+                  + Subir remito
+                </Link>
+              </div>
             }
           >
             {tenant ? `Remitos ${tenantLabel(tenant)}` : "Remitos"}
           </SectionTitle>
+
+          <p className="mb-3 text-xs text-[var(--text-faint)]">
+            Tildá los revisados y usá <strong className="text-white/80">Procesar</strong> — como el CRM viejo. Solo entran en planilla los procesados con horas completas.
+          </p>
+
+          {batchResult && (
+            <div
+              className={`mb-3 rounded-lg px-3 py-2 text-xs ${
+                batchResult.errores.length > 0
+                  ? "bg-[var(--amber)]/10 text-[var(--amber)]"
+                  : "bg-[var(--green)]/10 text-[var(--green)]"
+              }`}
+            >
+              {batchResult.procesados.length > 0 && (
+                <p>{batchResult.procesados.length} remito(s) procesado(s).</p>
+              )}
+              {batchResult.errores.map((e) => (
+                <p key={e.id || e.motivos.join()}>
+                  {e.nro ? `${e.nro}: ` : ""}
+                  {e.motivos.join(" · ")}
+                </p>
+              ))}
+            </div>
+          )}
 
           <p className="mb-3 text-xs text-[var(--text-faint)] lg:hidden">
             Tocá una fila para abrir foto y edición
@@ -242,7 +393,9 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
           {error && <p className="text-sm text-[var(--red)]">Error: {error}</p>}
           {!loading && !error && rows.length === 0 && (
             <p className="text-sm text-[var(--text-dim)]">
-              Sin remitos. Subí una foto desde WhatsApp o la pantalla Subir.
+              {soloPendientes
+                ? "No hay remitos pendientes. Desmarcá «Solo pendientes» para ver validados."
+                : "Sin remitos. Subí una foto desde WhatsApp o la pantalla Subir."}
             </p>
           )}
           {!loading && rows.length > 0 && (

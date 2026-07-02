@@ -21,6 +21,7 @@ export interface RemitoRow {
   } | null;
   created_at?: string;
   updated_at?: string;
+  procesado_at?: string;
 }
 
 export interface RemitoListItem extends RemitoRow {}

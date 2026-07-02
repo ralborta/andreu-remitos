@@ -48,10 +48,11 @@ export function imagenUrl(id: string) {
   return `${apiBase()}/api/remitos/${id}/imagen`;
 }
 
-export function listRemitos(params?: { tenant?: string; estado?: string; limit?: number }) {
+export function listRemitos(params?: { tenant?: string; estado?: string; pendientes?: boolean; limit?: number }) {
   const q = new URLSearchParams();
   if (params?.tenant) q.set("tenant", params.tenant);
   if (params?.estado) q.set("estado", params.estado);
+  if (params?.pendientes) q.set("pendientes", "true");
   if (params?.limit) q.set("limit", String(params.limit));
   const qs = q.toString();
   return api<RemitoRow[]>(`/api/remitos${qs ? `?${qs}` : ""}`);
@@ -65,6 +66,26 @@ export function patchRemitoCampos(id: string, body: Record<string, unknown>) {
   return api<RemitoRow>(`/api/remitos/${id}/campos`, {
     method: "PATCH",
     body: JSON.stringify(body),
+  });
+}
+
+export type ProcesarRemitosResult = {
+  procesados: { id: string; nro: string; tenant: string; estado: string }[];
+  errores: { id: string; nro?: string; motivos: string[] }[];
+  total: number;
+};
+
+export function procesarRemitos(ids: string[], tenant?: string) {
+  return api<ProcesarRemitosResult>("/api/remitos/procesar", {
+    method: "POST",
+    body: JSON.stringify({ ids, tenant }),
+  });
+}
+
+export function patchRemitoTenant(id: string, tenant: string) {
+  return api<RemitoRow>(`/api/remitos/${id}/tenant`, {
+    method: "PATCH",
+    body: JSON.stringify({ tenant }),
   });
 }
 

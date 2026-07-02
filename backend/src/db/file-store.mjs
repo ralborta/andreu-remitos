@@ -22,10 +22,18 @@ export async function insertRemito(row) {
   return row;
 }
 
-export async function listRemitos({ tenant, estado, limit = 50 }) {
+export async function listRemitos({ tenant, estado, pendientes, limit = 50 }) {
   let rows = readAll();
   if (tenant) rows = rows.filter((r) => r.tenant === tenant);
-  if (estado) rows = rows.filter((r) => r.estado === estado);
+  if (pendientes === true || pendientes === "true" || pendientes === "1") {
+    rows = rows.filter((r) => r.estado !== "confirmado");
+  } else if (estado) {
+    const estados = String(estado)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    rows = rows.filter((r) => (estados.length === 1 ? r.estado === estados[0] : estados.includes(r.estado)));
+  }
   return rows.slice(0, limit).map(({ texto_ocr, ...rest }) => rest);
 }
 

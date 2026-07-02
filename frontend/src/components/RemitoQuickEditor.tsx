@@ -2,23 +2,27 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ExternalLink, X } from "lucide-react";
-import { imagenUrl, patchRemitoCampos } from "@/lib/api";
-import type { RemitoRow } from "@/lib/types";
+import { Check, CheckSquare, ExternalLink, X } from "lucide-react";
+import { imagenUrl, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
+import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   buildHorariosBody,
   campoLabel,
   camposEdicion,
+  advertenciaTenant,
   estadoColor,
   estadoLabel,
   esTenantCorina,
   fechaBaseHorarios,
   horasFromRow,
   numeroRemito,
+  remitoProcesable,
   tenantLabel,
 } from "@/lib/remitos-ui";
+import { REMITO_TENANTS } from "@/lib/tenants";
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
+import { RemitoImagePreview } from "./RemitoImageLightbox";
 
 const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 
@@ -48,6 +52,8 @@ function EditorBody({
   const [form, setForm] = useState(() => formFromRow(row));
   const [horas, setHoras] = useState(() => horasFromRow(row));
   const [saving, setSaving] = useState(false);
+  const [procesando, setProcesando] = useState(false);
+  const [cambiandoTenant, setCambiandoTenant] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +66,44 @@ function EditorBody({
 
   const campos = camposFor(row);
   const validacion = row.validacion;
+  const procesable = remitoProcesable(row);
+  const advTenant = advertenciaTenant(row);
+
+  async function cambiarTenant(nuevo: Tenant) {
+    if (nuevo === row.tenant) return;
+    setCambiandoTenant(true);
+    setMsg(null);
+    setError(null);
+    try {
+      const updated = await patchRemitoTenant(row.id, nuevo);
+      onSaved?.(updated);
+      setMsg(`Movido a ${tenantLabel(nuevo)}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al cambiar cliente");
+    } finally {
+      setCambiandoTenant(false);
+    }
+  }
+
+  async function procesar() {
+    setProcesando(true);
+    setMsg(null);
+    setError(null);
+    try {
+      const result = await procesarRemitos([row.id], row.tenant);
+      if (result.errores.length > 0) {
+        setError(result.errores[0].motivos.join(" · "));
+        return;
+      }
+      const updated = await getRemito(row.id);
+      onSaved?.(updated);
+      setMsg("Procesado — listo para planilla");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al procesar");
+    } finally {
+      setProcesando(false);
+    }
+  }
 
   async function guardar() {
     setSaving(true);
@@ -107,12 +151,37 @@ function EditorBody({
         </div>
       </div>
 
-      <div className="mb-4 overflow-hidden rounded-xl border border-[var(--border)] bg-black/30">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      {advTenant && (
+        <div className="mb-3 rounded-lg bg-[var(--amber)]/10 px-3 py-2 text-xs text-[var(--amber)]">
+          {advTenant}
+        </div>
+      )}
+
+      <label className="mb-4 block">
+        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+          Cliente / empresa
+        </span>
+        <select
+          value={row.tenant}
+          disabled={cambiandoTenant || row.estado === "confirmado"}
+          onChange={(e) => cambiarTenant(e.target.value as Tenant)}
+          className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)] disabled:opacity-50"
+        >
+          {REMITO_TENANTS.map((t) => (
+            <option key={t.slug} value={t.slug}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+        <span className="mt-1 block text-[10px] text-[var(--text-faint)]">
+          Si cayó en el cliente equivocado (ej. Castro Beraldi → TSB), cambiá acá.
+        </span>
+      </label>
+
+      <div className="mb-4">
+        <RemitoImagePreview
           src={imagenUrl(row.id)}
           alt={`Remito ${numeroRemito(row)}`}
-          className="max-h-[min(42vh,360px)] w-full object-contain object-top"
         />
       </div>
 
@@ -164,6 +233,22 @@ function EditorBody({
           <Check size={16} />
           {saving ? "Guardando…" : "Guardar cambios"}
         </button>
+        {procesable.ok && row.estado !== "confirmado" && (
+          <button
+            type="button"
+            onClick={procesar}
+            disabled={procesando || saving}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--green)]/20 py-2.5 text-sm font-semibold text-[var(--green)] ring-1 ring-[var(--green)]/40 hover:bg-[var(--green)]/30 disabled:opacity-50"
+          >
+            <CheckSquare size={16} />
+            {procesando ? "Procesando…" : "Procesar remito"}
+          </button>
+        )}
+        {!procesable.ok && row.estado !== "confirmado" && procesable.motivos.length > 0 && (
+          <p className="text-center text-xs text-[var(--text-faint)]">
+            Para procesar: {procesable.motivos[0]}
+          </p>
+        )}
         <Link
           href={`/remitos/${row.tenant}/${row.id}`}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] py-2.5 text-sm font-medium text-[var(--text-dim)] hover:border-[var(--violet)]/40 hover:text-white"
