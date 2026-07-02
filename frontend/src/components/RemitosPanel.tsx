@@ -79,6 +79,16 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
     }
   }
 
+  function handleDeleted(id: string) {
+    setRows((prev) => prev.filter((r) => r.id !== id));
+    setSelectedId((prev) => (prev === id ? null : prev));
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
   function handleSaved(updated: RemitoRow) {
     if (tenant && updated.tenant !== tenant) {
       setRows((prev) => prev.filter((r) => r.id !== updated.id));
@@ -414,7 +424,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         </Card>
 
         <div className="hidden min-w-0 lg:block">
-          <RemitoQuickEditorPanel row={selected} onSaved={handleSaved} />
+          <RemitoQuickEditorPanel row={selected} onSaved={handleSaved} onDeleted={handleDeleted} />
         </div>
       </div>
 
@@ -423,6 +433,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onSaved={handleSaved}
+        onDeleted={handleDeleted}
       />
     </>
   );

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, CheckSquare, ExternalLink, X } from "lucide-react";
-import { imagenUrl, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
+import { Check, CheckSquare, ExternalLink, Trash2, X } from "lucide-react";
+import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   buildHorariosBody,
@@ -44,16 +44,19 @@ function EditorBody({
   row,
   onClose,
   onSaved,
+  onDeleted,
 }: {
   row: RemitoRow;
   onClose?: () => void;
   onSaved?: (updated: RemitoRow) => void;
+  onDeleted?: (id: string) => void;
 }) {
   const [form, setForm] = useState(() => formFromRow(row));
   const [horas, setHoras] = useState(() => horasFromRow(row));
   const [saving, setSaving] = useState(false);
   const [procesando, setProcesando] = useState(false);
   const [cambiandoTenant, setCambiandoTenant] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +85,22 @@ function EditorBody({
       setError(e instanceof Error ? e.message : "Error al cambiar cliente");
     } finally {
       setCambiandoTenant(false);
+    }
+  }
+
+  async function borrar() {
+    const nro = numeroRemito(row);
+    if (!window.confirm(`¿Eliminar el remito ${nro} por completo? (foto y datos — no se puede deshacer)`)) return;
+    setBorrando(true);
+    setError(null);
+    try {
+      await deleteRemito(row.id);
+      onDeleted?.(row.id);
+      onClose?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al eliminar");
+    } finally {
+      setBorrando(false);
     }
   }
 
@@ -163,7 +182,7 @@ function EditorBody({
         </span>
         <select
           value={row.tenant}
-          disabled={cambiandoTenant || row.estado === "confirmado"}
+          disabled={cambiandoTenant}
           onChange={(e) => cambiarTenant(e.target.value as Tenant)}
           className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)] disabled:opacity-50"
         >
@@ -174,7 +193,7 @@ function EditorBody({
           ))}
         </select>
         <span className="mt-1 block text-[10px] text-[var(--text-faint)]">
-          Si cayó en el cliente equivocado (ej. Castro Beraldi → TSB), cambiá acá.
+          TSB ↔ Beraldi ↔ Corina — revalida destino y horarios al cambiar.
         </span>
       </label>
 
@@ -256,6 +275,15 @@ function EditorBody({
           <ExternalLink size={16} />
           Revisión completa
         </Link>
+        <button
+          type="button"
+          onClick={borrar}
+          disabled={borrando || saving || procesando}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
+        >
+          <Trash2 size={16} />
+          {borrando ? "Eliminando…" : "Eliminar remito"}
+        </button>
         {msg && <p className="text-center text-sm text-[var(--green)]">{msg}</p>}
         {error && <p className="text-center text-sm text-[var(--red)]">{error}</p>}
       </div>
@@ -267,9 +295,11 @@ function EditorBody({
 export function RemitoQuickEditorPanel({
   row,
   onSaved,
+  onDeleted,
 }: {
   row: RemitoRow | null;
   onSaved?: (updated: RemitoRow) => void;
+  onDeleted?: (id: string) => void;
 }) {
   if (!row) {
     return (
@@ -286,7 +316,7 @@ export function RemitoQuickEditorPanel({
 
   return (
     <Card className="sticky top-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
-      <EditorBody row={row} onSaved={onSaved} />
+      <EditorBody row={row} onSaved={onSaved} onDeleted={onDeleted} />
     </Card>
   );
 }
@@ -297,11 +327,13 @@ export function RemitoQuickEditorDrawer({
   open,
   onClose,
   onSaved,
+  onDeleted,
 }: {
   row: RemitoRow | null;
   open: boolean;
   onClose: () => void;
   onSaved?: (updated: RemitoRow) => void;
+  onDeleted?: (id: string) => void;
 }) {
   if (!open || !row) return null;
 
@@ -314,7 +346,7 @@ export function RemitoQuickEditorDrawer({
         aria-label="Cerrar panel"
       />
       <div className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-[var(--border)] bg-[var(--bg-2)] p-4 shadow-2xl">
-        <EditorBody row={row} onClose={onClose} onSaved={onSaved} />
+        <EditorBody row={row} onClose={onClose} onSaved={onSaved} onDeleted={onDeleted} />
       </div>
     </div>
   );

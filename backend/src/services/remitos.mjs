@@ -188,3 +188,19 @@ export async function cambiarTenantRemito(id, nuevoTenant) {
     estado,
   });
 }
+
+export async function eliminarRemito(id) {
+  const row = await store.getRemito(id);
+  if (!row) return null;
+
+  if (row.imagen_path && fs.existsSync(row.imagen_path)) {
+    try {
+      fs.unlinkSync(row.imagen_path);
+    } catch {
+      /* ignore — el registro se borra igual */
+    }
+  }
+
+  await store.deleteRemito(id);
+  return { id, eliminado: true };
+}

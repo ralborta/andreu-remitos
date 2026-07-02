@@ -49,3 +49,12 @@ export async function updateRemito(id, patch) {
   writeAll(rows);
   return rows[i];
 }
+
+export async function deleteRemito(id) {
+  const rows = readAll();
+  const i = rows.findIndex((r) => r.id === id);
+  if (i < 0) return null;
+  const [removed] = rows.splice(i, 1);
+  writeAll(rows);
+  return removed;
+}

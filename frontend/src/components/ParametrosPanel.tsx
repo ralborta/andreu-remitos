@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
-import { Database, Plus, Trash2 } from "lucide-react";
+import { Database, Check, Plus, Trash2 } from "lucide-react";
 import {
   createChofer,
   createDistancia,
@@ -16,6 +16,10 @@ import {
   listDistancias,
   listLocalidades,
   listUnidades,
+  updateChofer,
+  updateDistancia,
+  updateLocalidad,
+  updateUnidad,
 } from "@/lib/api";
 import type {
   Chofer,
@@ -27,7 +31,7 @@ import type {
 } from "@/lib/parametros-types";
 import { REMITO_TENANTS } from "@/lib/tenants";
 import { tenantLabel } from "@/lib/remitos-ui";
-import { Card, PageHeader, Pill, SectionTitle } from "./ui";
+import { Card, PageHeader, SectionTitle } from "./ui";
 import { DataTable, type Column } from "./DataTable";
 
 const TABS: { id: ParametroTab; label: string }[] = [
@@ -39,6 +43,9 @@ const TABS: { id: ParametroTab; label: string }[] = [
 
 const inputCls =
   "w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]";
+
+const cellCls =
+  "w-full min-w-0 rounded border border-transparent bg-transparent px-2 py-1.5 text-sm text-white hover:border-[var(--border)] focus:border-[var(--violet)] focus:bg-white/5 outline-none";
 
 export function ParametrosPanel() {
   const [tenant, setTenant] = useState<TenantSlug>("tsb");
@@ -172,18 +179,35 @@ export function ParametrosPanel() {
   }
 
   const choferCols: Column<Chofer>[] = [
-    { key: "nombre", header: "Nombre", render: (r) => <span className="font-medium text-white">{r.nombre}</span> },
+    {
+      key: "nombre",
+      header: "Nombre",
+      render: (r) => (
+        <EditableTextCell
+          value={r.nombre}
+          onSave={(nombre) => updateChofer(r.id, { nombre }).then(load).catch(setErr)}
+        />
+      ),
+    },
     {
       key: "documento",
       header: "Teléfono (DNI CRM)",
       className: "text-[var(--text-dim)] tabular-nums",
-      render: (r) => r.documento || r.telefono || "—",
+      render: (r) => (
+        <EditableTextCell
+          value={r.documento || r.telefono || ""}
+          placeholder="549…"
+          onSave={(tel) =>
+            updateChofer(r.id, { telefono: tel || null, documento: tel || null }).then(load).catch(setErr)
+          }
+        />
+      ),
     },
     {
-      key: "del",
+      key: "act",
       header: "",
       render: (r) => (
-        <button type="button" onClick={() => deleteChofer(r.id).then(load)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
+        <button type="button" onClick={() => deleteChofer(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]" title="Eliminar">
           <Trash2 size={14} />
         </button>
       ),
@@ -195,16 +219,46 @@ export function ParametrosPanel() {
       key: "tipo",
       header: "Tipo",
       render: (r) => (
-        <Pill color={r.tipo === "tractor" ? "#38bdf8" : "#a78bfa"}>{r.tipo === "tractor" ? "Tractor" : "Semi"}</Pill>
+        <select
+          className={cellCls}
+          value={r.tipo}
+          onChange={(e) =>
+            updateUnidad(r.id, { tipo: e.target.value as "tractor" | "acoplado" }).then(load).catch(setErr)
+          }
+        >
+          <option value="tractor">Tractor</option>
+          <option value="acoplado">Semi</option>
+        </select>
       ),
     },
-    { key: "patente", header: "Patente", render: (r) => <span className="font-medium text-white tabular-nums">{r.patente}</span> },
-    { key: "unidad", header: "Nro interno", className: "text-[var(--text-dim)]", render: (r) => r.unidad_interna || "—" },
+    {
+      key: "patente",
+      header: "Patente",
+      render: (r) => (
+        <EditableTextCell
+          value={r.patente}
+          onSave={(patente) => updateUnidad(r.id, { patente }).then(load).catch(setErr)}
+        />
+      ),
+    },
+    {
+      key: "unidad",
+      header: "Nro interno",
+      className: "text-[var(--text-dim)]",
+      render: (r) => (
+        <EditableTextCell
+          value={r.unidad_interna || ""}
+          placeholder="—"
+          onSave={(unidad_interna) => updateUnidad(r.id, { unidad_interna: unidad_interna || null }).then(load).catch(setErr)
+          }
+        />
+      ),
+    },
     {
       key: "del",
       header: "",
       render: (r) => (
-        <button type="button" onClick={() => deleteUnidad(r.id).then(load)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
+        <button type="button" onClick={() => deleteUnidad(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
           <Trash2 size={14} />
         </button>
       ),
@@ -212,14 +266,47 @@ export function ParametrosPanel() {
   ];
 
   const locCols: Column<Localidad>[] = [
-    { key: "nombre", header: "Nombre", render: (r) => <span className="font-medium text-white">{r.nombre}</span> },
-    { key: "codigo", header: "Código", className: "text-[var(--text-dim)]", render: (r) => r.codigo || "—" },
-    { key: "tipo", header: "Tipo", className: "text-[var(--text-dim)] capitalize", render: (r) => r.tipo },
+    {
+      key: "nombre",
+      header: "Nombre",
+      render: (r) => (
+        <EditableTextCell value={r.nombre} onSave={(nombre) => updateLocalidad(r.id, { nombre }).then(load).catch(setErr)} />
+      ),
+    },
+    {
+      key: "codigo",
+      header: "Código",
+      className: "text-[var(--text-dim)]",
+      render: (r) => (
+        <EditableTextCell
+          value={r.codigo || ""}
+          onSave={(codigo) => updateLocalidad(r.id, { codigo: codigo || null }).then(load).catch(setErr)}
+        />
+      ),
+    },
+    {
+      key: "tipo",
+      header: "Tipo",
+      className: "text-[var(--text-dim)]",
+      render: (r) => (
+        <select
+          className={cellCls}
+          value={r.tipo}
+          onChange={(e) =>
+            updateLocalidad(r.id, { tipo: e.target.value as Localidad["tipo"] }).then(load).catch(setErr)
+          }
+        >
+          <option value="ambos">Origen y destino</option>
+          <option value="origen">Solo origen</option>
+          <option value="destino">Solo destino</option>
+        </select>
+      ),
+    },
     {
       key: "del",
       header: "",
       render: (r) => (
-        <button type="button" onClick={() => deleteLocalidad(r.id).then(load)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
+        <button type="button" onClick={() => deleteLocalidad(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
           <Trash2 size={14} />
         </button>
       ),
@@ -231,36 +318,77 @@ export function ParametrosPanel() {
       key: "origen",
       header: "Origen",
       className: "max-w-[200px] font-medium text-white",
-      render: (r) => r.origen_nombre || "—",
+      render: (r) => (
+        <select
+          className={cellCls}
+          value={r.origen_id}
+          onChange={(e) => updateDistancia(r.id, { origen_id: e.target.value }).then(load).catch(setErr)}
+        >
+          {localidades.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.codigo ? `${l.codigo} · ` : ""}
+              {l.nombre}
+            </option>
+          ))}
+        </select>
+      ),
     },
     {
       key: "destino",
       header: "Destino",
       className: "max-w-[220px] text-[var(--text-dim)]",
-      render: (r) => r.destino_nombre || "—",
+      render: (r) => (
+        <select
+          className={cellCls}
+          value={r.destino_id}
+          onChange={(e) => updateDistancia(r.id, { destino_id: e.target.value }).then(load).catch(setErr)}
+        >
+          {localidades.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.codigo ? `${l.codigo} · ` : ""}
+              {l.nombre}
+            </option>
+          ))}
+        </select>
+      ),
     },
     {
       key: "km",
       header: "Distancia (km)",
       className: "tabular-nums text-right font-semibold text-[var(--green)] whitespace-nowrap",
-      render: (r) => `${formatKm(r.km)} km`,
+      render: (r) => (
+        <EditableTextCell
+          value={String(r.km)}
+          inputMode="decimal"
+          className="text-right font-semibold text-[var(--green)]"
+          onSave={(v) => {
+            const km = Number(v.replace(",", "."));
+            if (!Number.isFinite(km)) throw new Error("Km inválido");
+            return updateDistancia(r.id, { km }).then(load);
+          }}
+        />
+      ),
     },
     {
       key: "del",
       header: "",
       render: (r) => (
-        <button type="button" onClick={() => deleteDistancia(r.id).then(load)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
+        <button type="button" onClick={() => deleteDistancia(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
           <Trash2 size={14} />
         </button>
       ),
     },
   ];
 
+  function setErr(err: unknown) {
+    setError(err instanceof Error ? err.message : "Error al guardar");
+  }
+
   return (
     <div className="space-y-4">
       <PageHeader
         title="Parámetros maestros"
-        subtitle="Choferes, patentes, localidades y distancias — por cliente TSB / Beraldi / Corina"
+        subtitle="Choferes, patentes, localidades y distancias — editá en la tabla o agregá filas nuevas"
         icon={<Database size={24} />}
       />
 
@@ -303,6 +431,7 @@ export function ParametrosPanel() {
       {tab === "choferes" && (
         <Card>
           <SectionTitle>Choferes · {tenantLabel(tenant)}</SectionTitle>
+          <p className="mb-3 text-xs text-[var(--text-faint)]">Clic en un campo para editar — se guarda al salir del campo (Tab / clic afuera).</p>
           <form onSubmit={onAddChofer} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input className={inputCls} placeholder="Nombre completo" value={choferForm.nombre} onChange={(e) => setChoferForm((f) => ({ ...f, nombre: e.target.value }))} required />
             <input className={inputCls} placeholder="Teléfono WhatsApp (campo DNI CRM)" value={choferForm.documento} onChange={(e) => setChoferForm((f) => ({ ...f, documento: e.target.value }))} />
@@ -444,5 +573,53 @@ export function ParametrosPanel() {
         </Card>
       )}
     </div>
+  );
+}
+
+function EditableTextCell({
+  value,
+  onSave,
+  placeholder,
+  inputMode,
+  className,
+}: {
+  value: string;
+  onSave: (value: string) => Promise<void>;
+  placeholder?: string;
+  inputMode?: "decimal" | "text";
+  className?: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  async function commit() {
+    if (draft === value) return;
+    setSaving(true);
+    try {
+      await onSave(draft.trim());
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <span className="flex items-center gap-1">
+      <input
+        className={clsx(cellCls, className, saving && "opacity-50")}
+        value={draft}
+        placeholder={placeholder}
+        inputMode={inputMode}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => commit().catch(() => {})}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+      />
+      {saving && <Check size={12} className="shrink-0 text-[var(--green)]" />}
+    </span>
   );
 }

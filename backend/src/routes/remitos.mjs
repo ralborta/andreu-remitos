@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos, procesarRemitosBatch, cambiarTenantRemito } from "../services/remitos.mjs";
+import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos, procesarRemitosBatch, cambiarTenantRemito, eliminarRemito } from "../services/remitos.mjs";
 
 export default async function remitosRoutes(fastify) {
   fastify.post("/ingest", async (request, reply) => {
@@ -76,5 +76,11 @@ export default async function remitosRoutes(fastify) {
     } catch (err) {
       return reply.code(400).send({ error: err.message });
     }
+  });
+
+  fastify.delete("/:id", async (request, reply) => {
+    const out = await eliminarRemito(request.params.id);
+    if (!out) return reply.code(404).send({ error: "Remito no encontrado" });
+    return out;
   });
 }

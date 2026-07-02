@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getRemito, imagenUrl, patchRemitoCampos } from "@/lib/api";
-import type { RemitoRow } from "@/lib/types";
+import { deleteRemito, getRemito, imagenUrl, patchRemitoCampos, patchRemitoTenant } from "@/lib/api";
+import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   acopladoPatente,
+  advertenciaTenant,
   buildHorariosBody,
   campoLabel,
   camposEdicion,
@@ -23,6 +24,7 @@ import {
   pesoKg,
   tenantLabel,
 } from "@/lib/remitos-ui";
+import { REMITO_TENANTS } from "@/lib/tenants";
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
 import { RemitoImagePreview } from "./RemitoImageLightbox";
@@ -38,6 +40,33 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [borrando, setBorrando] = useState(false);
+
+  async function cambiarTenant(nuevo: Tenant) {
+    if (!row || nuevo === row.tenant) return;
+    setError(null);
+    try {
+      const updated = await patchRemitoTenant(id, nuevo);
+      setRow(updated);
+      setMsg(`Movido a ${tenantLabel(nuevo)}`);
+      router.push(`/remitos/${nuevo}/${id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al cambiar cliente");
+    }
+  }
+
+  async function borrar() {
+    if (!row) return;
+    if (!window.confirm(`¿Eliminar el remito ${numeroRemito(row)} por completo?`)) return;
+    setBorrando(true);
+    try {
+      await deleteRemito(id);
+      router.push(`/remitos/${row.tenant}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al eliminar");
+      setBorrando(false);
+    }
+  }
 
   useEffect(() => {
     getRemito(id)
@@ -116,6 +145,23 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
             Editar remito {tenantLabel(row.tenant)} · {numeroRemito(row)}
           </SectionTitle>
 
+          {advertenciaTenant(row) && (
+            <p className="mb-3 rounded-lg bg-[var(--amber)]/10 px-3 py-2 text-xs text-[var(--amber)]">{advertenciaTenant(row)}</p>
+          )}
+
+          <label className="mb-4 block">
+            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--text-faint)]">Cliente</span>
+            <select
+              className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+              value={row.tenant}
+              onChange={(e) => cambiarTenant(e.target.value as Tenant)}
+            >
+              {REMITO_TENANTS.map((t) => (
+                <option key={t.slug} value={t.slug}>{t.name}</option>
+              ))}
+            </select>
+          </label>
+
           <div className="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-white/5 p-3 text-sm">
             <div>
               <span className="text-xs text-[var(--text-faint)]">Chofer</span>
@@ -173,6 +219,14 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
             className="mt-4 w-full rounded-xl bg-[var(--violet)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--violet)]/90 disabled:opacity-50"
           >
             {saving ? "Guardando…" : "Guardar cambios"}
+          </button>
+          <button
+            type="button"
+            onClick={borrar}
+            disabled={borrando || saving}
+            className="mt-2 w-full rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
+          >
+            {borrando ? "Eliminando…" : "Eliminar remito"}
           </button>
           {msg && <p className="mt-2 text-sm text-[var(--green)]">{msg}</p>}
           {error && <p className="mt-2 text-sm text-[var(--red)]">{error}</p>}

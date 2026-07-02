@@ -89,6 +89,10 @@ export function patchRemitoTenant(id: string, tenant: string) {
   });
 }
 
+export function deleteRemito(id: string) {
+  return api<{ id: string; eliminado: boolean }>(`/api/remitos/${id}`, { method: "DELETE" });
+}
+
 export async function ingestRemito(file: File, tenant: string, telefono?: string) {
   const fd = new FormData();
   fd.append("tenant", tenant);
