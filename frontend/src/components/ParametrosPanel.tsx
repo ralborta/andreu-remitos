@@ -89,15 +89,36 @@ export function ParametrosPanel() {
     load();
   }, [load]);
 
+  // Distancias solo existen en Beraldi (como el CRM viejo)
+  useEffect(() => {
+    if (tab === "distancias" && tenant !== "beraldi") {
+      setTenant("beraldi");
+    }
+  }, [tab, tenant]);
+
+  const lomaCampanaId =
+    localidades.find((l) => l.nombre.toUpperCase().includes("LOMA CAMPANA"))?.id ?? "";
+
+  const distanciasSorted = [...distancias].sort((a, b) => {
+    const o = (a.origen_nombre ?? "").localeCompare(b.origen_nombre ?? "", "es");
+    if (o !== 0) return o;
+    return (a.destino_nombre ?? "").localeCompare(b.destino_nombre ?? "", "es");
+  });
+
+  function formatKm(km: number) {
+    return Number(km).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   async function onAddChofer(e: React.FormEvent) {
     e.preventDefault();
     if (!choferForm.nombre.trim()) return;
     try {
+      const phone = choferForm.documento.trim() || choferForm.telefono.trim() || null;
       await createChofer({
         tenant,
         nombre: choferForm.nombre.trim(),
-        telefono: choferForm.telefono.trim() || null,
-        documento: choferForm.documento.trim() || null,
+        telefono: phone,
+        documento: phone,
         activo: true,
       });
       setChoferForm({ nombre: "", telefono: "", documento: "" });
@@ -137,22 +158,27 @@ export function ParametrosPanel() {
 
   async function onAddDistancia(e: React.FormEvent) {
     e.preventDefault();
-    if (!distForm.origen_id || !distForm.destino_id || !distForm.km) return;
+    const origen_id = distForm.origen_id || lomaCampanaId;
+    if (!origen_id || !distForm.destino_id || distForm.km === "") return;
     await createDistancia({
-      tenant,
-      origen_id: distForm.origen_id,
+      tenant: "beraldi",
+      origen_id,
       destino_id: distForm.destino_id,
       km: Number(distForm.km),
       activo: true,
     });
-    setDistForm({ origen_id: "", destino_id: "", km: "" });
+    setDistForm({ origen_id: lomaCampanaId, destino_id: "", km: "" });
     load();
   }
 
   const choferCols: Column<Chofer>[] = [
     { key: "nombre", header: "Nombre", render: (r) => <span className="font-medium text-white">{r.nombre}</span> },
-    { key: "telefono", header: "Teléfono", className: "text-[var(--text-dim)] tabular-nums", render: (r) => r.telefono || "—" },
-    { key: "documento", header: "DNI", className: "text-[var(--text-dim)]", render: (r) => r.documento || "—" },
+    {
+      key: "documento",
+      header: "Teléfono (DNI CRM)",
+      className: "text-[var(--text-dim)] tabular-nums",
+      render: (r) => r.documento || r.telefono || "—",
+    },
     {
       key: "del",
       header: "",
@@ -201,9 +227,24 @@ export function ParametrosPanel() {
   ];
 
   const distCols: Column<Distancia>[] = [
-    { key: "origen", header: "Origen", render: (r) => r.origen_nombre || "—" },
-    { key: "destino", header: "Destino", render: (r) => r.destino_nombre || "—" },
-    { key: "km", header: "Km", className: "tabular-nums text-white font-medium", render: (r) => r.km },
+    {
+      key: "origen",
+      header: "Origen",
+      className: "max-w-[200px] font-medium text-white",
+      render: (r) => r.origen_nombre || "—",
+    },
+    {
+      key: "destino",
+      header: "Destino",
+      className: "max-w-[220px] text-[var(--text-dim)]",
+      render: (r) => r.destino_nombre || "—",
+    },
+    {
+      key: "km",
+      header: "Distancia (km)",
+      className: "tabular-nums text-right font-semibold text-[var(--green)] whitespace-nowrap",
+      render: (r) => `${formatKm(r.km)} km`,
+    },
     {
       key: "del",
       header: "",
@@ -262,10 +303,9 @@ export function ParametrosPanel() {
       {tab === "choferes" && (
         <Card>
           <SectionTitle>Choferes · {tenantLabel(tenant)}</SectionTitle>
-          <form onSubmit={onAddChofer} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
+          <form onSubmit={onAddChofer} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input className={inputCls} placeholder="Nombre completo" value={choferForm.nombre} onChange={(e) => setChoferForm((f) => ({ ...f, nombre: e.target.value }))} required />
-            <input className={inputCls} placeholder="Teléfono WhatsApp" value={choferForm.telefono} onChange={(e) => setChoferForm((f) => ({ ...f, telefono: e.target.value }))} />
-            <input className={inputCls} placeholder="DNI (opcional)" value={choferForm.documento} onChange={(e) => setChoferForm((f) => ({ ...f, documento: e.target.value }))} />
+            <input className={inputCls} placeholder="Teléfono WhatsApp (campo DNI CRM)" value={choferForm.documento} onChange={(e) => setChoferForm((f) => ({ ...f, documento: e.target.value }))} />
             <button type="submit" className="flex items-center justify-center gap-2 rounded-lg bg-[var(--violet)] py-2 text-sm font-semibold text-white">
               <Plus size={16} /> Agregar
             </button>
@@ -316,27 +356,91 @@ export function ParametrosPanel() {
 
       {tab === "distancias" && (
         <Card>
-          <SectionTitle>Distancias · {tenantLabel(tenant)}</SectionTitle>
-          <p className="mb-3 text-xs text-[var(--text-dim)]">Primero cargá localidades. Usado para validar km en Beraldi.</p>
-          <form onSubmit={onAddDistancia} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
-            <select className={inputCls} value={distForm.origen_id} onChange={(e) => setDistForm((f) => ({ ...f, origen_id: e.target.value }))} required>
-              <option value="">Origen…</option>
-              {localidades.map((l) => (
-                <option key={l.id} value={l.id}>{l.nombre}</option>
-              ))}
-            </select>
-            <select className={inputCls} value={distForm.destino_id} onChange={(e) => setDistForm((f) => ({ ...f, destino_id: e.target.value }))} required>
-              <option value="">Destino…</option>
-              {localidades.map((l) => (
-                <option key={l.id} value={l.id}>{l.nombre}</option>
-              ))}
-            </select>
-            <input className={inputCls} type="number" min={0} placeholder="Km" value={distForm.km} onChange={(e) => setDistForm((f) => ({ ...f, km: e.target.value }))} required />
-            <button type="submit" className="flex items-center justify-center gap-2 rounded-lg bg-[var(--violet)] py-2 text-sm font-semibold text-white">
-              <Plus size={16} /> Agregar
-            </button>
-          </form>
-          {loading ? <p className="text-sm text-[var(--text-dim)]">Cargando…</p> : <DataTable columns={distCols} rows={distancias} minWidth={480} />}
+          <SectionTitle>Distancias · Beraldi</SectionTitle>
+          <p className="mb-4 text-sm text-[var(--text-dim)]">
+            Cada <strong className="text-white">destino</strong> tiene un km fijo desde su origen — igual que el CRM
+            (ej. LOMA CAMPANA-YPF → TRON 24-CIMSA = 344,00 km). Usado en planillas Beraldi.
+          </p>
+
+          {loading ? (
+            <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
+          ) : distanciasSorted.length > 0 ? (
+            <DataTable columns={distCols} rows={distanciasSorted} minWidth={720} />
+          ) : (
+            <p className="text-sm text-[var(--text-dim)]">Sin distancias cargadas para Beraldi.</p>
+          )}
+
+          <details className="mt-6 rounded-lg border border-[var(--border)] bg-white/[0.02] p-4">
+            <summary className="cursor-pointer text-sm font-medium text-[var(--text-dim)] hover:text-white">
+              + Agregar ruta manualmente
+            </summary>
+            <form
+              onSubmit={onAddDistancia}
+              className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[1fr_1fr_120px_auto]"
+            >
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+                  Origen
+                </span>
+                <select
+                  className={inputCls}
+                  value={distForm.origen_id || lomaCampanaId}
+                  onChange={(e) => setDistForm((f) => ({ ...f, origen_id: e.target.value }))}
+                  required
+                >
+                  <option value="">Elegir origen…</option>
+                  {localidades.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.codigo ? `${l.codigo} · ` : ""}
+                      {l.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+                  Destino
+                </span>
+                <select
+                  className={inputCls}
+                  value={distForm.destino_id}
+                  onChange={(e) => setDistForm((f) => ({ ...f, destino_id: e.target.value }))}
+                  required
+                >
+                  <option value="">Elegir destino…</option>
+                  {localidades.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.codigo ? `${l.codigo} · ` : ""}
+                      {l.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+                  Km
+                </span>
+                <input
+                  className={inputCls}
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="344.00"
+                  value={distForm.km}
+                  onChange={(e) => setDistForm((f) => ({ ...f, km: e.target.value }))}
+                  required
+                />
+              </label>
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--violet)] py-2.5 text-sm font-semibold text-white"
+                >
+                  <Plus size={16} /> Agregar
+                </button>
+              </div>
+            </form>
+          </details>
         </Card>
       )}
     </div>

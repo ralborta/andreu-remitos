@@ -33,7 +33,7 @@ function listRoute(collection) {
 function createRoute(collection, validate) {
   return async (request, reply) => {
     const body = request.body ?? {};
-    const err = validate?.(body);
+    const err = await validate?.(body);
     if (err) return reply.code(400).send({ error: err });
     const row = await createItem(collection, body);
     return reply.code(201).send(row);
@@ -43,7 +43,7 @@ function createRoute(collection, validate) {
 function patchRoute(collection, validate) {
   return async (request, reply) => {
     const body = request.body ?? {};
-    const err = validate?.(body, true);
+    const err = await validate?.(body, true);
     if (err) return reply.code(400).send({ error: err });
     const row = await updateItem(collection, request.params.id, body);
     if (!row) return reply.code(404).send({ error: "No encontrado" });
@@ -103,7 +103,7 @@ async function validateDistancia(body, partial) {
     if (!d) return "destino_id no existe";
   }
   if (body.tenant && !requireTenant(body.tenant)) return "tenant inválido";
-  if (body.km !== undefined) body.km = Math.round(Number(body.km));
+  if (body.km !== undefined) body.km = Math.round(Number(body.km) * 100) / 100;
   return null;
 }
 

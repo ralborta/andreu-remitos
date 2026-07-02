@@ -94,28 +94,47 @@ export async function deleteItem(name, id) {
   return true;
 }
 
-/** Import masivo desde array (upsert por clave natural) */
+export function findChoferByPhone(choferes, telefono) {
+  const tel = normalizePhone(telefono);
+  if (!tel) return null;
+  return (
+    choferes.find(
+      (c) => normalizePhone(c.telefono) === tel || normalizePhone(c.documento) === tel,
+    ) ?? null
+  );
+}
+
+/** Import masivo desde array (upsert por teléfono en telefono o documento/DNI) */
 export async function importChoferes(items, { tenant, replace = false } = {}) {
   const db = readDb();
   if (replace) db.choferes = db.choferes.filter((c) => c.tenant !== tenant);
   let created = 0;
   for (const raw of items) {
-    const telefono = normalizePhone(raw.telefono || raw.tel);
+    const phone = normalizePhone(raw.documento || raw.telefono || raw.tel);
     const nombre = String(raw.nombre || "").trim();
     if (!nombre) continue;
-    const existing = db.choferes.find(
-      (c) => c.tenant === tenant && telefono && normalizePhone(c.telefono) === telefono,
+    const existing = findChoferByPhone(
+      db.choferes.filter((c) => c.tenant === tenant),
+      phone,
     );
     if (existing) {
-      Object.assign(existing, stamp(existing, { nombre, telefono: telefono || existing.telefono, activo: true }));
+      Object.assign(
+        existing,
+        stamp(existing, {
+          nombre,
+          telefono: phone || existing.telefono,
+          documento: phone || existing.documento,
+          activo: true,
+        }),
+      );
     } else {
       db.choferes.unshift(
         stamp({
           id: randomUUID(),
           tenant,
           nombre,
-          telefono: telefono || null,
-          documento: raw.documento ?? null,
+          telefono: phone || null,
+          documento: phone || null,
           activo: true,
         }),
       );
