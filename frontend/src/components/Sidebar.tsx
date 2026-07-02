@@ -17,8 +17,11 @@ import {
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
+import { useAuth } from "@/lib/auth-context";
+import { isAdmin, ROL_LABEL } from "@/lib/auth-types";
 import { AgentIcon } from "./Icon";
 import { Brand } from "./Brand";
+import { LogOut } from "lucide-react";
 
 export function Sidebar({
   open,
@@ -28,6 +31,8 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+  const admin = isAdmin(user);
   const remitosOpen =
     pathname === "/remitos" || pathname.startsWith("/remitos/");
   const planillasOpen =
@@ -210,19 +215,21 @@ export function Sidebar({
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación
           </p>
-          <Link
-            href="/parametros"
-            onClick={onClose}
-            className={clsx(
-              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/parametros")
-                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-            )}
-          >
-            <Settings2 size={18} />
-            Parámetros maestros
-          </Link>
+          {admin && (
+            <Link
+              href="/parametros"
+              onClick={onClose}
+              className={clsx(
+                "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive("/parametros")
+                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Settings2 size={18} />
+              Parámetros maestros
+            </Link>
+          )}
           <Link
             href="/contactos"
             onClick={onClose}
@@ -239,19 +246,21 @@ export function Sidebar({
               Nuevo
             </span>
           </Link>
-          <Link
-            href="/backoffice"
-            onClick={onClose}
-            className={clsx(
-              "group mb-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/backoffice")
-                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-            )}
-          >
-            <Database size={18} />
-            Backoffice y métricas
-          </Link>
+          {admin && (
+            <Link
+              href="/backoffice"
+              onClick={onClose}
+              className={clsx(
+                "group mb-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive("/backoffice")
+                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Database size={18} />
+              Backoffice y métricas
+            </Link>
+          )}
 
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Agentes (demo)
@@ -297,16 +306,24 @@ export function Sidebar({
         <div className="border-t border-[var(--border)] p-4">
           <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] text-sm font-bold text-white">
-              MC
+              {(user?.nombre || user?.username || "?").slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-white">
-                Mesa de Control
+                {user?.nombre || "Usuario"}
               </p>
               <p className="truncate text-xs text-[var(--text-faint)]">
-                Operaciones · Turno mañana
+                {user ? ROL_LABEL[user.rol] : "—"}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => logout()}
+              title="Cerrar sesión"
+              className="rounded-lg p-1.5 text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </aside>

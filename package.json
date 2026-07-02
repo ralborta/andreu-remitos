@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-cloud/documentai": "^4.1.0",
     "@google-cloud/speech": "^6.7.1",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "jose": "^6.2.3"
   }
 }

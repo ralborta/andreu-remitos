@@ -2,6 +2,7 @@ import { Database } from "lucide-react";
 import { PageHeader, Card, SectionTitle, KpiCard } from "@/components/ui";
 import { ViajesArea, SlaBars, IncidenciasDonut } from "@/components/Charts";
 import { AgentData } from "@/components/AgentData";
+import { AdminGate } from "@/components/AdminGate";
 import { viajesPorDia, slaPorZona, incidenciasPorTipo } from "@/lib/data";
 
 const categorias = [
@@ -45,6 +46,7 @@ const categorias = [
 
 export default function BackofficePage() {
   return (
+    <AdminGate>
     <div className="space-y-6">
       <PageHeader
         title="Backoffice y métricas operativas"
@@ -108,5 +110,6 @@ export default function BackofficePage() {
       <AgentData slug="incidencias" />
       <AgentData slug="reclamos" />
     </div>
+    </AdminGate>
   );
 }

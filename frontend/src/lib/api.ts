@@ -13,13 +13,13 @@ function isUsableApiUrl(url: string | undefined): url is string {
   return true;
 }
 
-/** En Easypanel: URL pública de la API (CORS habilitado). Local: .env.local */
+/** En el navegador siempre same-origin (/backend) para evitar CORS en errores del proxy. */
 export function apiBase() {
-  const pub = process.env.NEXT_PUBLIC_API_URL;
-  if (isUsableApiUrl(pub)) return pub.replace(/\/$/, "");
   if (typeof window !== "undefined") return "/backend";
   const internal = process.env.API_INTERNAL_URL;
   if (internal) return internal.replace(/\/$/, "");
+  const pub = process.env.NEXT_PUBLIC_API_URL;
+  if (isUsableApiUrl(pub)) return pub.replace(/\/$/, "");
   return "http://localhost:3001";
 }
 
@@ -28,14 +28,25 @@ export function apiBaseLabel() {
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${apiBase()}${path}`, {
-    ...init,
-    headers: {
-      ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-      ...init?.headers,
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${apiBase()}${path}`, {
+      ...init,
+      credentials: "include",
+      headers: {
+        ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+        ...init?.headers,
+      },
+      cache: "no-store",
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Error de red";
+    throw new Error(
+      msg === "Failed to fetch"
+        ? "No se pudo contactar la API. Revisá conexión o que el servicio esté en línea."
+        : msg,
+    );
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const detail = (err as { error?: string }).error;

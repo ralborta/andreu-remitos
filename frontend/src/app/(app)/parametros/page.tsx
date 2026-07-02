@@ -1,5 +1,10 @@
 import { ParametrosPanel } from "@/components/ParametrosPanel";
+import { AdminGate } from "@/components/AdminGate";
 
 export default function ParametrosPage() {
-  return <ParametrosPanel />;
+  return (
+    <AdminGate>
+      <ParametrosPanel />
+    </AdminGate>
+  );
 }

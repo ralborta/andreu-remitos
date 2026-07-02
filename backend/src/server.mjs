@@ -10,6 +10,9 @@ import conversacionesRoutes from "./routes/conversaciones.mjs";
 import parametrosRoutes from "./routes/parametros.mjs";
 import planillasRoutes from "./routes/planillas.mjs";
 import destinosRoutes from "./routes/destinos.mjs";
+import authRoutes from "./routes/auth.mjs";
+import { registerAuthGuard } from "./plugins/auth-guard.mjs";
+import { ensureSeedAdmin } from "./db/users-store.mjs";
 
 const backendRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(backendRoot, ".env") });
@@ -19,11 +22,17 @@ const app = Fastify({ logger: true });
 
 await app.register(cors, {
   origin: true,
+  credentials: true,
   methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 });
 await app.register(multipart, { limits: { fileSize: 15 * 1024 * 1024 } });
 
+await registerAuthGuard(app);
+await ensureSeedAdmin();
+
 app.get("/health", async () => ({ ok: true, service: "andreu-api" }));
+
+await app.register(authRoutes, { prefix: "/api/auth" });
 
 await app.register(remitosRoutes, { prefix: "/api/remitos" });
 await app.register(webhooksRoutes, { prefix: "/api/webhooks" });

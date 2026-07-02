@@ -8,6 +8,9 @@ import {
   normalizePhone,
   updateItem,
 } from "../db/master-data-store.mjs";
+import { adminOnly } from "../plugins/auth-guard.mjs";
+
+const admin = { preHandler: adminOnly };
 
 const TENANTS = new Set(["tsb", "beraldi", "corina"]);
 const UNIDAD_TIPOS = new Set(["tractor", "acoplado"]);
@@ -110,29 +113,32 @@ async function validateDistancia(body, partial) {
 export default async function parametrosRoutes(fastify) {
   // Choferes
   fastify.get("/choferes", listRoute("choferes"));
-  fastify.post("/choferes", createRoute("choferes", validateChofer));
-  fastify.patch("/choferes/:id", patchRoute("choferes", validateChofer));
-  fastify.delete("/choferes/:id", deleteRoute("choferes"));
-  fastify.post("/choferes/import", async (request, reply) => {
+  fastify.post("/choferes", { ...admin, handler: createRoute("choferes", validateChofer) });
+  fastify.patch("/choferes/:id", { ...admin, handler: patchRoute("choferes", validateChofer) });
+  fastify.delete("/choferes/:id", { ...admin, handler: deleteRoute("choferes") });
+  fastify.post("/choferes/import", {
+    ...admin,
+    handler: async (request, reply) => {
     const { tenant, items, replace } = request.body ?? {};
     const t = requireTenant(tenant);
     if (!t) return reply.code(400).send({ error: "tenant requerido" });
     if (!Array.isArray(items)) return reply.code(400).send({ error: "items[] requerido" });
     const result = await importChoferes(items, { tenant: t, replace: !!replace });
     return result;
+    },
   });
 
   // Unidades (tractores + acoplados)
   fastify.get("/unidades", listRoute("unidades"));
-  fastify.post("/unidades", createRoute("unidades", validateUnidad));
-  fastify.patch("/unidades/:id", patchRoute("unidades", validateUnidad));
-  fastify.delete("/unidades/:id", deleteRoute("unidades"));
+  fastify.post("/unidades", { ...admin, handler: createRoute("unidades", validateUnidad) });
+  fastify.patch("/unidades/:id", { ...admin, handler: patchRoute("unidades", validateUnidad) });
+  fastify.delete("/unidades/:id", { ...admin, handler: deleteRoute("unidades") });
 
   // Localidades
   fastify.get("/localidades", listRoute("localidades"));
-  fastify.post("/localidades", createRoute("localidades", validateLocalidad));
-  fastify.patch("/localidades/:id", patchRoute("localidades", validateLocalidad));
-  fastify.delete("/localidades/:id", deleteRoute("localidades"));
+  fastify.post("/localidades", { ...admin, handler: createRoute("localidades", validateLocalidad) });
+  fastify.patch("/localidades/:id", { ...admin, handler: patchRoute("localidades", validateLocalidad) });
+  fastify.delete("/localidades/:id", { ...admin, handler: deleteRoute("localidades") });
 
   // Distancias
   fastify.get("/distancias", async (request) => {
@@ -150,7 +156,7 @@ export default async function parametrosRoutes(fastify) {
       destino_nombre: byId[d.destino_id]?.nombre ?? "—",
     }));
   });
-  fastify.post("/distancias", createRoute("distancias", validateDistancia));
-  fastify.patch("/distancias/:id", patchRoute("distancias", validateDistancia));
-  fastify.delete("/distancias/:id", deleteRoute("distancias"));
+  fastify.post("/distancias", { ...admin, handler: createRoute("distancias", validateDistancia) });
+  fastify.patch("/distancias/:id", { ...admin, handler: patchRoute("distancias", validateDistancia) });
+  fastify.delete("/distancias/:id", { ...admin, handler: deleteRoute("distancias") });
 }
