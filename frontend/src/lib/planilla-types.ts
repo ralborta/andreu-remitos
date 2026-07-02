@@ -42,9 +42,14 @@ export interface PlanillaTsbResponse {
   tipo_viaje: string;
   columnas: PlanillaColumn[];
   filas: PlanillaFila[];
+  hojas?: {
+    diaria: { columnas: PlanillaColumn[]; filas: PlanillaFila[] };
+    proforma: { columnas: PlanillaColumn[]; filas: PlanillaFila[] };
+  };
   meta: {
     remitos: number;
     filas: number;
+    filas_diaria?: number;
     desde: string | null;
     hasta: string | null;
   };

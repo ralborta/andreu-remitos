@@ -11,12 +11,14 @@ import { Card, Pill } from "./ui";
 import { PlanillaGrid } from "./PlanillaGrid";
 
 type VistaCorina = "local" | "importacion";
+type HojaProforma = "diaria" | "proforma";
 
 export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
   const cfg = getTenant(tenant)!;
   const esCorina = tenant === "corina";
   const [vista, setVista] = useState<PlanillaFormato>("delfos");
   const [vistaCorina, setVistaCorina] = useState<VistaCorina>("local");
+  const [hojaProforma, setHojaProforma] = useState<HojaProforma>("proforma");
   const [tipoViaje, setTipoViaje] = useState<TipoViajeTsb>("ARENA");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
@@ -25,6 +27,22 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
   const [error, setError] = useState<string | null>(null);
 
   const formatoActivo = esCorina ? vistaCorina : vista;
+
+  const hojaActiva =
+    !esCorina && vista === "proforma" && data?.hojas
+      ? hojaProforma === "diaria"
+        ? data.hojas.diaria
+        : data.hojas.proforma
+      : null;
+
+  const columnasVista = hojaActiva?.columnas ?? data?.columnas ?? [];
+  const filasVista = hojaActiva?.filas ?? data?.filas ?? [];
+  const nombreHoja =
+    !esCorina && vista === "proforma"
+      ? hojaProforma === "diaria"
+        ? "Planilla Diaria"
+        : "Proforma"
+      : undefined;
 
   const load = useCallback(() => {
     setLoading(true);
@@ -48,7 +66,11 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
     ? vistaCorina === "importacion"
       ? "Delfos 25 cols — Corta Distancia, Cantidad en bultos, Unidad Pallet"
       : "Planilla Local — tramos, horas y bultos por remito"
-    : tenant === "beraldi"
+    : vista === "proforma"
+      ? tenant === "beraldi"
+        ? "Excel con 2 hojas: Planilla Diaria + Proforma (km)"
+        : "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
+      : tenant === "beraldi"
       ? "Cantidad en Km (Orden 1) — desde Parámetros → Distancias"
       : "toneladas en Cantidad (Orden 1)";
 
@@ -103,7 +125,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                     : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
                 }
               >
-                Proforma QuadMy (11 cols)
+                Proforma (2 hojas)
               </button>
             </>
           )}
@@ -183,7 +205,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                   className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)]/25 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
                 >
                   <Download size={16} />
-                  Excel Proforma
+                  Excel Proforma (2 hojas)
                 </a>
               </>
             )}
@@ -191,7 +213,11 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
         </div>
         {data && (
           <p className="mt-3 text-xs text-[var(--text-faint)]">
-            {data.meta.remitos} remitos listos → {data.meta.filas} filas · {data.columnas.length} columnas ({hintCantidad})
+            {data.meta.remitos} remitos listos
+            {vista === "proforma" && data.hojas
+              ? ` → Planilla Diaria: ${data.meta.filas_diaria ?? data.hojas.diaria.filas.length} filas · Proforma: ${data.meta.filas} filas`
+              : ` → ${data.meta.filas} filas · ${columnasVista.length} columnas`}
+            {vista !== "proforma" && ` (${hintCantidad})`}
           </p>
         )}
       </Card>
@@ -218,11 +244,37 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                   : "Planilla Local — control operativo de viajes cortos"
                 : vista === "delfos"
                   ? `Vista Delfos — headers iguales al Excel ${cfg.short}`
-                  : "Vista Proforma — import QuadMy"}
+                  : "Proforma — Planilla Diaria (certificación) + Proforma (ida y vuelta para Torre de Control)"}
             </span>
             <span className="text-xs text-[var(--violet-2)]">← deslizá horizontal para ver todas las columnas</span>
           </div>
-          <PlanillaGrid columnas={data.columnas} filas={data.filas} />
+          {!esCorina && vista === "proforma" && data.hojas && (
+            <div className="flex flex-wrap gap-1 px-1">
+              <button
+                type="button"
+                onClick={() => setHojaProforma("diaria")}
+                className={
+                  hojaProforma === "diaria"
+                    ? "rounded-t-lg bg-[var(--violet)]/20 px-4 py-2 text-sm font-medium text-white ring-1 ring-inset ring-[var(--violet)]/40"
+                    : "rounded-t-lg px-4 py-2 text-sm text-[var(--text-dim)] hover:text-white"
+                }
+              >
+                Planilla Diaria
+              </button>
+              <button
+                type="button"
+                onClick={() => setHojaProforma("proforma")}
+                className={
+                  hojaProforma === "proforma"
+                    ? "rounded-t-lg bg-[var(--violet)]/20 px-4 py-2 text-sm font-medium text-white ring-1 ring-inset ring-[var(--violet)]/40"
+                    : "rounded-t-lg px-4 py-2 text-sm text-[var(--text-dim)] hover:text-white"
+                }
+              >
+                Proforma
+              </button>
+            </div>
+          )}
+          <PlanillaGrid columnas={columnasVista} filas={filasVista} sheetName={nombreHoja} />
         </div>
       ) : null}
     </div>

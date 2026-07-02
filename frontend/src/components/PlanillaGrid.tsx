@@ -7,15 +7,17 @@ import type { PlanillaColumn, PlanillaFila } from "@/lib/planilla-types";
 export function PlanillaGrid({
   columnas,
   filas,
+  sheetName,
 }: {
   columnas: PlanillaColumn[];
   filas: PlanillaFila[];
+  sheetName?: string;
 }) {
   return (
     <div className="planilla-sheet overflow-hidden rounded-xl border border-[var(--border)] bg-[#0c0918] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--panel-2)] px-3 py-2">
         <span className="rounded-md bg-[var(--violet)]/20 px-2 py-0.5 text-[11px] font-semibold text-[var(--violet-2)] ring-1 ring-[var(--violet)]/30">
-          Hoja 1
+          {sheetName ?? "Hoja 1"}
         </span>
         <span className="text-xs text-[var(--text-faint)]">
           {filas.length} filas · {columnas.length} columnas
@@ -54,10 +56,10 @@ export function PlanillaGrid({
             ) : (
               filas.map((fila, rowIdx) => (
                 <tr
-                  key={`${fila.remito_id}-${fila.orden}-${rowIdx}`}
+                  key={`${fila.remito_id ?? "row"}-${fila.orden ?? rowIdx}-${rowIdx}`}
                   className={clsx(
                     "transition-colors hover:bg-[var(--violet)]/[0.06]",
-                    fila.orden === 1 ? "bg-[#0a0712]/40" : "bg-[#0d0a18]/60",
+                    fila.orden === 2 ? "bg-[#0d0a18]/60" : "bg-[#0a0712]/40",
                   )}
                 >
                   <td className="sticky left-0 z-10 border border-[var(--border)] bg-[#141028] px-1.5 py-1 text-center tabular-nums text-[var(--text-faint)]">

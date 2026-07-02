@@ -16,8 +16,28 @@ function parseQuery(q) {
 }
 
 async function exportPlanilla(reply, data, { formato, label }) {
-  const sheetName = formato === "proforma" ? "Proforma" : `Planilla ${label}`;
   const wb = XLSX.utils.book_new();
+
+  if (formato === "proforma" && data.hojas) {
+    const wsDiaria = XLSX.utils.aoa_to_sheet(
+      filasAoa(data.hojas.diaria.filas, data.hojas.diaria.columnas),
+    );
+    const wsProforma = XLSX.utils.aoa_to_sheet(
+      filasAoa(data.hojas.proforma.filas, data.hojas.proforma.columnas),
+    );
+    XLSX.utils.book_append_sheet(wb, wsDiaria, "Planilla Diaria");
+    XLSX.utils.book_append_sheet(wb, wsProforma, "Proforma");
+
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const fname = `Proforma_${label}_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    return reply
+      .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      .header("Content-Disposition", `attachment; filename="${fname}"`)
+      .send(buf);
+  }
+
+  const sheetName = formato === "proforma" ? "Proforma" : `Planilla ${label}`;
   const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
   XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
 
