@@ -12,6 +12,7 @@ import {
 } from "../../../lib/correcciones-chofer.mjs";
 import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
+import { syncBotPausa } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
@@ -61,8 +62,7 @@ function mapCorreccionCampo(tenant, campo) {
 
 async function procesarTextoChofer(ev, tenantCfg, texto) {
   const phone = ev.from;
-  const conv = phone ? await convStore.getConversacion(phone) : null;
-  const pausado = conv?.bot_pausado;
+  if (phone) await syncBotPausa(phone);
 
   if (phone && texto) {
     await convStore.appendMensaje(
@@ -71,6 +71,9 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
       { tenant: tenantCfg, nombre: ev.nombre },
     );
   }
+
+  const conv = phone ? await convStore.getConversacion(phone) : null;
+  const pausado = conv?.bot_pausado;
 
   if (pausado) {
     return respuestaWebhook({
@@ -252,6 +255,7 @@ export default async function webhooksRoutes(fastify) {
         const telefono = ev.from || null;
 
         if (ev.from) {
+          await syncBotPausa(ev.from);
           await convStore.appendMensaje(
             ev.from,
             { texto: ev.message || "envía imagen", tipo: "image", imagen_url: ev.media.url },
@@ -259,7 +263,7 @@ export default async function webhooksRoutes(fastify) {
           );
         }
 
-        const pausado = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
+        const pausado = ev.from ? !!(await convStore.getConversacion(ev.from))?.bot_pausado : false;
 
         if (ev.from && !pausado) {
           await notificarChofer(ev.from, mensajeProcesandoRemito(), {
@@ -321,7 +325,8 @@ export default async function webhooksRoutes(fastify) {
           ? "No pude entender el audio. Probá de nuevo más claro, o escribí la corrección."
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
-      const pausadoErr = ev.from ? (await convStore.getConversacion(ev.from))?.bot_pausado : false;
+      if (ev.from) await syncBotPausa(ev.from);
+      const pausadoErr = ev.from ? !!(await convStore.getConversacion(ev.from))?.bot_pausado : false;
       if (ev.from && !pausadoErr) {
         await notificarChofer(ev.from, errMsg, { tenant: tenantCfg, log: request.log });
       } else if (ev.from) {

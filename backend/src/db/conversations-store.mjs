@@ -5,6 +5,29 @@ import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const FILE = path.join(DATA_DIR, "conversaciones.json");
 
+/** Tras pausar manualmente, el bot vuelve solo si no hay mensajes en este lapso. */
+export const BOT_PAUSA_INACTIVIDAD_MS = 5 * 60 * 1000;
+
+export function inactividadSuperaUmbralReactivacion(conv) {
+  if (!conv?.bot_pausado || !conv.updated_at) return false;
+  const elapsed = Date.now() - new Date(conv.updated_at).getTime();
+  return elapsed >= BOT_PAUSA_INACTIVIDAD_MS;
+}
+
+export async function reactivarBotSiInactivo(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return { conv: null, reactivated: false };
+
+  const rows = readAll();
+  const conv = rows.find((c) => c.telefono === phone);
+  if (!conv?.bot_pausado) return { conv: conv ?? null, reactivated: false };
+  if (!inactividadSuperaUmbralReactivacion(conv)) return { conv, reactivated: false };
+
+  conv.bot_pausado = false;
+  writeAll(rows);
+  return { conv, reactivated: true };
+}
+
 function readAll() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(FILE)) return [];

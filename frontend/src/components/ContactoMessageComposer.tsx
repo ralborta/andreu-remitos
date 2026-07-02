@@ -74,9 +74,14 @@ export function ContactoMessageComposer({
           }`}
         >
           {botPausado ? <PlayCircle size={14} /> : <PauseCircle size={14} />}
-          {botPausado ? "Reactivar bot" : "Pausar bot"}
+          {botPausado ? "Reactivar bot ya" : "Pausar bot"}
         </button>
       </div>
+      {botPausado && (
+        <p className="mb-2 text-[10px] text-amber-400/90">
+          Bot pausado — vos respondés al chofer. Se reactiva solo tras 5 min sin mensajes (operador o chofer).
+        </p>
+      )}
       <div className="flex gap-2">
         <textarea
           rows={2}

@@ -71,6 +71,15 @@ export function ContactosInbox() {
     if (selectedTel) loadConv(selectedTel);
   }, [selectedTel, loadConv]);
 
+  useEffect(() => {
+    if (!selectedTel || !conv?.bot_pausado) return;
+    const id = setInterval(() => {
+      loadConv(selectedTel);
+      loadLista();
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [selectedTel, conv?.bot_pausado, loadConv, loadLista]);
+
   const selected = lista.find((c) => c.telefono === selectedTel);
 
   return (
@@ -157,7 +166,7 @@ export function ContactosInbox() {
                   </p>
                 )}
                 {c.bot_pausado && (
-                  <span className="mt-1 inline-block text-[10px] text-amber-400">Bot pausado</span>
+                  <span className="mt-1 inline-block text-[10px] text-amber-400">Bot pausado · auto 5 min</span>
                 )}
               </button>
             ))}

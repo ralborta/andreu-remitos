@@ -1,10 +1,18 @@
 import { sendWhatsAppMessage, setBuilderBotBlacklist } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
+import { syncBotPausa, BOT_PAUSA_INACTIVIDAD_MIN } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 
 export default async function conversacionesRoutes(fastify) {
   fastify.get("/", async (request) => {
     const { tenant, limit } = request.query;
+    const list = await convStore.listConversaciones({
+      tenant: tenant || undefined,
+      limit: limit ? parseInt(limit, 10) : 80,
+    });
+    for (const c of list) {
+      if (c.bot_pausado) await syncBotPausa(c.telefono);
+    }
     return convStore.listConversaciones({
       tenant: tenant || undefined,
       limit: limit ? parseInt(limit, 10) : 80,
@@ -13,7 +21,7 @@ export default async function conversacionesRoutes(fastify) {
 
   fastify.get("/:telefono", async (request, reply) => {
     const phone = sanitizePhone(request.params.telefono);
-    const conv = await convStore.getConversacion(phone);
+    const conv = await syncBotPausa(phone);
     if (!conv) return reply.code(404).send({ error: "Conversación no encontrada" });
     return conv;
   });
@@ -76,6 +84,6 @@ export default async function conversacionesRoutes(fastify) {
       request.log.warn(err, "blacklist BuilderBot opcional falló");
     }
 
-    return conv;
+    return { ...conv, bot_pausa_auto_min: BOT_PAUSA_INACTIVIDAD_MIN };
   });
 }
