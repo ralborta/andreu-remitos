@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
-import { Database, Check, Plus, Trash2 } from "lucide-react";
+import { Database, Plus, Trash2 } from "lucide-react";
 import {
   createChofer,
   createDistancia,
@@ -32,7 +32,6 @@ import type {
 import { REMITO_TENANTS } from "@/lib/tenants";
 import { tenantLabel } from "@/lib/remitos-ui";
 import { Card, PageHeader, SectionTitle } from "./ui";
-import { DataTable, type Column } from "./DataTable";
 
 const TABS: { id: ParametroTab; label: string }[] = [
   { id: "choferes", label: "Choferes" },
@@ -44,8 +43,19 @@ const TABS: { id: ParametroTab; label: string }[] = [
 const inputCls =
   "w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]";
 
-const cellCls =
-  "w-full min-w-0 rounded border border-transparent bg-transparent px-2 py-1.5 text-sm text-white hover:border-[var(--border)] focus:border-[var(--violet)] focus:bg-white/5 outline-none";
+const rowInputCls =
+  "w-full min-w-0 rounded-lg border border-[var(--border)] bg-white/5 px-2 py-1.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]";
+
+function saveBtnCls(disabled: boolean, saved: boolean) {
+  return clsx(
+    "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition whitespace-nowrap",
+    saved
+      ? "bg-[var(--green)]/20 text-[var(--green)]"
+      : disabled
+        ? "cursor-not-allowed bg-white/5 text-[var(--text-faint)]"
+        : "bg-[var(--violet)] text-white hover:bg-[var(--violet)]/90",
+  );
+}
 
 export function ParametrosPanel() {
   const [tenant, setTenant] = useState<TenantSlug>("tsb");
@@ -96,7 +106,6 @@ export function ParametrosPanel() {
     load();
   }, [load]);
 
-  // Distancias solo existen en Beraldi (como el CRM viejo)
   useEffect(() => {
     if (tab === "distancias" && tenant !== "beraldi") {
       setTenant("beraldi");
@@ -112,8 +121,8 @@ export function ParametrosPanel() {
     return (a.destino_nombre ?? "").localeCompare(b.destino_nombre ?? "", "es");
   });
 
-  function formatKm(km: number) {
-    return Number(km).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function setErr(err: unknown) {
+    setError(err instanceof Error ? err.message : "Error al guardar");
   }
 
   async function onAddChofer(e: React.FormEvent) {
@@ -131,264 +140,70 @@ export function ParametrosPanel() {
       setChoferForm({ nombre: "", telefono: "", documento: "" });
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar");
+      setErr(err);
     }
   }
 
   async function onAddUnidad(e: React.FormEvent) {
     e.preventDefault();
     if (!unidadForm.patente.trim()) return;
-    await createUnidad({
-      tenant,
-      tipo: unidadForm.tipo,
-      patente: unidadForm.patente.trim(),
-      unidad_interna: unidadForm.unidad_interna.trim() || null,
-      activo: true,
-    });
-    setUnidadForm({ tipo: "tractor", patente: "", unidad_interna: "" });
-    load();
+    try {
+      await createUnidad({
+        tenant,
+        tipo: unidadForm.tipo,
+        patente: unidadForm.patente.trim(),
+        unidad_interna: unidadForm.unidad_interna.trim() || null,
+        activo: true,
+      });
+      setUnidadForm({ tipo: "tractor", patente: "", unidad_interna: "" });
+      load();
+    } catch (err) {
+      setErr(err);
+    }
   }
 
   async function onAddLocalidad(e: React.FormEvent) {
     e.preventDefault();
     if (!locForm.nombre.trim()) return;
-    await createLocalidad({
-      tenant,
-      nombre: locForm.nombre.trim(),
-      codigo: locForm.codigo.trim() || null,
-      tipo: locForm.tipo,
-      activo: true,
-    });
-    setLocForm({ nombre: "", codigo: "", tipo: "ambos" });
-    load();
+    try {
+      await createLocalidad({
+        tenant,
+        nombre: locForm.nombre.trim(),
+        codigo: locForm.codigo.trim() || null,
+        tipo: locForm.tipo,
+        activo: true,
+      });
+      setLocForm({ nombre: "", codigo: "", tipo: "ambos" });
+      load();
+    } catch (err) {
+      setErr(err);
+    }
   }
 
   async function onAddDistancia(e: React.FormEvent) {
     e.preventDefault();
     const origen_id = distForm.origen_id || lomaCampanaId;
     if (!origen_id || !distForm.destino_id || distForm.km === "") return;
-    await createDistancia({
-      tenant: "beraldi",
-      origen_id,
-      destino_id: distForm.destino_id,
-      km: Number(distForm.km),
-      activo: true,
-    });
-    setDistForm({ origen_id: lomaCampanaId, destino_id: "", km: "" });
-    load();
-  }
-
-  const choferCols: Column<Chofer>[] = [
-    {
-      key: "nombre",
-      header: "Nombre",
-      render: (r) => (
-        <EditableTextCell
-          value={r.nombre}
-          onSave={(nombre) => updateChofer(r.id, { nombre }).then(load).catch(setErr)}
-        />
-      ),
-    },
-    {
-      key: "documento",
-      header: "Teléfono (DNI CRM)",
-      className: "text-[var(--text-dim)] tabular-nums",
-      render: (r) => (
-        <EditableTextCell
-          value={r.documento || r.telefono || ""}
-          placeholder="549…"
-          onSave={(tel) =>
-            updateChofer(r.id, { telefono: tel || null, documento: tel || null }).then(load).catch(setErr)
-          }
-        />
-      ),
-    },
-    {
-      key: "act",
-      header: "",
-      render: (r) => (
-        <button type="button" onClick={() => deleteChofer(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]" title="Eliminar">
-          <Trash2 size={14} />
-        </button>
-      ),
-    },
-  ];
-
-  const unidadCols: Column<Unidad>[] = [
-    {
-      key: "tipo",
-      header: "Tipo",
-      render: (r) => (
-        <select
-          className={cellCls}
-          value={r.tipo}
-          onChange={(e) =>
-            updateUnidad(r.id, { tipo: e.target.value as "tractor" | "acoplado" }).then(load).catch(setErr)
-          }
-        >
-          <option value="tractor">Tractor</option>
-          <option value="acoplado">Semi</option>
-        </select>
-      ),
-    },
-    {
-      key: "patente",
-      header: "Patente",
-      render: (r) => (
-        <EditableTextCell
-          value={r.patente}
-          onSave={(patente) => updateUnidad(r.id, { patente }).then(load).catch(setErr)}
-        />
-      ),
-    },
-    {
-      key: "unidad",
-      header: "Nro interno",
-      className: "text-[var(--text-dim)]",
-      render: (r) => (
-        <EditableTextCell
-          value={r.unidad_interna || ""}
-          placeholder="—"
-          onSave={(unidad_interna) => updateUnidad(r.id, { unidad_interna: unidad_interna || null }).then(load).catch(setErr)
-          }
-        />
-      ),
-    },
-    {
-      key: "del",
-      header: "",
-      render: (r) => (
-        <button type="button" onClick={() => deleteUnidad(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
-          <Trash2 size={14} />
-        </button>
-      ),
-    },
-  ];
-
-  const locCols: Column<Localidad>[] = [
-    {
-      key: "nombre",
-      header: "Nombre",
-      render: (r) => (
-        <EditableTextCell value={r.nombre} onSave={(nombre) => updateLocalidad(r.id, { nombre }).then(load).catch(setErr)} />
-      ),
-    },
-    {
-      key: "codigo",
-      header: "Código",
-      className: "text-[var(--text-dim)]",
-      render: (r) => (
-        <EditableTextCell
-          value={r.codigo || ""}
-          onSave={(codigo) => updateLocalidad(r.id, { codigo: codigo || null }).then(load).catch(setErr)}
-        />
-      ),
-    },
-    {
-      key: "tipo",
-      header: "Tipo",
-      className: "text-[var(--text-dim)]",
-      render: (r) => (
-        <select
-          className={cellCls}
-          value={r.tipo}
-          onChange={(e) =>
-            updateLocalidad(r.id, { tipo: e.target.value as Localidad["tipo"] }).then(load).catch(setErr)
-          }
-        >
-          <option value="ambos">Origen y destino</option>
-          <option value="origen">Solo origen</option>
-          <option value="destino">Solo destino</option>
-        </select>
-      ),
-    },
-    {
-      key: "del",
-      header: "",
-      render: (r) => (
-        <button type="button" onClick={() => deleteLocalidad(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
-          <Trash2 size={14} />
-        </button>
-      ),
-    },
-  ];
-
-  const distCols: Column<Distancia>[] = [
-    {
-      key: "origen",
-      header: "Origen",
-      className: "max-w-[200px] font-medium text-white",
-      render: (r) => (
-        <select
-          className={cellCls}
-          value={r.origen_id}
-          onChange={(e) => updateDistancia(r.id, { origen_id: e.target.value }).then(load).catch(setErr)}
-        >
-          {localidades.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.codigo ? `${l.codigo} · ` : ""}
-              {l.nombre}
-            </option>
-          ))}
-        </select>
-      ),
-    },
-    {
-      key: "destino",
-      header: "Destino",
-      className: "max-w-[220px] text-[var(--text-dim)]",
-      render: (r) => (
-        <select
-          className={cellCls}
-          value={r.destino_id}
-          onChange={(e) => updateDistancia(r.id, { destino_id: e.target.value }).then(load).catch(setErr)}
-        >
-          {localidades.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.codigo ? `${l.codigo} · ` : ""}
-              {l.nombre}
-            </option>
-          ))}
-        </select>
-      ),
-    },
-    {
-      key: "km",
-      header: "Distancia (km)",
-      className: "tabular-nums text-right font-semibold text-[var(--green)] whitespace-nowrap",
-      render: (r) => (
-        <EditableTextCell
-          value={String(r.km)}
-          inputMode="decimal"
-          className="text-right font-semibold text-[var(--green)]"
-          onSave={(v) => {
-            const km = Number(v.replace(",", "."));
-            if (!Number.isFinite(km)) throw new Error("Km inválido");
-            return updateDistancia(r.id, { km }).then(load);
-          }}
-        />
-      ),
-    },
-    {
-      key: "del",
-      header: "",
-      render: (r) => (
-        <button type="button" onClick={() => deleteDistancia(r.id).then(load).catch(setErr)} className="text-[var(--text-faint)] hover:text-[var(--red)]">
-          <Trash2 size={14} />
-        </button>
-      ),
-    },
-  ];
-
-  function setErr(err: unknown) {
-    setError(err instanceof Error ? err.message : "Error al guardar");
+    try {
+      await createDistancia({
+        tenant: "beraldi",
+        origen_id,
+        destino_id: distForm.destino_id,
+        km: Number(distForm.km),
+        activo: true,
+      });
+      setDistForm({ origen_id: lomaCampanaId, destino_id: "", km: "" });
+      load();
+    } catch (err) {
+      setErr(err);
+    }
   }
 
   return (
     <div className="space-y-4">
       <PageHeader
         title="Parámetros maestros"
-        subtitle="Choferes, patentes, localidades y distancias — editá en la tabla o agregá filas nuevas"
+        subtitle="Modificá los campos de cada fila y pulsá Guardar. Podés agregar filas nuevas abajo."
         icon={<Database size={24} />}
       />
 
@@ -431,7 +246,9 @@ export function ParametrosPanel() {
       {tab === "choferes" && (
         <Card>
           <SectionTitle>Choferes · {tenantLabel(tenant)}</SectionTitle>
-          <p className="mb-3 text-xs text-[var(--text-faint)]">Clic en un campo para editar — se guarda al salir del campo (Tab / clic afuera).</p>
+          <p className="mb-3 text-xs text-[var(--text-faint)]">
+            Editá nombre o teléfono y pulsá <strong className="text-white">Guardar</strong> en esa fila.
+          </p>
           <form onSubmit={onAddChofer} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input className={inputCls} placeholder="Nombre completo" value={choferForm.nombre} onChange={(e) => setChoferForm((f) => ({ ...f, nombre: e.target.value }))} required />
             <input className={inputCls} placeholder="Teléfono WhatsApp (campo DNI CRM)" value={choferForm.documento} onChange={(e) => setChoferForm((f) => ({ ...f, documento: e.target.value }))} />
@@ -439,7 +256,15 @@ export function ParametrosPanel() {
               <Plus size={16} /> Agregar
             </button>
           </form>
-          {loading ? <p className="text-sm text-[var(--text-dim)]">Cargando…</p> : <DataTable columns={choferCols} rows={choferes} minWidth={640} />}
+          {loading ? (
+            <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
+          ) : (
+            <ParamTable minWidth={720} headers={["Nombre", "Teléfono (DNI CRM)", ""]}>
+              {choferes.map((r) => (
+                <ChoferRow key={r.id} row={r} onReload={load} onError={setErr} />
+              ))}
+            </ParamTable>
+          )}
           {!loading && choferes.length === 0 && (
             <p className="mt-2 text-sm text-[var(--text-dim)]">Sin choferes. El teléfono vincula WhatsApp al chofer al mandar remitos.</p>
           )}
@@ -449,6 +274,9 @@ export function ParametrosPanel() {
       {tab === "unidades" && (
         <Card>
           <SectionTitle>Tractores y semis · {tenantLabel(tenant)}</SectionTitle>
+          <p className="mb-3 text-xs text-[var(--text-faint)]">
+            Editá los campos y pulsá <strong className="text-white">Guardar</strong> en esa fila.
+          </p>
           <form onSubmit={onAddUnidad} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
             <select className={inputCls} value={unidadForm.tipo} onChange={(e) => setUnidadForm((f) => ({ ...f, tipo: e.target.value as "tractor" | "acoplado" }))}>
               <option value="tractor">Tractor / chasis</option>
@@ -460,13 +288,25 @@ export function ParametrosPanel() {
               <Plus size={16} /> Agregar
             </button>
           </form>
-          {loading ? <p className="text-sm text-[var(--text-dim)]">Cargando…</p> : <DataTable columns={unidadCols} rows={unidades} minWidth={520} />}
+          {loading ? (
+            <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
+          ) : (
+            <ParamTable minWidth={640} headers={["Tipo", "Patente", "Nro interno", ""]}>
+              {unidades.map((r) => (
+                <UnidadRow key={r.id} row={r} onReload={load} onError={setErr} />
+              ))}
+            </ParamTable>
+          )}
         </Card>
       )}
 
       {tab === "localidades" && (
         <Card>
           <SectionTitle>Localidades · {tenantLabel(tenant)}</SectionTitle>
+          <p className="mb-3 text-xs text-[var(--text-faint)]">
+            Cambiá el nombre (ej. renombrar &quot;BASE TSB 1&quot;), el código o el tipo, y pulsá{" "}
+            <strong className="text-white">Guardar</strong> en esa fila.
+          </p>
           <form onSubmit={onAddLocalidad} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
             <input className={inputCls} placeholder="Nombre (ej. Cimsa, La Plata)" value={locForm.nombre} onChange={(e) => setLocForm((f) => ({ ...f, nombre: e.target.value }))} required />
             <input className={inputCls} placeholder="Código locación" value={locForm.codigo} onChange={(e) => setLocForm((f) => ({ ...f, codigo: e.target.value }))} />
@@ -479,7 +319,15 @@ export function ParametrosPanel() {
               <Plus size={16} /> Agregar
             </button>
           </form>
-          {loading ? <p className="text-sm text-[var(--text-dim)]">Cargando…</p> : <DataTable columns={locCols} rows={localidades} minWidth={520} />}
+          {loading ? (
+            <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
+          ) : (
+            <ParamTable minWidth={720} headers={["Nombre", "Código", "Tipo", ""]}>
+              {localidades.map((r) => (
+                <LocalidadRow key={r.id} row={r} onReload={load} onError={setErr} />
+              ))}
+            </ParamTable>
+          )}
         </Card>
       )}
 
@@ -494,7 +342,11 @@ export function ParametrosPanel() {
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
           ) : distanciasSorted.length > 0 ? (
-            <DataTable columns={distCols} rows={distanciasSorted} minWidth={720} />
+            <ParamTable minWidth={800} headers={["Origen", "Destino", "Distancia (km)", ""]}>
+              {distanciasSorted.map((r) => (
+                <DistanciaRow key={r.id} row={r} localidades={localidades} onReload={load} onError={setErr} />
+              ))}
+            </ParamTable>
           ) : (
             <p className="text-sm text-[var(--text-dim)]">Sin distancias cargadas para Beraldi.</p>
           )}
@@ -576,50 +428,381 @@ export function ParametrosPanel() {
   );
 }
 
-function EditableTextCell({
-  value,
-  onSave,
-  placeholder,
-  inputMode,
-  className,
+function ParamTable({
+  headers,
+  children,
+  minWidth,
 }: {
-  value: string;
-  onSave: (value: string) => Promise<void>;
-  placeholder?: string;
-  inputMode?: "decimal" | "text";
-  className?: string;
+  headers: string[];
+  children: React.ReactNode;
+  minWidth: number;
 }) {
-  const [draft, setDraft] = useState(value);
+  return (
+    <div className="-mx-2 overflow-x-auto">
+      <table className="w-full border-collapse text-sm" style={{ minWidth }}>
+        <thead>
+          <tr className="text-left text-xs uppercase tracking-wider text-[var(--text-faint)]">
+            {headers.map((h) => (
+              <th key={h || "actions"} className="px-3 py-2 font-medium">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
+  );
+}
+
+function RowActions({
+  dirty,
+  saving,
+  saved,
+  onSave,
+  onDelete,
+}: {
+  dirty: boolean;
+  saving: boolean;
+  saved: boolean;
+  onSave: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-2">
+      <button type="button" onClick={onSave} disabled={!dirty || saving} className={saveBtnCls(!dirty || saving, saved)}>
+        {saving ? "Guardando…" : saved ? "Guardado ✓" : "Guardar"}
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-[var(--red)]/10 hover:text-[var(--red)]"
+        title="Eliminar"
+      >
+        <Trash2 size={14} />
+      </button>
+    </div>
+  );
+}
+
+function ChoferRow({
+  row,
+  onReload,
+  onError,
+}: {
+  row: Chofer;
+  onReload: () => void;
+  onError: (err: unknown) => void;
+}) {
+  const [nombre, setNombre] = useState(row.nombre);
+  const [telefono, setTelefono] = useState(row.documento || row.telefono || "");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setDraft(value);
-  }, [value]);
+    setNombre(row.nombre);
+    setTelefono(row.documento || row.telefono || "");
+  }, [row.id, row.nombre, row.documento, row.telefono]);
 
-  async function commit() {
-    if (draft === value) return;
+  const dirty = nombre.trim() !== row.nombre || telefono.trim() !== (row.documento || row.telefono || "");
+
+  async function save() {
+    if (!nombre.trim()) {
+      onError("El nombre no puede estar vacío");
+      return;
+    }
     setSaving(true);
+    setSaved(false);
     try {
-      await onSave(draft.trim());
+      const tel = telefono.trim() || null;
+      await updateChofer(row.id, { nombre: nombre.trim(), telefono: tel, documento: tel });
+      setSaved(true);
+      onReload();
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      onError(e);
     } finally {
       setSaving(false);
     }
   }
 
+  async function remove() {
+    if (!confirm(`¿Eliminar chofer "${row.nombre}"?`)) return;
+    try {
+      await deleteChofer(row.id);
+      onReload();
+    } catch (e) {
+      onError(e);
+    }
+  }
+
   return (
-    <span className="flex items-center gap-1">
-      <input
-        className={clsx(cellCls, className, saving && "opacity-50")}
-        value={draft}
-        placeholder={placeholder}
-        inputMode={inputMode}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => commit().catch(() => {})}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") e.currentTarget.blur();
-        }}
-      />
-      {saving && <Check size={12} className="shrink-0 text-[var(--green)]" />}
-    </span>
+    <tr className="border-t border-[var(--border-soft)] hover:bg-white/[0.03]">
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={nombre} onChange={(e) => setNombre(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={telefono} placeholder="549…" onChange={(e) => setTelefono(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <RowActions dirty={dirty} saving={saving} saved={saved} onSave={save} onDelete={remove} />
+      </td>
+    </tr>
+  );
+}
+
+function UnidadRow({
+  row,
+  onReload,
+  onError,
+}: {
+  row: Unidad;
+  onReload: () => void;
+  onError: (err: unknown) => void;
+}) {
+  const [tipo, setTipo] = useState(row.tipo);
+  const [patente, setPatente] = useState(row.patente);
+  const [unidadInterna, setUnidadInterna] = useState(row.unidad_interna || "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setTipo(row.tipo);
+    setPatente(row.patente);
+    setUnidadInterna(row.unidad_interna || "");
+  }, [row.id, row.tipo, row.patente, row.unidad_interna]);
+
+  const dirty =
+    tipo !== row.tipo ||
+    patente.trim() !== row.patente ||
+    unidadInterna.trim() !== (row.unidad_interna || "");
+
+  async function save() {
+    if (!patente.trim()) {
+      onError("La patente no puede estar vacía");
+      return;
+    }
+    setSaving(true);
+    setSaved(false);
+    try {
+      await updateUnidad(row.id, {
+        tipo,
+        patente: patente.trim(),
+        unidad_interna: unidadInterna.trim() || null,
+      });
+      setSaved(true);
+      onReload();
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    if (!confirm(`¿Eliminar unidad ${row.patente}?`)) return;
+    try {
+      await deleteUnidad(row.id);
+      onReload();
+    } catch (e) {
+      onError(e);
+    }
+  }
+
+  return (
+    <tr className="border-t border-[var(--border-soft)] hover:bg-white/[0.03]">
+      <td className="px-3 py-2 align-middle">
+        <select className={rowInputCls} value={tipo} onChange={(e) => setTipo(e.target.value as Unidad["tipo"])}>
+          <option value="tractor">Tractor</option>
+          <option value="acoplado">Semi</option>
+        </select>
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={patente} onChange={(e) => setPatente(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={unidadInterna} placeholder="—" onChange={(e) => setUnidadInterna(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <RowActions dirty={dirty} saving={saving} saved={saved} onSave={save} onDelete={remove} />
+      </td>
+    </tr>
+  );
+}
+
+function LocalidadRow({
+  row,
+  onReload,
+  onError,
+}: {
+  row: Localidad;
+  onReload: () => void;
+  onError: (err: unknown) => void;
+}) {
+  const [nombre, setNombre] = useState(row.nombre);
+  const [codigo, setCodigo] = useState(row.codigo || "");
+  const [tipo, setTipo] = useState(row.tipo);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setNombre(row.nombre);
+    setCodigo(row.codigo || "");
+    setTipo(row.tipo);
+  }, [row.id, row.nombre, row.codigo, row.tipo]);
+
+  const dirty =
+    nombre.trim() !== row.nombre ||
+    codigo.trim() !== (row.codigo || "") ||
+    tipo !== row.tipo;
+
+  async function save() {
+    if (!nombre.trim()) {
+      onError("El nombre no puede estar vacío");
+      return;
+    }
+    setSaving(true);
+    setSaved(false);
+    try {
+      await updateLocalidad(row.id, {
+        nombre: nombre.trim(),
+        codigo: codigo.trim() || null,
+        tipo,
+      });
+      setSaved(true);
+      onReload();
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    if (!confirm(`¿Eliminar localidad "${row.nombre}"?`)) return;
+    try {
+      await deleteLocalidad(row.id);
+      onReload();
+    } catch (e) {
+      onError(e);
+    }
+  }
+
+  return (
+    <tr className="border-t border-[var(--border-soft)] hover:bg-white/[0.03]">
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={nombre} onChange={(e) => setNombre(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={codigo} onChange={(e) => setCodigo(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <select className={rowInputCls} value={tipo} onChange={(e) => setTipo(e.target.value as Localidad["tipo"])}>
+          <option value="ambos">Origen y destino</option>
+          <option value="origen">Solo origen</option>
+          <option value="destino">Solo destino</option>
+        </select>
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <RowActions dirty={dirty} saving={saving} saved={saved} onSave={save} onDelete={remove} />
+      </td>
+    </tr>
+  );
+}
+
+function DistanciaRow({
+  row,
+  localidades,
+  onReload,
+  onError,
+}: {
+  row: Distancia;
+  localidades: Localidad[];
+  onReload: () => void;
+  onError: (err: unknown) => void;
+}) {
+  const [origenId, setOrigenId] = useState(row.origen_id);
+  const [destinoId, setDestinoId] = useState(row.destino_id);
+  const [km, setKm] = useState(String(row.km));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setOrigenId(row.origen_id);
+    setDestinoId(row.destino_id);
+    setKm(String(row.km));
+  }, [row.id, row.origen_id, row.destino_id, row.km]);
+
+  const dirty =
+    origenId !== row.origen_id ||
+    destinoId !== row.destino_id ||
+    Number(km.replace(",", ".")) !== row.km;
+
+  async function save() {
+    const kmNum = Number(km.replace(",", "."));
+    if (!Number.isFinite(kmNum)) {
+      onError("Km inválido");
+      return;
+    }
+    setSaving(true);
+    setSaved(false);
+    try {
+      await updateDistancia(row.id, { origen_id: origenId, destino_id: destinoId, km: kmNum });
+      setSaved(true);
+      onReload();
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    if (!confirm("¿Eliminar esta distancia?")) return;
+    try {
+      await deleteDistancia(row.id);
+      onReload();
+    } catch (e) {
+      onError(e);
+    }
+  }
+
+  return (
+    <tr className="border-t border-[var(--border-soft)] hover:bg-white/[0.03]">
+      <td className="px-3 py-2 align-middle">
+        <select className={rowInputCls} value={origenId} onChange={(e) => setOrigenId(e.target.value)}>
+          {localidades.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.codigo ? `${l.codigo} · ` : ""}
+              {l.nombre}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <select className={rowInputCls} value={destinoId} onChange={(e) => setDestinoId(e.target.value)}>
+          {localidades.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.codigo ? `${l.codigo} · ` : ""}
+              {l.nombre}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input
+          className={clsx(rowInputCls, "text-right font-semibold text-[var(--green)]")}
+          inputMode="decimal"
+          value={km}
+          onChange={(e) => setKm(e.target.value)}
+        />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <RowActions dirty={dirty} saving={saving} saved={saved} onSave={save} onDelete={remove} />
+      </td>
+    </tr>
   );
 }
