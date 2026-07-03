@@ -9,12 +9,13 @@ import {
 import {
   mensajeCorreccionAplicada,
   parseCorreccionChofer,
+  patchCorreccionRemito,
 } from "../../../lib/correcciones-chofer.mjs";
 import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { syncBotPausa } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
-import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
+import { ingestarRemito, obtenerRemito, actualizarCampos, ultimoRemitoPorTelefono } from "../services/remitos.mjs";
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 
@@ -43,24 +44,58 @@ async function notificarChofer(phone, message, { tenant, remito_id, log } = {}) 
   }
 }
 
-function mapCorreccionCampo(tenant, campo) {
-  if (tenant === "beraldi") {
-    if (campo === "patente_chasis") return "tractor";
-    if (campo === "patente_acoplado") return "semi";
+
+async function resolverRemitoCorreccion(phone, conv, tenantCfg) {
+  if (conv?.ultimo_remito_id) {
+    const linked = await obtenerRemito(conv.ultimo_remito_id);
+    if (linked) return linked;
   }
-  if (tenant === "corina") {
-    if (campo === "patente_chasis" || campo === "dominio" || campo === "patente") return "tractor";
-    if (campo === "patente_acoplado") return "semi";
-    if (campo === "chofer") return "conductor";
-  }
-  if (tenant === "tsb") {
-    if (campo === "patente_chasis") return "chasis";
-    if (campo === "patente_acoplado") return "acoplado";
-  }
-  return campo;
+  if (!phone) return null;
+  return ultimoRemitoPorTelefono(phone, { tenant: conv?.tenant ?? tenantCfg ?? undefined });
 }
 
-async function procesarTextoChofer(ev, tenantCfg, texto) {
+async function aplicarCorreccionChofer({ phone, conv, tenantCfg, correccion, pausado, log }) {
+  const remito = await resolverRemitoCorreccion(phone, conv, tenantCfg);
+  if (!remito) {
+    log?.warn?.({ phone, campo: correccion.campo }, "Corrección detectada pero sin remito vinculado");
+    return null;
+  }
+
+  if (correccion.campo === "_confirmacion") {
+    const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
+    if (phone && !webhookSilent && !pausado) {
+      await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+    }
+    return { message: msg, flow: "confirmado", remito_id: remito.id };
+  }
+
+  const patch = patchCorreccionRemito(remito.tenant, correccion);
+  const updated = await actualizarCampos(remito.id, patch);
+  if (!updated) {
+    log?.warn?.({ remito_id: remito.id, patch }, "No se pudo persistir corrección en remito");
+    return null;
+  }
+
+  await convStore.setUltimoRemito(phone, remito.id, remito.tenant);
+
+  const msg = mensajeCorreccionAplicada(correccion, updated.datos);
+  log?.info?.(
+    { remito_id: remito.id, campo: correccion.campo, patch, pausado },
+    "Corrección WhatsApp persistida en remito",
+  );
+
+  if (phone && !webhookSilent && !pausado) {
+    await convStore.appendMensaje(
+      phone,
+      { texto: msg, tipo: "text", remito_id: remito.id },
+      { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
+    );
+  }
+
+  return { message: msg, flow: "correccion", remito_id: remito.id, persisted: true };
+}
+
+async function procesarTextoChofer(ev, tenantCfg, texto, log) {
   const phone = ev.from;
   if (phone) await syncBotPausa(phone);
 
@@ -75,38 +110,23 @@ async function procesarTextoChofer(ev, tenantCfg, texto) {
   const conv = phone ? await convStore.getConversacion(phone) : null;
   const pausado = conv?.bot_pausado;
 
+  const correccion = parseCorreccionChofer(texto);
+  if (correccion) {
+    const out = await aplicarCorreccionChofer({ phone, conv, tenantCfg, correccion, pausado, log });
+    if (out) {
+      return respuestaWebhook({
+        ...out,
+        bot_pausado: pausado,
+        hint: pausado ? "Corrección guardada en remito (bot pausado — sin respuesta automática)" : undefined,
+      });
+    }
+  }
+
   if (pausado) {
     return respuestaWebhook({
       flow: "bot_pausado",
       hint: "Bot pausado — operador responde desde Contactos",
     });
-  }
-
-  const correccion = parseCorreccionChofer(texto);
-
-  if (correccion && conv?.ultimo_remito_id) {
-    if (correccion.campo === "_confirmacion") {
-      const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
-      if (!webhookSilent) {
-        await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
-      }
-      return respuestaWebhook({ message: msg, flow: "confirmado" });
-    }
-
-    const remito = await obtenerRemito(conv.ultimo_remito_id);
-    if (remito) {
-      const campo = mapCorreccionCampo(remito.tenant, correccion.campo);
-      const updated = await actualizarCampos(remito.id, { [campo]: correccion.valor });
-      const msg = mensajeCorreccionAplicada(correccion, updated?.datos);
-      if (!webhookSilent) {
-        await convStore.appendMensaje(
-          phone,
-          { texto: msg, tipo: "text", remito_id: remito.id },
-          { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
-        );
-      }
-      return respuestaWebhook({ message: msg, flow: "correccion", remito_id: remito.id });
-    }
   }
 
   const ayuda =
@@ -234,7 +254,7 @@ export default async function webhooksRoutes(fastify) {
           return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
         }
 
-        const out = await procesarTextoChofer(ev, tenantCfg, transcripcion);
+        const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log);
         return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
       }
 
@@ -279,6 +299,10 @@ export default async function webhooksRoutes(fastify) {
           tenantForzado: tenantCfg ?? undefined,
         });
 
+        if (ev.from && resultado.id) {
+          await convStore.setUltimoRemito(ev.from, resultado.id, resultado.tenant);
+        }
+
         const message = mensajeWhatsApp(resultado);
 
         if (ev.from && !pausado) {
@@ -313,7 +337,7 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ flow: ev.location ? "ubicacion_sin_pendiente" : "esperando_foto" });
       }
 
-      return procesarTextoChofer(ev, tenantCfg, texto);
+      return procesarTextoChofer(ev, tenantCfg, texto, request.log);
     } catch (err) {
       request.log.error(err);
       const destinoPendiente = ev.from

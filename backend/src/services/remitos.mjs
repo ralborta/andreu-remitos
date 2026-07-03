@@ -60,6 +60,10 @@ export async function obtenerRemito(id) {
   return store.getRemito(id);
 }
 
+export async function ultimoRemitoPorTelefono(telefono, opts) {
+  return store.ultimoRemitoPorTelefono(telefono, opts);
+}
+
 export async function actualizarCampos(id, datosParciales) {
   const row = await store.getRemito(id);
   if (!row) return null;

@@ -111,6 +111,59 @@ export function camposEdicion(tenant: string) {
   return CAMPOS_BERALDI;
 }
 
+/** Valor mostrado en formulario, resolviendo alias (ej. tractor → patente_chasis). */
+export function valorCampoEdicion(d: Record<string, unknown>, k: string): string | undefined {
+  const direct = d[k];
+  if (direct != null && direct !== "") return String(direct);
+  if (k === "patente_chasis") {
+    const v = d.tractor ?? d.chasis ?? d.patente ?? d.dominio;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "patente_acoplado") {
+    const v = d.semi ?? d.acoplado;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "chofer") {
+    const v = d.conductor;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "conductor") {
+    const v = d.chofer;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "origen") {
+    const v = d.procedencia;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "procedencia") {
+    const v = d.origen;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "destino") {
+    const v = d.destino_nombre ?? d.destino_locacion ?? d.cliente;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "nro_remito") {
+    const v = d.nro_guia;
+    if (v != null && v !== "") return String(v);
+  }
+  if (k === "nro_guia") {
+    const v = d.nro_remito;
+    if (v != null && v !== "") return String(v);
+  }
+  return undefined;
+}
+
+export function formEdicionFromDatos(tenant: string, datos: Record<string, unknown>) {
+  const campos = camposEdicion(tenant);
+  const initial: Record<string, string> = {};
+  for (const k of campos) {
+    const v = valorCampoEdicion(datos, k);
+    if (v != null) initial[k] = v;
+  }
+  return initial;
+}
+
 function datos(row: RemitoRow) {
   return row.datos as Record<string, unknown>;
 }

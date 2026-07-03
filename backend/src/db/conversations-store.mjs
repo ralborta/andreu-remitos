@@ -123,3 +123,15 @@ export async function getConversacion(telefono) {
   const phone = sanitizePhone(telefono);
   return readAll().find((c) => c.telefono === phone) ?? null;
 }
+
+/** Vincula el remito recién ingestado aunque falle el envío por WhatsApp. */
+export async function setUltimoRemito(telefono, remito_id, tenant) {
+  if (!telefono || !remito_id) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, tenant ?? null);
+  conv.ultimo_remito_id = remito_id;
+  if (tenant && !conv.tenant) conv.tenant = tenant;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}

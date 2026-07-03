@@ -12,6 +12,7 @@ import {
   buildHorariosBody,
   campoLabel,
   camposEdicion,
+  formEdicionFromDatos,
   chasisPatente,
   conductorNombre,
   destinoNombre,
@@ -79,13 +80,7 @@ export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: stri
     getRemito(id)
       .then((r) => {
         setRow(r);
-        const d = r.datos as Record<string, unknown>;
-        const campos = camposEdicion(r.tenant);
-        const initial: Record<string, string> = {};
-        for (const k of campos) {
-          if (d[k] != null) initial[k] = String(d[k]);
-        }
-        setForm(initial);
+        setForm(formEdicionFromDatos(r.tenant, r.datos as Record<string, unknown>));
         setHoras(horasFromRow(r));
       })
       .catch((e) => setError(e.message))

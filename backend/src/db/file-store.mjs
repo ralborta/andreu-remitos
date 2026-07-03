@@ -41,6 +41,19 @@ export async function getRemito(id) {
   return readAll().find((r) => r.id === id) ?? null;
 }
 
+export async function ultimoRemitoPorTelefono(telefono, { tenant, limit = 200 } = {}) {
+  const phone = String(telefono ?? "").replace(/\D/g, "");
+  if (!phone) return null;
+
+  let rows = readAll().filter((r) => {
+    const t = String(r.telefono_chofer ?? "").replace(/\D/g, "");
+    return t && t === phone;
+  });
+  if (tenant) rows = rows.filter((r) => r.tenant === tenant);
+  rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  return rows.slice(0, limit)[0] ?? null;
+}
+
 export async function updateRemito(id, patch) {
   const rows = readAll();
   const i = rows.findIndex((r) => r.id === id);

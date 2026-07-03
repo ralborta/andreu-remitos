@@ -11,6 +11,7 @@ import {
   buildHorariosBody,
   campoLabel,
   camposEdicion,
+  formEdicionFromDatos,
   advertenciaTenant,
   estadoColor,
   estadoLabel,
@@ -35,13 +36,7 @@ function camposFor(row: RemitoRow) {
 }
 
 function formFromRow(row: RemitoRow) {
-  const d = row.datos as Record<string, unknown>;
-  const campos = camposFor(row);
-  const initial: Record<string, string> = {};
-  for (const k of campos) {
-    if (d[k] != null) initial[k] = String(d[k]);
-  }
-  return initial;
+  return formEdicionFromDatos(row.tenant, row.datos as Record<string, unknown>);
 }
 
 function EditorBody({
