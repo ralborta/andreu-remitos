@@ -49,6 +49,8 @@ export async function listUsers() {
 export async function createUser(input) {
   const username = String(input.username || "").trim().toLowerCase();
   if (!username) throw new Error("Falta username");
+  const passwordStr = String(input.password || "");
+  if (passwordStr.length < 6) throw new Error("La contraseña debe tener al menos 6 caracteres");
   const rol = String(input.rol || "operador").toLowerCase();
   if (!ROLES.includes(/** @type {import("../../../lib/auth.mjs").RolUsuario} */ (rol))) {
     throw new Error(`Rol inválido: ${rol}`);
@@ -63,7 +65,7 @@ export async function createUser(input) {
     username,
     nombre: String(input.nombre || username).trim() || username,
     rol,
-    password_hash: hashPassword(String(input.password || "")),
+    password_hash: hashPassword(passwordStr),
     activo: input.activo !== false,
     created_at: now,
     updated_at: now,

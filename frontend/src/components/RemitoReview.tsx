@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRemito, getRemito, imagenUrl, patchRemitoCampos, patchRemitoTenant } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { isAdmin } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   acopladoPatente,
@@ -33,6 +35,8 @@ const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 
 export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tenantSlug?: string }) {
   const router = useRouter();
+  const { user } = useAuth();
+  const admin = isAdmin(user);
   const [row, setRow] = useState<RemitoRow | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [horas, setHoras] = useState<Record<string, string>>({});
@@ -220,14 +224,16 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
           >
             {saving ? "Guardando…" : "Guardar cambios"}
           </button>
-          <button
-            type="button"
-            onClick={borrar}
-            disabled={borrando || saving}
-            className="mt-2 w-full rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
-          >
-            {borrando ? "Eliminando…" : "Eliminar remito"}
-          </button>
+          {admin && (
+            <button
+              type="button"
+              onClick={borrar}
+              disabled={borrando || saving}
+              className="mt-2 w-full rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
+            >
+              {borrando ? "Eliminando…" : "Eliminar remito"}
+            </button>
+          )}
           {msg && <p className="mt-2 text-sm text-[var(--green)]">{msg}</p>}
           {error && <p className="mt-2 text-sm text-[var(--red)]">{error}</p>}
         </Card>

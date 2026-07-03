@@ -3,6 +3,7 @@ import type { TenantSlug } from "./tenants";
 import type { RemitoRow } from "./types";
 import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 import type { Chofer, Distancia, Localidad, Unidad } from "./parametros-types";
+import type { RolUsuario, SessionUser } from "./auth-types";
 
 const PLACEHOLDER_RE =
   /CAMBIAR|url-publica|tu-api|ejemplo|placeholder|localhost:3001/i;
@@ -145,6 +146,22 @@ export function setBotPausado(telefono: string, pausado: boolean) {
   return api<Conversacion>(`/api/conversaciones/${telefono}/bot-pausado`, {
     method: "PATCH",
     body: JSON.stringify({ pausado }),
+  });
+}
+
+export function listUsuarios() {
+  return api<{ users: SessionUser[] }>("/api/auth/users");
+}
+
+export function createUsuario(body: {
+  username: string;
+  password: string;
+  nombre?: string;
+  rol?: RolUsuario;
+}) {
+  return api<{ user: SessionUser }>("/api/auth/users", {
+    method: "POST",
+    body: JSON.stringify(body),
   });
 }
 

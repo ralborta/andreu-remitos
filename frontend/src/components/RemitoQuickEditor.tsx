@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, CheckSquare, ExternalLink, Trash2, X } from "lucide-react";
 import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { isAdmin } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   buildHorariosBody,
@@ -51,6 +53,8 @@ function EditorBody({
   onSaved?: (updated: RemitoRow) => void;
   onDeleted?: (id: string) => void;
 }) {
+  const { user } = useAuth();
+  const admin = isAdmin(user);
   const [form, setForm] = useState(() => formFromRow(row));
   const [horas, setHoras] = useState(() => horasFromRow(row));
   const [saving, setSaving] = useState(false);
@@ -275,15 +279,17 @@ function EditorBody({
           <ExternalLink size={16} />
           Revisión completa
         </Link>
-        <button
-          type="button"
-          onClick={borrar}
-          disabled={borrando || saving || procesando}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
-        >
-          <Trash2 size={16} />
-          {borrando ? "Eliminando…" : "Eliminar remito"}
-        </button>
+        {admin && (
+          <button
+            type="button"
+            onClick={borrar}
+            disabled={borrando || saving || procesando}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
+          >
+            <Trash2 size={16} />
+            {borrando ? "Eliminando…" : "Eliminar remito"}
+          </button>
+        )}
         {msg && <p className="text-center text-sm text-[var(--green)]">{msg}</p>}
         {error && <p className="text-center text-sm text-[var(--red)]">{error}</p>}
       </div>
