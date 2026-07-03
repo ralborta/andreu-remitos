@@ -8,8 +8,8 @@ import {
 } from "../../../lib/builderbot-webhook.mjs";
 import {
   mensajeCorreccionAplicada,
-  parseCorreccionChofer,
   patchCorreccionRemito,
+  resolveCorreccionChofer,
 } from "../../../lib/correcciones-chofer.mjs";
 import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
@@ -109,8 +109,14 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
 
   const conv = phone ? await convStore.getConversacion(phone) : null;
   const pausado = conv?.bot_pausado;
+  const remitoCtx = await resolverRemitoCorreccion(phone, conv, tenantCfg);
 
-  const correccion = parseCorreccionChofer(texto);
+  const correccion = await resolveCorreccionChofer(texto, {
+    tenant: remitoCtx?.tenant ?? tenantCfg,
+    datos: remitoCtx?.datos,
+    remitoVinculado: Boolean(remitoCtx),
+    log,
+  });
   if (correccion) {
     const out = await aplicarCorreccionChofer({ phone, conv, tenantCfg, correccion, pausado, log });
     if (out) {
@@ -190,7 +196,7 @@ export default async function webhooksRoutes(fastify) {
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones", "destinos"],
+    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos"],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
