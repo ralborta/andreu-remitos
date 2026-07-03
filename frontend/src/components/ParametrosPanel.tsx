@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
-import { Database, Plus, Trash2 } from "lucide-react";
+import { Database, Plus, Search, Trash2, X } from "lucide-react";
 import {
   createChofer,
   createDistancia,
@@ -57,6 +57,54 @@ function saveBtnCls(disabled: boolean, saved: boolean) {
   );
 }
 
+function matchBusqueda(q: string, ...parts: (string | null | undefined | number)[]) {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  return parts.some((p) => String(p ?? "").toLowerCase().includes(needle));
+}
+
+function ParamBuscar({
+  value,
+  onChange,
+  placeholder,
+  total,
+  filtered,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  total: number;
+  filtered: number;
+}) {
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="relative min-w-[200px] flex-1 sm:max-w-sm">
+        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)]" />
+        <input
+          type="search"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={clsx(inputCls, "pl-9 pr-9")}
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[var(--text-faint)] hover:bg-white/10 hover:text-white"
+            aria-label="Limpiar búsqueda"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      <span className="text-xs text-[var(--text-faint)]">
+        {value.trim() ? `${filtered} de ${total}` : `${total} registros`}
+      </span>
+    </div>
+  );
+}
+
 export function ParametrosPanel() {
   const [tenant, setTenant] = useState<TenantSlug>("tsb");
   const [tab, setTab] = useState<ParametroTab>("choferes");
@@ -80,6 +128,11 @@ export function ParametrosPanel() {
     tipo: "ambos",
   });
   const [distForm, setDistForm] = useState({ origen_id: "", destino_id: "", km: "" });
+  const [busqueda, setBusqueda] = useState("");
+
+  useEffect(() => {
+    setBusqueda("");
+  }, [tab, tenant]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -120,6 +173,20 @@ export function ParametrosPanel() {
     if (o !== 0) return o;
     return (a.destino_nombre ?? "").localeCompare(b.destino_nombre ?? "", "es");
   });
+
+  const q = busqueda.trim();
+  const choferesFiltrados = choferes.filter((r) =>
+    matchBusqueda(q, r.nombre, r.telefono, r.documento),
+  );
+  const unidadesFiltradas = unidades.filter((r) =>
+    matchBusqueda(q, r.patente, r.unidad_interna, r.tipo === "tractor" ? "tractor chasis" : "semi acoplado"),
+  );
+  const localidadesFiltradas = localidades.filter((r) =>
+    matchBusqueda(q, r.nombre, r.codigo, r.tipo),
+  );
+  const distanciasFiltradas = distanciasSorted.filter((r) =>
+    matchBusqueda(q, r.origen_nombre, r.destino_nombre, r.km),
+  );
 
   function setErr(err: unknown) {
     setError(err instanceof Error ? err.message : "Error al guardar");
@@ -256,15 +323,24 @@ export function ParametrosPanel() {
               <Plus size={16} /> Agregar
             </button>
           </form>
+          <ParamBuscar
+            value={busqueda}
+            onChange={setBusqueda}
+            placeholder="Buscar por nombre o teléfono…"
+            total={choferes.length}
+            filtered={choferesFiltrados.length}
+          />
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
-          ) : (
+          ) : choferesFiltrados.length > 0 ? (
             <ParamTable minWidth={720} headers={["Nombre", "Teléfono (DNI CRM)", ""]}>
-              {choferes.map((r) => (
+              {choferesFiltrados.map((r) => (
                 <ChoferRow key={r.id} row={r} onReload={load} onError={setErr} />
               ))}
             </ParamTable>
-          )}
+          ) : choferes.length > 0 ? (
+            <p className="text-sm text-[var(--text-dim)]">Ningún chofer coincide con la búsqueda.</p>
+          ) : null}
           {!loading && choferes.length === 0 && (
             <p className="mt-2 text-sm text-[var(--text-dim)]">Sin choferes. El teléfono vincula WhatsApp al chofer al mandar remitos.</p>
           )}
@@ -288,15 +364,24 @@ export function ParametrosPanel() {
               <Plus size={16} /> Agregar
             </button>
           </form>
+          <ParamBuscar
+            value={busqueda}
+            onChange={setBusqueda}
+            placeholder="Buscar por patente, nro interno o tipo…"
+            total={unidades.length}
+            filtered={unidadesFiltradas.length}
+          />
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
-          ) : (
+          ) : unidadesFiltradas.length > 0 ? (
             <ParamTable minWidth={640} headers={["Tipo", "Patente", "Nro interno", ""]}>
-              {unidades.map((r) => (
+              {unidadesFiltradas.map((r) => (
                 <UnidadRow key={r.id} row={r} onReload={load} onError={setErr} />
               ))}
             </ParamTable>
-          )}
+          ) : unidades.length > 0 ? (
+            <p className="text-sm text-[var(--text-dim)]">Ninguna unidad coincide con la búsqueda.</p>
+          ) : null}
         </Card>
       )}
 
@@ -319,15 +404,24 @@ export function ParametrosPanel() {
               <Plus size={16} /> Agregar
             </button>
           </form>
+          <ParamBuscar
+            value={busqueda}
+            onChange={setBusqueda}
+            placeholder="Buscar por nombre, código o tipo…"
+            total={localidades.length}
+            filtered={localidadesFiltradas.length}
+          />
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
-          ) : (
+          ) : localidadesFiltradas.length > 0 ? (
             <ParamTable minWidth={720} headers={["Nombre", "Código", "Tipo", ""]}>
-              {localidades.map((r) => (
+              {localidadesFiltradas.map((r) => (
                 <LocalidadRow key={r.id} row={r} onReload={load} onError={setErr} />
               ))}
             </ParamTable>
-          )}
+          ) : localidades.length > 0 ? (
+            <p className="text-sm text-[var(--text-dim)]">Ninguna localidad coincide con la búsqueda.</p>
+          ) : null}
         </Card>
       )}
 
@@ -339,14 +433,24 @@ export function ParametrosPanel() {
             (ej. LOMA CAMPANA-YPF → TRON 24-CIMSA = 344,00 km). Usado en planillas Beraldi.
           </p>
 
+          <ParamBuscar
+            value={busqueda}
+            onChange={setBusqueda}
+            placeholder="Buscar por origen, destino o km…"
+            total={distanciasSorted.length}
+            filtered={distanciasFiltradas.length}
+          />
+
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
-          ) : distanciasSorted.length > 0 ? (
+          ) : distanciasFiltradas.length > 0 ? (
             <ParamTable minWidth={800} headers={["Origen", "Destino", "Distancia (km)", ""]}>
-              {distanciasSorted.map((r) => (
+              {distanciasFiltradas.map((r) => (
                 <DistanciaRow key={r.id} row={r} localidades={localidades} onReload={load} onError={setErr} />
               ))}
             </ParamTable>
+          ) : distanciasSorted.length > 0 ? (
+            <p className="text-sm text-[var(--text-dim)]">Ninguna distancia coincide con la búsqueda.</p>
           ) : (
             <p className="text-sm text-[var(--text-dim)]">Sin distancias cargadas para Beraldi.</p>
           )}
