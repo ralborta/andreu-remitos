@@ -24,6 +24,8 @@ import {
 import { REMITO_TENANTS } from "@/lib/tenants";
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
+import { RemitoCampoInput } from "./RemitoCampoInput";
+import { useRemitoMaestros } from "@/hooks/useRemitoMaestros";
 import { RemitoImagePreview } from "./RemitoImageLightbox";
 
 const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
@@ -55,6 +57,7 @@ function EditorBody({
 }) {
   const { user } = useAuth();
   const admin = isAdmin(user);
+  const maestros = useRemitoMaestros(row.tenant);
   const [form, setForm] = useState(() => formFromRow(row));
   const [horas, setHoras] = useState(() => horasFromRow(row));
   const [saving, setSaving] = useState(false);
@@ -217,10 +220,11 @@ function EditorBody({
             <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
               {campoLabel(k)}
             </span>
-            <input
-              className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+            <RemitoCampoInput
+              campo={k}
               value={form[k] ?? ""}
-              onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
+              onChange={(v) => setForm((f) => ({ ...f, [k]: v }))}
+              maestros={maestros}
             />
           </label>
         ))}

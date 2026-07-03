@@ -29,15 +29,18 @@ import {
 import { REMITO_TENANTS } from "@/lib/tenants";
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
+import { RemitoCampoInput } from "./RemitoCampoInput";
 import { RemitoImagePreview } from "./RemitoImageLightbox";
+import { useRemitoMaestros } from "@/hooks/useRemitoMaestros";
 
 const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 
-export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tenantSlug?: string }) {
+export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: string }) {
   const router = useRouter();
   const { user } = useAuth();
   const admin = isAdmin(user);
   const [row, setRow] = useState<RemitoRow | null>(null);
+  const maestros = useRemitoMaestros(row?.tenant ?? tenantSlug ?? "tsb");
   const [form, setForm] = useState<Record<string, string>>({});
   const [horas, setHoras] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -191,10 +194,11 @@ export function RemitoReview({ id, tenantSlug: _tenantSlug }: { id: string; tena
                 <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--text-faint)]">
                   {campoLabel(k)}
                 </span>
-                <input
-                  className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                <RemitoCampoInput
+                  campo={k}
                   value={form[k] ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
+                  onChange={(v) => setForm((f) => ({ ...f, [k]: v }))}
+                  maestros={maestros}
                 />
               </label>
             ))}
