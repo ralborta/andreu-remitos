@@ -1,5 +1,6 @@
 import {
   downloadMedia,
+  mensajeEsperandoCorreccion,
   mensajeProcesandoRemito,
   mensajeSaludo,
   mensajeWhatsApp,
@@ -58,6 +59,12 @@ async function resolverRemitoCorreccion(phone, conv, tenantCfg) {
 
 function esConfirmacionOk(texto) {
   return /^(ok|dale|listo|correcto|esta bien|está bien|confirmo|confirmado|perfecto|si|sí|todo bien)$/i.test(
+    String(texto ?? "").trim(),
+  );
+}
+
+function esNegacion(texto) {
+  return /^(no|nop|nope|incorrecto|mal|est[aá]\s*mal|no\s+est[aá]|negativo)$/i.test(
     String(texto ?? "").trim(),
   );
 }
@@ -188,6 +195,18 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
     }
   }
 
+  if (esNegacion(texto) && remitoCtx) {
+    const msg = mensajeEsperandoCorreccion(remitoCtx);
+    if (phone && !pausado) {
+      await notificarChofer(phone, msg, {
+        tenant: remitoCtx.tenant,
+        remito_id: remitoCtx.id,
+        log,
+      });
+    }
+    return respuestaWebhook({ message: msg, flow: "esperando_correccion", remito_id: remitoCtx.id });
+  }
+
   const correcciones = await resolveCorreccionesChofer(texto, {
     tenant: remitoCtx?.tenant ?? tenantCfg,
     datos: remitoCtx?.datos,
@@ -220,10 +239,12 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
     texto.toLowerCase().includes("guia") ||
     texto.toLowerCase().includes("guía")
       ? "Enviame una *foto clara del remito* o un *audio* con la corrección (ej: km finales 71221)."
-      : await (async () => {
-          const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
-          return mensajeSaludo(tenantCfg, chofer?.nombre);
-        })();
+      : remitoCtx
+        ? mensajeEsperandoCorreccion(remitoCtx)
+        : await (async () => {
+            const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
+            return mensajeSaludo(tenantCfg, chofer?.nombre);
+          })();
 
   if (phone && !pausado) {
     if (webhookSilent) {
