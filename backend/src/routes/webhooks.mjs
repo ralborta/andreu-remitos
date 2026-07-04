@@ -2,6 +2,7 @@ import {
   downloadMedia,
   mensajeEsperandoCorreccion,
   mensajeAudioNoEntendido,
+  mensajeAudioFallido,
   mensajeProcesandoRemito,
   mensajeSaludo,
   mensajeWhatsApp,
@@ -159,7 +160,7 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
   return { message: msg, flow: "confirmado", remito_id: remito.id };
 }
 
-async function procesarTextoChofer(ev, tenantCfg, texto, log, { fromAudio = false } = {}) {
+async function procesarTextoChofer(ev, tenantCfg, texto, log, { fromAudio = false, remitoCtx: remitoCtxIn = null } = {}) {
   const phone = ev.from;
   if (phone) await syncBotPausa(phone);
 
@@ -173,7 +174,7 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { fromAudio = fals
 
   const conv = phone ? await convStore.getConversacion(phone) : null;
   const pausado = conv?.bot_pausado;
-  const remitoCtx = await resolverRemitoCorreccion(phone, conv, tenantCfg);
+  const remitoCtx = remitoCtxIn ?? (await resolverRemitoCorreccion(phone, conv, tenantCfg));
 
   if (esConfirmacionOk(texto)) {
     const out = await aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log });
@@ -344,10 +345,15 @@ export default async function webhooksRoutes(fastify) {
         };
 
         if (esEventoAudio(evMedia, buffer)) {
+          const convAudio = ev.from ? await convStore.getConversacion(ev.from) : null;
+          const remitoAudio = await resolverRemitoCorreccion(ev.from, convAudio, tenantCfg);
+          const contexto = remitoAudio?.estado === "bloqueado" ? "horarios" : "correccion";
+
           const transcripcion = await transcribirAudio(buffer, {
             mimeType: mime,
             filename,
             log: request.log,
+            contexto,
           });
 
           if (ev.from) {
@@ -371,7 +377,10 @@ export default async function webhooksRoutes(fastify) {
             return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
           }
 
-          const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log, { fromAudio: true });
+          const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log, {
+            fromAudio: true,
+            remitoCtx: remitoAudio,
+          });
           return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
         }
 
@@ -458,10 +467,12 @@ export default async function webhooksRoutes(fastify) {
       const destinoPendiente = ev.from
         ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
         : null;
+      const convErr = ev.from ? await convStore.getConversacion(ev.from) : null;
+      const remitoErr = await resolverRemitoCorreccion(ev.from, convErr, tenantCfg);
       const errMsg = destinoPendiente
         ? "Hubo un problema al procesar tu respuesta sobre el destino. Probá de nuevo con calle, número y ciudad."
         : esEventoAudio(ev)
-          ? "No pude entender el audio. Probá de nuevo más claro, o escribí la corrección."
+          ? mensajeAudioFallido(remitoErr)
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
       if (ev.from) await syncBotPausa(ev.from);
