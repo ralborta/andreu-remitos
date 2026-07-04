@@ -86,6 +86,8 @@ Postgres opcional (`docker compose up -d`). Sin `DATABASE_URL` usa file-store en
 
 ```
 backend/     API Fastify
+bot/         WhatsApp Baileys (open source, self-hosted)
+frontend/    UI mesa de control
 lib/         Document AI + extracción + validación horarios
 scripts/gcp/ Setup processors en GCP
 ```

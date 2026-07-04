@@ -10,5 +10,23 @@ services:
     volumes:
       - andreu_pg:/var/lib/postgresql/data
 
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    ports:
+      - "3008:3008"
+    environment:
+      PORT: 3008
+      ANDREU_API_URL: http://host.docker.internal:3001
+      BOT_PUBLIC_URL: http://localhost:3008
+    volumes:
+      - andreu_bot_sessions:/app/andreu_sessions
+      - andreu_bot_data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   andreu_pg:
+  andreu_bot_sessions:
+  andreu_bot_data:

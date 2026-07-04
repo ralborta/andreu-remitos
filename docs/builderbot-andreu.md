@@ -102,3 +102,54 @@ Prueba real: mandá foto de remito por WhatsApp → la IA debe responder en el c
 - [ ] `BUILDERBOT_BOT_ID` + `BUILDERBOT_API_KEY` en API
 - [ ] Deploy BB + QR escaneado (bot ONLINE)
 - [ ] Foto TSB → IA responde + remito en `/remitos/tsb`
+
+---
+
+## 6. Alternativa: bot Baileys self-hosted (`bot/`)
+
+Incluido en el mismo repo. Reemplaza BuilderBot Cloud con control total del código.
+
+```
+Chofer WhatsApp
+    ↓
+bot/ (BuilderBot open + Baileys) — servicio Easypanel `andreu-bot`
+    ↓ POST /api/webhooks/builderbot (mismo contrato)
+API andreu-remitos → Document AI + /contactos
+    ↓ POST /v1/messages (BAILEYS_BOT_URL)
+bot/ → responde al chofer (texto e imágenes)
+```
+
+### Easypanel — servicio `andreu-bot`
+
+| Campo | Valor |
+|-------|--------|
+| Ruta repo | `/bot` |
+| Dockerfile | `bot/Dockerfile` |
+| Puerto | `3008` |
+
+```env
+PORT=3008
+ANDREU_API_URL=http://andreu-remitos:3001
+BOT_PUBLIC_URL=http://andreu-bot:3008
+```
+
+Volúmenes: `/app/andreu_sessions`, `/app/data`
+
+### API `andreu-remitos` — agregar
+
+```env
+BAILEYS_BOT_URL=http://andreu-bot:3008
+BUILDERBOT_WEBHOOK_SILENT=false
+```
+
+Con Baileys, la API envía las respuestas al chofer (no hace falta BBC).
+
+### Local
+
+```bash
+npm run api:dev          # terminal 1
+cp bot/.env.example bot/.env
+npm run bot:dev          # terminal 2 — escanear QR
+```
+
+Ver [bot/README.md](../bot/README.md).

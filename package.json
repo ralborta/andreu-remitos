@@ -7,7 +7,9 @@
     "procesar:all": "node scripts/procesar-remito.mjs --all",
     "lectura:frio": "node scripts/lectura-frio.mjs",
     "api:dev": "npm run dev --prefix backend",
-    "api:start": "npm start --prefix backend"
+    "api:start": "npm start --prefix backend",
+    "bot:dev": "npm run dev --prefix bot",
+    "bot:start": "npm start --prefix bot"
   },
   "dependencies": {
     "@google-cloud/documentai": "^4.1.0",
