@@ -122,12 +122,16 @@ async function aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones,
     "Correcciones WhatsApp persistidas en remito",
   );
 
-  if (phone && !webhookSilent && !pausado) {
-    await convStore.appendMensaje(
-      phone,
-      { texto: msg, tipo: "text", remito_id: remito.id },
-      { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
-    );
+  if (phone && !pausado) {
+    if (webhookSilent) {
+      await convStore.appendMensaje(
+        phone,
+        { texto: msg, tipo: "text", remito_id: remito.id },
+        { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
+      );
+    } else {
+      await notificarChofer(phone, msg, { tenant: remito.tenant, remito_id: remito.id, log });
+    }
   }
 
   return { message: msg, flow: "correccion", remito_id: remito.id, persisted: true, campos: correcciones.length };
@@ -150,8 +154,12 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
   }
 
   const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
-  if (phone && !webhookSilent && !pausado) {
-    await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+  if (phone && !pausado) {
+    if (webhookSilent) {
+      await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+    } else {
+      await notificarChofer(phone, msg, { tenant: tenantCfg, log });
+    }
   }
   await convStore.clearCorreccionesPendientes(phone);
   return { message: msg, flow: "confirmado", remito_id: remito.id };
@@ -217,8 +225,12 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
           return mensajeSaludo(tenantCfg, chofer?.nombre);
         })();
 
-  if (phone && !webhookSilent) {
-    await convStore.appendMensaje(phone, { texto: ayuda, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+  if (phone && !pausado) {
+    if (webhookSilent) {
+      await convStore.appendMensaje(phone, { texto: ayuda, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+    } else {
+      await notificarChofer(phone, ayuda, { tenant: tenantCfg, log });
+    }
   }
 
   return respuestaWebhook({
