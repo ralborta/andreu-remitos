@@ -186,6 +186,12 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
           ),
         },
         {
+          key: "fecha",
+          header: "Fecha",
+          className: "tabular-nums text-[var(--text-dim)] whitespace-nowrap",
+          render: (r) => fechaRemito(r),
+        },
+        {
           key: "chofer",
           header: "Chofer",
           className: "text-[var(--text-dim)]",
@@ -199,7 +205,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         },
         {
           key: "semi",
-          header: "Semi",
+          header: "Semi / remolque",
           className: "text-[var(--text-dim)] tabular-nums",
           render: (r) => acopladoPatente(r),
         },
@@ -214,12 +220,6 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
           header: "Destino",
           className: "max-w-[160px] truncate text-[var(--text-dim)]",
           render: (r) => destinoNombre(r),
-        },
-        {
-          key: "fecha",
-          header: "Fecha",
-          className: "tabular-nums text-[var(--text-dim)]",
-          render: (r) => fechaRemito(r),
         },
         {
           key: "bultos",
@@ -253,6 +253,12 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
       ),
     },
     {
+      key: "fecha",
+      header: "Fecha",
+      className: "tabular-nums text-[var(--text-dim)] whitespace-nowrap",
+      render: (r) => fechaRemito(r),
+    },
+    {
       key: "chofer",
       header: "Chofer",
       className: "text-[var(--text-dim)]",
@@ -260,13 +266,13 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
     },
     {
       key: "chasis",
-      header: tenant === "beraldi" ? "Tractor" : "Tractor",
+      header: "Tractor / chasis",
       className: "text-[var(--text-dim)] tabular-nums",
       render: (r) => chasisPatente(r),
     },
     {
       key: "acoplado",
-      header: "Semi",
+      header: "Semi / remolque",
       className: "text-[var(--text-dim)] tabular-nums",
       render: (r) => acopladoPatente(r),
     },
@@ -281,12 +287,6 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
       header: "Destino",
       className: "max-w-[160px] truncate text-[var(--text-dim)]",
       render: (r) => destinoNombre(r),
-    },
-    {
-      key: "fecha",
-      header: "Fecha",
-      className: "tabular-nums text-[var(--text-dim)]",
-      render: (r) => fechaRemito(r),
     },
     {
       key: "horas",
@@ -412,7 +412,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
             <DataTable
               columns={cols}
               rows={rows}
-              minWidth={960}
+              minWidth={1080}
               rowClassName={(r) =>
                 r.id === selectedId
                   ? "bg-[var(--violet)]/15 ring-1 ring-inset ring-[var(--violet)]/50"

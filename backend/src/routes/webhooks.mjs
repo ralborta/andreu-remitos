@@ -18,6 +18,7 @@ import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos, ultimoRemitoPorTelefono } from "../services/remitos.mjs";
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
+import * as master from "../db/master-data-store.mjs";
 
 /** En modo IA (webhook de proyecto BB), no devolvemos texto al chofer — responde add_chatpdf. */
 const webhookSilent = process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
@@ -141,7 +142,10 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
     texto.toLowerCase().includes("guia") ||
     texto.toLowerCase().includes("guía")
       ? "Enviame una *foto clara del remito* o un *audio* con la corrección (ej: km finales 71221)."
-      : mensajeSaludo(tenantCfg);
+      : await (async () => {
+          const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
+          return mensajeSaludo(tenantCfg, chofer?.nombre);
+        })();
 
   if (phone && !webhookSilent) {
     await convStore.appendMensaje(phone, { texto: ayuda, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });

@@ -308,7 +308,7 @@ export function RemitoQuickEditorPanel({
 }) {
   if (!row) {
     return (
-      <Card className="flex min-h-[480px] items-center justify-center">
+      <Card className="flex min-h-[480px] items-center justify-center bg-[var(--bg-2)]">
         <div className="max-w-xs text-center">
           <p className="text-sm font-medium text-white">Seleccioná un remito</p>
           <p className="mt-1 text-xs text-[var(--text-dim)]">

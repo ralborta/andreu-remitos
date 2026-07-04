@@ -212,11 +212,20 @@ export function pesoKg(row: RemitoRow) {
 
 export function fechaRemito(row: RemitoRow) {
   const d = datos(row);
-  const f = d.fecha ?? d.fecha_remito;
-  if (f) return String(f);
+  const f = (d.fecha_guia ?? d.fecha_remito ?? d.fecha) as string | undefined;
+  if (f) {
+    const s = String(f).trim();
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    return s;
+  }
   if (row.created_at) {
     try {
-      return new Date(row.created_at).toLocaleDateString("es-AR");
+      return new Date(row.created_at).toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
     } catch {
       return "—";
     }
@@ -250,9 +259,9 @@ const CAMPO_LABEL: Record<string, string> = {
   origen: "Origen",
   destino: "Destino",
   chasis: "Tractor / chasis",
-  acoplado: "Semi / acoplado",
+  acoplado: "Semi / remolque",
   patente_chasis: "Patente chasis",
-  patente_acoplado: "Patente acoplado",
+  patente_acoplado: "Semi / remolque",
   patente: "Patente / dominio",
   cliente: "Cliente",
   cod_cliente: "Cod. cliente",
@@ -342,6 +351,10 @@ export function remitoProcesable(row: RemitoRow): { ok: boolean; motivos: string
   }
   if (row.estado === "error_lectura") {
     return { ok: false, motivos: ["Error de lectura — corregir campos"] };
+  }
+
+  if (!esTenantCorina(row.tenant) && horasCompletas(row) && row.validacion?.valido === true) {
+    return { ok: true, motivos: [] };
   }
 
   if (row.tenant === "corina") {

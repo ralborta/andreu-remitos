@@ -6,6 +6,7 @@ import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../
 import { normalizarPeso } from "../../../lib/extract-cold.mjs";
 import { validarDestinoConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
 import { evaluarProcesable } from "../../../lib/remito-procesable.mjs";
+import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
 import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
 
@@ -27,6 +28,17 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   const tenantEfectivo = tenantPorChofer ?? tenantForzado ?? undefined;
 
   const resultado = await leerRemito(buffer, { filename, telefono, tenantForzado: tenantEfectivo });
+
+  if (telefono) {
+    const chofer = await master.resolverChoferPorTelefono(telefono);
+    if (chofer?.nombre) {
+      if (resultado.tenant === "tsb") resultado.lectura.conductor = chofer.nombre;
+      else if (resultado.tenant === "corina") resultado.lectura.conductor = chofer.nombre;
+      else resultado.lectura.chofer = chofer.nombre;
+    }
+  }
+
+  resultado.lectura = normalizarDatosRemito(resultado.lectura, resultado.tenant);
 
   const id = randomUUID();
   const ext = path.extname(filename || ".jpg") || ".jpg";
@@ -69,7 +81,8 @@ export async function actualizarCampos(id, datosParciales) {
   if (!row) return null;
 
   const { horarios: horariosIncoming, ...resto } = datosParciales;
-  const datos = { ...row.datos, ...resto, _editado_manual: true };
+  let datos = { ...row.datos, ...resto, _editado_manual: true };
+  datos = normalizarDatosRemito(datos, row.tenant);
 
   if ("peso_kg" in resto && resto.peso_kg != null && resto.peso_kg !== "") {
     const normalizado =

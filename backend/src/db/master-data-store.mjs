@@ -115,6 +115,18 @@ export async function resolverTenantPorTelefono(telefono) {
   return null;
 }
 
+/** Chofer registrado en maestros por teléfono WhatsApp. */
+export async function resolverChoferPorTelefono(telefono) {
+  const tel = normalizePhone(telefono);
+  if (!tel) return null;
+  for (const tenant of ["tsb", "beraldi", "corina"]) {
+    const choferes = await listCollection("choferes", { tenant, activo: true });
+    const chofer = findChoferByPhone(choferes, tel);
+    if (chofer) return { ...chofer, tenant };
+  }
+  return null;
+}
+
 /** Import masivo desde array (upsert por teléfono en telefono o documento/DNI) */
 export async function importChoferes(items, { tenant, replace = false } = {}) {
   const db = readDb();
