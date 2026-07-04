@@ -10,14 +10,13 @@ import {
 import {
   mensajeCorreccionesAplicadas,
   buildPatchFromCorrecciones,
-  parseTodasCorreccionesChofer,
   resolveCorreccionesChofer,
 } from "../../../lib/correcciones-chofer.mjs";
 import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { syncBotPausa } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
-import { ingestarRemito, obtenerRemito, actualizarCampos, ultimoRemitoPorTelefono } from "../services/remitos.mjs";
+import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
@@ -49,12 +48,25 @@ async function notificarChofer(phone, message, { tenant, remito_id, log } = {}) 
 
 
 async function resolverRemitoCorreccion(phone, conv, tenantCfg) {
-  if (conv?.ultimo_remito_id) {
-    const linked = await obtenerRemito(conv.ultimo_remito_id);
-    if (linked) return linked;
+  void tenantCfg;
+  void phone;
+  let activoId = conv?.remito_en_revision_id ?? null;
+  if (
+    !activoId &&
+    conv?.ultimo_remito_id &&
+    conv.ultimo_remito_id !== conv.remito_cerrado_id
+  ) {
+    activoId = conv.ultimo_remito_id;
   }
-  if (!phone) return null;
-  return ultimoRemitoPorTelefono(phone, { tenant: conv?.tenant ?? tenantCfg ?? undefined });
+  if (!activoId) return null;
+  return obtenerRemito(activoId);
+}
+
+function flujoRemitoAbierto(conv) {
+  if (conv?.remito_en_revision_id) return true;
+  return Boolean(
+    conv?.ultimo_remito_id && conv.ultimo_remito_id !== conv.remito_cerrado_id,
+  );
 }
 
 function esConfirmacionOk(texto) {
@@ -67,32 +79,6 @@ function esNegacion(texto) {
   return /^(no|nop|nope|incorrecto|mal|est[aá]\s*mal|no\s+est[aá]|negativo)$/i.test(
     String(texto ?? "").trim(),
   );
-}
-
-/** Reúne correcciones de mensajes recientes del chofer (para aplicar al confirmar OK). */
-function correccionesDesdeHistorial(conv) {
-  if (!conv?.mensajes?.length) return [];
-  const seen = new Set();
-  /** @type {Array<{campo: string, valor: unknown, etiqueta: string}>} */
-  const out = [];
-
-  const incoming = conv.mensajes.filter(
-    (m) =>
-      (m.dir === "in" || m.from === "customer") &&
-      m.texto &&
-      m.tipo !== "image" &&
-      !esConfirmacionOk(m.texto),
-  );
-
-  for (const m of incoming.slice(-6)) {
-    for (const c of parseTodasCorreccionesChofer(m.texto)) {
-      if (!seen.has(c.campo)) {
-        seen.add(c.campo);
-        out.push(c);
-      }
-    }
-  }
-  return out;
 }
 
 function dedupeCorrecciones(lista) {
@@ -148,16 +134,14 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
   const remito = await resolverRemitoCorreccion(phone, conv, tenantCfg);
   if (!remito) return null;
 
-  const pendientes = conv?.correcciones_pendientes ?? [];
-  const delHistorial = correccionesDesdeHistorial(conv);
-  const correcciones = dedupeCorrecciones([...pendientes, ...delHistorial]);
-
-  if (correcciones.length > 0) {
+  // Solo correcciones pendientes (las ya enviadas se aplicaron al recibirlas).
+  const pendientes = dedupeCorrecciones(conv?.correcciones_pendientes ?? []);
+  if (pendientes.length > 0) {
     log?.info?.(
-      { remito_id: remito.id, campos: correcciones.map((c) => c.campo) },
+      { remito_id: remito.id, campos: pendientes.map((c) => c.campo) },
       "OK del chofer — aplicando correcciones pendientes",
     );
-    return aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones, pausado, log });
+    return aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones: pendientes, pausado, log });
   }
 
   const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
@@ -165,10 +149,11 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
     if (webhookSilent) {
       await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
     } else {
-      await notificarChofer(phone, msg, { tenant: tenantCfg, log });
+      await notificarChofer(phone, msg, { tenant: tenantCfg, remito_id: remito.id, log });
     }
   }
   await convStore.clearCorreccionesPendientes(phone);
+  await convStore.clearRemitoEnRevision(phone);
   return { message: msg, flow: "confirmado", remito_id: remito.id };
 }
 
@@ -193,9 +178,14 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
     if (out) {
       return respuestaWebhook({ ...out, bot_pausado: pausado });
     }
+    const msg = "✅ Ya quedó registrado. ¡Buen viaje!";
+    if (phone && !pausado) {
+      await notificarChofer(phone, msg, { tenant: tenantCfg, log });
+    }
+    return respuestaWebhook({ message: msg, flow: "confirmado_repetido" });
   }
 
-  if (esNegacion(texto) && remitoCtx) {
+  if (esNegacion(texto) && remitoCtx && flujoRemitoAbierto(conv)) {
     const msg = mensajeEsperandoCorreccion(remitoCtx);
     if (phone && !pausado) {
       await notificarChofer(phone, msg, {
@@ -239,7 +229,7 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
     texto.toLowerCase().includes("guia") ||
     texto.toLowerCase().includes("guía")
       ? "Enviame una *foto clara del remito* o un *audio* con la corrección (ej: km finales 71221)."
-      : remitoCtx
+      : flujoRemitoAbierto(conv) && remitoCtx
         ? mensajeEsperandoCorreccion(remitoCtx)
         : await (async () => {
             const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;

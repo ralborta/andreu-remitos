@@ -150,7 +150,22 @@ export async function setUltimoRemito(telefono, remito_id, tenant) {
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, tenant ?? null);
   conv.ultimo_remito_id = remito_id;
+  conv.remito_en_revision_id = remito_id;
   if (tenant) conv.tenant = tenant;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+/** Cierra el flujo interactivo (OK del chofer) — mantiene ultimo_remito_id para /contactos. */
+export async function clearRemitoEnRevision(telefono) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = rows.find((c) => c.telefono === sanitizePhone(telefono));
+  if (!conv) return null;
+  const cerrado = conv.remito_en_revision_id ?? conv.ultimo_remito_id;
+  if (cerrado) conv.remito_cerrado_id = cerrado;
+  delete conv.remito_en_revision_id;
   conv.updated_at = new Date().toISOString();
   writeAll(rows);
   return conv;
