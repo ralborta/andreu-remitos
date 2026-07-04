@@ -120,6 +120,10 @@ export function healthCheck() {
   return api<{ ok: boolean; service: string }>("/health");
 }
 
+export function fetchMonitorStatus() {
+  return api<MonitorStatus>("/api/monitor/status");
+}
+
 export function listConversaciones(params?: { tenant?: string; limit?: number }) {
   const q = new URLSearchParams();
   if (params?.tenant) q.set("tenant", params.tenant);

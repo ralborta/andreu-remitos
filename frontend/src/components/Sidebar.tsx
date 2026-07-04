@@ -15,6 +15,7 @@ import {
   Settings2,
   FileSpreadsheet,
   Users,
+  Activity,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -85,6 +86,20 @@ export function Sidebar({
           >
             <LayoutDashboard size={18} />
             Torre de Control
+          </Link>
+
+          <Link
+            href="/monitor"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/monitor")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <Activity size={18} />
+            Monitor
           </Link>
 
           <div className="mb-1">

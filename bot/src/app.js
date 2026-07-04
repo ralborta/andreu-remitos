@@ -65,8 +65,21 @@ const main = async () => {
   );
 
   adapterProvider.server.get("/health", (_req, res) => {
+    const host = adapterProvider.globalVendorArgs?.host;
+    const user = adapterProvider.vendor?.user;
+    const phone =
+      host?.phone ??
+      (user?.id ? String(user.id).split(":").shift() : null);
+    const whatsapp = phone ? "connected" : "disconnected";
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true, service: "andreu-baileys-bot" }));
+    res.end(
+      JSON.stringify({
+        ok: true,
+        service: "andreu-baileys-bot",
+        whatsapp,
+        phone,
+      }),
+    );
   });
 
   httpServer(PORT);
