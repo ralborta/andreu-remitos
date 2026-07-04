@@ -8,7 +8,7 @@ import {
 } from "../../../lib/builderbot-webhook.mjs";
 import {
   mensajeCorreccionesAplicadas,
-  mergePatchesCorreccion,
+  buildPatchFromCorrecciones,
   parseTodasCorreccionesChofer,
   resolveCorreccionesChofer,
 } from "../../../lib/correcciones-chofer.mjs";
@@ -106,7 +106,7 @@ async function aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones,
     return null;
   }
 
-  const patch = mergePatchesCorreccion(remito.tenant, correcciones);
+  const patch = buildPatchFromCorrecciones(remito.tenant, correcciones, remito.datos);
   const updated = await actualizarCampos(remito.id, patch);
   if (!updated) {
     log?.warn?.({ remito_id: remito.id, patch }, "No se pudo persistir correcciones en remito");
