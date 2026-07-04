@@ -4,6 +4,7 @@ import type { RemitoRow } from "./types";
 import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 import type { Chofer, Distancia, Localidad, Unidad } from "./parametros-types";
 import type { RolUsuario, SessionUser } from "./auth-types";
+import type { MonitorStatus } from "./monitor-types";
 
 const PLACEHOLDER_RE =
   /CAMBIAR|url-publica|tu-api|ejemplo|placeholder|localhost:3001/i;
