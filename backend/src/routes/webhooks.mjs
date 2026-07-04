@@ -7,9 +7,10 @@ import {
   resolveTenant,
 } from "../../../lib/builderbot-webhook.mjs";
 import {
-  mensajeCorreccionAplicada,
-  patchCorreccionRemito,
-  resolveCorreccionChofer,
+  mensajeCorreccionesAplicadas,
+  mergePatchesCorreccion,
+  parseTodasCorreccionesChofer,
+  resolveCorreccionesChofer,
 } from "../../../lib/correcciones-chofer.mjs";
 import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
@@ -55,34 +56,70 @@ async function resolverRemitoCorreccion(phone, conv, tenantCfg) {
   return ultimoRemitoPorTelefono(phone, { tenant: conv?.tenant ?? tenantCfg ?? undefined });
 }
 
-async function aplicarCorreccionChofer({ phone, conv, tenantCfg, correccion, pausado, log }) {
+function esConfirmacionOk(texto) {
+  return /^(ok|dale|listo|correcto|esta bien|está bien|confirmo|confirmado|perfecto|si|sí|todo bien)$/i.test(
+    String(texto ?? "").trim(),
+  );
+}
+
+/** Reúne correcciones de mensajes recientes del chofer (para aplicar al confirmar OK). */
+function correccionesDesdeHistorial(conv) {
+  if (!conv?.mensajes?.length) return [];
+  const seen = new Set();
+  /** @type {Array<{campo: string, valor: unknown, etiqueta: string}>} */
+  const out = [];
+
+  const incoming = conv.mensajes.filter(
+    (m) =>
+      (m.dir === "in" || m.from === "customer") &&
+      m.texto &&
+      m.tipo !== "image" &&
+      !esConfirmacionOk(m.texto),
+  );
+
+  for (const m of incoming.slice(-6)) {
+    for (const c of parseTodasCorreccionesChofer(m.texto)) {
+      if (!seen.has(c.campo)) {
+        seen.add(c.campo);
+        out.push(c);
+      }
+    }
+  }
+  return out;
+}
+
+function dedupeCorrecciones(lista) {
+  const seen = new Set();
+  const out = [];
+  for (const c of lista) {
+    if (!c || c.campo === "_confirmacion" || seen.has(c.campo)) continue;
+    seen.add(c.campo);
+    out.push(c);
+  }
+  return out;
+}
+
+async function aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones, pausado, log }) {
   const remito = await resolverRemitoCorreccion(phone, conv, tenantCfg);
   if (!remito) {
-    log?.warn?.({ phone, campo: correccion.campo }, "Corrección detectada pero sin remito vinculado");
+    log?.warn?.({ phone, n: correcciones.length }, "Correcciones detectadas pero sin remito vinculado");
     return null;
   }
 
-  if (correccion.campo === "_confirmacion") {
-    const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
-    if (phone && !webhookSilent && !pausado) {
-      await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
-    }
-    return { message: msg, flow: "confirmado", remito_id: remito.id };
-  }
-
-  const patch = patchCorreccionRemito(remito.tenant, correccion);
+  const patch = mergePatchesCorreccion(remito.tenant, correcciones);
   const updated = await actualizarCampos(remito.id, patch);
   if (!updated) {
-    log?.warn?.({ remito_id: remito.id, patch }, "No se pudo persistir corrección en remito");
+    log?.warn?.({ remito_id: remito.id, patch }, "No se pudo persistir correcciones en remito");
     return null;
   }
 
   await convStore.setUltimoRemito(phone, remito.id, remito.tenant);
+  await convStore.clearCorreccionesPendientes(phone);
 
-  const msg = mensajeCorreccionAplicada(correccion, updated.datos);
+  const msg = mensajeCorreccionesAplicadas(correcciones, updated.datos);
   log?.info?.(
-    { remito_id: remito.id, campo: correccion.campo, patch, pausado },
-    "Corrección WhatsApp persistida en remito",
+    { remito_id: remito.id, campos: correcciones.map((c) => c.campo), patch, pausado },
+    "Correcciones WhatsApp persistidas en remito",
   );
 
   if (phone && !webhookSilent && !pausado) {
@@ -93,7 +130,31 @@ async function aplicarCorreccionChofer({ phone, conv, tenantCfg, correccion, pau
     );
   }
 
-  return { message: msg, flow: "correccion", remito_id: remito.id, persisted: true };
+  return { message: msg, flow: "correccion", remito_id: remito.id, persisted: true, campos: correcciones.length };
+}
+
+async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log }) {
+  const remito = await resolverRemitoCorreccion(phone, conv, tenantCfg);
+  if (!remito) return null;
+
+  const pendientes = conv?.correcciones_pendientes ?? [];
+  const delHistorial = correccionesDesdeHistorial(conv);
+  const correcciones = dedupeCorrecciones([...pendientes, ...delHistorial]);
+
+  if (correcciones.length > 0) {
+    log?.info?.(
+      { remito_id: remito.id, campos: correcciones.map((c) => c.campo) },
+      "OK del chofer — aplicando correcciones pendientes",
+    );
+    return aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones, pausado, log });
+  }
+
+  const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
+  if (phone && !webhookSilent && !pausado) {
+    await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
+  }
+  await convStore.clearCorreccionesPendientes(phone);
+  return { message: msg, flow: "confirmado", remito_id: remito.id };
 }
 
 async function procesarTextoChofer(ev, tenantCfg, texto, log) {
@@ -112,14 +173,23 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
   const pausado = conv?.bot_pausado;
   const remitoCtx = await resolverRemitoCorreccion(phone, conv, tenantCfg);
 
-  const correccion = await resolveCorreccionChofer(texto, {
+  if (esConfirmacionOk(texto)) {
+    const out = await aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log });
+    if (out) {
+      return respuestaWebhook({ ...out, bot_pausado: pausado });
+    }
+  }
+
+  const correcciones = await resolveCorreccionesChofer(texto, {
     tenant: remitoCtx?.tenant ?? tenantCfg,
     datos: remitoCtx?.datos,
     remitoVinculado: Boolean(remitoCtx),
     log,
   });
-  if (correccion) {
-    const out = await aplicarCorreccionChofer({ phone, conv, tenantCfg, correccion, pausado, log });
+
+  if (correcciones.length > 0) {
+    if (phone) await convStore.setCorreccionesPendientes(phone, correcciones);
+    const out = await aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones, pausado, log });
     if (out) {
       return respuestaWebhook({
         ...out,

@@ -135,3 +135,25 @@ export async function setUltimoRemito(telefono, remito_id, tenant) {
   writeAll(rows);
   return conv;
 }
+
+/** Correcciones detectadas pendientes de confirmación OK del chofer. */
+export async function setCorreccionesPendientes(telefono, correcciones) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  conv.correcciones_pendientes = Array.isArray(correcciones) ? correcciones : [];
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function clearCorreccionesPendientes(telefono) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = rows.find((c) => c.telefono === sanitizePhone(telefono));
+  if (!conv) return null;
+  delete conv.correcciones_pendientes;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
