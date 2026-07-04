@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
+import * as remitoStore from "./file-store.mjs";
 
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const FILE = path.join(DATA_DIR, "conversaciones.json");
@@ -108,20 +109,39 @@ export async function isBotPausado(telefono) {
   return !!conv?.bot_pausado;
 }
 
+export async function syncTenantDesdeRemito(conv) {
+  if (!conv?.ultimo_remito_id) return conv;
+  const rem = await remitoStore.getRemito(conv.ultimo_remito_id);
+  if (!rem?.tenant || rem.tenant === conv.tenant) return conv;
+  return updateTenantConversacion(conv.telefono, rem.tenant);
+}
+
 export async function listConversaciones({ tenant, limit = 80 } = {}) {
   let rows = readAll();
-  if (tenant) rows = rows.filter((c) => c.tenant === tenant);
   rows.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-  return rows.slice(0, limit).map(({ mensajes, ...rest }) => ({
-    ...rest,
-    ultimo_mensaje: mensajes.at(-1) ?? null,
-    total_mensajes: mensajes.length,
-  }));
+
+  const enriched = [];
+  for (const row of rows) {
+    const synced = (await syncTenantDesdeRemito(row)) ?? row;
+    const tenantEfectivo = synced.tenant ?? row.tenant;
+    if (tenant && tenantEfectivo !== tenant) continue;
+    const { mensajes, ...rest } = synced;
+    enriched.push({
+      ...rest,
+      tenant: tenantEfectivo,
+      ultimo_mensaje: mensajes?.at(-1) ?? null,
+      total_mensajes: mensajes?.length ?? 0,
+    });
+    if (enriched.length >= limit) break;
+  }
+  return enriched;
 }
 
 export async function getConversacion(telefono) {
   const phone = sanitizePhone(telefono);
-  return readAll().find((c) => c.telefono === phone) ?? null;
+  const conv = readAll().find((c) => c.telefono === phone) ?? null;
+  if (!conv) return null;
+  return syncTenantDesdeRemito(conv);
 }
 
 /** Vincula el remito recién ingestado aunque falle el envío por WhatsApp. */
@@ -130,7 +150,18 @@ export async function setUltimoRemito(telefono, remito_id, tenant) {
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, tenant ?? null);
   conv.ultimo_remito_id = remito_id;
-  if (tenant && !conv.tenant) conv.tenant = tenant;
+  if (tenant) conv.tenant = tenant;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function updateTenantConversacion(telefono, tenant) {
+  if (!telefono || !tenant) return null;
+  const rows = readAll();
+  const conv = rows.find((c) => c.telefono === sanitizePhone(telefono));
+  if (!conv) return null;
+  conv.tenant = tenant;
   conv.updated_at = new Date().toISOString();
   writeAll(rows);
   return conv;
