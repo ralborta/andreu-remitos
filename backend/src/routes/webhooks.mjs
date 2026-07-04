@@ -1,6 +1,7 @@
 import {
   downloadMedia,
   mensajeEsperandoCorreccion,
+  mensajeAudioNoEntendido,
   mensajeProcesandoRemito,
   mensajeSaludo,
   mensajeWhatsApp,
@@ -158,7 +159,7 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
   return { message: msg, flow: "confirmado", remito_id: remito.id };
 }
 
-async function procesarTextoChofer(ev, tenantCfg, texto, log) {
+async function procesarTextoChofer(ev, tenantCfg, texto, log, { fromAudio = false } = {}) {
   const phone = ev.from;
   if (phone) await syncBotPausa(phone);
 
@@ -229,13 +230,15 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log) {
     texto.toLowerCase().includes("remito") ||
     texto.toLowerCase().includes("guia") ||
     texto.toLowerCase().includes("guía")
-      ? "Enviame una *foto clara del remito* o un *audio* con la corrección (ej: km finales 71221)."
-      : flujoRemitoAbierto(conv) && remitoCtx
-        ? mensajeEsperandoCorreccion(remitoCtx)
-        : await (async () => {
-            const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
-            return mensajeSaludo(tenantCfg, chofer?.nombre);
-          })();
+      ? "Enviame una *foto clara del remito* con la corrección (ej: km finales 71221)."
+      : fromAudio && flujoRemitoAbierto(conv) && remitoCtx
+        ? mensajeAudioNoEntendido(texto, remitoCtx)
+        : flujoRemitoAbierto(conv) && remitoCtx
+          ? mensajeEsperandoCorreccion(remitoCtx)
+          : await (async () => {
+              const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
+              return mensajeSaludo(tenantCfg, chofer?.nombre);
+            })();
 
   if (phone && !pausado) {
     if (webhookSilent) {
@@ -368,7 +371,7 @@ export default async function webhooksRoutes(fastify) {
             return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
           }
 
-          const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log);
+          const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log, { fromAudio: true });
           return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
         }
 
