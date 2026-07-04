@@ -6,13 +6,14 @@ import {
   mensajeWhatsApp,
   normalizeBuilderBotPayload,
   resolveTenant,
+  esEventoAudio,
 } from "../../../lib/builderbot-webhook.mjs";
 import {
   mensajeCorreccionesAplicadas,
   buildPatchFromCorrecciones,
   resolveCorreccionesChofer,
 } from "../../../lib/correcciones-chofer.mjs";
-import { transcribirAudio, esAudioMime } from "../../../lib/transcribe-audio.mjs";
+import { transcribirAudio } from "../../../lib/transcribe-audio.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { syncBotPausa } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
@@ -331,38 +332,47 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...destinoOut, received: true });
       }
 
-      // Audio — si hay destino pendiente, transcribir y procesar como corrección
-      if (ev.event === "audio" && ev.media?.url) {
+      // Media adjunto — audio (nota de voz) o foto de remito
+      if (ev.media?.url) {
         const { buffer, mime, filename } = await downloadMedia(ev.media.url);
-        const transcripcion = await transcribirAudio(buffer, { mimeType: mime, filename });
+        const evMedia = {
+          ...ev,
+          media: { ...ev.media, mime_type: mime, name: filename || ev.media.name },
+        };
 
-        if (ev.from) {
-          await convStore.appendMensaje(
-            ev.from,
-            {
-              texto: transcripcion,
-              tipo: "audio",
-              imagen_url: ev.media.url,
-              transcripcion,
-            },
-            { tenant: tenantCfg, nombre: ev.nombre },
-          );
+        if (esEventoAudio(evMedia, buffer)) {
+          const transcripcion = await transcribirAudio(buffer, {
+            mimeType: mime,
+            filename,
+            log: request.log,
+          });
+
+          if (ev.from) {
+            await convStore.appendMensaje(
+              ev.from,
+              {
+                texto: transcripcion,
+                tipo: "audio",
+                imagen_url: ev.media.url,
+                transcripcion,
+              },
+              { tenant: tenantCfg, nombre: ev.nombre },
+            );
+          }
+
+          const destinoAudio = await tryProcesarDestinos(ev, {
+            texto: transcripcion,
+            log: request.log,
+          });
+          if (destinoAudio) {
+            return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
+          }
+
+          const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log);
+          return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
         }
 
-        const destinoAudio = await tryProcesarDestinos(ev, {
-          texto: transcripcion,
-          log: request.log,
-        });
-        if (destinoAudio) {
-          return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
-        }
-
-        const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log);
-        return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
-      }
-
-      // Foto — solo remitos si NO hay destino pendiente para este número
-      if (ev.media?.url && !esAudioMime(ev.media.mime_type)) {
+        // Foto — solo remitos si NO hay destino pendiente para este número
         const destinoPendiente = ev.from
           ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
           : null;
@@ -395,7 +405,6 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        const { buffer, filename } = await downloadMedia(ev.media.url);
         const resultado = await ingestarRemito(buffer, {
           filename,
           telefono,
@@ -448,7 +457,7 @@ export default async function webhooksRoutes(fastify) {
         : null;
       const errMsg = destinoPendiente
         ? "Hubo un problema al procesar tu respuesta sobre el destino. Probá de nuevo con calle, número y ciudad."
-        : ev.event === "audio"
+        : esEventoAudio(ev)
           ? "No pude entender el audio. Probá de nuevo más claro, o escribí la corrección."
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
