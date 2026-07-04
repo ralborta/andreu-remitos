@@ -1,8 +1,8 @@
 import {
   downloadMedia,
   mensajeEsperandoCorreccion,
-  mensajeAudioNoEntendido,
-  mensajeAudioFallido,
+  mensajeAudioSoloConfirmacion,
+  mensajeAudioFallidoConfirmacion,
   mensajeProcesandoRemito,
   mensajeSaludo,
   mensajeWhatsApp,
@@ -73,9 +73,23 @@ function flujoRemitoAbierto(conv) {
 }
 
 function esConfirmacionOk(texto) {
-  return /^(ok|dale|listo|correcto|esta bien|está bien|confirmo|confirmado|perfecto|si|sí|todo bien)$/i.test(
-    String(texto ?? "").trim(),
-  );
+  const raw = String(texto ?? "").trim();
+  if (!raw) return false;
+  const t = raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[.!?,¿¡]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (/^(ok|okey|okay|dale|listo|correcto|confirmo|confirmado|perfecto|si|todo bien|esta bien|de acuerdo|claro|joya|genial)$/.test(t)) {
+    return true;
+  }
+  if (/^(si|sí)\s+(dale|listo|ok|esta bien|correcto)?$/.test(t)) return true;
+  if (/^(ok|listo|dale|correcto|confirmo|todo bien)(\s+(ok|listo|dale|perfecto|gracias))?$/.test(t)) return true;
+  if (/\b(ok|listo|correcto|confirmo|todo bien|esta bien)\b/.test(t) && t.split(" ").length <= 5) return true;
+  return false;
 }
 
 function esNegacion(texto) {
@@ -160,7 +174,7 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
   return { message: msg, flow: "confirmado", remito_id: remito.id };
 }
 
-async function procesarTextoChofer(ev, tenantCfg, texto, log, { fromAudio = false, remitoCtx: remitoCtxIn = null } = {}) {
+async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remitoCtxIn = null } = {}) {
   const phone = ev.from;
   if (phone) await syncBotPausa(phone);
 
@@ -232,11 +246,9 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { fromAudio = fals
     texto.toLowerCase().includes("guia") ||
     texto.toLowerCase().includes("guía")
       ? "Enviame una *foto clara del remito* con la corrección (ej: km finales 71221)."
-      : fromAudio && flujoRemitoAbierto(conv) && remitoCtx
-        ? mensajeAudioNoEntendido(texto, remitoCtx)
-        : flujoRemitoAbierto(conv) && remitoCtx
-          ? mensajeEsperandoCorreccion(remitoCtx)
-          : await (async () => {
+      : flujoRemitoAbierto(conv) && remitoCtx
+        ? mensajeEsperandoCorreccion(remitoCtx)
+        : await (async () => {
               const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
               return mensajeSaludo(tenantCfg, chofer?.nombre);
             })();
@@ -347,14 +359,33 @@ export default async function webhooksRoutes(fastify) {
         if (esEventoAudio(evMedia, buffer)) {
           const convAudio = ev.from ? await convStore.getConversacion(ev.from) : null;
           const remitoAudio = await resolverRemitoCorreccion(ev.from, convAudio, tenantCfg);
-          const contexto = remitoAudio?.estado === "bloqueado" ? "horarios" : "correccion";
+          const pausadoAudio = convAudio?.bot_pausado;
 
-          const transcripcion = await transcribirAudio(buffer, {
-            mimeType: mime,
-            filename,
-            log: request.log,
-            contexto,
-          });
+          if (!flujoRemitoAbierto(convAudio) || !remitoAudio) {
+            const msg =
+              "Mandame una *foto del remito* para empezar.\n" +
+              "Las correcciones van *por texto*; el *audio* es solo para confirmar con *OK*.";
+            if (ev.from && !pausadoAudio) {
+              await notificarChofer(ev.from, msg, { tenant: tenantCfg, log: request.log });
+            }
+            return respuestaWebhook({ message: msg, flow: "audio_sin_remito" });
+          }
+
+          let transcripcion;
+          try {
+            transcripcion = await transcribirAudio(buffer, {
+              mimeType: mime,
+              filename,
+              log: request.log,
+            });
+          } catch (err) {
+            request.log.warn({ err: err.message }, "Transcripción audio falló");
+            const msg = mensajeAudioFallidoConfirmacion();
+            if (ev.from && !pausadoAudio) {
+              await notificarChofer(ev.from, msg, { tenant: tenantCfg, remito_id: remitoAudio.id, log: request.log });
+            }
+            return respuestaWebhook({ message: msg, flow: "audio_no_entendido" });
+          }
 
           if (ev.from) {
             await convStore.appendMensaje(
@@ -369,19 +400,33 @@ export default async function webhooksRoutes(fastify) {
             );
           }
 
-          const destinoAudio = await tryProcesarDestinos(ev, {
-            texto: transcripcion,
-            log: request.log,
-          });
-          if (destinoAudio) {
-            return respuestaWebhook({ ...destinoAudio, transcripcion, flow: destinoAudio.flow ?? "destinos_audio" });
+          if (esConfirmacionOk(transcripcion)) {
+            const out = await aplicarConfirmacionChofer({
+              phone: ev.from,
+              conv: convAudio,
+              tenantCfg,
+              pausado: pausadoAudio,
+              log: request.log,
+            });
+            if (out) {
+              return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio_ok" });
+            }
+            const msg = "✅ Ya quedó registrado. ¡Buen viaje!";
+            if (ev.from && !pausadoAudio) {
+              await notificarChofer(ev.from, msg, { tenant: tenantCfg, log: request.log });
+            }
+            return respuestaWebhook({ message: msg, transcripcion, flow: "confirmado_repetido" });
           }
 
-          const out = await procesarTextoChofer(ev, tenantCfg, transcripcion, request.log, {
-            fromAudio: true,
-            remitoCtx: remitoAudio,
-          });
-          return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio" });
+          const msg = mensajeAudioSoloConfirmacion();
+          if (ev.from && !pausadoAudio) {
+            await notificarChofer(ev.from, msg, {
+              tenant: remitoAudio.tenant,
+              remito_id: remitoAudio.id,
+              log: request.log,
+            });
+          }
+          return respuestaWebhook({ message: msg, transcripcion, flow: "audio_no_es_ok" });
         }
 
         // Foto — solo remitos si NO hay destino pendiente para este número
@@ -467,12 +512,10 @@ export default async function webhooksRoutes(fastify) {
       const destinoPendiente = ev.from
         ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
         : null;
-      const convErr = ev.from ? await convStore.getConversacion(ev.from) : null;
-      const remitoErr = await resolverRemitoCorreccion(ev.from, convErr, tenantCfg);
       const errMsg = destinoPendiente
         ? "Hubo un problema al procesar tu respuesta sobre el destino. Probá de nuevo con calle, número y ciudad."
         : esEventoAudio(ev)
-          ? mensajeAudioFallido(remitoErr)
+          ? mensajeAudioFallidoConfirmacion()
           : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
       if (ev.from) await syncBotPausa(ev.from);
