@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
 import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
 import { normalizarPeso } from "../../../lib/extract-cold.mjs";
-import { validarDestinoConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
+import { validarDestinoConMaestros, mergeValidacionRemito, canonicalizarLocalidadesEnDatos } from "../../../lib/validacion-maestros.mjs";
 import { evaluarProcesable } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
 import * as master from "../db/master-data-store.mjs";
@@ -16,11 +16,14 @@ function uploadDir() {
   return dir;
 }
 
-async function validacionCompleta(datos, tenant) {
-  const localidades = await master.listCollection("localidades", { tenant, activo: true });
-  const destinoVal = validarDestinoConMaestros(datos, tenant, localidades);
-  const validacionHorarios = datos.horarios?.validacion ?? null;
-  return mergeValidacionRemito(validacionHorarios, destinoVal);
+async function validacionCompleta(datos, tenant, localidadesPrecargadas) {
+  const localidades =
+    localidadesPrecargadas ?? (await master.listCollection("localidades", { tenant, activo: true }));
+  const datosCanon = canonicalizarLocalidadesEnDatos(datos, tenant, localidades);
+  const destinoVal = validarDestinoConMaestros(datosCanon, tenant, localidades);
+  const validacionHorarios = datosCanon.horarios?.validacion ?? null;
+  const validacion = mergeValidacionRemito(validacionHorarios, destinoVal);
+  return { validacion, datos: datosCanon };
 }
 
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido }) {
@@ -50,8 +53,9 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   const imagenPath = path.join(uploadDir(), `${id}${ext}`);
   fs.writeFileSync(imagenPath, buffer);
 
-  const validacion = await validacionCompleta(resultado.lectura, resultado.tenant);
-  const estado = calcularEstado(resultado.lectura, validacion);
+  const { validacion, datos: datosCanon } = await validacionCompleta(resultado.lectura, resultado.tenant);
+  resultado.lectura = datosCanon;
+  const estado = calcularEstado(datosCanon, validacion);
 
   const row = {
     id,
@@ -60,7 +64,7 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
     telefono_chofer: telefono ?? null,
     imagen_path: imagenPath,
     texto_ocr: resultado.ocr.texto,
-    datos: resultado.lectura,
+    datos: datosCanon,
     validacion,
   };
 
@@ -127,7 +131,8 @@ export async function actualizarCampos(id, datosParciales) {
     };
   }
 
-  const validacion = await validacionCompleta(datos, row.tenant);
+  const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant);
+  datos = datosCanon;
   const estado = calcularEstado(datos, validacion);
 
   return store.updateRemito(id, {
@@ -200,12 +205,12 @@ export async function cambiarTenantRemito(id, nuevoTenant) {
   };
   delete datos.resumen.advertencia_tenant;
 
-  const validacion = await validacionCompleta(datos, nuevoTenant);
-  const estado = calcularEstado(datos, validacion);
+  const { validacion, datos: datosCanon } = await validacionCompleta(datos, nuevoTenant);
+  const estado = calcularEstado(datosCanon, validacion);
 
   return store.updateRemito(id, {
     tenant: nuevoTenant,
-    datos,
+    datos: datosCanon,
     validacion,
     estado,
   });
