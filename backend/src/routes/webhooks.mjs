@@ -200,7 +200,7 @@ export default async function webhooksRoutes(fastify) {
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos"],
+    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "tenant-ia"],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -306,7 +306,7 @@ export default async function webhooksRoutes(fastify) {
         const resultado = await ingestarRemito(buffer, {
           filename,
           telefono,
-          tenantForzado: tenantCfg ?? undefined,
+          tenantSugerido: tenantCfg ?? undefined,
         });
 
         if (ev.from && resultado.id) {

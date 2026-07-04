@@ -23,11 +23,16 @@ async function validacionCompleta(datos, tenant) {
   return mergeValidacionRemito(validacionHorarios, destinoVal);
 }
 
-export async function ingestarRemito(buffer, { filename, telefono, tenantForzado }) {
+export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido }) {
   const tenantPorChofer = telefono ? await master.resolverTenantPorTelefono(telefono) : null;
-  const tenantEfectivo = tenantPorChofer ?? tenantForzado ?? undefined;
+  const sugerido = tenantSugerido ?? tenantPorChofer ?? undefined;
 
-  const resultado = await leerRemito(buffer, { filename, telefono, tenantForzado: tenantEfectivo });
+  const resultado = await leerRemito(buffer, {
+    filename,
+    telefono,
+    tenantForzado: tenantForzado || undefined,
+    tenantSugerido: tenantForzado ? undefined : sugerido,
+  });
 
   if (telefono) {
     const chofer = await master.resolverChoferPorTelefono(telefono);

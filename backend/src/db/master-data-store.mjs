@@ -104,14 +104,16 @@ export function findChoferByPhone(choferes, telefono) {
   );
 }
 
-/** Chofer en maestros → tenant (fix Castro: Beraldi no cae en TSB). */
+/** Chofer en maestros → tenant. Solo si el teléfono está en un único cliente (evita TSB por defecto). */
 export async function resolverTenantPorTelefono(telefono) {
   const tel = normalizePhone(telefono);
   if (!tel) return null;
-  for (const tenant of ["tsb", "beraldi", "corina"]) {
+  const hits = [];
+  for (const tenant of ["beraldi", "tsb", "corina"]) {
     const choferes = await listCollection("choferes", { tenant, activo: true });
-    if (findChoferByPhone(choferes, tel)) return tenant;
+    if (findChoferByPhone(choferes, tel)) hits.push(tenant);
   }
+  if (hits.length === 1) return hits[0];
   return null;
 }
 
