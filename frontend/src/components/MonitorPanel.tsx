@@ -9,12 +9,13 @@ import {
   CheckCircle2,
   Globe,
   MessageCircle,
+  QrCode,
   RefreshCw,
   Server,
   XCircle,
 } from "lucide-react";
-import { fetchMonitorStatus } from "@/lib/api";
-import type { MonitorStatus } from "@/lib/monitor-types";
+import { fetchMonitorStatus, fetchMonitorWhatsappQr } from "@/lib/api";
+import type { MonitorStatus, MonitorWhatsappQr } from "@/lib/monitor-types";
 import { Card, PageHeader, Pill } from "./ui";
 
 const POLL_MS = 15_000;
@@ -70,6 +71,9 @@ export function MonitorPanel() {
   const [error, setError] = useState<string | null>(null);
   const [alertsOn, setAlertsOn] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
+  const [qr, setQr] = useState<MonitorWhatsappQr | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   const prevOk = useRef<boolean | null>(null);
   const prevWa = useRef<boolean | null>(null);
 
@@ -97,6 +101,10 @@ export function MonitorPanel() {
       setError(null);
 
       const waOk = status.services.whatsapp.ok;
+      if (waOk) {
+        setShowQr(false);
+        setQr(null);
+      }
 
       if (prevOk.current !== null && prevOk.current !== status.ok) {
         if (!status.ok) {
@@ -111,7 +119,7 @@ export function MonitorPanel() {
       if (prevWa.current !== null && prevWa.current !== waOk) {
         if (!waOk) {
           pushLog(false, "WhatsApp desconectado");
-          notify("📱 WhatsApp caído", "El bot perdió la sesión. Revisá el QR en Easypanel.");
+          notify("📱 WhatsApp caído", "El bot perdió la sesión. Abrí Monitor → Mostrar QR.");
         } else {
           pushLog(true, "WhatsApp reconectado");
           notify("📱 WhatsApp OK", "Sesión WhatsApp activa de nuevo.");
@@ -134,6 +142,28 @@ export function MonitorPanel() {
       setLoading(false);
     }
   }, [notify, pushLog]);
+
+  const loadQr = useCallback(async () => {
+    setQrLoading(true);
+    try {
+      const payload = await fetchMonitorWhatsappQr();
+      setQr(payload);
+      setShowQr(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "No se pudo cargar el QR";
+      setQr({ ok: false, connected: false, message: msg });
+      setShowQr(true);
+    } finally {
+      setQrLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!data || data.services.whatsapp.ok) return;
+    if (!showQr) return;
+    const id = window.setInterval(() => void loadQr(), 12_000);
+    return () => window.clearInterval(id);
+  }, [data, showQr, loadQr]);
 
   useEffect(() => {
     void refresh();
@@ -226,6 +256,68 @@ export function MonitorPanel() {
           </div>
         </div>
       </div>
+
+      {/* WhatsApp QR */}
+      {data && !data.services.whatsapp.ok && (
+        <Card className="p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="flex items-center gap-2 text-base font-semibold text-white">
+                <QrCode size={20} />
+                Vincular WhatsApp
+              </h2>
+              <p className="mt-2 max-w-xl text-sm text-[var(--text-dim)]">
+                Baileys <strong className="font-medium text-white/90">reconecta solo</strong> ante cortes de
+                red. Si la sesión expiró o cerraste sesión en el teléfono, escaneá el QR acá (se renueva cada
+                ~60 s).
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => void loadQr()}
+                disabled={qrLoading}
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+              >
+                <QrCode size={16} className={qrLoading ? "animate-pulse" : ""} />
+                {showQr ? "Actualizar QR" : "Mostrar QR"}
+              </button>
+            </div>
+          </div>
+
+          {showQr && (
+            <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              {qr?.image_base64 ? (
+                <img
+                  src={qr.image_base64}
+                  alt="QR WhatsApp Baileys"
+                  className="h-56 w-56 rounded-xl border border-white/10 bg-white p-2"
+                />
+              ) : (
+                <div className="flex h-56 w-56 items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 text-center text-sm text-[var(--text-dim)]">
+                  {qrLoading ? "Cargando QR…" : "Sin QR todavía"}
+                </div>
+              )}
+              <div className="text-sm text-[var(--text-dim)]">
+                <p className="text-white/90">{qr?.message ?? "Tocá «Mostrar QR» para generar la vista."}</p>
+                {qr?.qr_updated_at && (
+                  <p className="mt-2 tabular text-xs text-[var(--text-faint)]">
+                    QR del bot: {fmtTime(qr.qr_updated_at)}
+                  </p>
+                )}
+                {qr?.connected && qr.phone && (
+                  <p className="mt-2 text-emerald-300">Conectado: {qr.phone}</p>
+                )}
+                <ol className="mt-3 list-decimal space-y-1 pl-4 text-xs">
+                  <li>WhatsApp en el celular → Dispositivos vinculados</li>
+                  <li>Vincular dispositivo → Escanear QR</li>
+                  <li>Apuntá a este código (actualizalo si pasó 1 minuto)</li>
+                </ol>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Tarjetas por servicio */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">

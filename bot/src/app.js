@@ -2,6 +2,7 @@ import { createBot, createProvider, createFlow, addKeyword, EVENTS } from "@buil
 import { JsonFileDB as Database } from "@builderbot/database-json";
 import { BaileysProvider as Provider } from "@builderbot/provider-baileys";
 import { forwardToAndreu, mountFileRoutes } from "./andreu-api.js";
+import { getSessionSnapshot, readQrPng } from "./whatsapp-session.js";
 
 const PORT = Number(process.env.PORT ?? 3008);
 const PUBLIC_BASE =
@@ -65,21 +66,43 @@ const main = async () => {
   );
 
   adapterProvider.server.get("/health", (_req, res) => {
-    const host = adapterProvider.globalVendorArgs?.host;
-    const user = adapterProvider.vendor?.user;
-    const phone =
-      host?.phone ??
-      (user?.id ? String(user.id).split(":").shift() : null);
-    const whatsapp = phone ? "connected" : "disconnected";
+    const snap = getSessionSnapshot(adapterProvider);
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
-        ok: true,
-        service: "andreu-baileys-bot",
-        whatsapp,
-        phone,
-      }),
-    );
+    res.end(JSON.stringify(snap));
+  });
+
+  adapterProvider.server.get("/v1/whatsapp/status", (_req, res) => {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(getSessionSnapshot(adapterProvider)));
+  });
+
+  adapterProvider.server.get("/v1/whatsapp/qr", (_req, res) => {
+    const buf = readQrPng();
+    if (!buf?.length) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ ok: false, error: "QR no disponible aún" }));
+    }
+    res.writeHead(200, {
+      "Content-Type": "image/png",
+      "Cache-Control": "no-store",
+    });
+    res.end(buf);
+  });
+
+  /** Raíz — misma imagen QR (compat Easypanel / navegador directo) */
+  adapterProvider.server.get("/", (_req, res) => {
+    const buf = readQrPng();
+    if (!buf?.length) {
+      res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+      return res.end(
+        "<html><body><p>QR no listo. Si WhatsApp está desconectado, esperá unos segundos y recargá.</p></body></html>",
+      );
+    }
+    res.writeHead(200, {
+      "Content-Type": "image/png",
+      "Cache-Control": "no-store",
+    });
+    res.end(buf);
   });
 
   httpServer(PORT);

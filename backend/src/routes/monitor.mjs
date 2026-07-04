@@ -40,9 +40,21 @@ async function probeJson(url, id) {
 
 function whatsappOk(botProbe) {
   if (!botProbe?.ok) return false;
-  if (botProbe.whatsapp === "connected") return true;
-  if (botProbe.phone) return true;
-  return false;
+  return botProbe.whatsapp === "connected" && Boolean(botProbe.phone);
+}
+
+async function fetchBotJson(url) {
+  if (!url) return null;
+  try {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), PROBE_TIMEOUT_MS);
+    const res = await fetch(url, { signal: ac.signal, cache: "no-store" });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
 export default async function monitorRoutes(fastify) {
@@ -76,7 +88,17 @@ export default async function monitorRoutes(fastify) {
         id: "whatsapp",
         ok: waConnected,
         phone: bot.phone ?? null,
-        detail: waConnected ? "Sesión activa" : bot.ok ? "Bot arriba — falta escanear QR o reconectar" : "Bot no responde",
+        status: bot.whatsapp ?? (waConnected ? "connected" : "disconnected"),
+        qr_available: bot.qr_available ?? false,
+        qr_updated_at: bot.qr_updated_at ?? null,
+        auto_reconnect: bot.auto_reconnect ?? true,
+        detail: waConnected
+          ? "Sesión activa"
+          : bot.whatsapp === "awaiting_qr" || bot.qr_available
+            ? "Esperando escaneo de QR"
+            : bot.ok
+              ? "Desconectado — el bot intenta reconectar"
+              : "Bot no responde",
       },
       webhook,
     };
@@ -88,10 +110,64 @@ export default async function monitorRoutes(fastify) {
       checked_at: new Date().toISOString(),
       services,
       hints: !waConnected && bot.ok
-        ? ["WhatsApp desconectado: abrí https://logistica-andreu-bot.wd75db.easypanel.host/ y escaneá el QR"]
+        ? [
+            "WhatsApp desconectado — usá «Mostrar QR» abajo o abrí el monitor del bot.",
+            bot.auto_reconnect
+              ? "Baileys reconecta solo ante cortes de red; si la sesión expiró, escaneá QR."
+              : null,
+          ].filter(Boolean)
         : !bot.ok
           ? ["Servicio andreu-bot caído — revisá logs en Easypanel"]
           : [],
+    };
+  });
+
+  fastify.get("/whatsapp/qr", async () => {
+    const botBase = process.env.BAILEYS_BOT_URL?.trim().replace(/\/$/, "") || "";
+    if (!botBase) {
+      return { ok: false, connected: false, error: "BAILEYS_BOT_URL no configurado" };
+    }
+
+    const status = await fetchBotJson(`${botBase}/v1/whatsapp/status`);
+    if (status?.whatsapp === "connected") {
+      return {
+        ok: true,
+        connected: true,
+        phone: status.phone ?? null,
+        message: "WhatsApp ya está conectado.",
+      };
+    }
+
+    try {
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), PROBE_TIMEOUT_MS);
+      const res = await fetch(`${botBase}/v1/whatsapp/qr`, { signal: ac.signal, cache: "no-store" });
+      clearTimeout(timer);
+
+      if (res.ok && res.headers.get("content-type")?.includes("png")) {
+        const buf = Buffer.from(await res.arrayBuffer());
+        return {
+          ok: true,
+          connected: false,
+          qr_available: true,
+          image_base64: `data:image/png;base64,${buf.toString("base64")}`,
+          qr_updated_at: status?.qr_updated_at ?? null,
+          auto_reconnect: status?.auto_reconnect ?? true,
+          message:
+            "Escaneá con WhatsApp → Menú → Dispositivos vinculados → Vincular. El QR se renueva cada ~60 s.",
+        };
+      }
+    } catch {
+      /* fallthrough */
+    }
+
+    return {
+      ok: true,
+      connected: false,
+      qr_available: false,
+      auto_reconnect: status?.auto_reconnect ?? true,
+      message:
+        "QR aún no generado. Esperá 5–10 s y tocá «Actualizar QR». Si persiste, reiniciá andreu-bot en Easypanel.",
     };
   });
 }

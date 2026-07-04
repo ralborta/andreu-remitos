@@ -4,7 +4,7 @@ import type { RemitoRow } from "./types";
 import type { Conversacion, ConversacionListItem } from "./conversaciones-types";
 import type { Chofer, Distancia, Localidad, Unidad } from "./parametros-types";
 import type { RolUsuario, SessionUser } from "./auth-types";
-import type { MonitorStatus } from "./monitor-types";
+import type { MonitorStatus, MonitorWhatsappQr } from "./monitor-types";
 
 const PLACEHOLDER_RE =
   /CAMBIAR|url-publica|tu-api|ejemplo|placeholder|localhost:3001/i;
@@ -123,6 +123,10 @@ export function healthCheck() {
 
 export function fetchMonitorStatus() {
   return api<MonitorStatus>("/api/monitor/status");
+}
+
+export function fetchMonitorWhatsappQr() {
+  return api<MonitorWhatsappQr>("/api/monitor/whatsapp/qr");
 }
 
 export function listConversaciones(params?: { tenant?: string; limit?: number }) {
