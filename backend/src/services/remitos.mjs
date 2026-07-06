@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
 import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
 import { normalizarPeso } from "../../../lib/extract-cold.mjs";
-import { validarDestinoConMaestros, mergeValidacionRemito, canonicalizarLocalidadesEnDatos } from "../../../lib/validacion-maestros.mjs";
+import { validarDestinoConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
+import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
 import * as master from "../db/master-data-store.mjs";
@@ -16,10 +17,21 @@ function uploadDir() {
   return dir;
 }
 
-async function validacionCompleta(datos, tenant, localidadesPrecargadas) {
-  const localidades =
-    localidadesPrecargadas ?? (await master.listCollection("localidades", { tenant, activo: true }));
-  const datosCanon = canonicalizarLocalidadesEnDatos(datos, tenant, localidades);
+async function validacionCompleta(datos, tenant, opts = {}) {
+  const [localidades, choferes, unidades] = await Promise.all([
+    opts.localidades ?? master.listCollection("localidades", { tenant, activo: true }),
+    opts.choferes ?? master.listCollection("choferes", { tenant, activo: true }),
+    opts.unidades ?? master.listCollection("unidades", { tenant, activo: true }),
+  ]);
+
+  const datosCanon = canonicalizarConMaestros(datos, tenant, {
+    localidades,
+    choferes,
+    unidades,
+    telefono: opts.telefono,
+    choferDesdeTelefono: opts.choferDesdeTelefono,
+  });
+
   const destinoVal = validarDestinoConMaestros(datosCanon, tenant, localidades);
   const validacionHorarios = datosCanon.horarios?.validacion ?? null;
   const validacion = mergeValidacionRemito(validacionHorarios, destinoVal);
@@ -53,9 +65,11 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
     tenantSugerido: tenantForzado ? undefined : sugerido,
   });
 
+  let choferDesdeTelefono = false;
   if (telefono) {
     const chofer = await master.resolverChoferPorTelefono(telefono);
     if (chofer?.nombre) {
+      choferDesdeTelefono = true;
       if (resultado.tenant === "tsb") resultado.lectura.conductor = chofer.nombre;
       else if (resultado.tenant === "corina") resultado.lectura.conductor = chofer.nombre;
       else resultado.lectura.chofer = chofer.nombre;
@@ -69,7 +83,10 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   const imagenPath = path.join(uploadDir(), `${id}${ext}`);
   fs.writeFileSync(imagenPath, buffer);
 
-  const { validacion, datos: datosCanon } = await validacionCompleta(resultado.lectura, resultado.tenant);
+  const { validacion, datos: datosCanon } = await validacionCompleta(resultado.lectura, resultado.tenant, {
+    telefono,
+    choferDesdeTelefono,
+  });
   resultado.lectura = datosCanon;
   const estado = calcularEstado(datosCanon, validacion);
 
@@ -107,7 +124,21 @@ export async function reprocesarRemito(id) {
   });
 
   const lectura = normalizarDatosRemito(resultado.lectura, resultado.tenant);
-  const { validacion, datos: datosCanon } = await validacionCompleta(lectura, resultado.tenant);
+
+  let choferDesdeTelefono = false;
+  if (row.telefono_chofer) {
+    const chofer = await master.resolverChoferPorTelefono(row.telefono_chofer);
+    if (chofer?.nombre) {
+      choferDesdeTelefono = true;
+      if (resultado.tenant === "tsb" || resultado.tenant === "corina") lectura.conductor = chofer.nombre;
+      else lectura.chofer = chofer.nombre;
+    }
+  }
+
+  const { validacion, datos: datosCanon } = await validacionCompleta(lectura, resultado.tenant, {
+    telefono: row.telefono_chofer ?? undefined,
+    choferDesdeTelefono,
+  });
   let estado = calcularEstado(datosCanon, validacion);
 
   if (row.estado === "confirmado") {
