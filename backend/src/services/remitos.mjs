@@ -200,7 +200,7 @@ export async function actualizarCampos(id, datosParciales) {
       null;
 
     /** @type {Record<string, { fecha?: string|null, hora?: string|null }>} */
-    const horariosRaw = {};
+    const horariosRaw = { ...(datos.horarios?.horarios ?? {}) };
     for (const [campo, slot] of Object.entries(horariosIncoming.horarios)) {
       horariosRaw[campo] = {
         fecha: normalizarFecha(slot?.fecha) ?? fechaBase,
