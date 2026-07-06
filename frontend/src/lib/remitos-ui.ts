@@ -1,5 +1,14 @@
 import type { RemitoRow } from "./types";
 
+// Re-export helpers used in UI (via duplicate logic for browser bundle)
+function normalizarNroRemitoGuia(valor: unknown): string | null {
+  if (valor == null || valor === "") return null;
+  const raw = String(valor).trim();
+  if (/^remit[oa]s?$/i.test(raw)) return null;
+  const digits = raw.replace(/\D/g, "");
+  return digits.length >= 4 ? digits : null;
+}
+
 const ESTADO_LABEL: Record<string, string> = {
   pendiente_revision: "En revisión",
   incompleto: "Pendiente",
@@ -26,7 +35,8 @@ export function estadoColor(estado: string) {
 
 export function numeroRemito(row: RemitoRow) {
   const d = row.datos as Record<string, unknown>;
-  return (d.nro_guia || d.nro_remito || row.id.slice(0, 8)) as string;
+  const n = normalizarNroRemitoGuia(d.nro_guia ?? d.nro_remito);
+  return n ?? row.id.slice(0, 8);
 }
 
 export function conductorNombre(row: RemitoRow) {
@@ -216,21 +226,17 @@ export function fechaRemito(row: RemitoRow) {
   if (f) {
     const s = String(f).trim();
     const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    if (iso) {
+      const mo = +iso[2];
+      const day = +iso[3];
+      if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+        return `${iso[3]}/${iso[2]}/${iso[1]}`;
+      }
+      return "Sin fecha";
+    }
     return s;
   }
-  if (row.created_at) {
-    try {
-      return new Date(row.created_at).toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch {
-      return "—";
-    }
-  }
-  return "—";
+  return "Sin fecha";
 }
 
 export function fechaHoraRemito(row: RemitoRow) {

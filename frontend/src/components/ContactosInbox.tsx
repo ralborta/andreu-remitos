@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
-import { MessageCircle, RefreshCw } from "lucide-react";
+import { MessageCircle, RefreshCw, Search } from "lucide-react";
 import {
   getConversacion,
   getRemito,
+  listChoferes,
   listConversaciones,
   imagenUrl,
 } from "@/lib/api";
 import type { Conversacion, ConversacionListItem } from "@/lib/conversaciones-types";
 import type { RemitoRow } from "@/lib/types";
+import type { Chofer } from "@/lib/parametros-types";
 import { tenantLabel } from "@/lib/remitos-ui";
 import { tenantColor } from "@/lib/tenants";
 import { Card, PageHeader, Pill, SectionTitle } from "./ui";
@@ -25,20 +27,27 @@ function formatPhone(p: string) {
 
 export function ContactosInbox() {
   const [lista, setLista] = useState<ConversacionListItem[]>([]);
+  const [choferes, setChoferes] = useState<Chofer[]>([]);
   const [selectedTel, setSelectedTel] = useState<string | null>(null);
   const [conv, setConv] = useState<Conversacion | null>(null);
   const [remito, setRemito] = useState<RemitoRow | null>(null);
   const [filtroTenant, setFiltroTenant] = useState<string>("");
+  const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chatScrollKey, setChatScrollKey] = useState(0);
 
   const loadLista = useCallback(async () => {
     try {
-      const data = await listConversaciones({
-        tenant: filtroTenant || undefined,
-        limit: 100,
-      });
+      const [data, ch] = await Promise.all([
+        listConversaciones({
+          tenant: filtroTenant || undefined,
+          limit: 200,
+        }),
+        listChoferes(filtroTenant || undefined).catch(() => [] as Chofer[]),
+      ]);
       setLista(data);
+      setChoferes(ch);
       if (data.length > 0 && !selectedTel) setSelectedTel(data[0].telefono);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
@@ -81,6 +90,34 @@ export function ContactosInbox() {
   }, [selectedTel, conv?.bot_pausado, loadConv, loadLista]);
 
   const selected = lista.find((c) => c.telefono === selectedTel);
+
+  const choferPorTel = useMemo(() => {
+    const map = new Map<string, Chofer>();
+    for (const c of choferes) {
+      const tel = c.telefono?.replace(/\D/g, "") ?? "";
+      if (tel) map.set(tel, c);
+    }
+    return map;
+  }, [choferes]);
+
+  const listaFiltrada = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return lista;
+    const qDigits = q.replace(/\D/g, "");
+    return lista.filter((c) => {
+      const tel = c.telefono.replace(/\D/g, "");
+      const ch = choferPorTel.get(tel);
+      const nombre = (c.nombre || ch?.nombre || "").toLowerCase();
+      if (nombre.includes(q)) return true;
+      if (qDigits.length >= 4 && tel.includes(qDigits)) return true;
+      return false;
+    });
+  }, [lista, busqueda, choferPorTel]);
+
+  function elegirContacto(tel: string) {
+    setSelectedTel(tel);
+    setChatScrollKey((k) => k + 1);
+  }
 
   return (
     <div className="space-y-4">
@@ -128,22 +165,44 @@ export function ContactosInbox() {
           <div className="border-b border-[var(--border)] px-3 py-2 text-xs font-semibold uppercase text-[var(--text-faint)]">
             Choferes
           </div>
+          <div className="border-b border-[var(--border-soft)] p-2">
+            <label className="relative block">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
+              />
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar chofer o teléfono…"
+                className="w-full rounded-lg border border-[var(--border)] bg-white/5 py-1.5 pl-8 pr-2 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-1 focus:ring-[var(--violet)]"
+              />
+            </label>
+          </div>
           <div className="flex-1 overflow-y-auto scroll-thin">
             {loading && <p className="p-4 text-sm text-[var(--text-dim)]">Cargando…</p>}
-            {!loading && lista.length === 0 && (
+            {!loading && listaFiltrada.length === 0 && (
               <div className="p-4 text-center">
-                <p className="text-sm font-medium text-white">Sin conversaciones todavía</p>
+                <p className="text-sm font-medium text-white">
+                  {lista.length === 0 ? "Sin conversaciones todavía" : "Sin resultados"}
+                </p>
                 <p className="mt-2 text-xs leading-relaxed text-[var(--text-dim)]">
-                  Aparecen acá cuando un chofer escribe al bot de WhatsApp. Podés probar mandando
-                  &quot;Hola&quot; al número de Andreu Remitos.
+                  {lista.length === 0
+                    ? 'Aparecen acá cuando un chofer escribe al bot de WhatsApp. Podés probar mandando "Hola" al número de Andreu Remitos.'
+                    : "Probá otro nombre o teléfono."}
                 </p>
               </div>
             )}
-            {lista.map((c) => (
+            {listaFiltrada.map((c) => {
+              const tel = c.telefono.replace(/\D/g, "");
+              const ch = choferPorTel.get(tel);
+              const nombre = c.nombre || ch?.nombre || "Chofer";
+              return (
               <button
                 key={c.telefono}
                 type="button"
-                onClick={() => setSelectedTel(c.telefono)}
+                onClick={() => elegirContacto(c.telefono)}
                 className={clsx(
                   "w-full border-b border-[var(--border-soft)] px-3 py-3 text-left transition hover:bg-white/5",
                   selectedTel === c.telefono && "bg-[var(--violet)]/10",
@@ -151,7 +210,7 @@ export function ContactosInbox() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="truncate text-sm font-medium text-white">
-                    {c.nombre || "Chofer"}
+                    {nombre}
                   </p>
                   {c.tenant && (
                     <Pill color={tenantColor(c.tenant ?? "")}>
@@ -169,7 +228,8 @@ export function ContactosInbox() {
                   <span className="mt-1 inline-block text-[10px] text-amber-400">Bot pausado · auto 5 min</span>
                 )}
               </button>
-            ))}
+            );
+            })}
           </div>
         </Card>
 
@@ -189,7 +249,7 @@ export function ContactosInbox() {
                   WhatsApp
                 </span>
               </div>
-              <ContactoChatThread mensajes={conv.mensajes} />
+              <ContactoChatThread mensajes={conv.mensajes} scrollKey={chatScrollKey} />
               <ContactoMessageComposer
                 telefono={conv.telefono}
                 botPausado={!!conv.bot_pausado}

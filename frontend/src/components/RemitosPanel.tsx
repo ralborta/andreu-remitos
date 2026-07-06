@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckSquare, ChevronRight, Loader2, Square } from "lucide-react";
+import { CheckSquare, ChevronLeft, ChevronRight, Loader2, Search, Square } from "lucide-react";
 import { listRemitos, procesarRemitos, type ProcesarRemitosResult } from "@/lib/api";
 import type { RemitoRow } from "@/lib/types";
 import {
@@ -29,6 +29,24 @@ import { Card, Pill, SectionTitle } from "./ui";
 import { DataTable, type Column } from "./DataTable";
 import { RemitoQuickEditorDrawer, RemitoQuickEditorPanel } from "./RemitoQuickEditor";
 
+const PAGE_SIZE = 10;
+
+function matchBusqueda(row: RemitoRow, q: string) {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  const d = row.datos as Record<string, unknown>;
+  const nro = String(d.nro_guia ?? d.nro_remito ?? "").replace(/\D/g, "");
+  const chofer = String(d.conductor ?? d.chofer ?? "").toLowerCase();
+  const chasis = String(d.chasis ?? d.tractor ?? d.patente_chasis ?? "").toLowerCase();
+  const semi = String(d.acoplado ?? d.semi ?? d.patente_acoplado ?? "").toLowerCase();
+  const qDigits = needle.replace(/\D/g, "");
+  if (qDigits.length >= 3 && nro.includes(qDigits)) return true;
+  if (chofer.includes(needle)) return true;
+  if (chasis.includes(needle.replace(/\s/g, ""))) return true;
+  if (semi.includes(needle.replace(/\s/g, ""))) return true;
+  return false;
+}
+
 export function RemitosPanel({ tenant }: { tenant?: string }) {
   const [rows, setRows] = useState<RemitoRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -39,15 +57,34 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [procesando, setProcesando] = useState(false);
   const [batchResult, setBatchResult] = useState<ProcesarRemitosResult | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [pagina, setPagina] = useState(0);
 
   useEffect(() => {
     setCheckedIds(new Set());
     setBatchResult(null);
+    setPagina(0);
   }, [tenant, soloPendientes]);
 
+  useEffect(() => {
+    setPagina(0);
+  }, [busqueda]);
+
+  const filtradas = useMemo(
+    () => rows.filter((r) => matchBusqueda(r, busqueda)),
+    [rows, busqueda],
+  );
+
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / PAGE_SIZE));
+  const paginaSegura = Math.min(pagina, totalPaginas - 1);
+  const filasPagina = useMemo(
+    () => filtradas.slice(paginaSegura * PAGE_SIZE, paginaSegura * PAGE_SIZE + PAGE_SIZE),
+    [filtradas, paginaSegura],
+  );
+
   const procesablesEnPagina = useMemo(
-    () => rows.filter((r) => remitoProcesable(r).ok),
-    [rows],
+    () => filasPagina.filter((r) => remitoProcesable(r).ok),
+    [filasPagina],
   );
 
   const allProcesablesChecked =
@@ -57,7 +94,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    listRemitos({ tenant, pendientes: soloPendientes, limit: 100 })
+    listRemitos({ tenant, pendientes: soloPendientes, limit: 200 })
       .then((data) => {
         setRows(data);
         setSelectedId((prev) => (data.some((r) => r.id === prev) ? prev : data[0]?.id ?? null));
@@ -70,7 +107,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
       .finally(() => setLoading(false));
   }, [tenant, soloPendientes]);
 
-  const selected = rows.find((r) => r.id === selectedId) ?? null;
+  const selected = filtradas.find((r) => r.id === selectedId) ?? rows.find((r) => r.id === selectedId) ?? null;
 
   function selectRow(row: RemitoRow) {
     setSelectedId(row.id);
@@ -375,6 +412,27 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
             Tildá los revisados y usá <strong className="text-white/80">Procesar</strong> — como el CRM viejo. Solo entran en planilla los procesados con horas completas.
           </p>
 
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <label className="relative min-w-[200px] flex-1">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
+              />
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar chofer, nro remito o patente…"
+                className="w-full rounded-lg border border-[var(--border)] bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-1 focus:ring-[var(--violet)]"
+              />
+            </label>
+            {busqueda && (
+              <span className="text-xs text-[var(--text-dim)]">
+                {filtradas.length} resultado{filtradas.length === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+
           {batchResult && (
             <div
               className={`mb-3 rounded-lg px-3 py-2 text-xs ${
@@ -401,17 +459,20 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
 
           {loading && <p className="text-sm text-[var(--text-dim)]">Cargando…</p>}
           {error && <p className="text-sm text-[var(--red)]">Error: {error}</p>}
-          {!loading && !error && rows.length === 0 && (
+          {!loading && !error && filtradas.length === 0 && (
             <p className="text-sm text-[var(--text-dim)]">
-              {soloPendientes
-                ? "No hay remitos pendientes. Desmarcá «Solo pendientes» para ver validados."
-                : "Sin remitos. Subí una foto desde WhatsApp o la pantalla Subir."}
+              {rows.length === 0
+                ? soloPendientes
+                  ? "No hay remitos pendientes. Desmarcá «Solo pendientes» para ver validados."
+                  : "Sin remitos. Subí una foto desde WhatsApp o la pantalla Subir."
+                : "Ningún remito coincide con la búsqueda."}
             </p>
           )}
-          {!loading && rows.length > 0 && (
+          {!loading && filasPagina.length > 0 && (
+            <>
             <DataTable
               columns={cols}
-              rows={rows}
+              rows={filasPagina}
               minWidth={1080}
               rowClassName={(r) =>
                 r.id === selectedId
@@ -420,6 +481,32 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
               }
               onRowClick={selectRow}
             />
+            {filtradas.length > PAGE_SIZE && (
+              <div className="mt-3 flex items-center justify-between gap-2 border-t border-[var(--border-soft)] pt-3 text-xs text-[var(--text-dim)]">
+                <span>
+                  Página {paginaSegura + 1} de {totalPaginas} · {filtradas.length} remitos
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    disabled={paginaSegura <= 0}
+                    onClick={() => setPagina((p) => Math.max(0, p - 1))}
+                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] px-2 py-1 hover:bg-white/5 disabled:opacity-40"
+                  >
+                    <ChevronLeft size={14} /> Anterior
+                  </button>
+                  <button
+                    type="button"
+                    disabled={paginaSegura >= totalPaginas - 1}
+                    onClick={() => setPagina((p) => Math.min(totalPaginas - 1, p + 1))}
+                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] px-2 py-1 hover:bg-white/5 disabled:opacity-40"
+                  >
+                    Siguiente <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </Card>
 

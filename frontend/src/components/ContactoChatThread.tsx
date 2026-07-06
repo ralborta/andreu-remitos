@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { Mic, Image as ImageIcon } from "lucide-react";
 import type { ConversacionMensaje } from "@/lib/conversaciones-types";
@@ -62,7 +63,19 @@ function Bubble({ msg }: { msg: ConversacionMensaje }) {
   );
 }
 
-export function ContactoChatThread({ mensajes }: { mensajes: ConversacionMensaje[] }) {
+export function ContactoChatThread({
+  mensajes,
+  scrollKey = 0,
+}: {
+  mensajes: ConversacionMensaje[];
+  scrollKey?: number;
+}) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [mensajes, scrollKey]);
+
   if (mensajes.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-[var(--text-dim)]">
@@ -82,6 +95,7 @@ export function ContactoChatThread({ mensajes }: { mensajes: ConversacionMensaje
       {mensajes.map((m) => (
         <Bubble key={m.id} msg={m} />
       ))}
+      <div ref={bottomRef} aria-hidden />
     </div>
   );
 }

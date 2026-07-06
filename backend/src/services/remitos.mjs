@@ -5,7 +5,7 @@ import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
 import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
 import { normalizarPeso } from "../../../lib/extract-cold.mjs";
 import { validarDestinoConMaestros, mergeValidacionRemito, canonicalizarLocalidadesEnDatos } from "../../../lib/validacion-maestros.mjs";
-import { evaluarProcesable } from "../../../lib/remito-procesable.mjs";
+import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
 import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
@@ -133,7 +133,11 @@ export async function actualizarCampos(id, datosParciales) {
 
   const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant);
   datos = datosCanon;
-  const estado = calcularEstado(datos, validacion);
+  let estado = calcularEstado(datos, validacion);
+  if (row.estado === "confirmado") {
+    const candidato = { ...row, datos, validacion, estado };
+    if (remitoListoParaPlanilla(candidato)) estado = "confirmado";
+  }
 
   return store.updateRemito(id, {
     datos,

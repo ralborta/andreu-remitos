@@ -22,7 +22,7 @@ export function DataTable<T extends object>({
   onRowClick?: (row: T) => void;
 }) {
   return (
-    <div className="-mx-2 overflow-x-auto">
+    <div className="max-h-[min(52vh,520px)] overflow-auto scroll-thin">
       <table
         className="w-full border-collapse text-sm"
         style={{ minWidth }}

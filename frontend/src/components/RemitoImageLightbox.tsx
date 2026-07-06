@@ -11,30 +11,58 @@ export function RemitoImagePreview({
   alt,
   className,
   hint = "Clic para ampliar",
+  inlineZoom = true,
 }: {
   src: string;
   alt: string;
   className?: string;
   hint?: string;
+  /** Zoom con rueda en el panel sin abrir lightbox (no se pierde al editar campos). */
+  inlineZoom?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [scale, setScale] = useState(1);
+
+  function onWheelInline(e: React.WheelEvent) {
+    if (!inlineZoom) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    setScale((s) => Math.min(4, Math.max(1, Number((s + delta).toFixed(2)))));
+  }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="group relative block w-full cursor-zoom-in overflow-hidden rounded-xl border border-[var(--border)] bg-black/30 text-left"
-        aria-label={`${hint}: ${alt}`}
+      <div
+        className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-black/30"
+        onWheel={onWheelInline}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className={className ?? "max-h-[min(42vh,360px)] w-full object-contain object-top"} />
+        <button
+          type="button"
+          onClick={() => !inlineZoom && setOpen(true)}
+          onDoubleClick={() => setOpen(true)}
+          className="relative block w-full cursor-zoom-in text-left"
+          aria-label={`${hint}: ${alt}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className={className ?? "max-h-[min(42vh,360px)] w-full origin-top object-contain object-top transition-transform duration-75"}
+            style={inlineZoom && scale > 1 ? { transform: `scale(${scale})` } : undefined}
+          />
+        </button>
+        {inlineZoom && scale > 1 && (
+          <span className="absolute left-2 top-2 rounded bg-black/70 px-2 py-0.5 text-[10px] text-white/90">
+            {Math.round(scale * 100)}% · doble clic pantalla completa
+          </span>
+        )}
         <span className="pointer-events-none absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white/90 opacity-0 transition-opacity group-hover:opacity-100">
           <ZoomIn size={12} />
-          {hint}
+          {inlineZoom ? "Rueda para zoom · doble clic ampliar" : hint}
         </span>
-      </button>
-      <RemitoImageLightbox src={src} alt={alt} open={open} onClose={() => setOpen(false)} />
+      </div>
+      <RemitoImageLightbox src={src} alt={alt} open={open} onClose={() => setOpen(false)} initialScale={scale} />
     </>
   );
 }
@@ -44,13 +72,15 @@ export function RemitoImageLightbox({
   alt,
   open,
   onClose,
+  initialScale = 1,
 }: {
   src: string;
   alt: string;
   open: boolean;
   onClose: () => void;
+  initialScale?: number;
 }) {
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(initialScale);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
@@ -66,6 +96,7 @@ export function RemitoImageLightbox({
       resetView();
       return;
     }
+    setScale(Math.min(MAX_SCALE, Math.max(MIN_SCALE, initialScale)));
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
@@ -75,7 +106,7 @@ export function RemitoImageLightbox({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open, onClose, resetView]);
+  }, [open, onClose, resetView, initialScale]);
 
   function clampScale(next: number) {
     return Math.min(MAX_SCALE, Math.max(MIN_SCALE, next));
