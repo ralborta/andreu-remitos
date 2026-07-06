@@ -371,6 +371,33 @@ export function horasCompletas(row: RemitoRow) {
   return ORDEN_HORARIOS.every(({ key }) => Boolean(horasFromRow(row)[key]));
 }
 
+const ETIQUETAS_HORARIO_UI = new Set(ORDEN_HORARIOS.map((h) => h.label));
+
+function esFaltanteHorarioUi(f: string) {
+  return ETIQUETAS_HORARIO_UI.has(f);
+}
+
+function esErrorHorarioUi(e: string) {
+  if (/destino|localidad|origen|procedencia/i.test(e)) return false;
+  if (/está registrada solo como origen/i.test(e)) return false;
+  return (
+    /hora|anterior a|carga|descarga|inválida/i.test(e) ||
+    [...ETIQUETAS_HORARIO_UI].some((et) => e.includes(et))
+  );
+}
+
+function motivosBloqueoProcesoTsbUi(validacion: RemitoRow["validacion"]) {
+  if (!validacion || validacion.valido === true) return [] as string[];
+  const motivos: string[] = [];
+  for (const f of validacion.faltantes ?? []) {
+    if (!esFaltanteHorarioUi(f)) motivos.push(`Falta: ${f}`);
+  }
+  for (const e of validacion.errores ?? []) {
+    if (!esErrorHorarioUi(e)) motivos.push(e);
+  }
+  return motivos;
+}
+
 export function remitoProcesable(row: RemitoRow): { ok: boolean; motivos: string[] } {
   const motivos: string[] = [];
   const d = datos(row);
@@ -380,6 +407,11 @@ export function remitoProcesable(row: RemitoRow): { ok: boolean; motivos: string
   }
   if (row.estado === "error_lectura") {
     return { ok: false, motivos: ["Error de lectura — corregir campos"] };
+  }
+
+  if (row.tenant === "tsb") {
+    const bloqueos = motivosBloqueoProcesoTsbUi(row.validacion);
+    return { ok: bloqueos.length === 0, motivos: bloqueos };
   }
 
   if (!esTenantCorina(row.tenant) && horasCompletas(row) && row.validacion?.valido === true) {

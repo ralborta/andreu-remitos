@@ -88,7 +88,7 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
     choferDesdeTelefono,
   });
   resultado.lectura = datosCanon;
-  const estado = calcularEstado(datosCanon, validacion);
+  const estado = calcularEstado(datosCanon, validacion, resultado.tenant);
 
   const row = {
     id,
@@ -139,7 +139,7 @@ export async function reprocesarRemito(id) {
     telefono: row.telefono_chofer ?? undefined,
     choferDesdeTelefono,
   });
-  let estado = calcularEstado(datosCanon, validacion);
+  let estado = calcularEstado(datosCanon, validacion, resultado.tenant);
 
   if (row.estado === "confirmado") {
     const candidato = { ...row, tenant: resultado.tenant, datos: datosCanon, validacion, estado };
@@ -220,7 +220,7 @@ export async function actualizarCampos(id, datosParciales) {
 
   const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant);
   datos = datosCanon;
-  let estado = calcularEstado(datos, validacion);
+  let estado = calcularEstado(datos, validacion, row.tenant);
   if (row.estado === "confirmado") {
     const candidato = { ...row, datos, validacion, estado };
     if (remitoListoParaPlanilla(candidato)) estado = "confirmado";
@@ -297,7 +297,7 @@ export async function cambiarTenantRemito(id, nuevoTenant) {
   delete datos.resumen.advertencia_tenant;
 
   const { validacion, datos: datosCanon } = await validacionCompleta(datos, nuevoTenant);
-  const estado = calcularEstado(datosCanon, validacion);
+  const estado = calcularEstado(datosCanon, validacion, nuevoTenant);
 
   return store.updateRemito(id, {
     tenant: nuevoTenant,
