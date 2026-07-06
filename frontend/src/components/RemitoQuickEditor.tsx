@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, CheckSquare, ExternalLink, Trash2, X } from "lucide-react";
-import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
+import { Check, CheckSquare, ExternalLink, RefreshCw, Trash2, X } from "lucide-react";
+import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos, reprocesarRemito } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { isAdmin } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
@@ -57,6 +57,7 @@ function EditorBody({
   const [horas, setHoras] = useState(() => horasFromRow(row));
   const [saving, setSaving] = useState(false);
   const [procesando, setProcesando] = useState(false);
+  const [releyendo, setReleyendo] = useState(false);
   const [cambiandoTenant, setCambiandoTenant] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -103,6 +104,26 @@ function EditorBody({
       setError(e instanceof Error ? e.message : "Error al eliminar");
     } finally {
       setBorrando(false);
+    }
+  }
+
+  async function releerFoto() {
+    if (!window.confirm("¿Re-leer la foto con OCR? Se actualizan los campos automáticos (podés perder correcciones manuales no guardadas).")) {
+      return;
+    }
+    setReleyendo(true);
+    setMsg(null);
+    setError(null);
+    try {
+      const updated = await reprocesarRemito(row.id);
+      onSaved?.(updated);
+      setForm(formFromRow(updated));
+      setHoras(horasFromRow(updated));
+      setMsg("Foto re-leída con OCR actualizado");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al re-leer foto");
+    } finally {
+      setReleyendo(false);
     }
   }
 
@@ -255,6 +276,15 @@ function EditorBody({
           <Check size={16} />
           {saving ? "Guardando…" : "Guardar cambios"}
         </button>
+        <button
+          type="button"
+          onClick={releerFoto}
+          disabled={releyendo || saving || procesando}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] py-2.5 text-sm font-medium text-[var(--text-dim)] hover:border-[var(--violet)]/40 hover:text-white disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={releyendo ? "animate-spin" : undefined} />
+          {releyendo ? "Re-leyendo foto…" : "Re-leer foto (OCR)"}
+        </button>
         {procesable.ok && row.estado !== "confirmado" && (
           <button
             type="button"
@@ -282,7 +312,7 @@ function EditorBody({
           <button
             type="button"
             onClick={borrar}
-            disabled={borrando || saving || procesando}
+            disabled={borrando || saving || procesando || releyendo}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--red)]/40 py-2.5 text-sm font-medium text-[var(--red)] hover:bg-[var(--red)]/10 disabled:opacity-50"
           >
             <Trash2 size={16} />

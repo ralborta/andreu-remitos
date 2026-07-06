@@ -95,6 +95,10 @@ export function procesarRemitos(ids: string[], tenant?: string) {
   });
 }
 
+export function reprocesarRemito(id: string) {
+  return api<RemitoRow>(`/api/remitos/${id}/reprocesar`, { method: "POST" });
+}
+
 export function patchRemitoTenant(id: string, tenant: string) {
   return api<RemitoRow>(`/api/remitos/${id}/tenant`, {
     method: "PATCH",

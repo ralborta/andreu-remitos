@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos, procesarRemitosBatch, cambiarTenantRemito, eliminarRemito } from "../services/remitos.mjs";
+import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos, procesarRemitosBatch, cambiarTenantRemito, eliminarRemito, reprocesarRemito } from "../services/remitos.mjs";
 import { adminOnly } from "../plugins/auth-guard.mjs";
 
 export default async function remitosRoutes(fastify) {
@@ -65,6 +65,17 @@ export default async function remitosRoutes(fastify) {
     const row = await actualizarCampos(request.params.id, request.body);
     if (!row) return reply.code(404).send({ error: "Remito no encontrado" });
     return row;
+  });
+
+  fastify.post("/:id/reprocesar", async (request, reply) => {
+    try {
+      const row = await reprocesarRemito(request.params.id);
+      if (!row) return reply.code(404).send({ error: "Remito no encontrado" });
+      return row;
+    } catch (err) {
+      request.log.error(err);
+      return reply.code(500).send({ error: err.message });
+    }
   });
 
   fastify.patch("/:id/tenant", async (request, reply) => {

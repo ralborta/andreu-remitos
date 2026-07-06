@@ -89,6 +89,43 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   return { id, ...resultado, validacion, estado };
 }
 
+/** Vuelve a correr Document AI sobre la foto guardada (sin crear remito nuevo). */
+export async function reprocesarRemito(id) {
+  const row = await store.getRemito(id);
+  if (!row) return null;
+  if (!row.imagen_path || !fs.existsSync(row.imagen_path)) {
+    throw new Error("No hay imagen guardada para reprocesar");
+  }
+
+  const buffer = fs.readFileSync(row.imagen_path);
+  const filename = path.basename(row.imagen_path);
+
+  const resultado = await leerRemito(buffer, {
+    filename,
+    telefono: row.telefono_chofer ?? undefined,
+    tenantForzado: row.tenant,
+  });
+
+  const lectura = normalizarDatosRemito(resultado.lectura, resultado.tenant);
+  const { validacion, datos: datosCanon } = await validacionCompleta(lectura, resultado.tenant);
+  let estado = calcularEstado(datosCanon, validacion);
+
+  if (row.estado === "confirmado") {
+    const candidato = { ...row, tenant: resultado.tenant, datos: datosCanon, validacion, estado };
+    if (remitoListoParaPlanilla(candidato)) estado = "confirmado";
+  }
+
+  const updated = await store.updateRemito(id, {
+    tenant: resultado.tenant,
+    datos: datosCanon,
+    validacion,
+    estado,
+    texto_ocr: resultado.ocr?.texto ?? row.texto_ocr,
+  });
+
+  return remitoConDatosLimpios(updated);
+}
+
 export async function listarRemitos(opts) {
   const rows = await store.listRemitos(opts);
   return rows.map((row) => remitoConDatosLimpios(row));
