@@ -1,6 +1,29 @@
 import type { RemitoRow } from "./types";
 
 // Re-export helpers used in UI (via duplicate logic for browser bundle)
+function esPalabraConfirmacionUi(valor: unknown): boolean {
+  const s = String(valor ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[.!?,¿¡:;]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!s) return false;
+  return /^(ok|dale|listo|correcto|correcta|esta bien|confirmo|confirmado|perfecto|si|sí|todo bien|bueno|genial|gracias|remito|remitos)$/i.test(s);
+}
+
+function patenteParaUi(...candidatos: unknown[]): string {
+  for (const c of candidatos) {
+    if (c == null || c === "") continue;
+    if (esPalabraConfirmacionUi(c)) continue;
+    const s = String(c).trim();
+    if (s.length >= 5) return s;
+  }
+  return "—";
+}
+
 function normalizarNroRemitoGuia(valor: unknown): string | null {
   if (valor == null || valor === "") return null;
   const raw = String(valor).trim();
@@ -185,12 +208,12 @@ export function origenNombre(row: RemitoRow) {
 
 export function chasisPatente(row: RemitoRow) {
   const d = datos(row);
-  return (d.patente || d.chasis || d.tractor || d.patente_chasis || "—") as string;
+  return patenteParaUi(d.patente, d.chasis, d.tractor, d.patente_chasis);
 }
 
 export function acopladoPatente(row: RemitoRow) {
   const d = datos(row);
-  return (d.acoplado || d.semi || d.patente_acoplado || "—") as string;
+  return patenteParaUi(d.acoplado, d.semi, d.patente_acoplado);
 }
 
 export function clienteNombre(row: RemitoRow) {

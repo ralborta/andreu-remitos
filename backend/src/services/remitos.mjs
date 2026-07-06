@@ -7,6 +7,8 @@ import { normalizarPeso } from "../../../lib/extract-cold.mjs";
 import { validarDestinoConMaestros, mergeValidacionRemito, canonicalizarLocalidadesEnDatos } from "../../../lib/validacion-maestros.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
+import { normalizarPatente } from "./normalizar-remito.mjs";
+import { esPalabraConfirmacion } from "./sanitizar-campos-remito.mjs";
 import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
 
@@ -24,6 +26,22 @@ async function validacionCompleta(datos, tenant, localidadesPrecargadas) {
   const validacionHorarios = datosCanon.horarios?.validacion ?? null;
   const validacion = mergeValidacionRemito(validacionHorarios, destinoVal);
   return { validacion, datos: datosCanon };
+}
+
+function remitoConDatosLimpios(row, { persistir = false } = {}) {
+  if (!row?.datos) return row;
+  const datos = normalizarDatosRemito({ ...row.datos }, row.tenant);
+  const dirty = JSON.stringify(datos) !== JSON.stringify(row.datos);
+  if (!dirty) return row;
+  if (persistir) {
+    return store.updateRemito(row.id, { datos });
+  }
+  return { ...row, datos };
+}
+
+async function remitoConDatosLimpiosAsync(row, { persistir = false } = {}) {
+  const out = remitoConDatosLimpios(row, { persistir });
+  return out instanceof Promise ? out : out;
 }
 
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido }) {
@@ -74,11 +92,14 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
 }
 
 export async function listarRemitos(opts) {
-  return store.listRemitos(opts);
+  const rows = await store.listRemitos(opts);
+  return rows.map((row) => remitoConDatosLimpios(row));
 }
 
 export async function obtenerRemito(id) {
-  return store.getRemito(id);
+  const row = await store.getRemito(id);
+  if (!row) return null;
+  return remitoConDatosLimpiosAsync(row, { persistir: true });
 }
 
 export async function ultimoRemitoPorTelefono(telefono, opts) {
