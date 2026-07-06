@@ -7,8 +7,6 @@ import { normalizarPeso } from "../../../lib/extract-cold.mjs";
 import { validarDestinoConMaestros, mergeValidacionRemito, canonicalizarLocalidadesEnDatos } from "../../../lib/validacion-maestros.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
-import { normalizarPatente } from "./normalizar-remito.mjs";
-import { esPalabraConfirmacion } from "./sanitizar-campos-remito.mjs";
 import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
 
