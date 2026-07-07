@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
 import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
 import { normalizarPeso } from "../../../lib/extract-cold.mjs";
-import { validarDestinoConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
+import { validarDestinoConMaestros, validarUnidadesConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
 import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
@@ -33,8 +33,9 @@ async function validacionCompleta(datos, tenant, opts = {}) {
   });
 
   const destinoVal = validarDestinoConMaestros(datosCanon, tenant, localidades);
+  const unidadesVal = validarUnidadesConMaestros(datosCanon, tenant, unidades);
   const validacionHorarios = datosCanon.horarios?.validacion ?? null;
-  const validacion = mergeValidacionRemito(validacionHorarios, destinoVal);
+  const validacion = mergeValidacionRemito(validacionHorarios, destinoVal, unidadesVal);
   return { validacion, datos: datosCanon };
 }
 

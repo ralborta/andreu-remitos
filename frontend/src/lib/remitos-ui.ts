@@ -378,6 +378,7 @@ function esFaltanteHorarioUi(f: string) {
 }
 
 function esErrorHorarioUi(e: string) {
+  if (/patente|unidades|tractor\s*\/\s*chasis|semi\s*\/\s*remolque/i.test(e)) return false;
   if (/destino|localidad|origen|procedencia/i.test(e)) return false;
   if (/está registrada solo como origen/i.test(e)) return false;
   return (
