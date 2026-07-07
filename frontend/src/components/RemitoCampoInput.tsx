@@ -49,6 +49,19 @@ export function RemitoCampoInput({
     );
   }
 
+  if (maestros.error) {
+    return (
+      <div>
+        <input
+          className={clsx(inputCls, className)}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <p className="mt-0.5 text-[10px] text-[var(--amber)]">Maestros: {maestros.error}</p>
+      </div>
+    );
+  }
+
   let options: { value: string; label: string }[] = [];
   let placeholder = "Buscar…";
 

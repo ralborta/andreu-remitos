@@ -371,7 +371,7 @@ export function horasCompletas(row: RemitoRow) {
   return ORDEN_HORARIOS.every(({ key }) => Boolean(horasFromRow(row)[key]));
 }
 
-const ETIQUETAS_HORARIO_UI = new Set(ORDEN_HORARIOS.map((h) => h.label));
+const ETIQUETAS_HORARIO_UI = new Set<string>(ORDEN_HORARIOS.map((h) => h.label));
 
 function esFaltanteHorarioUi(f: string) {
   return ETIQUETAS_HORARIO_UI.has(f);

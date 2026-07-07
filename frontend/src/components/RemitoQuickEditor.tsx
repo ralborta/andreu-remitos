@@ -67,7 +67,7 @@ function EditorBody({
     setHoras(horasFromRow(row));
     setMsg(null);
     setError(null);
-  }, [row.id, row.updated_at]);
+  }, [row.id]);
 
   const campos = camposFor(row);
   const validacion = row.validacion;
@@ -82,6 +82,8 @@ function EditorBody({
     try {
       const updated = await patchRemitoTenant(row.id, nuevo);
       onSaved?.(updated);
+      setForm(formFromRow(updated));
+      setHoras(horasFromRow(updated));
       setMsg(`Movido a ${tenantLabel(nuevo)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al cambiar cliente");
@@ -118,6 +120,8 @@ function EditorBody({
       }
       const updated = await getRemito(row.id);
       onSaved?.(updated);
+      setForm(formFromRow(updated));
+      setHoras(horasFromRow(updated));
       setMsg("Procesado — listo para planilla");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al procesar");
@@ -140,6 +144,8 @@ function EditorBody({
       }
       const updated = await patchRemitoCampos(row.id, body);
       onSaved?.(updated);
+      setForm(formFromRow(updated));
+      setHoras(horasFromRow(updated));
       setMsg(updated.estado === "confirmado" ? "Guardado — validado" : "Guardado");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar");
@@ -206,7 +212,7 @@ function EditorBody({
         />
       </div>
 
-      <div className="grid flex-1 grid-cols-2 gap-3 overflow-y-auto pb-2">
+      <div className="grid flex-1 grid-cols-2 gap-3 pb-2">
         {campos.map((k) => (
           <label
             key={k}
