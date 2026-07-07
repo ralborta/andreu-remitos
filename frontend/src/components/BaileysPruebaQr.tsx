@@ -5,6 +5,8 @@ import { MessageCircle, RefreshCw, Smartphone } from "lucide-react";
 
 const WHATSAPP_NUMERO = "+5492617207199";
 const WHATSAPP_NUMERO_FMT = "+54 9 261 720-7199";
+const QR_WAIT_MS = 2 * 60 * 1000;
+const CONNECTING_MS = 3200;
 
 type Phase = "starting" | "qr" | "connecting" | "connected";
 
@@ -63,6 +65,16 @@ function QrSvg() {
   );
 }
 
+function QrConMarco() {
+  return (
+    <div className="wa-qr-frame">
+      <div className="wa-qr-frame__inner">
+        <QrSvg />
+      </div>
+    </div>
+  );
+}
+
 const STEPS = [
   "Abrí WhatsApp en tu teléfono",
   "Tocá Menú o Configuración → Dispositivos vinculados",
@@ -72,7 +84,6 @@ const STEPS = [
 
 export function BaileysPruebaQr() {
   const [phase, setPhase] = useState<Phase>("starting");
-  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("qr"), 1800);
@@ -81,16 +92,15 @@ export function BaileysPruebaQr() {
 
   useEffect(() => {
     if (phase !== "qr") return;
-    const loop = setInterval(() => setTick((n) => n + 1), 4000);
-    return () => clearInterval(loop);
+    const t = setTimeout(() => setPhase("connecting"), QR_WAIT_MS);
+    return () => clearTimeout(t);
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "qr" || tick < 2) return;
-    setPhase("connecting");
-    const t = setTimeout(() => setPhase("connected"), 3200);
+    if (phase !== "connecting") return;
+    const t = setTimeout(() => setPhase("connected"), CONNECTING_MS);
     return () => clearTimeout(t);
-  }, [phase, tick]);
+  }, [phase]);
 
   return (
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef]">
@@ -116,7 +126,7 @@ export function BaileysPruebaQr() {
 
           {phase === "qr" && (
             <>
-              <QrSvg />
+              <QrConMarco />
               <p className="mt-6 text-center text-sm text-[#8696a0]">
                 Escaneá con el teléfono {WHATSAPP_NUMERO_FMT}
               </p>

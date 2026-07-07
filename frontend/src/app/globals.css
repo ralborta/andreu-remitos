@@ -189,3 +189,41 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* Marco animado estilo WhatsApp Web alrededor del QR */
+@keyframes wa-qr-border-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.wa-qr-frame {
+  position: relative;
+  display: inline-block;
+  padding: 4px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.wa-qr-frame::before {
+  content: "";
+  position: absolute;
+  inset: -120%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 300deg,
+    #25d366 330deg,
+    #34eb7a 350deg,
+    transparent 360deg
+  );
+  animation: wa-qr-border-spin 2.2s linear infinite;
+}
+
+.wa-qr-frame__inner {
+  position: relative;
+  z-index: 1;
+  border-radius: 14px;
+  background: #111b21;
+  padding: 6px;
+}
