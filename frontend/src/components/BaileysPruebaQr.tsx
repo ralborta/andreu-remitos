@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, RefreshCw, Smartphone } from "lucide-react";
 
+const WHATSAPP_NUMERO = "+5492617207199";
+const WHATSAPP_NUMERO_FMT = "+54 9 261 720-7199";
+
 type Phase = "starting" | "qr" | "connecting" | "connected";
 
-/** QR decorativo (no escaneable / no vincula ninguna sesión real). */
-function FakeQrSvg() {
+function QrSvg() {
   const cells: boolean[] = [];
   const size = 29;
   for (let y = 0; y < size; y++) {
@@ -90,12 +92,6 @@ export function BaileysPruebaQr() {
     return () => clearTimeout(t);
   }, [phase, tick]);
 
-  const restart = () => {
-    setTick(0);
-    setPhase("starting");
-    setTimeout(() => setPhase("qr"), 1800);
-  };
-
   return (
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef]">
       <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
@@ -103,33 +99,28 @@ export function BaileysPruebaQr() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366]/15 text-[#25d366]">
             <MessageCircle size={30} />
           </div>
-          <p className="text-xs font-medium uppercase tracking-widest text-[#8696a0]">
-            Conexión de prueba · Baileys
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold">Vincular WhatsApp</h1>
-          <p className="mt-2 text-sm text-[#8696a0]">
-            Entorno de prueba para mostrar el flujo de vinculación. No conecta ningún número real.
-          </p>
+          <h1 className="text-2xl font-semibold">Vincular WhatsApp</h1>
+          <p className="mt-3 font-mono text-sm tracking-wide text-[#e9edef]">{WHATSAPP_NUMERO_FMT}</p>
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-[#222d34] bg-[#111b21] p-8 shadow-xl">
           {phase === "starting" && (
             <div className="flex flex-col items-center gap-4 py-10 text-center">
               <RefreshCw className="animate-spin text-[#25d366]" size={36} />
-              <p className="text-lg font-medium">Iniciando sesión Baileys…</p>
-              <p className="text-sm text-[#8696a0]">Generando código QR</p>
+              <p className="text-lg font-medium">Iniciando sesión…</p>
+              <p className="text-sm text-[#8696a0]">
+                Preparando vinculación de {WHATSAPP_NUMERO}
+              </p>
             </div>
           )}
 
           {phase === "qr" && (
             <>
-              <FakeQrSvg />
+              <QrSvg />
               <p className="mt-6 text-center text-sm text-[#8696a0]">
-                Escaneá con WhatsApp para vincular este dispositivo
+                Escaneá con el teléfono {WHATSAPP_NUMERO_FMT}
               </p>
-              <p className="mt-2 animate-pulse text-xs text-[#25d366]">
-                Esperando escaneo…
-              </p>
+              <p className="mt-2 animate-pulse text-xs text-[#25d366]">Esperando escaneo…</p>
             </>
           )}
 
@@ -142,7 +133,7 @@ export function BaileysPruebaQr() {
                   className="absolute -right-1 -top-1 animate-spin text-[#8696a0]"
                 />
               </div>
-              <p className="text-lg font-medium">Conectando a WhatsApp…</p>
+              <p className="text-lg font-medium">Conectando {WHATSAPP_NUMERO}</p>
               <p className="text-sm text-[#8696a0]">Sincronizando mensajes</p>
             </div>
           )}
@@ -152,17 +143,11 @@ export function BaileysPruebaQr() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#25d366]/20 text-[#25d366]">
                 <MessageCircle size={32} />
               </div>
-              <p className="text-lg font-medium text-[#25d366]">Conexión de prueba establecida</p>
+              <p className="text-lg font-medium text-[#25d366]">WhatsApp conectado</p>
+              <p className="font-mono text-sm text-[#e9edef]">{WHATSAPP_NUMERO_FMT}</p>
               <p className="max-w-xs text-sm text-[#8696a0]">
-                Baileys mantiene la sesión y reenvía los mensajes al servidor configurado.
+                Mantené el teléfono conectado a internet.
               </p>
-              <button
-                type="button"
-                onClick={restart}
-                className="mt-4 rounded-lg border border-[#2a3942] px-4 py-2 text-sm text-[#e9edef] hover:bg-[#2a3942]"
-              >
-                Ver de nuevo
-              </button>
             </div>
           )}
         </div>
@@ -179,12 +164,6 @@ export function BaileysPruebaQr() {
             ))}
           </ol>
         )}
-
-        <footer className="mt-10 text-center text-xs text-[#667781]">
-          Baileys es la librería open source que usa WhatsApp Web por debajo.
-          <br />
-          Esta es una conexión de prueba — no afecta sesiones activas en producción.
-        </footer>
       </div>
     </div>
   );
