@@ -68,7 +68,7 @@ const STEPS = [
   "Apuntá la cámara a este código QR",
 ];
 
-export function BaileysDemoQr() {
+export function BaileysPruebaQr() {
   const [phase, setPhase] = useState<Phase>("starting");
   const [tick, setTick] = useState(0);
 

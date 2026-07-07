@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BaileysDemoQr } from "@/components/BaileysDemoQr";
+import { BaileysPruebaQr } from "@/components/BaileysPruebaQr";
 
 export const metadata: Metadata = {
   title: "Vincular WhatsApp — Conexión de prueba",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ConexionPruebaPage() {
-  return <BaileysDemoQr />;
+  return <BaileysPruebaQr />;
 }
