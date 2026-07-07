@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Check, CheckSquare, ExternalLink, Trash2, X } from "lucide-react";
 import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
@@ -73,6 +73,16 @@ function EditorBody({
   const validacion = row.validacion;
   const procesable = remitoProcesable(row);
   const advTenant = advertenciaTenant(row);
+
+  const onCampoChange = useCallback((key: string, val: string) => {
+    setForm((f) => (f[key] === val ? f : { ...f, [key]: val }));
+  }, []);
+
+  const onHoraChange = useCallback((key: string, val: string) => {
+    setHoras((h) => (h[key] === val ? h : { ...h, [key]: val }));
+  }, []);
+
+  const imagenSrc = useMemo(() => imagenUrl(row.id), [row.id]);
 
   async function cambiarTenant(nuevo: Tenant) {
     if (nuevo === row.tenant) return;
@@ -207,7 +217,7 @@ function EditorBody({
 
       <div className="mb-4">
         <RemitoImagePreview
-          src={imagenUrl(row.id)}
+          src={imagenSrc}
           alt={`Remito ${numeroRemito(row)}`}
         />
       </div>
@@ -224,7 +234,7 @@ function EditorBody({
             <RemitoCampoInput
               campo={k}
               value={form[k] ?? ""}
-              onChange={(v) => setForm((f) => ({ ...f, [k]: v }))}
+              onChange={(v) => onCampoChange(k, v)}
               maestros={maestros}
             />
           </label>
@@ -233,10 +243,7 @@ function EditorBody({
 
       <div className="mt-3 border-t border-[var(--border-soft)] pt-3">
         {!esTenantCorina(row.tenant) && (
-          <RemitoHorariosFields
-            horas={horas}
-            onChange={(key, value) => setHoras((h) => ({ ...h, [key]: value }))}
-          />
+          <RemitoHorariosFields horas={horas} onChange={onHoraChange} />
         )}
       </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import clsx from "clsx";
 import type { RemitoMaestros } from "@/hooks/useRemitoMaestros";
 import { maestroTipoCampo } from "@/lib/remito-maestros";
@@ -16,7 +17,47 @@ function filtrarLocalidades(localidades: Localidad[], modo: "origen" | "destino"
   });
 }
 
-export function RemitoCampoInput({
+function buildOptions(tipo: string, maestros: RemitoMaestros) {
+  if (tipo === "chofer") {
+    return {
+      options: maestros.choferes.map((c) => ({
+        value: c.nombre,
+        label: c.telefono ? `${c.nombre} · ${c.telefono}` : c.nombre,
+      })),
+      placeholder: "Buscar chofer…",
+    };
+  }
+  if (tipo === "tractor") {
+    return {
+      options: maestros.tractores.map((u) => ({
+        value: u.patente,
+        label: u.unidad_interna ? `${u.patente} · ${u.unidad_interna}` : u.patente,
+      })),
+      placeholder: "Buscar tractor / chasis…",
+    };
+  }
+  if (tipo === "acoplado") {
+    return {
+      options: maestros.semis.map((u) => ({
+        value: u.patente,
+        label: u.unidad_interna ? `${u.patente} · ${u.unidad_interna}` : u.patente,
+      })),
+      placeholder: "Buscar semi / remolque…",
+    };
+  }
+  if (tipo === "origen" || tipo === "destino") {
+    return {
+      options: filtrarLocalidades(maestros.localidades, tipo).map((l) => ({
+        value: l.nombre,
+        label: l.codigo ? `${l.nombre} (${l.codigo})` : l.nombre,
+      })),
+      placeholder: tipo === "origen" ? "Buscar origen…" : "Buscar destino…",
+    };
+  }
+  return { options: [], placeholder: "Buscar…" };
+}
+
+export const RemitoCampoInput = memo(function RemitoCampoInput({
   campo,
   value,
   onChange,
@@ -30,6 +71,10 @@ export function RemitoCampoInput({
   className?: string;
 }) {
   const tipo = maestroTipoCampo(campo);
+  const { options, placeholder } = useMemo(
+    () => (tipo ? buildOptions(tipo, maestros) : { options: [], placeholder: "Buscar…" }),
+    [tipo, maestros.choferes, maestros.tractores, maestros.semis, maestros.localidades],
+  );
 
   if (!tipo) {
     return (
@@ -62,35 +107,6 @@ export function RemitoCampoInput({
     );
   }
 
-  let options: { value: string; label: string }[] = [];
-  let placeholder = "Buscar…";
-
-  if (tipo === "chofer") {
-    options = maestros.choferes.map((c) => ({
-      value: c.nombre,
-      label: c.telefono ? `${c.nombre} · ${c.telefono}` : c.nombre,
-    }));
-    placeholder = "Buscar chofer…";
-  } else if (tipo === "tractor") {
-    options = maestros.tractores.map((u) => ({
-      value: u.patente,
-      label: u.unidad_interna ? `${u.patente} · ${u.unidad_interna}` : u.patente,
-    }));
-    placeholder = "Buscar tractor / chasis…";
-  } else if (tipo === "acoplado") {
-    options = maestros.semis.map((u) => ({
-      value: u.patente,
-      label: u.unidad_interna ? `${u.patente} · ${u.unidad_interna}` : u.patente,
-    }));
-    placeholder = "Buscar semi / remolque…";
-  } else if (tipo === "origen" || tipo === "destino") {
-    options = filtrarLocalidades(maestros.localidades, tipo).map((l) => ({
-      value: l.nombre,
-      label: l.codigo ? `${l.nombre} (${l.codigo})` : l.nombre,
-    }));
-    placeholder = tipo === "origen" ? "Buscar origen…" : "Buscar destino…";
-  }
-
   return (
     <SearchableSelect
       className={className}
@@ -100,4 +116,4 @@ export function RemitoCampoInput({
       placeholder={placeholder}
     />
   );
-}
+});

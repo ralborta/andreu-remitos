@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { Search } from "lucide-react";
@@ -8,18 +8,15 @@ import { Search } from "lucide-react";
 const inputCls =
   "w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]";
 
+const MAX_SIN_BUSCAR = 20;
+const MAX_RESULTADOS = 50;
+
 function norm(s: string) {
   return s
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{M}/gu, "");
-}
-
-function match(q: string, ...parts: string[]) {
-  const needle = norm(q);
-  if (!needle) return true;
-  return parts.some((p) => norm(p).includes(needle));
 }
 
 function patenteBase(valor: string) {
@@ -38,7 +35,76 @@ function findSelected(options: { value: string; label: string }[], value: string
   return options.find((o) => norm(o.value) === norm(v) || norm(o.label).startsWith(norm(v))) ?? null;
 }
 
-export function SearchableSelect({
+type OptionRow = { value: string; label: string; searchKey: string };
+
+const DropdownList = memo(function DropdownList({
+  top,
+  left,
+  width,
+  filtered,
+  totalMatches,
+  value,
+  selectedValue,
+  emptyLabel,
+  onPick,
+}: {
+  top: number;
+  left: number;
+  width: number;
+  filtered: OptionRow[];
+  totalMatches: number;
+  value: string;
+  selectedValue?: string;
+  emptyLabel: string;
+  onPick: (v: string) => void;
+}) {
+  return (
+    <ul
+      className="fixed z-[200] max-h-52 overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg-2)] py-1 shadow-xl"
+      style={{ top, left, width }}
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      <li>
+        <button
+          type="button"
+          className="w-full px-3 py-2 text-left text-sm text-[var(--text-dim)] hover:bg-white/5"
+          onClick={() => onPick("")}
+        >
+          {emptyLabel}
+        </button>
+      </li>
+      {filtered.length === 0 ? (
+        <li className="px-3 py-2 text-xs text-[var(--text-faint)]">Sin resultados</li>
+      ) : (
+        <>
+          {filtered.map((o) => (
+            <li key={`${o.value}::${o.label}`}>
+              <button
+                type="button"
+                className={clsx(
+                  "w-full px-3 py-2 text-left text-sm hover:bg-white/5",
+                  o.value === value || o.value === selectedValue
+                    ? "bg-[var(--violet)]/15 text-white"
+                    : "text-[var(--text-dim)]",
+                )}
+                onClick={() => onPick(o.value)}
+              >
+                {o.label}
+              </button>
+            </li>
+          ))}
+          {totalMatches > filtered.length && (
+            <li className="border-t border-[var(--border-soft)] px-3 py-2 text-[10px] text-[var(--text-faint)]">
+              +{totalMatches - filtered.length} más — escribí para acotar
+            </li>
+          )}
+        </>
+      )}
+    </ul>
+  );
+});
+
+export const SearchableSelect = memo(function SearchableSelect({
   value,
   onChange,
   options,
@@ -54,85 +120,100 @@ export function SearchableSelect({
   className?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
 
-  const selected = findSelected(options, value);
-  const extra =
-    value.trim() && !selected
-      ? { value: value.trim(), label: `${value.trim()} (valor actual)` }
-      : null;
+  const indexed = useMemo<OptionRow[]>(
+    () => options.map((o) => ({ ...o, searchKey: norm(`${o.label} ${o.value}`) })),
+    [options],
+  );
 
-  const filtered = useMemo(() => {
-    const all = extra ? [extra, ...options] : options;
-    return all.filter((o) => match(q, o.label, o.value));
-  }, [options, extra, q]);
+  const selected = useMemo(() => findSelected(options, value), [options, value]);
 
-  const updatePos = useCallback(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setPos({ top: r.bottom + 4, left: r.left, width: r.width });
+  const pool = useMemo(() => {
+    if (!value.trim() || selected) return indexed;
+    const extra: OptionRow = {
+      value: value.trim(),
+      label: `${value.trim()} (valor actual)`,
+      searchKey: norm(value),
+    };
+    if (indexed.some((o) => o.value === extra.value)) return indexed;
+    return [extra, ...indexed];
+  }, [indexed, value, selected]);
+
+  const { filtered, totalMatches } = useMemo(() => {
+    const needle = norm(q);
+    let hits: OptionRow[];
+    if (!needle) {
+      hits = pool.slice(0, MAX_SIN_BUSCAR);
+      return { filtered: hits, totalMatches: pool.length };
+    }
+    hits = pool.filter((o) => o.searchKey.includes(needle));
+    return { filtered: hits.slice(0, MAX_RESULTADOS), totalMatches: hits.length };
+  }, [pool, q]);
+
+  const schedulePos = useCallback(() => {
+    if (rafRef.current != null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const el = rootRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, left: r.left, width: r.width });
+    });
   }, []);
 
   useEffect(() => {
     if (!open) return;
-    updatePos();
-    const onScroll = () => updatePos();
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
+    schedulePos();
+    const onScroll = () => schedulePos();
+    window.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onScroll);
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [open, updatePos]);
+  }, [open, schedulePos]);
 
-  function pick(next: string) {
-    onChange(next);
-    setOpen(false);
-    setQ("");
-  }
+  const pick = useCallback(
+    (next: string) => {
+      onChange(next);
+      setOpen(false);
+      setQ("");
+    },
+    [onChange],
+  );
+
+  const hintSinBuscar = pool.length > MAX_SIN_BUSCAR && !q.trim();
 
   const dropdown =
     open &&
     typeof document !== "undefined" &&
     createPortal(
-      <ul
-        className="fixed z-[200] max-h-48 overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg-2)] py-1 shadow-xl"
-        style={{ top: pos.top, left: pos.left, width: pos.width }}
-        onMouseDown={(e) => e.preventDefault()}
-      >
-        <li>
-          <button
-            type="button"
-            className="w-full px-3 py-2 text-left text-sm text-[var(--text-dim)] hover:bg-white/5"
-            onClick={() => pick("")}
+      <>
+        {hintSinBuscar && (
+          <div
+            className="fixed z-[199] rounded-t-lg border border-b-0 border-[var(--border)] bg-[var(--bg-2)] px-3 py-1.5 text-[10px] text-[var(--text-faint)]"
+            style={{ top: pos.top - 22, left: pos.left, width: pos.width }}
           >
-            {emptyLabel}
-          </button>
-        </li>
-        {filtered.length === 0 ? (
-          <li className="px-3 py-2 text-xs text-[var(--text-faint)]">Sin resultados</li>
-        ) : (
-          filtered.map((o) => (
-            <li key={`${o.value}::${o.label}`}>
-              <button
-                type="button"
-                className={clsx(
-                  "w-full px-3 py-2 text-left text-sm hover:bg-white/5",
-                  o.value === value || selected?.value === o.value
-                    ? "bg-[var(--violet)]/15 text-white"
-                    : "text-[var(--text-dim)]",
-                )}
-                onClick={() => pick(o.value)}
-              >
-                {o.label}
-              </button>
-            </li>
-          ))
+            Escribí para buscar entre {pool.length} opciones
+          </div>
         )}
-      </ul>,
+        <DropdownList
+          top={pos.top}
+          left={pos.left}
+          width={pos.width}
+          filtered={filtered}
+          totalMatches={totalMatches}
+          value={value}
+          selectedValue={selected?.value}
+          emptyLabel={emptyLabel}
+          onPick={pick}
+        />
+      </>,
       document.body,
     );
 
@@ -150,17 +231,13 @@ export function SearchableSelect({
           onFocus={() => {
             setOpen(true);
             setQ("");
-            updatePos();
+            schedulePos();
           }}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setOpen(true);
-            updatePos();
-          }}
+          onChange={(e) => setQ(e.target.value)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
         />
       </div>
       {dropdown}
     </div>
   );
-}
+});
