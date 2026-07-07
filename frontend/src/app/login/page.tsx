@@ -50,7 +50,7 @@ function LoginForm() {
         >
           <h1 className="mb-1 text-lg font-semibold text-white">Iniciar sesión</h1>
           <p className="mb-5 text-xs text-[var(--text-faint)]">
-            Perfiles: operador y administrador
+            Perfiles: operador, supervisor y administrador
           </p>
 
           <label className="mb-3 block text-xs font-medium text-[var(--text-dim)]">

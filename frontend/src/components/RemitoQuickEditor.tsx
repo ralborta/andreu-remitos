@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, CheckSquare, ExternalLink, Trash2, X } from "lucide-react";
 import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { isAdmin } from "@/lib/auth-types";
+import { canDeleteRemitos } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   buildHorariosBody,
@@ -51,7 +51,7 @@ function EditorBody({
   onDeleted?: (id: string) => void;
 }) {
   const { user } = useAuth();
-  const admin = isAdmin(user);
+  const puedeBorrar = canDeleteRemitos(user);
   const maestros = useRemitoMaestros(row.tenant);
   const [form, setForm] = useState(() => formFromRow(row));
   const [horas, setHoras] = useState(() => horasFromRow(row));
@@ -291,7 +291,7 @@ function EditorBody({
           <ExternalLink size={16} />
           Revisión completa
         </Link>
-        {admin && (
+        {puedeBorrar && (
           <button
             type="button"
             onClick={borrar}

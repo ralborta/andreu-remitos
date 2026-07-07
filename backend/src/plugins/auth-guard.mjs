@@ -1,4 +1,5 @@
 import {
+  canDeleteRemitos,
   extractSessionToken,
   isPublicApiPath,
   verifySessionToken,
@@ -38,5 +39,14 @@ export async function adminOnly(request, reply) {
   }
   if (request.user.rol !== "administrador") {
     return reply.code(403).send({ error: "Solo administradores" });
+  }
+}
+
+export async function deleteRemitoOnly(request, reply) {
+  if (!request.user) {
+    return reply.code(401).send({ error: "No autenticado" });
+  }
+  if (!canDeleteRemitos(request.user)) {
+    return reply.code(403).send({ error: "No tenés permiso para eliminar remitos" });
   }
 }

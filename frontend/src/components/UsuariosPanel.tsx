@@ -120,11 +120,12 @@ export function UsuariosPanel() {
                 className={clsx(inputCls, "mt-1")}
               >
                 <option value="operador">Operador</option>
+                <option value="supervisor">Supervisor</option>
                 <option value="administrador">Administrador</option>
               </select>
             </label>
             <p className="text-[11px] text-[var(--text-faint)]">
-              Operador: todo excepto borrar remitos y crear usuarios. Administrador: acceso completo.
+              Operador: remitos, contactos y planillas. Supervisor: igual + puede eliminar remitos. Administrador: acceso completo (usuarios y parámetros).
             </p>
             <button
               type="submit"
@@ -164,7 +165,9 @@ export function UsuariosPanel() {
                             "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium",
                             u.rol === "administrador"
                               ? "bg-[var(--violet)]/20 text-[var(--violet-2)]"
-                              : "bg-white/5 text-[var(--text-dim)]",
+                              : u.rol === "supervisor"
+                                ? "bg-[var(--amber)]/15 text-[var(--amber)]"
+                                : "bg-white/5 text-[var(--text-dim)]",
                           )}
                         >
                           {u.rol === "administrador" && <Shield size={12} />}

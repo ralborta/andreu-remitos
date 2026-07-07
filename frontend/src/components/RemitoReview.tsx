@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRemito, getRemito, imagenUrl, patchRemitoCampos, patchRemitoTenant } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { isAdmin } from "@/lib/auth-types";
+import { canDeleteRemitos } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
   acopladoPatente,
@@ -39,7 +39,7 @@ const NUMERIC_CAMPOS = new Set(["peso_kg", "total_bultos", "total_litros"]);
 export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: string }) {
   const router = useRouter();
   const { user } = useAuth();
-  const admin = isAdmin(user);
+  const puedeBorrar = canDeleteRemitos(user);
   const [row, setRow] = useState<RemitoRow | null>(null);
   const maestros = useRemitoMaestros(row?.tenant ?? tenantSlug ?? "tsb");
   const [form, setForm] = useState<Record<string, string>>({});
@@ -223,7 +223,7 @@ export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: stri
           >
             {saving ? "Guardando…" : "Guardar cambios"}
           </button>
-          {admin && (
+          {puedeBorrar && (
             <button
               type="button"
               onClick={borrar}

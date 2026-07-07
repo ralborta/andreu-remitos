@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ingestarRemito, listarRemitos, obtenerRemito, actualizarCampos, procesarRemitosBatch, cambiarTenantRemito, eliminarRemito, reprocesarRemito } from "../services/remitos.mjs";
-import { adminOnly } from "../plugins/auth-guard.mjs";
+import { deleteRemitoOnly } from "../plugins/auth-guard.mjs";
 
 export default async function remitosRoutes(fastify) {
   fastify.post("/ingest", async (request, reply) => {
@@ -90,7 +90,7 @@ export default async function remitosRoutes(fastify) {
     }
   });
 
-  fastify.delete("/:id", { preHandler: adminOnly }, async (request, reply) => {
+  fastify.delete("/:id", { preHandler: deleteRemitoOnly }, async (request, reply) => {
     const out = await eliminarRemito(request.params.id);
     if (!out) return reply.code(404).send({ error: "Remito no encontrado" });
     return out;

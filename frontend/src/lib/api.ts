@@ -174,6 +174,16 @@ export function createUsuario(body: {
   });
 }
 
+export function patchUsuario(
+  id: string,
+  body: { rol?: RolUsuario; nombre?: string; activo?: boolean },
+) {
+  return api<{ user: SessionUser }>(`/api/auth/users/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
 function qParametros(tenant?: string, extra?: Record<string, string>) {
   const q = new URLSearchParams();
   if (tenant) q.set("tenant", tenant);

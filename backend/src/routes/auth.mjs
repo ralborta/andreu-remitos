@@ -3,7 +3,14 @@ import {
   signSessionToken,
   verifyPassword,
 } from "../../../lib/auth.mjs";
-import { getUserById, getUserByUsername, listUsers, createUser, toPublicUser } from "../db/users-store.mjs";
+import {
+  getUserById,
+  getUserByUsername,
+  listUsers,
+  createUser,
+  updateUser,
+  toPublicUser,
+} from "../db/users-store.mjs";
 import { adminOnly } from "../plugins/auth-guard.mjs";
 
 export default async function authRoutes(fastify) {
@@ -53,6 +60,16 @@ export default async function authRoutes(fastify) {
       return reply.code(201).send({ user });
     } catch (err) {
       return reply.code(400).send({ error: err.message || "No se pudo crear usuario" });
+    }
+  });
+
+  fastify.patch("/users/:id", { preHandler: adminOnly }, async (request, reply) => {
+    const { rol, nombre, activo } = request.body ?? {};
+    try {
+      const user = await updateUser(request.params.id, { rol, nombre, activo });
+      return { user };
+    } catch (err) {
+      return reply.code(400).send({ error: err.message || "No se pudo actualizar usuario" });
     }
   });
 }

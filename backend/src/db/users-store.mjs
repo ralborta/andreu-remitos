@@ -75,6 +75,29 @@ export async function createUser(input) {
   return toPublicUser(row);
 }
 
+/** @param {string} id @param {{ rol?: string; nombre?: string; activo?: boolean }} input */
+export async function updateUser(id, input) {
+  const rows = readAll();
+  const idx = rows.findIndex((r) => r.id === id);
+  if (idx < 0) throw new Error("Usuario no encontrado");
+  const row = { ...rows[idx] };
+  if (input.rol !== undefined) {
+    const rol = String(input.rol).toLowerCase();
+    if (!ROLES.includes(/** @type {import("../../../lib/auth.mjs").RolUsuario} */ (rol))) {
+      throw new Error(`Rol inválido: ${rol}`);
+    }
+    row.rol = rol;
+  }
+  if (input.nombre !== undefined) {
+    row.nombre = String(input.nombre).trim() || row.username;
+  }
+  if (input.activo !== undefined) row.activo = !!input.activo;
+  row.updated_at = new Date().toISOString();
+  rows[idx] = row;
+  writeAll(rows);
+  return toPublicUser(row);
+}
+
 /** Crea admin/admin123 si no hay usuarios (primera instalación). */
 export async function ensureSeedAdmin() {
   const rows = readAll();
