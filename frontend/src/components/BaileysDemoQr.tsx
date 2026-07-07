@@ -104,11 +104,11 @@ export function BaileysDemoQr() {
             <MessageCircle size={30} />
           </div>
           <p className="text-xs font-medium uppercase tracking-widest text-[#8696a0]">
-            Demo · Baileys
+            Conexión de prueba · Baileys
           </p>
           <h1 className="mt-2 text-2xl font-semibold">Vincular WhatsApp</h1>
           <p className="mt-2 text-sm text-[#8696a0]">
-            Pantalla de ejemplo para mostrar el flujo. No conecta ningún número real.
+            Entorno de prueba para mostrar el flujo de vinculación. No conecta ningún número real.
           </p>
         </header>
 
@@ -123,17 +123,12 @@ export function BaileysDemoQr() {
 
           {phase === "qr" && (
             <>
-              <div className="relative">
-                <FakeQrSvg />
-                <div className="absolute -right-2 -top-2 rounded-full bg-[#25d366] px-2 py-0.5 text-[10px] font-bold text-[#0b141a]">
-                  DEMO
-                </div>
-              </div>
+              <FakeQrSvg />
               <p className="mt-6 text-center text-sm text-[#8696a0]">
                 Escaneá con WhatsApp para vincular este dispositivo
               </p>
               <p className="mt-2 animate-pulse text-xs text-[#25d366]">
-                Esperando escaneo… (simulado)
+                Esperando escaneo…
               </p>
             </>
           )}
@@ -148,7 +143,7 @@ export function BaileysDemoQr() {
                 />
               </div>
               <p className="text-lg font-medium">Conectando a WhatsApp…</p>
-              <p className="text-sm text-[#8696a0]">Sincronizando mensajes (demo)</p>
+              <p className="text-sm text-[#8696a0]">Sincronizando mensajes</p>
             </div>
           )}
 
@@ -157,9 +152,9 @@ export function BaileysDemoQr() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#25d366]/20 text-[#25d366]">
                 <MessageCircle size={32} />
               </div>
-              <p className="text-lg font-medium text-[#25d366]">¡Conectado! (simulación)</p>
+              <p className="text-lg font-medium text-[#25d366]">Conexión de prueba establecida</p>
               <p className="max-w-xs text-sm text-[#8696a0]">
-                En producción, Baileys mantiene la sesión y reenvía mensajes al backend Andreu.
+                Baileys mantiene la sesión y reenvía los mensajes al servidor configurado.
               </p>
               <button
                 type="button"
@@ -188,7 +183,7 @@ export function BaileysDemoQr() {
         <footer className="mt-10 text-center text-xs text-[#667781]">
           Baileys es la librería open source que usa WhatsApp Web por debajo.
           <br />
-          La conexión real de Andreu sigue activa — esto es solo una demo visual.
+          Esta es una conexión de prueba — no afecta sesiones activas en producción.
         </footer>
       </div>
     </div>
