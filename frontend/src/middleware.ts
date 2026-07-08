@@ -30,7 +30,11 @@ export function middleware(request: NextRequest) {
     if (pathname === "/" || pathname === "") {
       return NextResponse.rewrite(new URL("/conexion-prueba", request.url));
     }
-    if (pathname === "/conexion-prueba" || pathname.startsWith("/conexion-prueba/")) {
+    if (
+      pathname === "/conexion-prueba" ||
+      pathname.startsWith("/conexion-prueba/") ||
+      pathname.startsWith("/backend/api/vincular/")
+    ) {
       return NextResponse.next();
     }
     return NextResponse.redirect(new URL("/", request.url));
