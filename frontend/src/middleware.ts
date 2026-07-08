@@ -33,7 +33,8 @@ export function middleware(request: NextRequest) {
     if (
       pathname === "/conexion-prueba" ||
       pathname.startsWith("/conexion-prueba/") ||
-      pathname.startsWith("/backend/api/vincular/")
+      pathname.startsWith("/backend/api/vincular/") ||
+      pathname.startsWith("/api/vincular/")
     ) {
       return NextResponse.next();
     }

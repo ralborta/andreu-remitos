@@ -79,7 +79,7 @@ export function BaileysPruebaQr() {
   const refreshQr = useCallback(async () => {
     if (phaseRef.current !== "qr") return;
     try {
-      const res = await fetch("/backend/api/vincular/whatsapp/qr", { cache: "no-store" });
+      const res = await fetch("/api/vincular/qr", { cache: "no-store" });
       const data = (await res.json()) as QrResponse;
       if (data.connected) {
         goConnecting(data.phone);
