@@ -31,12 +31,15 @@ export function apiBaseLabel() {
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
+  const hasBody = init?.body != null && init.body !== "";
   try {
     res = await fetch(`${apiBase()}${path}`, {
       ...init,
       credentials: "include",
       headers: {
-        ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+        ...(hasBody && !(init.body instanceof FormData)
+          ? { "Content-Type": "application/json" }
+          : {}),
         ...init?.headers,
       },
       cache: "no-store",
@@ -51,7 +54,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    const detail = (err as { error?: string }).error;
+    const detail = (err as { error?: string; message?: string }).error ?? (err as { message?: string }).message;
     throw new Error(detail || `HTTP ${res.status}`);
   }
   return res.json() as Promise<T>;
