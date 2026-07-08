@@ -12,6 +12,7 @@ import planillasRoutes from "./routes/planillas.mjs";
 import destinosRoutes from "./routes/destinos.mjs";
 import authRoutes from "./routes/auth.mjs";
 import monitorRoutes from "./routes/monitor.mjs";
+import vincularRoutes from "./routes/vincular.mjs";
 import { registerAuthGuard } from "./plugins/auth-guard.mjs";
 import { ensureSeedAdmin } from "./db/users-store.mjs";
 
@@ -42,6 +43,7 @@ await app.register(parametrosRoutes, { prefix: "/api/parametros" });
 await app.register(planillasRoutes, { prefix: "/api/planillas" });
 await app.register(destinosRoutes, { prefix: "/api/destinos" });
 await app.register(monitorRoutes, { prefix: "/api/monitor" });
+await app.register(vincularRoutes, { prefix: "/api/vincular" });
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const host = process.env.HOST || "0.0.0.0";

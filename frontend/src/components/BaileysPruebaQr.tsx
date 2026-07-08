@@ -1,79 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, RefreshCw, Smartphone } from "lucide-react";
 
 const WHATSAPP_NUMERO = "+5492617207199";
 const WHATSAPP_NUMERO_FMT = "+54 9 261 720-7199";
 const QR_WAIT_MS = 2 * 60 * 1000;
 const CONNECTING_MS = 3200;
+const QR_POLL_MS = 5000;
 
 type Phase = "starting" | "qr" | "connecting" | "connected";
 
-function QrSvg() {
-  const cells: boolean[] = [];
-  const size = 29;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const inFinder =
-        (x < 7 && y < 7) ||
-        (x >= size - 7 && y < 7) ||
-        (x < 7 && y >= size - 7);
-      const finderBorder =
-        inFinder &&
-        (x === 0 ||
-          y === 0 ||
-          x === 6 ||
-          y === 6 ||
-          x === size - 7 ||
-          x === size - 1 ||
-          y === size - 7 ||
-          y === size - 1);
-      const finderCore =
-        inFinder &&
-        x >= 2 &&
-        x <= 4 &&
-        y >= 2 &&
-        y <= 4 &&
-        !(x >= size - 5 && x <= size - 3 && y >= 2 && y <= 4) &&
-        !(x >= 2 && x <= 4 && y >= size - 5 && y <= size - 3);
-      const hash = (x * 17 + y * 31 + x * y) % 5;
-      cells.push(finderBorder || finderCore || (!inFinder && hash < 2));
-    }
-  }
-
-  const cell = 10;
-  const pad = 16;
-  const dim = size * cell + pad * 2;
-
-  return (
-    <svg
-      width={dim}
-      height={dim}
-      viewBox={`0 0 ${dim} ${dim}`}
-      className="rounded-xl bg-white shadow-inner"
-      aria-hidden
-    >
-      <rect width={dim} height={dim} fill="#fff" rx="12" />
-      {cells.map((on, i) => {
-        if (!on) return null;
-        const x = (i % size) * cell + pad;
-        const y = Math.floor(i / size) * cell + pad;
-        return <rect key={i} x={x} y={y} width={cell} height={cell} fill="#111" />;
-      })}
-    </svg>
-  );
-}
-
-function QrConMarco() {
-  return (
-    <div className="wa-qr-frame">
-      <div className="wa-qr-frame__inner">
-        <QrSvg />
-      </div>
-    </div>
-  );
-}
+type QrResponse = {
+  ok?: boolean;
+  connected?: boolean;
+  qr_available?: boolean;
+  image_base64?: string;
+  phone?: string | null;
+  message?: string;
+};
 
 const STEPS = [
   "Abrí WhatsApp en tu teléfono",
@@ -82,25 +27,106 @@ const STEPS = [
   "Apuntá la cámara a este código QR",
 ];
 
+function QrConMarco({ src, loading }: { src?: string | null; loading?: boolean }) {
+  return (
+    <div className="wa-qr-frame">
+      <div className="wa-qr-frame__inner flex min-h-[318px] min-w-[318px] items-center justify-center">
+        {src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src}
+            alt="Código QR WhatsApp"
+            className="block rounded-xl bg-white"
+            width={306}
+            height={306}
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+            <RefreshCw className="animate-spin text-[#25d366]" size={28} />
+            <p className="text-sm text-[#8696a0]">
+              {loading ? "Generando código QR…" : "Esperando código QR…"}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function BaileysPruebaQr() {
   const [phase, setPhase] = useState<Phase>("starting");
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(true);
+  const [connectedPhone, setConnectedPhone] = useState<string | null>(null);
+  const phaseRef = useRef<Phase>("starting");
+  const qrTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goConnecting = useCallback((phone?: string | null) => {
+    if (phaseRef.current !== "qr") return;
+    if (qrTimerRef.current) {
+      clearTimeout(qrTimerRef.current);
+      qrTimerRef.current = null;
+    }
+    if (phone) setConnectedPhone(phone);
+    phaseRef.current = "connecting";
+    setPhase("connecting");
+    setTimeout(() => {
+      phaseRef.current = "connected";
+      setPhase("connected");
+    }, CONNECTING_MS);
+  }, []);
+
+  const refreshQr = useCallback(async () => {
+    if (phaseRef.current !== "qr") return;
+    try {
+      const res = await fetch("/backend/api/vincular/whatsapp/qr", { cache: "no-store" });
+      const data = (await res.json()) as QrResponse;
+      if (data.connected) {
+        goConnecting(data.phone);
+        return;
+      }
+      if (data.image_base64) {
+        setQrImage(data.image_base64);
+        setQrLoading(false);
+      } else {
+        setQrLoading(true);
+      }
+    } catch {
+      setQrLoading(true);
+    }
+  }, [goConnecting]);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("qr"), 1800);
+    phaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      phaseRef.current = "qr";
+      setPhase("qr");
+    }, 1800);
     return () => clearTimeout(t1);
   }, []);
 
   useEffect(() => {
     if (phase !== "qr") return;
-    const t = setTimeout(() => setPhase("connecting"), QR_WAIT_MS);
-    return () => clearTimeout(t);
-  }, [phase]);
+    refreshQr();
+    const poll = setInterval(refreshQr, QR_POLL_MS);
+    qrTimerRef.current = setTimeout(() => goConnecting(), QR_WAIT_MS);
+    return () => {
+      clearInterval(poll);
+      if (qrTimerRef.current) {
+        clearTimeout(qrTimerRef.current);
+        qrTimerRef.current = null;
+      }
+    };
+  }, [phase, refreshQr, goConnecting]);
 
-  useEffect(() => {
-    if (phase !== "connecting") return;
-    const t = setTimeout(() => setPhase("connected"), CONNECTING_MS);
-    return () => clearTimeout(t);
-  }, [phase]);
+  const phoneDisplay = connectedPhone
+    ? connectedPhone.startsWith("+")
+      ? connectedPhone
+      : `+${connectedPhone}`
+    : WHATSAPP_NUMERO_FMT;
 
   return (
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef]">
@@ -126,7 +152,7 @@ export function BaileysPruebaQr() {
 
           {phase === "qr" && (
             <>
-              <QrConMarco />
+              <QrConMarco src={qrImage} loading={qrLoading} />
               <p className="mt-6 text-center text-sm text-[#8696a0]">
                 Escaneá con el teléfono {WHATSAPP_NUMERO_FMT}
               </p>
@@ -154,7 +180,7 @@ export function BaileysPruebaQr() {
                 <MessageCircle size={32} />
               </div>
               <p className="text-lg font-medium text-[#25d366]">WhatsApp conectado</p>
-              <p className="font-mono text-sm text-[#e9edef]">{WHATSAPP_NUMERO_FMT}</p>
+              <p className="font-mono text-sm text-[#e9edef]">{phoneDisplay}</p>
               <p className="max-w-xs text-sm text-[#8696a0]">
                 Mantené el teléfono conectado a internet.
               </p>

@@ -1,3 +1,5 @@
+import { fetchBaileysWhatsappQr } from "../services/baileys-qr.mjs";
+
 const PROBE_TIMEOUT_MS = 6000;
 
 /**
@@ -127,47 +129,6 @@ export default async function monitorRoutes(fastify) {
     if (!botBase) {
       return { ok: false, connected: false, error: "BAILEYS_BOT_URL no configurado" };
     }
-
-    const status = await fetchBotJson(`${botBase}/v1/whatsapp/status`);
-    if (status?.whatsapp === "connected") {
-      return {
-        ok: true,
-        connected: true,
-        phone: status.phone ?? null,
-        message: "WhatsApp ya está conectado.",
-      };
-    }
-
-    try {
-      const ac = new AbortController();
-      const timer = setTimeout(() => ac.abort(), PROBE_TIMEOUT_MS);
-      const res = await fetch(`${botBase}/v1/whatsapp/qr`, { signal: ac.signal, cache: "no-store" });
-      clearTimeout(timer);
-
-      if (res.ok && res.headers.get("content-type")?.includes("png")) {
-        const buf = Buffer.from(await res.arrayBuffer());
-        return {
-          ok: true,
-          connected: false,
-          qr_available: true,
-          image_base64: `data:image/png;base64,${buf.toString("base64")}`,
-          qr_updated_at: status?.qr_updated_at ?? null,
-          auto_reconnect: status?.auto_reconnect ?? true,
-          message:
-            "Escaneá con WhatsApp → Menú → Dispositivos vinculados → Vincular. El QR se renueva cada ~60 s.",
-        };
-      }
-    } catch {
-      /* fallthrough */
-    }
-
-    return {
-      ok: true,
-      connected: false,
-      qr_available: false,
-      auto_reconnect: status?.auto_reconnect ?? true,
-      message:
-        "QR aún no generado. Esperá 5–10 s y tocá «Actualizar QR». Si persiste, reiniciá andreu-bot en Easypanel.",
-    };
+    return fetchBaileysWhatsappQr(botBase);
   });
 }
