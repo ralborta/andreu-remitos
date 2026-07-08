@@ -29,7 +29,7 @@ import { Card, Pill, SectionTitle } from "./ui";
 import { DataTable, type Column } from "./DataTable";
 import { RemitoQuickEditorDrawer, RemitoQuickEditorPanel } from "./RemitoQuickEditor";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 13;
 
 function matchBusqueda(row: RemitoRow, q: string) {
   const needle = q.trim().toLowerCase();
