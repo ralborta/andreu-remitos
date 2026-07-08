@@ -5,6 +5,7 @@ import { forwardToAndreu, mountFileRoutes } from "./andreu-api.js";
 import { getSessionSnapshot, readQrPng } from "./whatsapp-session.js";
 
 const PORT = Number(process.env.PORT ?? 3008);
+const SESSION_NAME = process.env.BOT_SESSION_NAME?.trim() || "andreu";
 const PUBLIC_BASE =
   process.env.BOT_PUBLIC_URL?.trim() || `http://127.0.0.1:${PORT}`;
 
