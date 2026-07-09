@@ -29,7 +29,7 @@ import { Card, Pill, SectionTitle } from "./ui";
 import { DataTable, type Column } from "./DataTable";
 import { RemitoQuickEditorDrawer, RemitoQuickEditorPanel } from "./RemitoQuickEditor";
 
-const PAGE_SIZE = 13;
+const PAGE_SIZE = 17;
 
 function matchBusqueda(row: RemitoRow, q: string) {
   const needle = q.trim().toLowerCase();
@@ -474,6 +474,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
               columns={cols}
               rows={filasPagina}
               minWidth={1080}
+              maxHeightClass="max-h-[min(72vh,760px)]"
               rowClassName={(r) =>
                 r.id === selectedId
                   ? "bg-[var(--violet)]/15 ring-1 ring-inset ring-[var(--violet)]/50"

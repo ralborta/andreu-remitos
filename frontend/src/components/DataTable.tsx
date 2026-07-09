@@ -12,17 +12,19 @@ export function DataTable<T extends object>({
   columns,
   rows,
   minWidth = 640,
+  maxHeightClass = "max-h-[min(52vh,520px)]",
   rowClassName,
   onRowClick,
 }: {
   columns: Column<T>[];
   rows: T[];
   minWidth?: number;
+  maxHeightClass?: string;
   rowClassName?: (row: T) => string;
   onRowClick?: (row: T) => void;
 }) {
   return (
-    <div className="max-h-[min(52vh,520px)] overflow-auto scroll-thin">
+    <div className={clsx(maxHeightClass, "overflow-auto scroll-thin")}>
       <table
         className="w-full border-collapse text-sm"
         style={{ minWidth }}
