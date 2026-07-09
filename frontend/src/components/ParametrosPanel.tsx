@@ -21,6 +21,7 @@ import {
   updateLocalidad,
   updateUnidad,
 } from "@/lib/api";
+import { useConfirm } from "@/lib/confirm-context";
 import type {
   Chofer,
   Distancia,
@@ -602,6 +603,7 @@ function ChoferRow({
   const [telefono, setTelefono] = useState(row.documento || row.telefono || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const confirm = useConfirm();
 
   useEffect(() => {
     setNombre(row.nombre);
@@ -631,7 +633,13 @@ function ChoferRow({
   }
 
   async function remove() {
-    if (!confirm(`¿Eliminar chofer "${row.nombre}"?`)) return;
+    const ok = await confirm({
+      title: "Eliminar chofer",
+      message: `¿Eliminar chofer "${row.nombre}"?`,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await deleteChofer(row.id);
       onReload();
@@ -669,6 +677,7 @@ function UnidadRow({
   const [unidadInterna, setUnidadInterna] = useState(row.unidad_interna || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const confirm = useConfirm();
 
   useEffect(() => {
     setTipo(row.tipo);
@@ -705,7 +714,13 @@ function UnidadRow({
   }
 
   async function remove() {
-    if (!confirm(`¿Eliminar unidad ${row.patente}?`)) return;
+    const ok = await confirm({
+      title: "Eliminar unidad",
+      message: `¿Eliminar unidad ${row.patente}?`,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await deleteUnidad(row.id);
       onReload();
@@ -749,6 +764,7 @@ function LocalidadRow({
   const [tipo, setTipo] = useState(row.tipo);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const confirm = useConfirm();
 
   useEffect(() => {
     setNombre(row.nombre);
@@ -785,7 +801,13 @@ function LocalidadRow({
   }
 
   async function remove() {
-    if (!confirm(`¿Eliminar localidad "${row.nombre}"?`)) return;
+    const ok = await confirm({
+      title: "Eliminar localidad",
+      message: `¿Eliminar localidad "${row.nombre}"?`,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await deleteLocalidad(row.id);
       onReload();
@@ -832,6 +854,7 @@ function DistanciaRow({
   const [km, setKm] = useState(String(row.km));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const confirm = useConfirm();
 
   useEffect(() => {
     setOrigenId(row.origen_id);
@@ -865,7 +888,13 @@ function DistanciaRow({
   }
 
   async function remove() {
-    if (!confirm("¿Eliminar esta distancia?")) return;
+    const ok = await confirm({
+      title: "Eliminar distancia",
+      message: "¿Eliminar esta distancia?",
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await deleteDistancia(row.id);
       onReload();

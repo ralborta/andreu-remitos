@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRemito, getRemito, imagenUrl, patchRemitoCampos, patchRemitoTenant } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useConfirm } from "@/lib/confirm-context";
 import { canDeleteRemitos } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
@@ -49,6 +50,7 @@ export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: stri
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [borrando, setBorrando] = useState(false);
+  const confirm = useConfirm();
 
   async function cambiarTenant(nuevo: Tenant) {
     if (!row || nuevo === row.tenant) return;
@@ -65,7 +67,13 @@ export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: stri
 
   async function borrar() {
     if (!row) return;
-    if (!window.confirm(`¿Eliminar el remito ${numeroRemito(row)} por completo?`)) return;
+    const ok = await confirm({
+      title: "Eliminar remito",
+      message: `¿Eliminar el remito ${numeroRemito(row)} por completo? (foto y datos — no se puede deshacer)`,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     setBorrando(true);
     try {
       await deleteRemito(id);

@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { fetchMonitorStatus, fetchMonitorWhatsappQr } from "@/lib/api";
+import { useConfirm } from "@/lib/confirm-context";
 import type { MonitorStatus, MonitorWhatsappQr } from "@/lib/monitor-types";
 import { Card, PageHeader, Pill } from "./ui";
 
@@ -76,6 +77,7 @@ export function MonitorPanel() {
   const [showQr, setShowQr] = useState(false);
   const prevOk = useRef<boolean | null>(null);
   const prevWa = useRef<boolean | null>(null);
+  const confirm = useConfirm();
 
   const pushLog = useCallback((ok: boolean, message: string) => {
     setLog((prev) => [{ at: new Date().toISOString(), ok, message }, ...prev].slice(0, LOG_MAX));
@@ -173,7 +175,12 @@ export function MonitorPanel() {
 
   async function toggleAlerts() {
     if (typeof Notification === "undefined") {
-      alert("Tu navegador no soporta notificaciones de escritorio.");
+      await confirm({
+        title: "Notificaciones no disponibles",
+        message: "Tu navegador no soporta notificaciones de escritorio.",
+        alert: true,
+        variant: "warning",
+      });
       return;
     }
     if (Notification.permission === "granted") {

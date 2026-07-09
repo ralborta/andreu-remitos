@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check, CheckSquare, ExternalLink, Trash2, X } from "lucide-react";
 import { imagenUrl, deleteRemito, getRemito, patchRemitoCampos, patchRemitoTenant, procesarRemitos } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useConfirm } from "@/lib/confirm-context";
 import { canDeleteRemitos } from "@/lib/auth-types";
 import type { RemitoRow, Tenant } from "@/lib/types";
 import {
@@ -102,9 +103,17 @@ function EditorBody({
     }
   }
 
+  const confirm = useConfirm();
+
   async function borrar() {
     const nro = numeroRemito(row);
-    if (!window.confirm(`¿Eliminar el remito ${nro} por completo? (foto y datos — no se puede deshacer)`)) return;
+    const ok = await confirm({
+      title: "Eliminar remito",
+      message: `¿Eliminar el remito ${nro} por completo? (foto y datos — no se puede deshacer)`,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+    });
+    if (!ok) return;
     setBorrando(true);
     setError(null);
     try {
