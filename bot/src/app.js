@@ -31,7 +31,7 @@ const andreuFlows = [
 const main = async () => {
   const adapterFlow = createFlow(andreuFlows);
   const adapterProvider = createProvider(Provider, {
-    name: "andreu",
+    name: SESSION_NAME,
     version: [2, 3000, 1035824857],
     groupsIgnore: true,
   });
@@ -44,6 +44,32 @@ const main = async () => {
   });
 
   mountFileRoutes(adapterProvider.server);
+
+  async function sendComposing(number) {
+    const phone = String(number ?? "").replace(/\D/g, "");
+    if (phone.length < 9) return false;
+    const jid = `${phone}@s.whatsapp.net`;
+    await adapterProvider.sendPresenceUpdate(jid, "composing");
+    return true;
+  }
+
+  /** Indicador "escribiendo…" (3 puntitos) en el WhatsApp del chofer */
+  adapterProvider.server.post("/v1/typing", async (req, res) => {
+    const { number } = req.body ?? {};
+    try {
+      const ok = await sendComposing(number);
+      if (!ok) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "number inválido" }));
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ status: "ok" }));
+    } catch (err) {
+      console.error("[andreu-bot] typing error:", err.message);
+      res.writeHead(503, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message || "WhatsApp no conectado" }));
+    }
+  });
 
   /** Envío desde la API Andreu (lib/builderbot-send.mjs) */
   adapterProvider.server.post(

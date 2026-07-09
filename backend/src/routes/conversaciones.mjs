@@ -1,4 +1,4 @@
-import { sendWhatsAppMessage, setBuilderBotBlacklist } from "../../../lib/builderbot-send.mjs";
+import { sendWhatsAppMessage, sendWhatsAppTyping, setBuilderBotBlacklist } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import { syncBotPausa, BOT_PAUSA_INACTIVIDAD_MIN } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
@@ -24,6 +24,25 @@ export default async function conversacionesRoutes(fastify) {
     const conv = await syncBotPausa(phone);
     if (!conv) return reply.code(404).send({ error: "Conversación no encontrada" });
     return conv;
+  });
+
+  /** Operador escribe — avisa "composing" al chofer en WhatsApp (Baileys) */
+  fastify.post("/:telefono/typing", async (request, reply) => {
+    const phone = sanitizePhone(request.params.telefono);
+    const conv = await convStore.getConversacion(phone);
+    if (!conv) {
+      return reply.code(404).send({ error: "Conversación no encontrada" });
+    }
+
+    try {
+      await sendWhatsAppTyping(phone);
+      return { ok: true };
+    } catch (err) {
+      request.log.warn(err, "typing WhatsApp falló");
+      return reply.code(502).send({
+        error: err.message || "No se pudo enviar indicador de escritura",
+      });
+    }
   });
 
   /** Operador envía mensaje al chofer por WhatsApp */

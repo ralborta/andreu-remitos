@@ -63,18 +63,41 @@ function Bubble({ msg }: { msg: ConversacionMensaje }) {
   );
 }
 
+function TypingDot({ delay }: { delay: number }) {
+  return (
+    <span
+      className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70"
+      style={{ animationDelay: `${delay}ms` }}
+    />
+  );
+}
+
+function TypingBubble() {
+  return (
+    <div className="flex justify-end">
+      <div className="flex items-center gap-1 rounded-2xl rounded-br-md bg-[var(--violet)]/90 px-3 py-2.5 shadow-sm">
+        <TypingDot delay={0} />
+        <TypingDot delay={150} />
+        <TypingDot delay={300} />
+      </div>
+    </div>
+  );
+}
+
 export function ContactoChatThread({
   mensajes,
   scrollKey = 0,
+  operadorEscribiendo = false,
 }: {
   mensajes: ConversacionMensaje[];
   scrollKey?: number;
+  operadorEscribiendo?: boolean;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [mensajes, scrollKey]);
+  }, [mensajes, scrollKey, operadorEscribiendo]);
 
   if (mensajes.length === 0) {
     return (
@@ -95,6 +118,7 @@ export function ContactoChatThread({
       {mensajes.map((m) => (
         <Bubble key={m.id} msg={m} />
       ))}
+      {operadorEscribiendo && <TypingBubble />}
       <div ref={bottomRef} aria-hidden />
     </div>
   );

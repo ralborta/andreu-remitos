@@ -154,6 +154,16 @@ export function enviarMensajeConversacion(
   );
 }
 
+/** Aviso "escribiendo…" al chofer en WhatsApp (fire-and-forget). */
+export function enviarTypingConversacion(telefono: string) {
+  void fetch(`${apiBase()}/api/conversaciones/${telefono}/typing`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  }).catch(() => {});
+}
+
 export function setBotPausado(telefono: string, pausado: boolean) {
   return api<Conversacion>(`/api/conversaciones/${telefono}/bot-pausado`, {
     method: "PATCH",

@@ -36,6 +36,7 @@ export function ContactosInbox() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chatScrollKey, setChatScrollKey] = useState(0);
+  const [operadorEscribiendo, setOperadorEscribiendo] = useState(false);
 
   const loadLista = useCallback(async () => {
     try {
@@ -115,6 +116,7 @@ export function ContactosInbox() {
   }, [lista, busqueda, choferPorTel]);
 
   function elegirContacto(tel: string) {
+    setOperadorEscribiendo(false);
     setSelectedTel(tel);
     setChatScrollKey((k) => k + 1);
   }
@@ -249,12 +251,17 @@ export function ContactosInbox() {
                   WhatsApp
                 </span>
               </div>
-              <ContactoChatThread mensajes={conv.mensajes} scrollKey={chatScrollKey} />
+              <ContactoChatThread
+                mensajes={conv.mensajes}
+                scrollKey={chatScrollKey}
+                operadorEscribiendo={operadorEscribiendo}
+              />
               <ContactoMessageComposer
                 telefono={conv.telefono}
                 botPausado={!!conv.bot_pausado}
                 onSent={() => loadConv(conv.telefono)}
                 onBotToggle={() => loadConv(conv.telefono)}
+                onTypingChange={setOperadorEscribiendo}
               />
             </>
           ) : (

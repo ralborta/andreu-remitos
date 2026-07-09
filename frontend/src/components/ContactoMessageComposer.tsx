@@ -1,19 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send, PauseCircle, PlayCircle } from "lucide-react";
-import { enviarMensajeConversacion, setBotPausado } from "@/lib/api";
+import { enviarMensajeConversacion, enviarTypingConversacion, setBotPausado } from "@/lib/api";
+
+const TYPING_DEBOUNCE_MS = 400;
+const TYPING_REFRESH_MS = 8000;
 
 export function ContactoMessageComposer({
   telefono,
   botPausado,
   onSent,
   onBotToggle,
+  onTypingChange,
 }: {
   telefono: string;
   botPausado: boolean;
   onSent: () => void;
   onBotToggle: (pausado: boolean) => void;
+  onTypingChange?: (active: boolean) => void;
 }) {
   const [texto, setTexto] = useState("");
   const [notaInterna, setNotaInterna] = useState(false);
@@ -21,9 +26,54 @@ export function ContactoMessageComposer({
   const [togglingBot, setTogglingBot] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function stopTyping() {
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+    onTypingChange?.(false);
+  }
+
+  function startTypingLoop() {
+    onTypingChange?.(true);
+    enviarTypingConversacion(telefono);
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    typingIntervalRef.current = setInterval(() => {
+      enviarTypingConversacion(telefono);
+    }, TYPING_REFRESH_MS);
+  }
+
+  function handleTextChange(value: string) {
+    setTexto(value);
+    if (notaInterna || !value.trim()) {
+      stopTyping();
+      return;
+    }
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = setTimeout(() => {
+      startTypingLoop();
+    }, TYPING_DEBOUNCE_MS);
+  }
+
+  useEffect(() => {
+    return () => stopTyping();
+  }, [telefono]);
+
+  useEffect(() => {
+    if (notaInterna) stopTyping();
+  }, [notaInterna]);
+
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     if (!texto.trim()) return;
+    stopTyping();
     setLoading(true);
     setError(null);
     try {
@@ -86,7 +136,8 @@ export function ContactoMessageComposer({
         <textarea
           rows={2}
           value={texto}
-          onChange={(e) => setTexto(e.target.value)}
+          onChange={(e) => handleTextChange(e.target.value)}
+          onBlur={stopTyping}
           placeholder={notaInterna ? "Nota para el equipo…" : "Escribí al chofer por WhatsApp…"}
           className="flex-1 resize-none rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
         />
