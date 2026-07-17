@@ -28,6 +28,13 @@ function normalizarNroRemitoGuia(valor: unknown, opts?: { tenant?: string }): st
   if (valor == null || valor === "") return null;
   const raw = String(valor).trim();
   if (/^remit[oa]s?$/i.test(raw)) return null;
+  if (opts?.tenant === "corina") {
+    const conGuion = raw.match(/(\d{4})\s*[-–—]\s*(\d{6,10})/);
+    if (conGuion) return `${conGuion[1]}-${conGuion[2]}`;
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length >= 10) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    return digits.length >= 4 ? digits : null;
+  }
   const permitirCopia = opts?.tenant === "beraldi";
   const copiaMatch = permitirCopia ? raw.match(/[-–—]\s*([123])\s*$/) : null;
   const sufijo = copiaMatch ? `-${copiaMatch[1]}` : "";
@@ -305,7 +312,7 @@ const CAMPO_LABEL: Record<string, string> = {
   cliente: "Cliente",
   cod_cliente: "Cod. cliente",
   transportista: "Transportista",
-  total_bultos: "Total bultos",
+  total_bultos: "Pallets CHEP",
   total_litros: "Total litros",
   pedido: "Pedido",
   entrega: "Entrega",

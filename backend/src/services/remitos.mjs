@@ -13,6 +13,7 @@ import {
 import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
+import { enriquecerCorinaDesdeOcr } from "../../../lib/corina-reglas.mjs";
 import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
 
@@ -60,7 +61,11 @@ function remitoConDatosLimpios(row) {
  */
 async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } = {}) {
   if (!row?.datos) return row;
-  const datosNorm = normalizarDatosRemito({ ...row.datos }, row.tenant);
+  let datosNorm = normalizarDatosRemito({ ...row.datos }, row.tenant);
+  if (row.tenant === "corina" && row.texto_ocr) {
+    datosNorm = enriquecerCorinaDesdeOcr(datosNorm, row.texto_ocr);
+    datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
+  }
   const dirtyDatos = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
   const needsReval =
     dirtyDatos ||
