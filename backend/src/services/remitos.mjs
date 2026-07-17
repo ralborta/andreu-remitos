@@ -39,20 +39,36 @@ async function validacionCompleta(datos, tenant, opts = {}) {
   return { validacion, datos: datosCanon };
 }
 
-function remitoConDatosLimpios(row, { persistir = false } = {}) {
+function remitoConDatosLimpios(row) {
   if (!row?.datos) return row;
   const datos = normalizarDatosRemito({ ...row.datos }, row.tenant);
   const dirty = JSON.stringify(datos) !== JSON.stringify(row.datos);
   if (!dirty) return row;
-  if (persistir) {
-    return store.updateRemito(row.id, { datos });
-  }
+  // Sin revalidar: solo para callers síncronos legacy. Preferir remitoConDatosLimpiosAsync.
   return { ...row, datos };
 }
 
-async function remitoConDatosLimpiosAsync(row, { persistir = false } = {}) {
-  const out = remitoConDatosLimpios(row, { persistir });
-  return out instanceof Promise ? out : out;
+/**
+ * Si normalizar cambia datos (p. ej. sync destino Beraldi), recalcula validación
+ * para que el UI no muestre errores stale tipo "Lach.874" con destino ya corregido.
+ */
+async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } = {}) {
+  if (!row?.datos) return row;
+  const datosNorm = normalizarDatosRemito({ ...row.datos }, row.tenant);
+  const dirty = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
+  if (!dirty) return row;
+
+  const { validacion, datos } = await validacionCompleta(datosNorm, row.tenant, maestros ?? {});
+  let estado = calcularEstado(datos, validacion, row.tenant);
+  if (row.estado === "confirmado") {
+    const candidato = { ...row, datos, validacion, estado };
+    if (remitoListoParaPlanilla(candidato)) estado = "confirmado";
+  }
+
+  if (persistir) {
+    return store.updateRemito(row.id, { datos, validacion, estado });
+  }
+  return { ...row, datos, validacion, estado };
 }
 
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido }) {
@@ -155,12 +171,36 @@ export async function reprocesarRemito(id) {
     texto_ocr: resultado.ocr?.texto ?? row.texto_ocr,
   });
 
-  return remitoConDatosLimpios(updated);
+  return remitoConDatosLimpiosAsync(updated, { persistir: false });
 }
 
 export async function listarRemitos(opts) {
   const rows = await store.listRemitos(opts);
-  return rows.map((row) => remitoConDatosLimpios(row));
+  if (!rows.length) return rows;
+
+  // Precargar maestros por tenant para revalidar remitos dirty sin N×3 queries.
+  const tenants = [...new Set(rows.map((r) => r.tenant).filter(Boolean))];
+  const maestrosPorTenant = Object.fromEntries(
+    await Promise.all(
+      tenants.map(async (tenant) => {
+        const [localidades, choferes, unidades] = await Promise.all([
+          master.listCollection("localidades", { tenant, activo: true }),
+          master.listCollection("choferes", { tenant, activo: true }),
+          master.listCollection("unidades", { tenant, activo: true }),
+        ]);
+        return [tenant, { localidades, choferes, unidades }];
+      }),
+    ),
+  );
+
+  return Promise.all(
+    rows.map((row) =>
+      remitoConDatosLimpiosAsync(row, {
+        persistir: true,
+        maestros: maestrosPorTenant[row.tenant],
+      }),
+    ),
+  );
 }
 
 export async function obtenerRemito(id) {
@@ -247,12 +287,14 @@ export async function procesarRemitosBatch(ids, tenant) {
   const procesados = [];
   const errores = [];
 
-  for (const id of ids) {
-    const row = await store.getRemito(id);
+    for (const id of ids) {
+    let row = await store.getRemito(id);
     if (!row) {
       errores.push({ id, motivos: ["Remito no encontrado"] });
       continue;
     }
+    // Sanar destino/validación stale antes de evaluar (mismo fix que al listar).
+    row = await remitoConDatosLimpiosAsync(row, { persistir: true });
     if (tenant && row.tenant !== tenant) {
       errores.push({ id, nro: numeroRemitoRow(row), motivos: ["Pertenece a otro cliente"] });
       continue;

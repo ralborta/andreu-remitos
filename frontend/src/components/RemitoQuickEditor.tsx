@@ -74,6 +74,20 @@ function EditorBody({
   const validacion = row.validacion;
   const procesable = remitoProcesable(row);
   const advTenant = advertenciaTenant(row);
+  const formDirty = useMemo(() => {
+    const baseline = formFromRow(row);
+    const camposKeys = camposFor(row);
+    for (const k of camposKeys) {
+      if ((form[k] ?? "") !== (baseline[k] ?? "")) return true;
+    }
+    if (!esTenantCorina(row.tenant)) {
+      const h0 = horasFromRow(row);
+      for (const k of Object.keys(horas) as (keyof typeof horas)[]) {
+        if ((horas[k] ?? "") !== (h0[k] ?? "")) return true;
+      }
+    }
+    return false;
+  }, [form, horas, row]);
 
   const onCampoChange = useCallback((key: string, val: string) => {
     setForm((f) => (f[key] === val ? f : { ...f, [key]: val }));
@@ -127,28 +141,6 @@ function EditorBody({
     }
   }
 
-  async function procesar() {
-    setProcesando(true);
-    setMsg(null);
-    setError(null);
-    try {
-      const result = await procesarRemitos([row.id], row.tenant);
-      if (result.errores.length > 0) {
-        setError(result.errores[0].motivos.join(" · "));
-        return;
-      }
-      const updated = await getRemito(row.id);
-      onSaved?.(updated);
-      setForm(formFromRow(updated));
-      setHoras(horasFromRow(updated));
-      setMsg("Procesado — listo para planilla");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al procesar");
-    } finally {
-      setProcesando(false);
-    }
-  }
-
   async function guardar() {
     setSaving(true);
     setMsg(null);
@@ -166,10 +158,43 @@ function EditorBody({
       setForm(formFromRow(updated));
       setHoras(horasFromRow(updated));
       setMsg(updated.estado === "confirmado" ? "Guardado — validado" : "Guardado");
+      return updated;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar");
+      return null;
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function procesar() {
+    setProcesando(true);
+    setMsg(null);
+    setError(null);
+    try {
+      // Siempre persistir el formulario antes de procesar: si no, la validación
+      // del servidor (y el botón) siguen con el destino OCR viejo (ej. Lach.874).
+      const saved = await guardar();
+      if (!saved) return;
+      const check = remitoProcesable(saved);
+      if (!check.ok) {
+        setError(check.motivos[0] || "No se puede procesar — revisá destino y horarios");
+        return;
+      }
+      const result = await procesarRemitos([saved.id], saved.tenant);
+      if (result.errores.length > 0) {
+        setError(result.errores[0].motivos.join(" · "));
+        return;
+      }
+      const updated = await getRemito(saved.id);
+      onSaved?.(updated);
+      setForm(formFromRow(updated));
+      setHoras(horasFromRow(updated));
+      setMsg("Procesado — listo para planilla");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al procesar");
+    } finally {
+      setProcesando(false);
     }
   }
 
@@ -258,6 +283,11 @@ function EditorBody({
 
       {validacion && (validacion.faltantes?.length || validacion.errores?.length) ? (
         <div className="mt-3 rounded-lg bg-[var(--amber)]/10 p-3 text-xs text-[var(--amber)]">
+          {formDirty && (
+            <div className="mb-1 font-medium">
+              Hay cambios sin guardar — al procesar se guardan solos; o pulsá «Guardar cambios».
+            </div>
+          )}
           {validacion.faltantes?.map((f) => (
             <div key={f}>Falta: {f}</div>
           ))}
@@ -270,27 +300,32 @@ function EditorBody({
       <div className="mt-4 space-y-2 border-t border-[var(--border-soft)] pt-4">
         <button
           type="button"
-          onClick={guardar}
-          disabled={saving}
+          onClick={() => void guardar()}
+          disabled={saving || procesando}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--violet)]/90 disabled:opacity-50"
         >
           <Check size={16} />
           {saving ? "Guardando…" : "Guardar cambios"}
         </button>
-        {procesable.ok && row.estado !== "confirmado" && (
+        {row.estado !== "confirmado" && (
           <button
             type="button"
-            onClick={procesar}
+            onClick={() => void procesar()}
             disabled={procesando || saving}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--green)]/20 py-2.5 text-sm font-semibold text-[var(--green)] ring-1 ring-[var(--green)]/40 hover:bg-[var(--green)]/30 disabled:opacity-50"
           >
             <CheckSquare size={16} />
-            {procesando ? "Procesando…" : "Procesar remito"}
+            {procesando ? "Procesando…" : formDirty ? "Guardar y procesar" : "Procesar remito"}
           </button>
         )}
-        {!procesable.ok && row.estado !== "confirmado" && procesable.motivos.length > 0 && (
+        {!procesable.ok && !formDirty && row.estado !== "confirmado" && procesable.motivos.length > 0 && (
           <p className="text-center text-xs text-[var(--text-faint)]">
             Para procesar: {procesable.motivos[0]}
+          </p>
+        )}
+        {formDirty && row.estado !== "confirmado" && (
+          <p className="text-center text-xs text-[var(--text-faint)]">
+            Corregiste campos — guardá o usá «Guardar y procesar».
           </p>
         )}
         <Link
