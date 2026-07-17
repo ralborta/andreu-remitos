@@ -4,7 +4,12 @@ import { randomUUID } from "node:crypto";
 import { leerRemito, calcularEstado } from "../../../lib/lectura.mjs";
 import { normalizarFecha, normalizarHora, validarOrdenHorarios } from "../../../lib/horarios.mjs";
 import { normalizarPeso } from "../../../lib/extract-cold.mjs";
-import { validarDestinoConMaestros, validarUnidadesConMaestros, mergeValidacionRemito } from "../../../lib/validacion-maestros.mjs";
+import {
+  destinoDesdeDatos,
+  validarDestinoConMaestros,
+  validarUnidadesConMaestros,
+  mergeValidacionRemito,
+} from "../../../lib/validacion-maestros.mjs";
 import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
@@ -49,14 +54,21 @@ function remitoConDatosLimpios(row) {
 }
 
 /**
- * Si normalizar cambia datos (p. ej. sync destino Beraldi), recalcula validación
- * para que el UI no muestre errores stale tipo "Lach.874" con destino ya corregido.
+ * Normaliza datos y recalcula validación cuando hace falta.
+ * Caso clave Beraldi: destino ya corregido en `datos` pero `validacion` sigue
+ * con error OCR viejo (Trom 23 / Lach.874) porque los datos no cambiaron al listar.
  */
 async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } = {}) {
   if (!row?.datos) return row;
   const datosNorm = normalizarDatosRemito({ ...row.datos }, row.tenant);
-  const dirty = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
-  if (!dirty) return row;
+  const dirtyDatos = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
+  const needsReval =
+    dirtyDatos ||
+    !row.validacion ||
+    row.validacion.valido === false ||
+    validacionDestinoStale(row, datosNorm);
+
+  if (!needsReval) return row;
 
   const { validacion, datos } = await validacionCompleta(datosNorm, row.tenant, maestros ?? {});
   let estado = calcularEstado(datos, validacion, row.tenant);
@@ -65,10 +77,26 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
     if (remitoListoParaPlanilla(candidato)) estado = "confirmado";
   }
 
+  const dirtyVal = JSON.stringify(validacion) !== JSON.stringify(row.validacion);
+  const dirtyEstado = estado !== row.estado;
+  if (!dirtyDatos && !dirtyVal && !dirtyEstado) return row;
+
   if (persistir) {
     return store.updateRemito(row.id, { datos, validacion, estado });
   }
   return { ...row, datos, validacion, estado };
+}
+
+/** True si el error de destino cita un texto distinto al destino actual de `datos`. */
+function validacionDestinoStale(row, datos) {
+  const errores = row.validacion?.errores ?? [];
+  const actual = String(destinoDesdeDatos(datos, row.tenant) ?? "").trim();
+  if (!actual) return false;
+  for (const e of errores) {
+    const m = String(e).match(/Destino "([^"]+)"/);
+    if (m && m[1].trim() !== actual) return true;
+  }
+  return false;
 }
 
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido }) {
