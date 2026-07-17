@@ -208,7 +208,7 @@ export async function reprocesarRemito(id) {
 }
 
 export async function listarRemitos(opts) {
-  const rows = await store.listRemitos(opts);
+  const rows = await store.listRemitos({ ...opts, includeOcr: true });
   if (!rows.length) return rows;
 
   // Precargar maestros por tenant para revalidar remitos dirty sin N×3 queries.
@@ -226,7 +226,7 @@ export async function listarRemitos(opts) {
     ),
   );
 
-  return Promise.all(
+  const cleaned = await Promise.all(
     rows.map((row) =>
       remitoConDatosLimpiosAsync(row, {
         persistir: true,
@@ -234,6 +234,8 @@ export async function listarRemitos(opts) {
       }),
     ),
   );
+  // No devolver OCR completo al cliente (payload grande).
+  return cleaned.map(({ texto_ocr, ...rest }) => rest);
 }
 
 export async function obtenerRemito(id) {

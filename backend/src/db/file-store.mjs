@@ -22,7 +22,7 @@ export async function insertRemito(row) {
   return row;
 }
 
-export async function listRemitos({ tenant, estado, pendientes, limit = 50 }) {
+export async function listRemitos({ tenant, estado, pendientes, limit = 50, includeOcr = false } = {}) {
   let rows = readAll();
   if (tenant) rows = rows.filter((r) => r.tenant === tenant);
   if (pendientes === true || pendientes === "true" || pendientes === "1") {
@@ -34,7 +34,9 @@ export async function listRemitos({ tenant, estado, pendientes, limit = 50 }) {
       .filter(Boolean);
     rows = rows.filter((r) => (estados.length === 1 ? r.estado === estados[0] : estados.includes(r.estado)));
   }
-  return rows.slice(0, limit).map(({ texto_ocr, ...rest }) => rest);
+  const sliced = rows.slice(0, limit);
+  if (includeOcr) return sliced;
+  return sliced.map(({ texto_ocr, ...rest }) => rest);
 }
 
 export async function getRemito(id) {
