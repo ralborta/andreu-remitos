@@ -24,12 +24,16 @@ function patenteParaUi(...candidatos: unknown[]): string {
   return "—";
 }
 
-function normalizarNroRemitoGuia(valor: unknown): string | null {
+function normalizarNroRemitoGuia(valor: unknown, opts?: { tenant?: string }): string | null {
   if (valor == null || valor === "") return null;
   const raw = String(valor).trim();
   if (/^remit[oa]s?$/i.test(raw)) return null;
-  const digits = raw.replace(/\D/g, "");
-  return digits.length >= 4 ? digits : null;
+  const permitirCopia = opts?.tenant === "beraldi";
+  const copiaMatch = permitirCopia ? raw.match(/[-–—]\s*([123])\s*$/) : null;
+  const sufijo = copiaMatch ? `-${copiaMatch[1]}` : "";
+  const baseRaw = copiaMatch ? raw.slice(0, copiaMatch.index) : raw;
+  const digits = baseRaw.replace(/\D/g, "");
+  return digits.length >= 4 ? (sufijo ? `${digits}${sufijo}` : digits) : null;
 }
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -58,8 +62,12 @@ export function estadoColor(estado: string) {
 
 export function numeroRemito(row: RemitoRow) {
   const d = row.datos as Record<string, unknown>;
-  const n = normalizarNroRemitoGuia(d.nro_guia ?? d.nro_remito);
-  return n ?? row.id.slice(0, 8);
+  const raw = d.nro_guia ?? d.nro_remito;
+  const n = normalizarNroRemitoGuia(raw, { tenant: row.tenant });
+  if (n) return n;
+  // Si ya viene con sufijo guardado, mostrarlo tal cual.
+  if (raw != null && String(raw).trim()) return String(raw).trim();
+  return row.id.slice(0, 8);
 }
 
 export function conductorNombre(row: RemitoRow) {
@@ -113,6 +121,7 @@ export const CAMPOS_TSB = [
 export const CAMPOS_BERALDI = [
   "fecha_remito",
   "nro_remito",
+  "ot",
   "chofer",
   "patente_chasis",
   "patente_acoplado",
@@ -282,6 +291,7 @@ const CAMPO_LABEL: Record<string, string> = {
   fecha_remito: "Fecha",
   nro_guia: "Nro remito / guía",
   nro_remito: "Nro remito",
+  ot: "OT",
   conductor: "Chofer",
   chofer: "Chofer",
   procedencia: "Origen",

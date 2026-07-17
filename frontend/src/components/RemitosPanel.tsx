@@ -35,12 +35,13 @@ function matchBusqueda(row: RemitoRow, q: string) {
   const needle = q.trim().toLowerCase();
   if (!needle) return true;
   const d = row.datos as Record<string, unknown>;
-  const nro = String(d.nro_guia ?? d.nro_remito ?? "").replace(/\D/g, "");
+  const nro = String(d.nro_guia ?? d.nro_remito ?? "");
   const chofer = String(d.conductor ?? d.chofer ?? "").toLowerCase();
   const chasis = String(d.chasis ?? d.tractor ?? d.patente_chasis ?? "").toLowerCase();
   const semi = String(d.acoplado ?? d.semi ?? d.patente_acoplado ?? "").toLowerCase();
   const qDigits = needle.replace(/\D/g, "");
-  if (qDigits.length >= 3 && nro.includes(qDigits)) return true;
+  if (nro.toLowerCase().includes(needle)) return true;
+  if (qDigits.length >= 3 && nro.replace(/\D/g, "").includes(qDigits)) return true;
   if (chofer.includes(needle)) return true;
   if (chasis.includes(needle.replace(/\s/g, ""))) return true;
   if (semi.includes(needle.replace(/\s/g, ""))) return true;
