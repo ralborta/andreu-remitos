@@ -4,16 +4,37 @@ import {
   isPublicApiPath,
   verifySessionToken,
 } from "../../../lib/auth.mjs";
+import { extractApiKey, verifyExternalApiKey } from "../../../lib/api-keys.mjs";
 import { getUserById, toPublicUser } from "../db/users-store.mjs";
 
-/** Hook global: valida JWT en rutas /api/* (excepto públicas). */
+/** Hook global: valida JWT en rutas /api/* (excepto públicas / API key v1). */
 export async function registerAuthGuard(app) {
   app.decorateRequest("user", null);
+  app.decorateRequest("apiClient", null);
 
   app.addHook("onRequest", async (request, reply) => {
     const pathname = request.url.split("?")[0];
     if (isPublicApiPath(pathname, request.method)) return;
     if (!pathname.startsWith("/api/")) return;
+
+    if (pathname.startsWith("/api/v1/")) {
+      const apiKey = extractApiKey(request);
+      if (!apiKey) {
+        return reply.code(401).send({
+          error: "api_key_requerida",
+          message: "Enviá la API key en el header X-Api-Key",
+        });
+      }
+      const client = verifyExternalApiKey(apiKey);
+      if (!client) {
+        return reply.code(401).send({
+          error: "api_key_invalida",
+          message: "API key inválida",
+        });
+      }
+      request.apiClient = client;
+      return;
+    }
 
     const token = extractSessionToken(request);
     if (!token) {
