@@ -165,6 +165,9 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
               className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
             />
           </label>
+          <p className="w-full text-[11px] text-[var(--text-faint)] sm:w-auto sm:max-w-[220px] sm:pb-2">
+            Filtra por fecha del remito o por el día en que se cargó al sistema.
+          </p>
           <button
             type="button"
             onClick={load}

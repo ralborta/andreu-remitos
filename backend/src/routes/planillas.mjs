@@ -11,7 +11,7 @@ function parseQuery(q) {
     estados: q.estados || "confirmado,pendiente_revision",
     desde: q.desde || undefined,
     hasta: q.hasta || undefined,
-    limit: q.limit ? parseInt(q.limit, 10) : 200,
+    limit: q.limit ? parseInt(q.limit, 10) : 5000,
   };
 }
 
@@ -58,7 +58,7 @@ function parseQueryCorina(q) {
     estados: q.estados || "confirmado,pendiente_revision",
     desde: q.desde || undefined,
     hasta: q.hasta || undefined,
-    limit: q.limit ? parseInt(q.limit, 10) : 200,
+    limit: q.limit ? parseInt(q.limit, 10) : 5000,
   };
 }
 

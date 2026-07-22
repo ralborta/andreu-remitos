@@ -36,12 +36,15 @@ function matchBusqueda(row: RemitoRow, q: string) {
   if (!needle) return true;
   const d = row.datos as Record<string, unknown>;
   const nro = String(d.nro_guia ?? d.nro_remito ?? "");
+  const remitoCliente = String(d.remito_cliente ?? d.nro_interno ?? "");
   const chofer = String(d.conductor ?? d.chofer ?? "").toLowerCase();
   const chasis = String(d.chasis ?? d.tractor ?? d.patente_chasis ?? "").toLowerCase();
   const semi = String(d.acoplado ?? d.semi ?? d.patente_acoplado ?? "").toLowerCase();
   const qDigits = needle.replace(/\D/g, "");
   if (nro.toLowerCase().includes(needle)) return true;
+  if (remitoCliente.toLowerCase().includes(needle)) return true;
   if (qDigits.length >= 3 && nro.replace(/\D/g, "").includes(qDigits)) return true;
+  if (qDigits.length >= 3 && remitoCliente.replace(/\D/g, "").includes(qDigits)) return true;
   if (chofer.includes(needle)) return true;
   if (chasis.includes(needle.replace(/\s/g, ""))) return true;
   if (semi.includes(needle.replace(/\s/g, ""))) return true;
@@ -95,7 +98,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    listRemitos({ tenant, pendientes: soloPendientes, limit: 200 })
+    listRemitos({ tenant, pendientes: soloPendientes, limit: 5000 })
       .then((data) => {
         setRows(data);
         setSelectedId((prev) => (data.some((r) => r.id === prev) ? prev : data[0]?.id ?? null));
@@ -410,7 +413,8 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
           </SectionTitle>
 
           <p className="mb-3 text-xs text-[var(--text-faint)]">
-            Tildá los revisados y usá <strong className="text-white/80">Procesar</strong> — como el CRM viejo. Solo entran en planilla los procesados con horas completas.
+            Tildá los revisados y usá <strong className="text-white/80">Procesar</strong> — como el CRM
+            viejo. En planilla entran los procesados (confirmados).
           </p>
 
           <div className="mb-3 flex flex-wrap items-center gap-3">
