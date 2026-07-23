@@ -34,7 +34,7 @@ export function RemitoImagePreview({
   return (
     <>
       <div
-        className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-black/30"
+        className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-black/30 surface-dark"
         onWheel={onWheelInline}
       >
         <button
@@ -144,7 +144,7 @@ export function RemitoImageLightbox({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black/95">
+    <div className="surface-dark fixed inset-0 z-[100] flex flex-col bg-black/95">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
         <p className="truncate text-sm font-medium text-white/90">{alt}</p>
         <div className="flex items-center gap-1">

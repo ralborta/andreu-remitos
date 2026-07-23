@@ -129,7 +129,7 @@ export function BaileysPruebaQr() {
     : WHATSAPP_NUMERO_FMT;
 
   return (
-    <div className="min-h-screen bg-[#0b141a] text-[#e9edef]">
+    <div className="surface-dark min-h-screen bg-[#0b141a] text-[#e9edef]">
       <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
         <header className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366]/15 text-[#25d366]">

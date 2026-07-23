@@ -238,8 +238,8 @@ export function ContactosInbox() {
         {/* Chat */}
         <Card className="flex max-h-[calc(100vh-12rem)] flex-col overflow-hidden p-0">
           {selectedTel && conv ? (
-            <>
-              <div className="flex items-center gap-3 border-b border-[var(--border)] bg-[#202c33] px-4 py-3">
+            <div className="surface-dark flex min-h-0 flex-1 flex-col bg-[#0b141a]">
+              <div className="flex items-center gap-3 border-b border-black/40 bg-[#202c33] px-4 py-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] text-sm font-bold text-white">
                   {(conv.nombre || "CH").slice(0, 2).toUpperCase()}
                 </div>
@@ -263,7 +263,7 @@ export function ContactosInbox() {
                 onBotToggle={() => loadConv(conv.telefono)}
                 onTypingChange={setOperadorEscribiendo}
               />
-            </>
+            </div>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
               <MessageCircle size={40} className="text-[var(--text-faint)]" />
@@ -289,7 +289,7 @@ export function ContactosInbox() {
           )}
           {remito && (
             <div className="space-y-3">
-              <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-black/30">
+              <div className="surface-dark overflow-hidden rounded-xl border border-[var(--border)] bg-black/30">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagenUrl(remito.id)} alt="" className="w-full object-contain" />
               </div>

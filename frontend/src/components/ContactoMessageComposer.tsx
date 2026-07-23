@@ -139,7 +139,7 @@ export function ContactoMessageComposer({
           onChange={(e) => handleTextChange(e.target.value)}
           onBlur={stopTyping}
           placeholder={notaInterna ? "Nota para el equipo…" : "Escribí al chofer por WhatsApp…"}
-          className="flex-1 resize-none rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+          className="surface-dark flex-1 resize-none rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
         />
         <button
           type="submit"

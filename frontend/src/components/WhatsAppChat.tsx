@@ -106,7 +106,7 @@ export function WhatsAppChat({ conversation }: { conversation: Conversation }) {
   const isEmail = conversation.channel === "Email";
 
   return (
-    <div className="flex h-[520px] flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0b141a]">
+    <div className="surface-dark flex h-[520px] flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0b141a]">
       {/* header */}
       <div className="flex items-center gap-3 border-b border-black/40 bg-[#202c33] px-4 py-2.5">
         <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#6d28d9] to-[#d946ef] text-sm font-bold text-white">

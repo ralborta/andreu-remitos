@@ -30,7 +30,7 @@ export function FleetMap() {
         </span>
       </div>
 
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0c0a18]">
+      <div className="surface-dark relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0c0a18]">
         {/* grid */}
         <div
           className="absolute inset-0 opacity-[0.5]"

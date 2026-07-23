@@ -14,7 +14,7 @@ export function PlanillaGrid({
   sheetName?: string;
 }) {
   return (
-    <div className="planilla-sheet overflow-hidden rounded-xl border border-[var(--border)] bg-[#0c0918] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <div className="planilla-sheet surface-dark overflow-hidden rounded-xl border border-[var(--border)] bg-[#0c0918] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--panel-2)] px-3 py-2">
         <span className="rounded-md bg-[var(--violet)]/20 px-2 py-0.5 text-[11px] font-semibold text-[var(--violet-2)] ring-1 ring-[var(--violet)]/30">
           {sheetName ?? "Hoja 1"}

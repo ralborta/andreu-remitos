@@ -256,7 +256,7 @@ export function DestinosPanel() {
               }}
             />
             {modo === "direccion" && suggestionsOpen && suggestions.length > 0 && (
-              <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-[var(--border)] bg-[#1a1528] shadow-xl">
+              <ul className="surface-dark absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-[var(--border)] bg-[#1a1528] shadow-xl">
                 {suggestions.map((s) => (
                   <li key={s.placeId}>
                     <button

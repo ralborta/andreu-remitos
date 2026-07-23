@@ -60,7 +60,7 @@ function LoginForm() {
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+              className="surface-dark mt-1 w-full rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
               placeholder="admin"
             />
           </label>
@@ -72,7 +72,7 @@ function LoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+              className="surface-dark mt-1 w-full rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
             />
           </label>
 
