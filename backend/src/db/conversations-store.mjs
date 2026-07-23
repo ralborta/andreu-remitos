@@ -203,3 +203,16 @@ export async function clearCorreccionesPendientes(telefono) {
   writeAll(rows);
   return conv;
 }
+
+/** Cliente Corina elegido por el chofer (Cervecería | Eco de los Andes). */
+export async function setCorinaClienteMarca(telefono, marca) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, "corina");
+  if (marca) conv.corina_cliente_marca = String(marca).trim();
+  else delete conv.corina_cliente_marca;
+  conv.tenant = conv.tenant || "corina";
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}

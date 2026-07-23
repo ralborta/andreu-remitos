@@ -5,6 +5,9 @@ import {
   mensajeAudioFallidoConfirmacion,
   mensajeProcesandoRemito,
   mensajeSaludo,
+  mensajeCorinaListoParaFoto,
+  mensajeCorinaFaltaCliente,
+  parseClienteMarcaCorina,
   mensajeWhatsApp,
   normalizeBuilderBotPayload,
   resolveTenant,
@@ -189,6 +192,24 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
   const conv = phone ? await convStore.getConversacion(phone) : null;
   const pausado = conv?.bot_pausado;
   const remitoCtx = remitoCtxIn ?? (await resolverRemitoCorreccion(phone, conv, tenantCfg));
+  const tenantEfectivo = remitoCtx?.tenant ?? tenantCfg ?? conv?.tenant;
+
+  // Corina: elegir Cervecería vs Eco antes de la foto / sin remito abierto
+  if (tenantEfectivo === "corina" && phone && !flujoRemitoAbierto(conv)) {
+    const marcaParseada = parseClienteMarcaCorina(texto);
+    if (marcaParseada) {
+      await convStore.setCorinaClienteMarca(phone, marcaParseada);
+      const msg = mensajeCorinaListoParaFoto(marcaParseada);
+      if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
+      return respuestaWebhook({ message: msg, flow: "corina_cliente_ok", cliente_marca: marcaParseada });
+    }
+    if (!conv?.corina_cliente_marca) {
+      const chofer = await master.resolverChoferPorTelefono(phone);
+      const msg = mensajeSaludo("corina", chofer?.nombre);
+      if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
+      return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
+    }
+  }
 
   if (esConfirmacionOk(texto)) {
     const out = await aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log });
@@ -250,7 +271,11 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
         ? mensajeEsperandoCorreccion(remitoCtx)
         : await (async () => {
               const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
-              return mensajeSaludo(tenantCfg, chofer?.nombre);
+              const t = remitoCtx?.tenant ?? tenantCfg ?? conv?.tenant;
+              if (t === "corina" && conv?.corina_cliente_marca && !flujoRemitoAbierto(conv)) {
+                return mensajeCorinaListoParaFoto(conv.corina_cliente_marca);
+              }
+              return mensajeSaludo(t, chofer?.nombre);
             })();
 
   if (phone && !pausado) {
@@ -453,7 +478,16 @@ export default async function webhooksRoutes(fastify) {
           );
         }
 
-        const pausado = ev.from ? !!(await convStore.getConversacion(ev.from))?.bot_pausado : false;
+        const convFoto = ev.from ? await convStore.getConversacion(ev.from) : null;
+        const pausado = !!convFoto?.bot_pausado;
+        const tenantFoto = tenantCfg ?? convFoto?.tenant;
+
+        // Corina: exigir Cervecería / Eco antes de OCR
+        if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
+          const msg = mensajeCorinaFaltaCliente();
+          if (!pausado) await notificarChofer(ev.from, msg, { tenant: "corina", log: request.log });
+          return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
+        }
 
         if (ev.from && !pausado) {
           await notificarChofer(ev.from, mensajeProcesandoRemito(), {
@@ -466,6 +500,7 @@ export default async function webhooksRoutes(fastify) {
           filename,
           telefono,
           tenantSugerido: tenantCfg ?? undefined,
+          corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
         });
 
         if (ev.from && resultado.id) {

@@ -118,10 +118,16 @@ export function ParametrosPanel() {
   const [distancias, setDistancias] = useState<Distancia[]>([]);
 
   const [choferForm, setChoferForm] = useState({ nombre: "", telefono: "", documento: "" });
-  const [unidadForm, setUnidadForm] = useState<{ tipo: "tractor" | "acoplado"; patente: string; unidad_interna: string }>({
+  const [unidadForm, setUnidadForm] = useState<{
+    tipo: "tractor" | "acoplado";
+    patente: string;
+    unidad_interna: string;
+    semi_patente: string;
+  }>({
     tipo: "tractor",
     patente: "",
     unidad_interna: "",
+    semi_patente: "",
   });
   const [locForm, setLocForm] = useState<{ nombre: string; codigo: string; tipo: "origen" | "destino" | "ambos" }>({
     nombre: "",
@@ -221,9 +227,13 @@ export function ParametrosPanel() {
         tipo: unidadForm.tipo,
         patente: unidadForm.patente.trim(),
         unidad_interna: unidadForm.unidad_interna.trim() || null,
+        semi_patente:
+          unidadForm.tipo === "tractor" && unidadForm.semi_patente.trim()
+            ? unidadForm.semi_patente.trim()
+            : null,
         activo: true,
       });
-      setUnidadForm({ tipo: "tractor", patente: "", unidad_interna: "" });
+      setUnidadForm({ tipo: "tractor", patente: "", unidad_interna: "", semi_patente: "" });
       load();
     } catch (err) {
       setErr(err);
@@ -352,15 +362,23 @@ export function ParametrosPanel() {
         <Card>
           <SectionTitle>Tractores y semis · {tenantLabel(tenant)}</SectionTitle>
           <p className="mb-3 text-xs text-[var(--text-faint)]">
-            Editá los campos y pulsá <strong className="text-white">Guardar</strong> en esa fila.
+            En tractores podés cargar el <strong className="text-[var(--text)]">semi por defecto</strong>{" "}
+            (Corina lo autocompleta al leer la patente). Editá y pulsá Guardar en la fila.
           </p>
-          <form onSubmit={onAddUnidad} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
+          <form onSubmit={onAddUnidad} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-5">
             <select className={inputCls} value={unidadForm.tipo} onChange={(e) => setUnidadForm((f) => ({ ...f, tipo: e.target.value as "tractor" | "acoplado" }))}>
               <option value="tractor">Tractor / chasis</option>
               <option value="acoplado">Semi / acoplado</option>
             </select>
             <input className={inputCls} placeholder="Patente AH 860 KF" value={unidadForm.patente} onChange={(e) => setUnidadForm((f) => ({ ...f, patente: e.target.value }))} required />
             <input className={inputCls} placeholder="Nro interno (opcional)" value={unidadForm.unidad_interna} onChange={(e) => setUnidadForm((f) => ({ ...f, unidad_interna: e.target.value }))} />
+            <input
+              className={inputCls}
+              placeholder="Semi por defecto (tractor)"
+              value={unidadForm.semi_patente}
+              disabled={unidadForm.tipo !== "tractor"}
+              onChange={(e) => setUnidadForm((f) => ({ ...f, semi_patente: e.target.value }))}
+            />
             <button type="submit" className="flex items-center justify-center gap-2 rounded-lg bg-[var(--violet)] py-2 text-sm font-semibold text-white">
               <Plus size={16} /> Agregar
             </button>
@@ -375,7 +393,7 @@ export function ParametrosPanel() {
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
           ) : unidadesFiltradas.length > 0 ? (
-            <ParamTable minWidth={640} headers={["Tipo", "Patente", "Nro interno", ""]}>
+            <ParamTable minWidth={760} headers={["Tipo", "Patente", "Nro interno", "Semi defecto", ""]}>
               {unidadesFiltradas.map((r) => (
                 <UnidadRow key={r.id} row={r} onReload={load} onError={setErr} />
               ))}
@@ -675,6 +693,7 @@ function UnidadRow({
   const [tipo, setTipo] = useState(row.tipo);
   const [patente, setPatente] = useState(row.patente);
   const [unidadInterna, setUnidadInterna] = useState(row.unidad_interna || "");
+  const [semiPatente, setSemiPatente] = useState(row.semi_patente || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const confirm = useConfirm();
@@ -683,12 +702,14 @@ function UnidadRow({
     setTipo(row.tipo);
     setPatente(row.patente);
     setUnidadInterna(row.unidad_interna || "");
-  }, [row.id, row.tipo, row.patente, row.unidad_interna]);
+    setSemiPatente(row.semi_patente || "");
+  }, [row.id, row.tipo, row.patente, row.unidad_interna, row.semi_patente]);
 
   const dirty =
     tipo !== row.tipo ||
     patente.trim() !== row.patente ||
-    unidadInterna.trim() !== (row.unidad_interna || "");
+    unidadInterna.trim() !== (row.unidad_interna || "") ||
+    semiPatente.trim() !== (row.semi_patente || "");
 
   async function save() {
     if (!patente.trim()) {
@@ -702,6 +723,7 @@ function UnidadRow({
         tipo,
         patente: patente.trim(),
         unidad_interna: unidadInterna.trim() || null,
+        semi_patente: tipo === "tractor" && semiPatente.trim() ? semiPatente.trim() : null,
       });
       setSaved(true);
       onReload();
@@ -742,6 +764,15 @@ function UnidadRow({
       </td>
       <td className="px-3 py-2 align-middle">
         <input className={rowInputCls} value={unidadInterna} placeholder="—" onChange={(e) => setUnidadInterna(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input
+          className={rowInputCls}
+          value={semiPatente}
+          placeholder={tipo === "tractor" ? "Semi…" : "—"}
+          disabled={tipo !== "tractor"}
+          onChange={(e) => setSemiPatente(e.target.value)}
+        />
       </td>
       <td className="px-3 py-2 align-middle">
         <RowActions dirty={dirty} saving={saving} saved={saved} onSave={save} onDelete={remove} />

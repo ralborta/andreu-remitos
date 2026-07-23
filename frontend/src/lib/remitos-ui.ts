@@ -262,20 +262,26 @@ export function pesoKg(row: RemitoRow) {
 export function fechaRemito(row: RemitoRow) {
   const d = datos(row);
   const f = (d.fecha_guia ?? d.fecha_remito ?? d.fecha) as string | undefined;
-  if (f) {
-    const s = String(f).trim();
-    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (iso) {
-      const mo = +iso[2];
-      const day = +iso[3];
-      if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
-        return `${iso[3]}/${iso[2]}/${iso[1]}`;
-      }
-      return "Sin fecha";
+  if (!f) return "Sin fecha";
+  const s = String(f).trim();
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    const mo = +iso[2];
+    const day = +iso[3];
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+      return `${iso[3]}/${iso[2]}/${iso[1]}`;
     }
-    return s;
+    return "Sin fecha";
   }
-  return "Sin fecha";
+  // DD/MM/AAAA o D/M/AA → normalizar a DD/MM/AAAA
+  const dmy = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/);
+  if (dmy) {
+    const day = dmy[1].padStart(2, "0");
+    const mo = dmy[2].padStart(2, "0");
+    const yy = dmy[3].length === 2 ? `20${dmy[3]}` : dmy[3];
+    return `${day}/${mo}/${yy}`;
+  }
+  return s;
 }
 
 export function fechaHoraRemito(row: RemitoRow) {

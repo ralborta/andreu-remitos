@@ -20,6 +20,8 @@ export interface Unidad extends ParametroBase {
   tipo: UnidadTipo;
   patente: string;
   unidad_interna: string | null;
+  /** Solo tractores: patente del semi habitual (Corina / 1:1). */
+  semi_patente?: string | null;
 }
 
 export type LocalidadTipo = "origen" | "destino" | "ambos";

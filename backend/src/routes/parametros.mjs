@@ -78,6 +78,11 @@ function validateUnidad(body, partial) {
   if (body.tipo && !UNIDAD_TIPOS.has(body.tipo)) return "tipo inválido";
   if (!partial && !String(body.patente || "").trim()) return "patente requerida";
   if (body.patente) body.patente = normalizePatente(body.patente);
+  if (body.semi_patente !== undefined) {
+    const raw = String(body.semi_patente || "").trim();
+    body.semi_patente = raw ? normalizePatente(raw) : null;
+  }
+  if (body.tipo === "acoplado") body.semi_patente = null;
   if (body.tenant && !requireTenant(body.tenant)) return "tenant inválido";
   return null;
 }

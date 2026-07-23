@@ -63,7 +63,10 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
   if (!row?.datos) return row;
   let datosNorm = normalizarDatosRemito({ ...row.datos }, row.tenant);
   if (row.tenant === "corina" && row.texto_ocr) {
-    datosNorm = enriquecerCorinaDesdeOcr(datosNorm, row.texto_ocr);
+    const unidades =
+      maestros?.unidades ??
+      (await master.listCollection("unidades", { tenant: "corina", activo: true }));
+    datosNorm = enriquecerCorinaDesdeOcr(datosNorm, row.texto_ocr, { unidades });
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
   const dirtyDatos = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
@@ -104,7 +107,7 @@ function validacionDestinoStale(row, datos) {
   return false;
 }
 
-export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido }) {
+export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido, corinaClienteMarca }) {
   const tenantPorChofer = telefono ? await master.resolverTenantPorTelefono(telefono) : null;
   const sugerido = tenantSugerido ?? tenantPorChofer ?? undefined;
 
@@ -127,6 +130,13 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   }
 
   resultado.lectura = normalizarDatosRemito(resultado.lectura, resultado.tenant);
+
+  if (resultado.tenant === "corina") {
+    const unidades = await master.listCollection("unidades", { tenant: "corina", activo: true });
+    resultado.lectura = enriquecerCorinaDesdeOcr(resultado.lectura, resultado.ocr?.texto ?? "", { unidades });
+    if (corinaClienteMarca) resultado.lectura.cliente_marca = corinaClienteMarca;
+    resultado.lectura = normalizarDatosRemito(resultado.lectura, "corina");
+  }
 
   const id = randomUUID();
   const ext = path.extname(filename || ".jpg") || ".jpg";

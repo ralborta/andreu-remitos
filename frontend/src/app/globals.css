@@ -1,14 +1,37 @@
 @import "tailwindcss";
 
+/* Tema claro por defecto (pedido Gisela 22/07): violeta suave + letras oscuras */
 :root {
+  --bg: #f4f0fb;
+  --bg-2: #ebe4f8;
+  --panel: #ffffff;
+  --panel-2: #f8f5ff;
+  --border: #d4c8ef;
+  --border-soft: #e4dcf5;
+  --text: #1e1433;
+  --text-dim: #4a3d6b;
+  --text-faint: #7a6d9a;
+  --violet: #7c3aed;
+  --violet-2: #6d28d9;
+  --violet-deep: #5b21b6;
+  --magenta: #c026d3;
+  --green: #16a34a;
+  --amber: #d97706;
+  --red: #dc2626;
+  --blue: #0284c7;
+  --overlay: rgba(30, 20, 51, 0.04);
+  --overlay-strong: rgba(30, 20, 51, 0.08);
+}
+
+html[data-theme="dark"] {
   --bg: #0a0712;
   --bg-2: #0f0a1c;
   --panel: #15102a;
   --panel-2: #1a1436;
   --border: #2a2147;
   --border-soft: #221b3d;
-  --text: #ECEAF6;
-  --text-dim: #A79FC9;
+  --text: #eceaf6;
+  --text-dim: #a79fc9;
   --text-faint: #6f6796;
   --violet: #8b5cf6;
   --violet-2: #a78bfa;
@@ -18,6 +41,8 @@
   --amber: #f59e0b;
   --red: #ef4444;
   --blue: #38bdf8;
+  --overlay: rgba(255, 255, 255, 0.05);
+  --overlay-strong: rgba(255, 255, 255, 0.1);
 }
 
 @theme inline {
@@ -46,17 +71,27 @@ body {
 
 body {
   background:
-    radial-gradient(900px 500px at 12% -5%, rgba(139, 92, 246, 0.16), transparent 60%),
-    radial-gradient(700px 500px at 100% 0%, rgba(217, 70, 239, 0.10), transparent 55%),
+    radial-gradient(900px 500px at 12% -5%, rgba(124, 58, 237, 0.1), transparent 60%),
+    radial-gradient(700px 500px at 100% 0%, rgba(192, 38, 211, 0.06), transparent 55%),
     var(--bg);
   background-attachment: fixed;
 }
 
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(900px 500px at 12% -5%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(700px 500px at 100% 0%, rgba(217, 70, 239, 0.1), transparent 55%),
+    var(--bg);
+}
+
 ::selection {
+  background: rgba(124, 58, 237, 0.25);
+}
+
+html[data-theme="dark"] ::selection {
   background: rgba(139, 92, 246, 0.35);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -65,21 +100,24 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2147;
+  background: var(--border);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a2f63;
+  background: var(--text-faint);
   background-clip: padding-box;
 }
 
-/* ---------- Reusable utilities ---------- */
 .panel {
-  background: linear-gradient(180deg, rgba(26, 20, 54, 0.7), rgba(21, 16, 42, 0.7));
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 16px;
+}
+
+html[data-theme="dark"] .panel {
+  background: linear-gradient(180deg, rgba(26, 20, 54, 0.7), rgba(21, 16, 42, 0.7));
   backdrop-filter: blur(8px);
 }
 
@@ -94,10 +132,14 @@ body {
 }
 .panel-hover:hover {
   border-color: var(--violet);
-  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.25), 0 12px 40px -12px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2), 0 12px 40px -12px rgba(124, 58, 237, 0.2);
 }
 
 .grad-text {
+  color: var(--violet-deep);
+}
+
+html[data-theme="dark"] .grad-text {
   background: linear-gradient(90deg, #c4b5fd, #e879f9);
   -webkit-background-clip: text;
   background-clip: text;
@@ -105,22 +147,22 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+  background: var(--violet);
   color: white;
   border-radius: 10px;
   font-weight: 600;
-  box-shadow: 0 8px 24px -10px rgba(139, 92, 246, 0.7);
+  box-shadow: 0 8px 24px -10px rgba(124, 58, 237, 0.45);
   transition: filter 0.15s ease, transform 0.05s ease;
 }
 .btn-primary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
 }
 .btn-primary:active {
   transform: translateY(1px);
 }
 
 .btn-ghost {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(124, 58, 237, 0.08);
   border: 1px solid var(--border);
   color: var(--text-dim);
   border-radius: 10px;
@@ -129,7 +171,7 @@ body {
 .btn-ghost:hover {
   color: var(--text);
   border-color: var(--violet);
-  background: rgba(139, 92, 246, 0.18);
+  background: rgba(124, 58, 237, 0.14);
 }
 
 .dot-pulse {
@@ -177,53 +219,30 @@ body {
   }
 }
 
-@keyframes truck-move {
-  0% { offset-distance: 0%; }
-  100% { offset-distance: 100%; }
+.skeleton {
+  background: linear-gradient(90deg, var(--panel-2) 25%, var(--border-soft) 50%, var(--panel-2) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 8px;
 }
 
-.scroll-thin {
-  scrollbar-width: thin;
+/* Tema claro: remapea text-white de Tailwind (pensado para dark) a texto oscuro.
+   Excepción: botones / chips con fondo violeta. */
+html:not([data-theme="dark"]) .text-white {
+  color: var(--text) !important;
 }
-
-.tabular {
-  font-variant-numeric: tabular-nums;
+html:not([data-theme="dark"]) .hover\:text-white:hover {
+  color: var(--text) !important;
 }
-
-/* Marco animado estilo WhatsApp Web alrededor del QR */
-@keyframes wa-qr-border-spin {
-  to {
-    transform: rotate(360deg);
-  }
+html:not([data-theme="dark"]) :is(button, a, .btn-primary)[class*="bg-[var(--violet)"]],
+html:not([data-theme="dark"]) :is(button, a).bg-\[var\(--violet\)\] {
+  color: #fff !important;
 }
-
-.wa-qr-frame {
-  position: relative;
-  display: inline-block;
-  padding: 4px;
-  border-radius: 18px;
-  overflow: hidden;
+html:not([data-theme="dark"]) .bg-white\/5,
+html:not([data-theme="dark"]) .hover\:bg-white\/5:hover,
+html:not([data-theme="dark"]) .hover\:bg-white\/10:hover {
+  background-color: var(--overlay) !important;
 }
-
-.wa-qr-frame::before {
-  content: "";
-  position: absolute;
-  inset: -120%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 300deg,
-    #25d366 330deg,
-    #34eb7a 350deg,
-    transparent 360deg
-  );
-  animation: wa-qr-border-spin 2.2s linear infinite;
-}
-
-.wa-qr-frame__inner {
-  position: relative;
-  z-index: 1;
-  border-radius: 14px;
-  background: #111b21;
-  padding: 6px;
+html:not([data-theme="dark"]) .hover\:bg-white\/10:hover {
+  background-color: var(--overlay-strong) !important;
 }
