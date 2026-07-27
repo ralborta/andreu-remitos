@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 import { buildPlanillaTsb, filasAoa } from "../../../lib/planilla-tsb.mjs";
 import { buildPlanillaBeraldi } from "../../../lib/planilla-beraldi.mjs";
 import { buildPlanillaCorina, columnasCorina } from "../../../lib/planilla-corina.mjs";
-import { apiClientHasScope } from "../../../lib/api-keys.mjs";
+import { apiClientCanAccessTenant, apiClientHasScope } from "../../../lib/api-keys.mjs";
 
 const BUILDERS = {
   tsb: buildPlanillaTsb,
@@ -48,11 +48,11 @@ function assertTenantAccess(request, reply, tenant) {
     });
     return false;
   }
-  if (client.tenant !== tenant) {
+  if (!apiClientCanAccessTenant(client, tenant)) {
     reply.code(403).send({
       error: "tenant_no_autorizado",
-      message: `Esta API key solo puede leer el tenant "${client.tenant}"`,
-      tenant_permitido: client.tenant,
+      message: `Esta API key no puede leer el tenant "${tenant}"`,
+      tenants_permitidos: client.tenants ?? (client.tenant ? [client.tenant] : []),
     });
     return false;
   }
@@ -125,12 +125,22 @@ export default async function apiV1PlanillasRoutes(fastify) {
     if (!apiClientHasScope(client, "planillas:read")) {
       return reply.code(403).send({ error: "sin_permiso" });
     }
-    const tenant = client.tenant;
+    const qTenant = String(request.query?.tenant || "").trim().toLowerCase();
+    const tenants = client.tenants?.length ? client.tenants : client.tenant ? [client.tenant] : [];
+    const tenant = qTenant || (tenants.length === 1 ? tenants[0] : "");
+    if (!tenant) {
+      return reply.code(400).send({
+        error: "tenant_requerido",
+        message: "Indicá el tenant: /api/v1/planillas/tsb | /beraldi | /corina (o ?tenant=tsb)",
+        tenants_permitidos: tenants,
+      });
+    }
+    if (!assertTenantAccess(request, reply, tenant)) return;
     const opts = parseOpts(tenant, request.query ?? {});
     const data = await buildForTenant(tenant, opts);
     return {
       api_version: "v1",
-      client: { id: client.id, name: client.name, tenant: client.tenant },
+      client: { id: client.id, name: client.name, tenant, tenants },
       ...data,
     };
   });
@@ -147,7 +157,17 @@ export default async function apiV1PlanillasRoutes(fastify) {
     if (!apiClientHasScope(client, "planillas:read")) {
       return reply.code(403).send({ error: "sin_permiso" });
     }
-    const tenant = client.tenant;
+    const qTenant = String(request.query?.tenant || "").trim().toLowerCase();
+    const tenants = client.tenants?.length ? client.tenants : client.tenant ? [client.tenant] : [];
+    const tenant = qTenant || (tenants.length === 1 ? tenants[0] : "");
+    if (!tenant) {
+      return reply.code(400).send({
+        error: "tenant_requerido",
+        message: "Indicá el tenant: /api/v1/planillas/tsb/export (o ?tenant=tsb)",
+        tenants_permitidos: tenants,
+      });
+    }
+    if (!assertTenantAccess(request, reply, tenant)) return;
     const opts = parseOpts(tenant, request.query ?? {});
     const data = await buildForTenant(tenant, opts);
     return sendExcel(reply, tenant, data, opts);
@@ -171,7 +191,8 @@ export default async function apiV1PlanillasRoutes(fastify) {
       client: {
         id: request.apiClient.id,
         name: request.apiClient.name,
-        tenant: request.apiClient.tenant,
+        tenant,
+        tenants: request.apiClient.tenants ?? [request.apiClient.tenant].filter(Boolean),
       },
       ...data,
     };
