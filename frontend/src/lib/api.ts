@@ -398,3 +398,94 @@ export function listDestinos(params?: { limit?: number; estado?: string }) {
   const qs = q.toString();
   return api<DestinoValidacion[]>(`/api/destinos${qs ? `?${qs}` : ""}`);
 }
+
+export type ViajeEstado =
+  | "solicitado"
+  | "confirmado"
+  | "asignado"
+  | "en_curso"
+  | "entregado"
+  | "cerrado"
+  | "cancelado";
+
+export interface Viaje {
+  id: string;
+  codigo: string;
+  estado: ViajeEstado;
+  estadoLabel: string;
+  tenant: "tsb" | "beraldi" | "corina" | null;
+  cliente: string;
+  origen: string;
+  destino: string;
+  carga: string | null;
+  fecha: string | null;
+  chofer: string | null;
+  telefonoChofer: string | null;
+  tractor: string | null;
+  semi: string | null;
+  notas: string | null;
+  remitoIds: string[];
+  destinoValidacionId: string | null;
+  tmsId: string | null;
+  tmsSyncStatus: string;
+  tmsSyncedAt: string | null;
+  historial: string[];
+  transiciones: ViajeEstado[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export function listViajes(params?: { limit?: number; estado?: string; tenant?: string }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.tenant) q.set("tenant", params.tenant);
+  const qs = q.toString();
+  return api<Viaje[]>(`/api/viajes${qs ? `?${qs}` : ""}`);
+}
+
+export function createViaje(body: {
+  cliente: string;
+  origen: string;
+  destino: string;
+  carga?: string;
+  fecha?: string;
+  tenant?: string;
+  chofer?: string;
+  telefonoChofer?: string;
+  tractor?: string;
+  semi?: string;
+  notas?: string;
+}) {
+  return api<Viaje>("/api/viajes", { method: "POST", body: JSON.stringify(body) });
+}
+
+export function patchViaje(
+  id: string,
+  body: Partial<{
+    cliente: string;
+    origen: string;
+    destino: string;
+    carga: string | null;
+    fecha: string | null;
+    tenant: string | null;
+    chofer: string | null;
+    telefonoChofer: string | null;
+    tractor: string | null;
+    semi: string | null;
+    notas: string | null;
+  }>,
+) {
+  return api<Viaje>(`/api/viajes/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+}
+
+export function cambiarEstadoViaje(id: string, estado: ViajeEstado) {
+  return api<Viaje>(`/api/viajes/${id}/estado`, {
+    method: "POST",
+    body: JSON.stringify({ estado }),
+  });
+}
+
+export function deleteViaje(id: string) {
+  return api<{ ok: boolean }>(`/api/viajes/${id}`, { method: "DELETE" });
+}

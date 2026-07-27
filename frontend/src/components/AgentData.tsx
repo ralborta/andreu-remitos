@@ -1,11 +1,11 @@
 import { DestinosPanel } from "./DestinosPanel";
+import { ViajesPanel } from "./ViajesPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
 import { EtaLine, ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
 import {
   remitos,
-  trips,
   incidencias,
   reclamos,
   rendiciones,
@@ -13,14 +13,11 @@ import {
   viajesPorDia,
   slaPorZona,
   incidenciasPorTipo,
-  TRIP_STATUS_COLOR,
-  TRIP_STATUS_LABEL,
   type Remito,
   type Incidencia,
   type Reclamo,
   type Rendicion,
   type EtaItem,
-  type Trip,
 } from "@/lib/data";
 
 const money = (n: number) => "$" + n.toLocaleString("es-AR");
@@ -69,33 +66,7 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "viajes") {
-    const cols: Column<Trip>[] = [
-      { key: "id", header: "Viaje", render: (t) => <span className="font-medium text-white">{t.id}</span> },
-      { key: "cliente", header: "Cliente", className: "text-[var(--text-dim)]" },
-      { key: "ruta", header: "Ruta", render: (t) => <span className="text-[var(--text-dim)]">{t.origen} → {t.destino}</span> },
-      { key: "carga", header: "Carga", className: "text-[var(--text-dim)]" },
-      { key: "chofer", header: "Chofer", className: "text-[var(--text-dim)]" },
-      { key: "patente", header: "Unidad", className: "text-[var(--text-dim)]" },
-      {
-        key: "estado",
-        header: "Estado",
-        render: (t) => (
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{ color: TRIP_STATUS_COLOR[t.estado], background: `${TRIP_STATUS_COLOR[t.estado]}1a` }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: TRIP_STATUS_COLOR[t.estado] }} />
-            {TRIP_STATUS_LABEL[t.estado]}
-          </span>
-        ),
-      },
-    ];
-    return (
-      <Card>
-        <SectionTitle>Viajes coordinados</SectionTitle>
-        <DataTable columns={cols} rows={trips} minWidth={920} />
-      </Card>
-    );
+    return <ViajesPanel />;
   }
 
   if (slug === "destinos") {
