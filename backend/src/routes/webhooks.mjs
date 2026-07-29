@@ -543,7 +543,8 @@ export default async function webhooksRoutes(fastify) {
         const resultado = await ingestarRemito(buffer, {
           filename,
           telefono,
-          tenantSugerido: tenantCfg ?? undefined,
+          tenantForzado: tenantFoto ?? undefined,
+          tenantSugerido: tenantFoto ?? tenantCfg ?? undefined,
           corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
         });
 

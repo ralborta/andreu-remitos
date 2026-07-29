@@ -100,8 +100,9 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
     setError(null);
     listRemitos({ tenant, pendientes: soloPendientes, limit: 5000 })
       .then((data) => {
-        setRows(data);
-        setSelectedId((prev) => (data.some((r) => r.id === prev) ? prev : data[0]?.id ?? null));
+        const scoped = tenant ? data.filter((r) => r.tenant === tenant) : data;
+        setRows(scoped);
+        setSelectedId((prev) => (scoped.some((r) => r.id === prev) ? prev : scoped[0]?.id ?? null));
       })
       .catch((e) =>
         setError(

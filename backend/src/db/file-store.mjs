@@ -43,6 +43,22 @@ export async function getRemito(id) {
   return readAll().find((r) => r.id === id) ?? null;
 }
 
+/** Busca remito por nro canónico (solo dígitos), opcionalmente excluyendo un id. */
+export async function findRemitoByNroCanonico(nroCanon, { excludeId } = {}) {
+  if (!nroCanon) return null;
+  const canon = String(nroCanon).replace(/\D/g, "");
+  if (canon.length < 4) return null;
+
+  return (
+    readAll().find((r) => {
+      if (excludeId && r.id === excludeId) return false;
+      const raw = r.datos?.nro_remito ?? r.datos?.nro_guia;
+      if (!raw) return false;
+      return String(raw).replace(/\D/g, "") === canon;
+    }) ?? null
+  );
+}
+
 export async function ultimoRemitoPorTelefono(telefono, { tenant, limit = 200 } = {}) {
   const phone = String(telefono ?? "").replace(/\D/g, "");
   if (!phone) return null;
