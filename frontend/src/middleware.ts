@@ -28,9 +28,11 @@ export function middleware(request: NextRequest) {
 
   if (CONEXION_PRUEBA_HOSTS.has(host)) {
     if (pathname === "/" || pathname === "") {
-      return NextResponse.rewrite(new URL("/conexion-prueba", request.url));
+      return NextResponse.rewrite(new URL("/vincular-wa", request.url));
     }
     if (
+      pathname === "/vincular-wa" ||
+      pathname.startsWith("/vincular-wa/") ||
       pathname === "/conexion-prueba" ||
       pathname.startsWith("/conexion-prueba/") ||
       pathname.startsWith("/backend/api/vincular/") ||
