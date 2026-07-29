@@ -24,6 +24,8 @@ import { syncBotPausa } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
+import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
+import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 
@@ -292,6 +294,41 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
   });
 }
 
+async function tryProcesarViajes(ev, { texto, log, conv } = {}) {
+  if (!ev.from || !texto?.trim()) return null;
+  if (flujoRemitoAbierto(conv)) return null;
+  if (!pareceSolicitudViaje(texto)) return null;
+
+  const chofer = await master.resolverChoferPorTelefono(ev.from);
+  if (chofer && !/\b(necesitamos|solicitamos|pedimos|transporte para|flete)\b/i.test(texto)) {
+    return null;
+  }
+
+  try {
+    const out = await procesarSolicitudViaje({
+      texto,
+      canal: "whatsapp",
+      remitente: ev.nombre || chofer?.nombre || "Cliente WhatsApp",
+      telefono: ev.from,
+      log,
+    });
+    const msg =
+      out.mensajes.find((m) => m.destino === "cliente")?.texto ??
+      `Viaje ${out.viaje.codigo} confirmado y asignado a ${out.viaje.chofer}.`;
+    return { flow: "viajes_asignado", codigo: out.viaje.codigo, message: msg, viaje: out.viaje };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "viajes webhook no pudo asignar");
+    const msg =
+      `Recibí su solicitud pero no pude completar la asignación automática.\n` +
+      `${err.message}\n\nUn coordinador la revisará en breve.`;
+    if (ev.from) {
+      await sendWhatsAppMessage({ number: ev.from, message: msg }).catch(() => {});
+      await convStore.appendMensaje(ev.from, { texto: msg, tipo: "text" }, { dir: "out", from: "bot", agente: "viajes" });
+    }
+    return { flow: "viajes_error", error: err.message, message: msg };
+  }
+}
+
 async function tryProcesarDestinos(ev, { texto, log } = {}) {
   if (!ev.from) return null;
   const pending = await destinosStore.getDestinoPendientePorTelefono(ev.from);
@@ -335,7 +372,7 @@ export default async function webhooksRoutes(fastify) {
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "tenant-ia"],
+    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "viajes", "tenant-ia"],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -366,11 +403,18 @@ export default async function webhooksRoutes(fastify) {
       }
 
       const texto = ev.message?.trim() || "";
+      const convEarly = ev.from ? await convStore.getConversacion(ev.from) : null;
 
       // Destinos primero — cliente en validación no debe caer en flujo de remitos
       const destinoOut = await tryProcesarDestinos(ev, { texto, log: request.log });
       if (destinoOut) {
         return respuestaWebhook({ ...destinoOut, received: true });
+      }
+
+      // Gestión de viajes — solicitudes de transporte por WhatsApp (background)
+      const viajeOut = await tryProcesarViajes(ev, { texto, log: request.log, conv: convEarly });
+      if (viajeOut) {
+        return respuestaWebhook({ ...viajeOut, received: true });
       }
 
       // Media adjunto — audio (nota de voz) o foto de remito

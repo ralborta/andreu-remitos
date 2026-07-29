@@ -1,5 +1,7 @@
 import * as viajesStore from "../db/viajes-store.mjs";
 import { VIAJE_ESTADO_LABEL, VIAJE_ESTADOS, VIAJE_TRANSICIONES } from "../../../lib/viajes.mjs";
+import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
+import { cargarFlota } from "../services/viajes-flota.mjs";
 
 function mapViaje(row) {
   if (!row) return null;
@@ -49,6 +51,76 @@ export default async function viajesRoutes(fastify) {
       tenant: tenant || undefined,
     });
     return rows.map(mapViaje);
+  });
+
+  fastify.get("/flota", async () => {
+    const flota = cargarFlota();
+    return {
+      fuente: flota.fuente,
+      choferes: flota.choferes.length,
+      camiones: flota.camiones.length,
+      choferesDisponibles: flota.choferes.filter((c) => c.disponible).length,
+      camionesDisponibles: flota.camiones.filter((c) => c.disponible).length,
+    };
+  });
+
+  /** Ingesta automática — email (Gmail webhook / manual demo). */
+  fastify.post("/ingest/email", async (request, reply) => {
+    const body = request.body ?? {};
+    const subject = String(body.subject ?? "").trim();
+    const textBody = String(body.body ?? body.text ?? body.texto ?? "").trim();
+    const from = String(body.from ?? body.remitente ?? "").trim();
+    const texto = [subject, textBody].filter(Boolean).join("\n\n");
+    if (!texto) return reply.code(400).send({ error: "Falta body o subject del email" });
+
+    try {
+      const out = await procesarSolicitudViaje({
+        texto,
+        canal: "email",
+        remitente: from || "Cliente email",
+        notificar: false,
+        log: request.log,
+      });
+      return reply.code(201).send({
+        ok: true,
+        codigo: out.viaje.codigo,
+        viaje: mapViaje(out.viaje),
+        parsed: out.parsed,
+        asignacion: out.asignacion,
+      });
+    } catch (err) {
+      request.log.error(err);
+      return reply.code(err.statusCode || 500).send({ error: err.message, parsed: err.parsed });
+    }
+  });
+
+  /** Ingesta automática — WhatsApp (cliente solicita transporte). */
+  fastify.post("/ingest/whatsapp", async (request, reply) => {
+    const body = request.body ?? {};
+    const texto = String(body.texto ?? body.text ?? body.message ?? "").trim();
+    const telefono = String(body.telefono ?? body.from ?? body.phone ?? "").trim();
+    const remitente = String(body.remitente ?? body.nombre ?? "").trim();
+    if (!texto) return reply.code(400).send({ error: "Falta texto del mensaje" });
+
+    try {
+      const out = await procesarSolicitudViaje({
+        texto,
+        canal: "whatsapp",
+        remitente: remitente || "Cliente WhatsApp",
+        telefono: telefono || undefined,
+        tenant: body.tenant,
+        log: request.log,
+      });
+      return reply.code(201).send({
+        ok: true,
+        codigo: out.viaje.codigo,
+        viaje: mapViaje(out.viaje),
+        mensajes: out.mensajes,
+      });
+    } catch (err) {
+      request.log.error(err);
+      return reply.code(err.statusCode || 500).send({ error: err.message, parsed: err.parsed });
+    }
   });
 
   fastify.get("/:id", async (request, reply) => {
