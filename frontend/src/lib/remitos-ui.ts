@@ -35,12 +35,29 @@ function normalizarNroRemitoGuia(valor: unknown, opts?: { tenant?: string }): st
     if (digits.length >= 10) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
     return digits.length >= 4 ? digits : null;
   }
-  const permitirCopia = opts?.tenant === "beraldi";
-  const copiaMatch = permitirCopia ? raw.match(/[-–—]\s*([123])\s*$/) : null;
-  const sufijo = copiaMatch ? `-${copiaMatch[1]}` : "";
-  const baseRaw = copiaMatch ? raw.slice(0, copiaMatch.index) : raw;
-  const digits = baseRaw.replace(/\D/g, "");
-  return digits.length >= 4 ? (sufijo ? `${digits}${sufijo}` : digits) : null;
+  if (opts?.tenant === "beraldi") {
+    let copia = "";
+    let base = raw;
+    const copiaMatch = raw.match(/[-–—]\s*(\d{1,2})\s*$/);
+    if (copiaMatch) {
+      copia = copiaMatch[1];
+      base = raw.slice(0, copiaMatch.index).trim();
+    }
+    base = base.replace(/^00009\s*[-–—]?\s*/i, "").trim();
+    let digits = base.replace(/\D/g, "");
+    if (digits.startsWith("00009") && digits.length > 5) digits = digits.slice(5);
+    if (!copia && digits.length === 9) {
+      copia = digits.slice(-1);
+      digits = digits.slice(0, -1);
+    } else if (!copia && digits.length === 8 && !digits.startsWith("00")) {
+      copia = digits.slice(-1);
+      digits = digits.slice(0, -1);
+    }
+    if (digits.length < 4) return null;
+    return copia ? `${digits}-${copia}` : digits;
+  }
+  const digits = raw.replace(/\D/g, "");
+  return digits.length >= 4 ? digits : null;
 }
 
 const ESTADO_LABEL: Record<string, string> = {
