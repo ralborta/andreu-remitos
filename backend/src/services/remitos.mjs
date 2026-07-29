@@ -75,12 +75,26 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
     datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
+  if ((row.tenant === "beraldi" || row.tenant === "tsb") && datosNorm.horarios?.horarios) {
+    const fechaBase =
+      normalizarFecha(datosNorm.fecha_remito ?? datosNorm.fecha_guia) ??
+      datosNorm.horarios.fecha_remito ??
+      null;
+    const valH = validarOrdenHorarios(datosNorm.horarios.horarios, { fechaRemito: fechaBase });
+    datosNorm.horarios = {
+      ...datosNorm.horarios,
+      horarios: valH.horarios ?? datosNorm.horarios.horarios,
+      validacion: valH,
+    };
+    datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
+  }
   const dirtyDatos = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
   const needsReval =
     dirtyDatos ||
     !row.validacion ||
     row.validacion.valido === false ||
-    validacionDestinoStale(row, datosNorm);
+    validacionDestinoStale(row, datosNorm) ||
+    validacionHorariosStale(row, datosNorm);
 
   if (!needsReval) return row;
 
@@ -111,6 +125,12 @@ function validacionDestinoStale(row, datos) {
     if (m && m[1].trim() !== actual) return true;
   }
   return false;
+}
+
+/** Remitos viejos con viaje nocturno mal validado (descarga < carga mismo día). */
+function validacionHorariosStale(_row, datos) {
+  const errores = datos.horarios?.validacion?.errores ?? [];
+  return errores.some((e) => /anterior a.*mezcla carga\/descarga/i.test(String(e)));
 }
 
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido, corinaClienteMarca }) {
@@ -341,7 +361,12 @@ export async function actualizarCampos(id, datosParciales) {
       };
     }
 
-    const validacion = validarOrdenHorarios(horariosRaw);
+    const validacion = validarOrdenHorarios(horariosRaw, { fechaRemito: fechaBase });
+    if (validacion.horarios) {
+      for (const [campo, slot] of Object.entries(validacion.horarios)) {
+        horariosRaw[campo] = slot;
+      }
+    }
     datos.horarios = {
       ...(datos.horarios ?? {}),
       tenant: datos.tenant ?? row.tenant,

@@ -216,6 +216,14 @@ export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: stri
             </div>
           )}
 
+          {validacion?.advertencias?.length ? (
+            <div className="mt-4 rounded-lg bg-[var(--violet)]/10 p-3 text-sm text-[var(--violet)]">
+              {validacion.advertencias.map((a) => (
+                <div key={a}>{a}</div>
+              ))}
+            </div>
+          ) : null}
+
           {validacion && (validacion.faltantes?.length || validacion.errores?.length) ? (
             <div className="mt-4 rounded-lg bg-[var(--amber)]/10 p-3 text-sm text-[var(--amber)]">
               {validacion.faltantes?.map((f) => <div key={f}>Falta: {f}</div>)}

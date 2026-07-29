@@ -368,9 +368,18 @@ export function horasFromRow(row: RemitoRow): Record<string, string> {
 
 export function buildHorariosBody(horas: Record<string, string>, fechaBase: string | null) {
   const horarios: Record<string, { fecha: string | null; hora: string | null }> = {};
+  let fechaDescarga = fechaBase;
+
+  const salida = horas.carga_salida?.trim();
+  const llegada = horas.descarga_llegada?.trim();
+  if (fechaBase && salida && llegada && compareHoraMm(llegada, salida) < 0) {
+    fechaDescarga = sumarDiasIso(fechaBase, 1);
+  }
+
   for (const { key } of ORDEN_HORARIOS) {
     const v = horas[key]?.trim();
-    horarios[key] = { fecha: fechaBase, hora: v || null };
+    const fecha = key.startsWith("descarga") ? fechaDescarga : fechaBase;
+    horarios[key] = { fecha, hora: v || null };
   }
   return {
     horarios: {
@@ -379,6 +388,20 @@ export function buildHorariosBody(horas: Record<string, string>, fechaBase: stri
       horarios,
     },
   };
+}
+
+function compareHoraMm(a: string, b: string) {
+  const pa = a.match(/^(\d{1,2}):(\d{2})$/);
+  const pb = b.match(/^(\d{1,2}):(\d{2})$/);
+  if (!pa || !pb) return 0;
+  return Number(pa[1]) * 60 + Number(pa[2]) - (Number(pb[1]) * 60 + Number(pb[2]));
+}
+
+function sumarDiasIso(iso: string, dias: number) {
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
 }
 
 /** Resumen para tabla: "07:45 → 10:10" o "3/5 hs" */

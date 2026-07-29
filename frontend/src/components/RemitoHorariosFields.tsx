@@ -73,7 +73,8 @@ export function RemitoHorariosFields({
         })}
       </div>
       <p className="text-[10px] text-[var(--text-faint)]">
-        Orden: entrada carga → salida carga → llegada descarga → inicio descarga → fin descarga
+        Orden: entrada carga → salida carga → llegada descarga → inicio descarga → fin descarga.
+        Si la carga es de noche y la descarga a la mañana siguiente, el sistema lo detecta solo.
       </p>
     </div>
   );
