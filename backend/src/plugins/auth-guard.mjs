@@ -1,5 +1,6 @@
 import {
   canDeleteRemitos,
+  canMutateParametros,
   extractSessionToken,
   isPublicApiPath,
   verifySessionToken,
@@ -69,5 +70,14 @@ export async function deleteRemitoOnly(request, reply) {
   }
   if (!canDeleteRemitos(request.user)) {
     return reply.code(403).send({ error: "No tenés permiso para eliminar remitos" });
+  }
+}
+
+export async function parametrosMutateOnly(request, reply) {
+  if (!request.user) {
+    return reply.code(401).send({ error: "No autenticado" });
+  }
+  if (!canMutateParametros(request.user)) {
+    return reply.code(403).send({ error: "No tenés permiso para editar parámetros maestros" });
   }
 }

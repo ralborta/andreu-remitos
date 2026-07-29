@@ -20,7 +20,7 @@ import {
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
 import { useAuth } from "@/lib/auth-context";
-import { isAdmin, ROL_LABEL } from "@/lib/auth-types";
+import { canMutateParametros, isAdmin, ROL_LABEL } from "@/lib/auth-types";
 import { AgentIcon } from "./Icon";
 import { Brand } from "./Brand";
 import { LogOut } from "lucide-react";
@@ -35,6 +35,7 @@ export function Sidebar({
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const admin = isAdmin(user);
+  const parametros = canMutateParametros(user);
   const remitosOpen =
     pathname === "/remitos" || pathname.startsWith("/remitos/");
   const planillasOpen =
@@ -246,7 +247,7 @@ export function Sidebar({
               Usuarios
             </Link>
           )}
-          {admin && (
+          {parametros && (
             <Link
               href="/parametros"
               onClick={onClose}

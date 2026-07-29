@@ -22,3 +22,8 @@ export function isAdmin(user: SessionUser | null | undefined) {
 export function canDeleteRemitos(user: SessionUser | null | undefined) {
   return user?.rol === "administrador" || user?.rol === "supervisor";
 }
+
+/** Puede editar parámetros maestros (supervisor o administrador). */
+export function canMutateParametros(user: SessionUser | null | undefined) {
+  return user?.rol === "administrador" || user?.rol === "supervisor";
+}

@@ -125,7 +125,7 @@ export function UsuariosPanel() {
               </select>
             </label>
             <p className="text-[11px] text-[var(--text-faint)]">
-              Operador: remitos, contactos y planillas. Supervisor: igual + puede eliminar remitos. Administrador: acceso completo (usuarios y parámetros).
+              Operador: remitos, contactos y planillas. Supervisor: igual + eliminar remitos y parámetros maestros. Administrador: acceso completo (usuarios incluido).
             </p>
             <button
               type="submit"
