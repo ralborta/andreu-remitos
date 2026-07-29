@@ -23,13 +23,26 @@ export async function fetchBaileysWhatsappQr(botBase) {
     return { ok: false, connected: false, error: "Bot Baileys no configurado" };
   }
 
-  const status = await fetchBotJson(`${base}/v1/whatsapp/status`);
-  if (status?.whatsapp === "connected") {
+  const status = await fetchBotJson(`${base}/v1/whatsapp/ready`) ?? (await fetchBotJson(`${base}/v1/whatsapp/status`));
+  if (status?.can_send || (status?.ready && status?.whatsapp === "connected")) {
     return {
       ok: true,
       connected: true,
+      can_send: true,
       phone: status.phone ?? null,
-      message: "WhatsApp ya está conectado.",
+      message: "WhatsApp conectado y listo para enviar mensajes.",
+    };
+  }
+
+  if (status?.phone && status?.last_send_error) {
+    return {
+      ok: true,
+      connected: false,
+      can_send: false,
+      phone: status.phone,
+      session_stale: true,
+      message:
+        "La sesión expiró — escaneá el QR de nuevo. El monitor puede mostrar «conectado» pero no envía mensajes.",
     };
   }
 

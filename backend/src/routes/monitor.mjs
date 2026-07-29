@@ -42,6 +42,7 @@ async function probeJson(url, id) {
 
 function whatsappOk(botProbe) {
   if (!botProbe?.ok) return false;
+  if (botProbe.can_send === true) return true;
   return botProbe.whatsapp === "connected" && Boolean(botProbe.phone);
 }
 
@@ -62,7 +63,7 @@ async function fetchBotJson(url) {
 export default async function monitorRoutes(fastify) {
   fastify.get("/status", async () => {
     const botBase = process.env.BAILEYS_BOT_URL?.trim().replace(/\/$/, "") || "";
-    const bot = await probeJson(botBase ? `${botBase}/health` : "", "bot");
+    const bot = await probeJson(botBase ? `${botBase}/v1/whatsapp/ready` : "", "bot");
 
     const api = {
       id: "api",
@@ -90,17 +91,21 @@ export default async function monitorRoutes(fastify) {
         id: "whatsapp",
         ok: waConnected,
         phone: bot.phone ?? null,
+        can_send: bot.can_send ?? false,
         status: bot.whatsapp ?? (waConnected ? "connected" : "disconnected"),
         qr_available: bot.qr_available ?? false,
         qr_updated_at: bot.qr_updated_at ?? null,
+        last_send_error: bot.last_send_error ?? null,
         auto_reconnect: bot.auto_reconnect ?? true,
         detail: waConnected
-          ? "Sesión activa"
-          : bot.whatsapp === "awaiting_qr" || bot.qr_available
-            ? "Esperando escaneo de QR"
-            : bot.ok
-              ? "Desconectado — el bot intenta reconectar"
-              : "Bot no responde",
+          ? "Sesión activa — puede enviar mensajes"
+          : bot.last_send_error
+            ? `Sesión inválida: ${bot.last_send_error}`
+            : bot.whatsapp === "awaiting_qr" || bot.qr_available
+              ? "Esperando escaneo de QR"
+              : bot.ok
+                ? "Desconectado — el bot intenta reconectar"
+                : "Bot no responde",
       },
       webhook,
     };

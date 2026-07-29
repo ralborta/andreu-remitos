@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth-server";
 
-const PUBLIC_PREFIXES = ["/login", "/api/auth", "/backend", "/conexion-prueba"];
+const PUBLIC_PREFIXES = ["/login", "/api/auth", "/backend", "/conexion-prueba", "/vincular-wa"];
 
 /** Hosts que solo sirven la pantalla de conexión de prueba (URL neutra para compartir). */
 const CONEXION_PRUEBA_HOSTS = new Set([

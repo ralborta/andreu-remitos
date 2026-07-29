@@ -2,7 +2,7 @@ import { createBot, createProvider, createFlow, addKeyword, EVENTS } from "@buil
 import { JsonFileDB as Database } from "@builderbot/database-json";
 import { BaileysProvider as Provider } from "@builderbot/provider-baileys";
 import { forwardToAndreu, mountFileRoutes } from "./andreu-api.js";
-import { getSessionSnapshot, readQrPng } from "./whatsapp-session.js";
+import { getSessionSnapshot, markSendError, markSendOk, readQrPng } from "./whatsapp-session.js";
 
 const PORT = Number(process.env.PORT ?? 3008);
 const SESSION_NAME = process.env.BOT_SESSION_NAME?.trim() || "andreu";
@@ -11,7 +11,10 @@ const PUBLIC_BASE =
 
 const andreuHandler = async (ctx, { provider, fallBack }) => {
   try {
-    await forwardToAndreu(ctx, provider, { publicBaseUrl: PUBLIC_BASE });
+    const parsed = await forwardToAndreu(ctx, provider, { publicBaseUrl: PUBLIC_BASE });
+    if (parsed?.message?.trim()) {
+      return fallBack(parsed.message);
+    }
   } catch (err) {
     console.error("[andreu-bot] forward error:", err.message);
     return fallBack(
@@ -76,8 +79,15 @@ const main = async () => {
     "/v1/messages",
     handleCtx(async (bot, req, res) => {
       const { number, message, urlMedia } = req.body ?? {};
-      await bot.sendMessage(number, message || " ", { media: urlMedia ?? null });
-      return res.end(JSON.stringify({ status: "ok" }));
+      try {
+        await bot.sendMessage(number, message || " ", { media: urlMedia ?? null });
+        markSendOk();
+        return res.end(JSON.stringify({ status: "ok" }));
+      } catch (err) {
+        markSendError(err.message);
+        res.writeHead(503, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: err.message || "WhatsApp no conectado" }));
+      }
     }),
   );
 
@@ -101,6 +111,12 @@ const main = async () => {
   adapterProvider.server.get("/v1/whatsapp/status", (_req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(getSessionSnapshot(adapterProvider)));
+  });
+
+  adapterProvider.server.get("/v1/whatsapp/ready", (_req, res) => {
+    const snap = getSessionSnapshot(adapterProvider);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ...snap, ready: snap.can_send }));
   });
 
   adapterProvider.server.get("/v1/whatsapp/qr", (_req, res) => {
