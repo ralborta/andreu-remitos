@@ -18,6 +18,8 @@ export interface RemitoRow {
     valido?: boolean;
     faltantes?: string[];
     errores?: string[];
+    advertencias?: string[];
+    viaje_nocturno?: boolean;
   } | null;
   created_at?: string;
   updated_at?: string;
