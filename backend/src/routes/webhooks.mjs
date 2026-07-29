@@ -37,11 +37,15 @@ function respuestaWebhook({ message = "", ...rest } = {}) {
   return { message, ...rest };
 }
 
-/** Tras OCR: avisa al chofer por WhatsApp (API BB) y guarda en /contactos. */
+/** Tras OCR: avisa al chofer por WhatsApp y guarda en /contactos. */
 async function notificarChofer(phone, message, { tenant, remito_id, log } = {}) {
   if (!phone || !message?.trim()) return false;
   try {
-    await sendWhatsAppMessage({ number: phone, message });
+    // Con bot Baileys self-hosted y WEBHOOK_SILENT=false, el bot ya envía vía fallBack
+    // con el `message` del webhook — evitar doble envío (API + bot).
+    if (webhookSilent) {
+      await sendWhatsAppMessage({ number: phone, message });
+    }
     await convStore.appendMensaje(
       phone,
       { texto: message, tipo: "text", remito_id: remito_id ?? null },
@@ -138,15 +142,7 @@ async function aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones,
   );
 
   if (phone && !pausado) {
-    if (webhookSilent) {
-      await convStore.appendMensaje(
-        phone,
-        { texto: msg, tipo: "text", remito_id: remito.id },
-        { tenant: remito.tenant, remito_id: remito.id, dir: "out", from: "bot" },
-      );
-    } else {
-      await notificarChofer(phone, msg, { tenant: remito.tenant, remito_id: remito.id, log });
-    }
+    await notificarChofer(phone, msg, { tenant: remito.tenant, remito_id: remito.id, log });
   }
 
   return { message: msg, flow: "correccion", remito_id: remito.id, persisted: true, campos: correcciones.length };
@@ -168,11 +164,7 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
 
   const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";
   if (phone && !pausado) {
-    if (webhookSilent) {
-      await convStore.appendMensaje(phone, { texto: msg, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
-    } else {
-      await notificarChofer(phone, msg, { tenant: tenantCfg, remito_id: remito.id, log });
-    }
+    await notificarChofer(phone, msg, { tenant: tenantCfg, remito_id: remito.id, log });
   }
   await convStore.clearCorreccionesPendientes(phone);
   await convStore.clearRemitoEnRevision(phone);
@@ -281,11 +273,7 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
             })();
 
   if (phone && !pausado) {
-    if (webhookSilent) {
-      await convStore.appendMensaje(phone, { texto: ayuda, tipo: "text" }, { tenant: tenantCfg, dir: "out", from: "bot" });
-    } else {
-      await notificarChofer(phone, ayuda, { tenant: tenantCfg, log });
-    }
+    await notificarChofer(phone, ayuda, { tenant: tenantCfg, log });
   }
 
   return respuestaWebhook({
@@ -322,8 +310,7 @@ async function tryProcesarViajes(ev, { texto, log, conv } = {}) {
       `Recibí su solicitud pero no pude completar la asignación automática.\n` +
       `${err.message}\n\nUn coordinador la revisará en breve.`;
     if (ev.from) {
-      await sendWhatsAppMessage({ number: ev.from, message: msg }).catch(() => {});
-      await convStore.appendMensaje(ev.from, { texto: msg, tipo: "text" }, { dir: "out", from: "bot", agente: "viajes" });
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     }
     return { flow: "viajes_error", error: err.message, message: msg };
   }
@@ -351,12 +338,7 @@ async function tryProcesarDestinos(ev, { texto, log } = {}) {
       `No pude ubicar esa dirección.\n\n` +
       `Escribí *calle, número y ciudad* (ej: Echeverría 1200, Pacheco) o enviá tu ubicación 📌`;
     if (ev.from) {
-      await sendWhatsAppMessage({ number: ev.from, message: msg }).catch(() => {});
-      await convStore.appendMensaje(
-        ev.from,
-        { texto: msg, tipo: "text", destino_id: pending?.id ?? null },
-        { dir: "out", from: "bot" },
-      );
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     }
     return {
       flow: "destinos_error",
@@ -507,9 +489,9 @@ export default async function webhooksRoutes(fastify) {
             "Recibí una imagen, pero estoy esperando que confirmes el *destino*.\n" +
             "Respondé *SÍ*, escribí la dirección corregida, o enviá tu ubicación 📌";
           if (ev.from) {
-            await sendWhatsAppMessage({ number: ev.from, message: hint }).catch(() => {});
+            await notificarChofer(ev.from, hint, { log: request.log }).catch(() => {});
           }
-          return respuestaWebhook({ flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
+          return respuestaWebhook({ message: hint, flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
         }
         const telefono = ev.from || null;
 
