@@ -1,6 +1,7 @@
 import { createBot, createProvider, createFlow, addKeyword, EVENTS } from "@builderbot/bot";
 import { JsonFileDB as Database } from "@builderbot/database-json";
 import { BaileysProvider as Provider } from "@builderbot/provider-baileys";
+import { fetchLatestBaileysVersion } from "baileys";
 import { forwardToAndreu, mountFileRoutes } from "./andreu-api.js";
 import { getSessionSnapshot, markSendError, markSendOk, readQrPng } from "./whatsapp-session.js";
 
@@ -32,10 +33,19 @@ const andreuFlows = [
 ].map((ev) => addKeyword(ev).addAction(andreuHandler));
 
 const main = async () => {
+  let waVersion = [2, 3000, 1043857760];
+  try {
+    const latest = await fetchLatestBaileysVersion();
+    waVersion = latest.version;
+    console.log(`[andreu-bot] WA Web version ${waVersion.join(".")} (latest=${latest.isLatest})`);
+  } catch (err) {
+    console.warn("[andreu-bot] fetchLatestBaileysVersion falló, usando fallback:", err.message);
+  }
+
   const adapterFlow = createFlow(andreuFlows);
   const adapterProvider = createProvider(Provider, {
     name: SESSION_NAME,
-    version: [2, 3000, 1035824857],
+    version: waVersion,
     groupsIgnore: true,
   });
   const adapterDB = new Database({ filename: process.env.BOT_DB_PATH || "db.json" });

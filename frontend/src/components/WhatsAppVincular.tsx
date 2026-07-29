@@ -10,6 +10,7 @@ type QrResponse = {
   connected?: boolean;
   can_send?: boolean;
   session_stale?: boolean;
+  qr_stale?: boolean;
   qr_available?: boolean;
   image_base64?: string;
   phone?: string | null;
@@ -92,6 +93,7 @@ export function WhatsAppVincular() {
   const phoneFmt = fmtPhone(data?.phone);
   const ready = Boolean(data?.connected && data?.can_send !== false);
   const stale = Boolean(data?.session_stale);
+  const qrStale = Boolean(data?.qr_stale);
   const waitingQr = !ready;
 
   return (
@@ -133,6 +135,11 @@ export function WhatsAppVincular() {
                   La sesión anterior expiró. Escaneá el QR para volver a conectar.
                 </p>
               )}
+              {qrStale && (
+                <p className="mb-4 max-w-sm rounded-lg bg-amber-500/10 px-3 py-2 text-center text-sm text-amber-200">
+                  El QR expiró. Se generará uno nuevo en unos segundos — tocá Actualizar.
+                </p>
+              )}
               <QrFrame src={qrImage} loading={loading} />
               <p className="mt-6 text-center text-sm text-[#8696a0]">
                 {data?.message || "Escaneá con WhatsApp → Dispositivos vinculados"}
@@ -147,9 +154,10 @@ export function WhatsAppVincular() {
         {waitingQr && (
           <ol className="mt-8 space-y-3 text-sm text-[#8696a0]">
             {[
-              "Abrí WhatsApp en el teléfono del bot",
+              "Abrí WhatsApp en el teléfono del bot (+54 9 11 3585-7821)",
               "Menú → Dispositivos vinculados → Vincular dispositivo",
-              "Apuntá la cámara al código QR de arriba",
+              "Si dice «No puede vincular dispositivos», desvinculá otros dispositivos viejos y esperá 1 minuto",
+              "Apuntá la cámara al código QR de arriba (debe estar recién generado)",
             ].map((step, i) => (
               <li key={step} className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#25d366]/20 text-xs font-semibold text-[#25d366]">
