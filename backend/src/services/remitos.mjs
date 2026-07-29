@@ -13,7 +13,9 @@ import {
 import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
 import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
+import { nroRemitoCanonico } from "../../../lib/sanitizar-campos-remito.mjs";
 import { enriquecerCorinaDesdeOcr } from "../../../lib/corina-reglas.mjs";
+import { enriquecerBeraldiDesdeTexto } from "../../../lib/enriquecer-beraldi-ocr.mjs";
 import * as master from "../db/master-data-store.mjs";
 import * as store from "../db/file-store.mjs";
 
@@ -67,6 +69,10 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
       maestros?.unidades ??
       (await master.listCollection("unidades", { tenant: "corina", activo: true }));
     datosNorm = enriquecerCorinaDesdeOcr(datosNorm, row.texto_ocr, { unidades });
+    datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
+  }
+  if (row.tenant === "beraldi" && row.texto_ocr) {
+    datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
   const dirtyDatos = JSON.stringify(datosNorm) !== JSON.stringify(row.datos);
@@ -149,6 +155,47 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   });
   resultado.lectura = datosCanon;
   const estado = calcularEstado(datosCanon, validacion, resultado.tenant);
+
+  const nroCanon = nroRemitoCanonico(datosCanon);
+  if (nroCanon) {
+    const existente = await store.findRemitoByNroCanonico(nroCanon);
+    if (existente && existente.tenant !== resultado.tenant) {
+      const tenantCorrecto = tenantForzado || sugerido;
+      if (tenantCorrecto && tenantCorrecto !== existente.tenant) {
+        await store.updateRemito(existente.id, {
+          tenant: tenantCorrecto,
+          estado,
+          datos: datosCanon,
+          validacion,
+          texto_ocr: resultado.ocr.texto,
+          imagen_path: imagenPath,
+        });
+        return {
+          id: existente.id,
+          ...resultado,
+          tenant: tenantCorrecto,
+          validacion,
+          estado,
+          tenant_corregido: true,
+          mensaje: `Remito ${nroCanon} reasignado de ${existente.tenant} a ${tenantCorrecto}`,
+        };
+      }
+      try {
+        fs.unlinkSync(imagenPath);
+      } catch {
+        /* ignore */
+      }
+      return {
+        id: existente.id,
+        ...resultado,
+        tenant: existente.tenant,
+        validacion: existente.validacion,
+        estado: existente.estado,
+        duplicado: true,
+        mensaje: `Remito ${nroCanon} ya existe en ${existente.tenant.toUpperCase()} — no se creó copia en ${resultado.tenant.toUpperCase()}`,
+      };
+    }
+  }
 
   const row = {
     id,
