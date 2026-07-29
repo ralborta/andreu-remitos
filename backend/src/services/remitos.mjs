@@ -11,7 +11,11 @@ import {
   mergeValidacionRemito,
 } from "../../../lib/validacion-maestros.mjs";
 import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
-import { evaluarProcesable, remitoListoParaPlanilla } from "../../../lib/remito-procesable.mjs";
+import {
+  evaluarProcesable,
+  horasCompletasDesdeDatos,
+  remitoListoParaPlanilla,
+} from "../../../lib/remito-procesable.mjs";
 import { normalizarDatosRemito } from "../../../lib/normalizar-remito.mjs";
 import { nroRemitoCanonico } from "../../../lib/sanitizar-campos-remito.mjs";
 import { enriquecerCorinaDesdeOcr } from "../../../lib/corina-reglas.mjs";
@@ -38,6 +42,7 @@ async function validacionCompleta(datos, tenant, opts = {}) {
     unidades,
     telefono: opts.telefono,
     choferDesdeTelefono: opts.choferDesdeTelefono,
+    respetarEdicionManual: Boolean(datos._editado_manual),
   });
 
   const destinoVal = validarDestinoConMaestros(datosCanon, tenant, localidades);
@@ -64,14 +69,15 @@ function remitoConDatosLimpios(row) {
 async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } = {}) {
   if (!row?.datos) return row;
   let datosNorm = normalizarDatosRemito({ ...row.datos }, row.tenant);
-  if (row.tenant === "corina" && row.texto_ocr) {
+  const editadoManual = datosNorm._editado_manual === true;
+  if (!editadoManual && row.tenant === "corina" && row.texto_ocr) {
     const unidades =
       maestros?.unidades ??
       (await master.listCollection("unidades", { tenant: "corina", activo: true }));
     datosNorm = enriquecerCorinaDesdeOcr(datosNorm, row.texto_ocr, { unidades });
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
-  if (row.tenant === "beraldi" && row.texto_ocr) {
+  if (!editadoManual && row.tenant === "beraldi" && row.texto_ocr) {
     datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
@@ -127,10 +133,17 @@ function validacionDestinoStale(row, datos) {
   return false;
 }
 
-/** Remitos viejos con viaje nocturno mal validado (descarga < carga mismo día). */
-function validacionHorariosStale(_row, datos) {
-  const errores = datos.horarios?.validacion?.errores ?? [];
-  return errores.some((e) => /anterior a.*mezcla carga\/descarga/i.test(String(e)));
+/** Remitos con validación de horarios desactualizada (p. ej. viaje nocturno). */
+function validacionHorariosStale(row, datos) {
+  const erroresDatos = datos.horarios?.validacion?.errores ?? [];
+  if (erroresDatos.some((e) => /anterior a.*mezcla carga\/descarga/i.test(String(e)))) {
+    return true;
+  }
+  if (!horasCompletasDesdeDatos(datos)) return false;
+  const erroresGuardados = row.validacion?.errores ?? [];
+  return erroresGuardados.some((e) =>
+    /hora|anterior a|carga|descarga|inválida/i.test(String(e)),
+  );
 }
 
 export async function ingestarRemito(buffer, { filename, telefono, tenantForzado, tenantSugerido, corinaClienteMarca }) {
@@ -331,6 +344,15 @@ export async function actualizarCampos(id, datosParciales) {
 
   const { horarios: horariosIncoming, ...resto } = datosParciales;
   let datos = { ...row.datos, ...resto, _editado_manual: true };
+  // Evitar que aliases OCR viejos pisen lo que el operador acaba de editar.
+  if (row.tenant === "beraldi") {
+    if ("destino" in resto) {
+      datos.destino_nombre = resto.destino;
+      datos.destino_locacion = resto.destino;
+    }
+    if ("patente_chasis" in resto) datos.tractor = resto.patente_chasis;
+    if ("patente_acoplado" in resto) datos.semi = resto.patente_acoplado;
+  }
   datos = normalizarDatosRemito(datos, row.tenant);
 
   if ("peso_kg" in resto && resto.peso_kg != null && resto.peso_kg !== "") {
