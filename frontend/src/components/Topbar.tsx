@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Menu, Search, Bell, Moon, Sun } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { Menu, Bell, Moon, Sun } from "lucide-react";
 import { LiveClock } from "./LiveClock";
+import { TopbarSearch } from "./TopbarSearch";
 
 const THEME_KEY = "andreu-theme";
 
@@ -42,16 +43,13 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         <Menu size={20} />
       </button>
 
-      <div className="relative hidden max-w-md flex-1 sm:block">
-        <Search
-          size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
-        />
-        <input
-          placeholder="Buscar viaje, chofer, remito, cliente…"
-          className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] pl-9 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] outline-none focus:border-[var(--violet)] focus:ring-1 focus:ring-[var(--violet)]/40"
-        />
-      </div>
+      <Suspense
+        fallback={
+          <div className="h-9 min-w-0 flex-1 max-w-md rounded-lg border border-[var(--border)] bg-[var(--panel)]" />
+        }
+      >
+        <TopbarSearch />
+      </Suspense>
 
       <div className="flex flex-1 items-center justify-end gap-3 sm:flex-none">
         <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">

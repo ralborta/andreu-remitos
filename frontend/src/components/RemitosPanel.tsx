@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckSquare, ChevronLeft, ChevronRight, Loader2, Search, Square } from "lucide-react";
 import { listRemitos, procesarRemitos, type ProcesarRemitosResult } from "@/lib/api";
+import { useRemitosBusqueda } from "@/hooks/useRemitosBusqueda";
 import type { RemitoRow } from "@/lib/types";
 import {
   acopladoPatente,
@@ -35,14 +36,17 @@ function matchBusqueda(row: RemitoRow, q: string) {
   const needle = q.trim().toLowerCase();
   if (!needle) return true;
   const d = row.datos as Record<string, unknown>;
+  const nroCanon = numeroRemito(row).toLowerCase();
   const nro = String(d.nro_guia ?? d.nro_remito ?? "");
   const remitoCliente = String(d.remito_cliente ?? d.nro_interno ?? "");
   const chofer = String(d.conductor ?? d.chofer ?? "").toLowerCase();
   const chasis = String(d.chasis ?? d.tractor ?? d.patente_chasis ?? "").toLowerCase();
   const semi = String(d.acoplado ?? d.semi ?? d.patente_acoplado ?? "").toLowerCase();
   const qDigits = needle.replace(/\D/g, "");
+  if (nroCanon.includes(needle)) return true;
   if (nro.toLowerCase().includes(needle)) return true;
   if (remitoCliente.toLowerCase().includes(needle)) return true;
+  if (qDigits.length >= 3 && nroCanon.replace(/\D/g, "").includes(qDigits)) return true;
   if (qDigits.length >= 3 && nro.replace(/\D/g, "").includes(qDigits)) return true;
   if (qDigits.length >= 3 && remitoCliente.replace(/\D/g, "").includes(qDigits)) return true;
   if (chofer.includes(needle)) return true;
@@ -51,7 +55,8 @@ function matchBusqueda(row: RemitoRow, q: string) {
   return false;
 }
 
-export function RemitosPanel({ tenant }: { tenant?: string }) {
+function RemitosPanelBody({ tenant }: { tenant?: string }) {
+  const { query: busqueda, setQuery: setBusqueda, queryActive } = useRemitosBusqueda();
   const [rows, setRows] = useState<RemitoRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -61,8 +66,9 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [procesando, setProcesando] = useState(false);
   const [batchResult, setBatchResult] = useState<ProcesarRemitosResult | null>(null);
-  const [busqueda, setBusqueda] = useState("");
   const [pagina, setPagina] = useState(0);
+
+  const incluirProcesados = queryActive || !soloPendientes;
 
   useEffect(() => {
     setCheckedIds(new Set());
@@ -98,7 +104,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    listRemitos({ tenant, pendientes: soloPendientes, limit: 5000 })
+    listRemitos({ tenant, pendientes: !incluirProcesados, limit: 5000 })
       .then((data) => {
         const scoped = tenant ? data.filter((r) => r.tenant === tenant) : data;
         setRows(scoped);
@@ -110,7 +116,7 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         ),
       )
       .finally(() => setLoading(false));
-  }, [tenant, soloPendientes]);
+  }, [tenant, incluirProcesados]);
 
   const selected = filtradas.find((r) => r.id === selectedId) ?? rows.find((r) => r.id === selectedId) ?? null;
 
@@ -418,6 +424,13 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
             viejo. En planilla entran los procesados (confirmados).
           </p>
 
+          <div className="mb-3 rounded-lg border border-[var(--violet)]/25 bg-[var(--violet)]/5 px-3 py-2 text-xs text-[var(--text-dim)]">
+            <strong className="text-white/85">Buscar remito:</strong> escribí el nº en la barra de arriba
+            o acá (ej. <span className="font-mono text-white/70">91259</span> o{" "}
+            <span className="font-mono text-white/70">00177056-4</span>). Al buscar incluye también los
+            ya procesados (mayo, junio…). Desmarcá «Solo pendientes» para ver todos sin filtrar.
+          </div>
+
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <label className="relative min-w-[200px] flex-1">
               <Search
@@ -428,13 +441,14 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
                 type="search"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar chofer, nro remito o patente…"
+                placeholder="Nº remito, chofer o patente…"
                 className="w-full rounded-lg border border-[var(--border)] bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-1 focus:ring-[var(--violet)]"
               />
             </label>
             {busqueda && (
               <span className="text-xs text-[var(--text-dim)]">
                 {filtradas.length} resultado{filtradas.length === 1 ? "" : "s"}
+                {queryActive && soloPendientes ? " · incl. procesados" : ""}
               </span>
             )}
           </div>
@@ -468,10 +482,10 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
           {!loading && !error && filtradas.length === 0 && (
             <p className="text-sm text-[var(--text-dim)]">
               {rows.length === 0
-                ? soloPendientes
-                  ? "No hay remitos pendientes. Desmarcá «Solo pendientes» para ver validados."
-                  : "Sin remitos. Subí una foto desde WhatsApp o la pantalla Subir."
-                : "Ningún remito coincide con la búsqueda."}
+                ? incluirProcesados
+                  ? "Sin remitos. Subí una foto desde WhatsApp o la pantalla Subir."
+                  : "No hay remitos pendientes. Desmarcá «Solo pendientes» o buscá por nº para ver procesados."
+                : `Ningún remito coincide con «${busqueda}». Probá solo los dígitos del nº (sin prefijo 00009 en Beraldi).`}
             </p>
           )}
           {!loading && filasPagina.length > 0 && (
@@ -530,5 +544,13 @@ export function RemitosPanel({ tenant }: { tenant?: string }) {
         onDeleted={handleDeleted}
       />
     </>
+  );
+}
+
+export function RemitosPanel({ tenant }: { tenant?: string }) {
+  return (
+    <Suspense fallback={<p className="text-sm text-[var(--text-dim)]">Cargando remitos…</p>}>
+      <RemitosPanelBody tenant={tenant} />
+    </Suspense>
   );
 }
