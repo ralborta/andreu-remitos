@@ -32,6 +32,7 @@ import type {
 } from "@/lib/parametros-types";
 import { REMITO_TENANTS } from "@/lib/tenants";
 import { tenantLabel } from "@/lib/remitos-ui";
+import { invalidateMaestrosCache } from "@/hooks/maestros-cache";
 import { Card, PageHeader, SectionTitle } from "./ui";
 
 const TABS: { id: ParametroTab; label: string }[] = [
@@ -195,6 +196,15 @@ export function ParametrosPanel() {
     matchBusqueda(q, r.origen_nombre, r.destino_nombre, r.km),
   );
 
+  function syncMaestrosRemitos(t: TenantSlug = tenant) {
+    invalidateMaestrosCache(t);
+  }
+
+  async function reload() {
+    syncMaestrosRemitos();
+    await load();
+  }
+
   function setErr(err: unknown) {
     setError(err instanceof Error ? err.message : "Error al guardar");
   }
@@ -212,7 +222,7 @@ export function ParametrosPanel() {
         activo: true,
       });
       setChoferForm({ nombre: "", telefono: "", documento: "" });
-      load();
+      reload();
     } catch (err) {
       setErr(err);
     }
@@ -234,7 +244,7 @@ export function ParametrosPanel() {
         activo: true,
       });
       setUnidadForm({ tipo: "tractor", patente: "", unidad_interna: "", semi_patente: "" });
-      load();
+      reload();
     } catch (err) {
       setErr(err);
     }
@@ -252,7 +262,7 @@ export function ParametrosPanel() {
         activo: true,
       });
       setLocForm({ nombre: "", codigo: "", tipo: "ambos" });
-      load();
+      reload();
     } catch (err) {
       setErr(err);
     }
@@ -271,6 +281,7 @@ export function ParametrosPanel() {
         activo: true,
       });
       setDistForm({ origen_id: lomaCampanaId, destino_id: "", km: "" });
+      syncMaestrosRemitos("beraldi");
       load();
     } catch (err) {
       setErr(err);
@@ -346,7 +357,7 @@ export function ParametrosPanel() {
           ) : choferesFiltrados.length > 0 ? (
             <ParamTable minWidth={720} headers={["Nombre", "Teléfono (DNI CRM)", ""]}>
               {choferesFiltrados.map((r) => (
-                <ChoferRow key={r.id} row={r} onReload={load} onError={setErr} />
+                <ChoferRow key={r.id} row={r} onReload={reload} onError={setErr} />
               ))}
             </ParamTable>
           ) : choferes.length > 0 ? (
@@ -395,7 +406,7 @@ export function ParametrosPanel() {
           ) : unidadesFiltradas.length > 0 ? (
             <ParamTable minWidth={760} headers={["Tipo", "Patente", "Nro interno", "Semi defecto", ""]}>
               {unidadesFiltradas.map((r) => (
-                <UnidadRow key={r.id} row={r} onReload={load} onError={setErr} />
+                <UnidadRow key={r.id} row={r} onReload={reload} onError={setErr} />
               ))}
             </ParamTable>
           ) : unidades.length > 0 ? (
@@ -435,7 +446,7 @@ export function ParametrosPanel() {
           ) : localidadesFiltradas.length > 0 ? (
             <ParamTable minWidth={720} headers={["Nombre", "Código", "Tipo", ""]}>
               {localidadesFiltradas.map((r) => (
-                <LocalidadRow key={r.id} row={r} onReload={load} onError={setErr} />
+                <LocalidadRow key={r.id} row={r} onReload={reload} onError={setErr} />
               ))}
             </ParamTable>
           ) : localidades.length > 0 ? (
@@ -465,7 +476,7 @@ export function ParametrosPanel() {
           ) : distanciasFiltradas.length > 0 ? (
             <ParamTable minWidth={800} headers={["Origen", "Destino", "Distancia (km)", ""]}>
               {distanciasFiltradas.map((r) => (
-                <DistanciaRow key={r.id} row={r} localidades={localidades} onReload={load} onError={setErr} />
+                <DistanciaRow key={r.id} row={r} localidades={localidades} onReload={reload} onError={setErr} />
               ))}
             </ParamTable>
           ) : distanciasSorted.length > 0 ? (

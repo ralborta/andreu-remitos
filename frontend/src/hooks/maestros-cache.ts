@@ -13,4 +13,7 @@ export function setMaestrosCache(tenant: string, data: RemitoMaestros) {
 export function invalidateMaestrosCache(tenant?: string) {
   if (tenant) cache.delete(tenant);
   else cache.clear();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("maestros-invalidate", { detail: { tenant } }));
+  }
 }

@@ -46,10 +46,20 @@ export function useRemitoMaestros(tenant: Tenant | string) {
   const [data, setData] = useState<RemitoMaestros>(() =>
     cached && !cached.loading ? cached : empty,
   );
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const onInvalidate = (ev: Event) => {
+      const t = (ev as CustomEvent<{ tenant?: string }>).detail?.tenant;
+      if (!t || t === tenant) setRefreshKey((k) => k + 1);
+    };
+    window.addEventListener("maestros-invalidate", onInvalidate);
+    return () => window.removeEventListener("maestros-invalidate", onInvalidate);
+  }, [tenant]);
 
   useEffect(() => {
     const hit = getMaestrosCache(tenant);
-    if (hit && !hit.loading && !hit.error) {
+    if (hit && !hit.loading && !hit.error && refreshKey === 0) {
       setData(hit);
       return;
     }
@@ -82,7 +92,7 @@ export function useRemitoMaestros(tenant: Tenant | string) {
     return () => {
       cancelled = true;
     };
-  }, [tenant]);
+  }, [tenant, refreshKey]);
 
   return data;
 }
