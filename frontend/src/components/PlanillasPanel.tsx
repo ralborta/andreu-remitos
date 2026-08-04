@@ -71,7 +71,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
         ? "Excel con 2 hojas: Planilla Diaria + Proforma (km)"
         : "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
       : tenant === "beraldi"
-      ? "Cantidad en Km (Orden 1) — desde Parámetros → Distancias"
+      ? "Delfos Beraldi: OT en NroDocumento, tramos ida/vuelta, Km en ambos tramos"
       : "toneladas en Cantidad (Orden 1)";
 
   return (
