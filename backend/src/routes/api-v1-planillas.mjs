@@ -24,7 +24,7 @@ function parseOpts(tenant, q = {}) {
   return {
     formato: q.formato === "proforma" ? "proforma" : "delfos",
     tipoViaje: q.tipoViaje || "ARENA",
-    producto: q.producto || "Sin Definir",
+    producto: q.producto || "Sin definir",
     estados: q.estados || "confirmado,pendiente_revision",
     desde: q.desde || undefined,
     hasta: q.hasta || undefined,
@@ -74,11 +74,11 @@ async function sendExcel(reply, tenant, data, opts) {
   const label = tenant.toUpperCase();
 
   if (tenant === "corina") {
-    const sheetName = opts.formato === "importacion" ? "Importacion Local" : "Planilla Local";
+    const sheetName = opts.formato === "importacion" ? "Proforma" : "Planilla Local";
     const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, columnasCorina(opts.formato)));
     XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
     const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-    const prefix = opts.formato === "importacion" ? "Importacion" : "Planilla";
+    const prefix = opts.formato === "importacion" ? "Proforma" : "Planilla";
     const fname = `${prefix}_Corina_${new Date().toISOString().slice(0, 10)}.xlsx`;
     return reply
       .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -103,10 +103,11 @@ async function sendExcel(reply, tenant, data, opts) {
       .send(buf);
   }
 
+  // Importación Delfos (25 cols): hoja y archivo = Proforma
   const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
-  XLSX.utils.book_append_sheet(wb, ws, `Planilla ${label}`.slice(0, 31));
+  XLSX.utils.book_append_sheet(wb, ws, "Proforma");
   const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-  const fname = `Planilla_${label}_${data.tipo_viaje || "local"}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const fname = `Proforma_${label}_${data.tipo_viaje || "ARENA"}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   return reply
     .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     .header("Content-Disposition", `attachment; filename="${fname}"`)

@@ -7,7 +7,7 @@ function parseQuery(q) {
   return {
     formato: q.formato === "proforma" ? "proforma" : "delfos",
     tipoViaje: q.tipoViaje || "ARENA",
-    producto: q.producto || "Sin Definir",
+    producto: q.producto || "Sin definir",
     estados: q.estados || "confirmado,pendiente_revision",
     desde: q.desde || undefined,
     hasta: q.hasta || undefined,
@@ -37,13 +37,13 @@ async function exportPlanilla(reply, data, { formato, label }) {
       .send(buf);
   }
 
-  const sheetName = formato === "proforma" ? "Proforma" : `Planilla ${label}`;
+  const sheetName = "Proforma";
   const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
-  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
   const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-  const prefix = formato === "proforma" ? "Proforma" : "Planilla";
-  const fname = `${prefix}_${label}_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  // Gisela: el Excel de importación Delfos debe llamarse Proforma (no "Planilla …").
+  const fname = `Proforma_${label}_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
   return reply
     .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -90,12 +90,12 @@ export default async function planillasRoutes(fastify) {
   fastify.get("/corina/export", async (request, reply) => {
     const opts = parseQueryCorina(request.query ?? {});
     const data = await buildPlanillaCorina(opts);
-    const sheetName = opts.formato === "importacion" ? "Importacion Local" : "Planilla Local";
+    const sheetName = opts.formato === "importacion" ? "Proforma" : "Planilla Local";
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, columnasCorina(opts.formato)));
     XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
     const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-    const prefix = opts.formato === "importacion" ? "Importacion" : "Planilla";
+    const prefix = opts.formato === "importacion" ? "Proforma" : "Planilla";
     const fname = `${prefix}_Corina_${new Date().toISOString().slice(0, 10)}.xlsx`;
     return reply
       .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

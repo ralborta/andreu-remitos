@@ -71,7 +71,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
         ? "Excel con 2 hojas: Planilla Diaria + Proforma (km)"
         : "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
       : tenant === "beraldi"
-      ? "Delfos Beraldi: OT en NroDocumento, tramos ida/vuelta, Km en ambos tramos"
+      ? "Proforma importación Delfos: headers exactos, OT en NroDocumento, tramos ida/vuelta, km"
       : "toneladas en Cantidad (Orden 1)";
 
   return (
@@ -201,7 +201,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                   className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
                 >
                   <Download size={16} />
-                  Excel Delfos
+                  Excel Proforma (Delfos)
                 </a>
                 <a
                   href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "proforma" })}
