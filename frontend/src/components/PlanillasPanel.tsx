@@ -68,7 +68,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
       : "Planilla Local — tramos, horas y bultos por remito"
     : vista === "proforma"
       ? tenant === "beraldi"
-        ? "Excel con 2 hojas: Planilla Diaria + Proforma (km)"
+        ? "Excel 2 hojas: Planilla Diaria (horarios + OT) + Proforma Torre"
         : "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
       : tenant === "beraldi"
       ? "Proforma importación Delfos: headers exactos, OT en NroDocumento, tramos ida/vuelta, km"
