@@ -109,7 +109,7 @@ export async function resolverTenantPorTelefono(telefono) {
   const tel = normalizePhone(telefono);
   if (!tel) return null;
   const hits = [];
-  for (const tenant of ["beraldi", "tsb", "corina"]) {
+  for (const tenant of ["beraldi", "tsb", "corina", "mye"]) {
     const choferes = await listCollection("choferes", { tenant, activo: true });
     if (findChoferByPhone(choferes, tel)) hits.push(tenant);
   }
@@ -121,7 +121,7 @@ export async function resolverTenantPorTelefono(telefono) {
 export async function resolverChoferPorTelefono(telefono) {
   const tel = normalizePhone(telefono);
   if (!tel) return null;
-  for (const tenant of ["tsb", "beraldi", "corina"]) {
+  for (const tenant of ["tsb", "beraldi", "corina", "mye"]) {
     const choferes = await listCollection("choferes", { tenant, activo: true });
     const chofer = findChoferByPhone(choferes, tel);
     if (chofer) return { ...chofer, tenant };

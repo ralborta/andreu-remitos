@@ -6,6 +6,7 @@ import { apiClientCanAccessTenant, apiClientHasScope } from "../../../lib/api-ke
 
 const BUILDERS = {
   tsb: buildPlanillaTsb,
+  mye: (opts) => buildPlanillaTsb({ ...opts, tenant: "mye" }),
   beraldi: buildPlanillaBeraldi,
   corina: buildPlanillaCorina,
 };

@@ -12,7 +12,7 @@ import { parametrosMutateOnly } from "../plugins/auth-guard.mjs";
 
 const parametrosWrite = { preHandler: parametrosMutateOnly };
 
-const TENANTS = new Set(["tsb", "beraldi", "corina"]);
+const TENANTS = new Set(["tsb", "beraldi", "corina", "mye"]);
 const UNIDAD_TIPOS = new Set(["tractor", "acoplado"]);
 const LOC_TIPOS = new Set(["origen", "destino", "ambos"]);
 
@@ -63,7 +63,7 @@ function deleteRoute(collection) {
 }
 
 function validateChofer(body, partial) {
-  if (!partial && !requireTenant(body.tenant)) return "tenant requerido (tsb | beraldi)";
+  if (!partial && !requireTenant(body.tenant)) return "tenant requerido (tsb | beraldi | corina | mye)";
   if (!partial && !String(body.nombre || "").trim()) return "nombre requerido";
   if (body.tenant && !requireTenant(body.tenant)) return "tenant inválido";
   if (body.telefono !== undefined && body.telefono !== null) {

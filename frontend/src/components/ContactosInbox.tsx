@@ -130,7 +130,7 @@ export function ContactosInbox() {
       />
 
       <div className="flex flex-wrap gap-2">
-        {["", "tsb", "beraldi", "corina"].map((t) => (
+        {["", "tsb", "beraldi", "corina", "mye"].map((t) => (
           <button
             key={t || "all"}
             type="button"

@@ -73,6 +73,16 @@ export default async function planillasRoutes(fastify) {
     return exportPlanilla(reply, data, { formato: opts.formato, label: "TSB" });
   });
 
+  fastify.get("/mye", async (request) => {
+    return buildPlanillaTsb({ ...parseQuery(request.query ?? {}), tenant: "mye" });
+  });
+
+  fastify.get("/mye/export", async (request, reply) => {
+    const opts = { ...parseQuery(request.query ?? {}), tenant: "mye" };
+    const data = await buildPlanillaTsb(opts);
+    return exportPlanilla(reply, data, { formato: opts.formato, label: "MyESA" });
+  });
+
   fastify.get("/beraldi", async (request) => {
     return buildPlanillaBeraldi(parseQuery(request.query ?? {}));
   });

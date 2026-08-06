@@ -124,11 +124,16 @@ export function tenantLabel(t: string) {
   if (t === "tsb") return "TSB";
   if (t === "beraldi") return "Beraldi";
   if (t === "corina") return "Corina";
+  if (t === "mye") return "M&E";
   return t.toUpperCase();
 }
 
 export function esTenantCorina(tenant: string) {
   return tenant === "corina";
+}
+
+export function esTenantGuiaLike(tenant: string) {
+  return tenant === "tsb" || tenant === "mye";
 }
 
 export const CAMPOS_TSB = [
@@ -173,7 +178,7 @@ export const CAMPOS_CORINA = [
 
 export function camposEdicion(tenant: string) {
   if (tenant === "corina") return CAMPOS_CORINA;
-  if (tenant === "tsb") return CAMPOS_TSB;
+  if (tenant === "tsb" || tenant === "mye") return CAMPOS_TSB;
   return CAMPOS_BERALDI;
 }
 
@@ -473,7 +478,7 @@ export function remitoProcesable(row: RemitoRow): { ok: boolean; motivos: string
     return { ok: false, motivos: ["Error de lectura — corregir campos"] };
   }
 
-  if (row.tenant === "tsb") {
+  if (row.tenant === "tsb" || row.tenant === "mye") {
     const bloqueos = motivosBloqueoProcesoTsbUi(row.validacion);
     return { ok: bloqueos.length === 0, motivos: bloqueos };
   }

@@ -1,4 +1,4 @@
-export type TenantSlug = "tsb" | "beraldi" | "corina";
+export type TenantSlug = "tsb" | "beraldi" | "corina" | "mye";
 
 export interface TenantConfig {
   slug: TenantSlug;
@@ -37,6 +37,15 @@ export const REMITO_TENANTS: TenantConfig[] = [
     description: "Remitos Quilmes / local — tractor, semi, origen, destino y bultos",
     color: "#fb923c",
     whatsappHint: "Foto de remito Quilmes",
+    active: true,
+  },
+  {
+    slug: "mye",
+    name: "MyESA (M&E)",
+    short: "M&E",
+    description: "Remitos MyESA — mismos campos que TSB (carga, destino/pozo, equipo, 5 horas)",
+    color: "#34d399",
+    whatsappHint: "Foto de remito MyESA / M&E",
     active: true,
   },
 ];

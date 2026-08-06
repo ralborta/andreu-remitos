@@ -81,7 +81,7 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
     datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
-  if ((row.tenant === "beraldi" || row.tenant === "tsb") && datosNorm.horarios?.horarios) {
+  if ((row.tenant === "beraldi" || row.tenant === "tsb" || row.tenant === "mye") && datosNorm.horarios?.horarios) {
     const fechaBase =
       normalizarFecha(datosNorm.fecha_remito ?? datosNorm.fecha_guia) ??
       datosNorm.horarios.fecha_remito ??
@@ -162,7 +162,7 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
     const chofer = await master.resolverChoferPorTelefono(telefono);
     if (chofer?.nombre) {
       choferDesdeTelefono = true;
-      if (resultado.tenant === "tsb") resultado.lectura.conductor = chofer.nombre;
+      if (resultado.tenant === "tsb" || resultado.tenant === "mye") resultado.lectura.conductor = chofer.nombre;
       else if (resultado.tenant === "corina") resultado.lectura.conductor = chofer.nombre;
       else resultado.lectura.chofer = chofer.nombre;
     }
@@ -270,7 +270,7 @@ export async function reprocesarRemito(id) {
     const chofer = await master.resolverChoferPorTelefono(row.telefono_chofer);
     if (chofer?.nombre) {
       choferDesdeTelefono = true;
-      if (resultado.tenant === "tsb" || resultado.tenant === "corina") lectura.conductor = chofer.nombre;
+      if (resultado.tenant === "tsb" || resultado.tenant === "mye" || resultado.tenant === "corina") lectura.conductor = chofer.nombre;
       else lectura.chofer = chofer.nombre;
     }
   }
@@ -460,7 +460,7 @@ export async function procesarRemitosBatch(ids, tenant) {
   return { procesados, errores, total: ids.length };
 }
 
-const TENANTS_VALIDOS = new Set(["tsb", "beraldi", "corina"]);
+const TENANTS_VALIDOS = new Set(["tsb", "beraldi", "corina", "mye"]);
 
 export async function cambiarTenantRemito(id, nuevoTenant) {
   if (!TENANTS_VALIDOS.has(nuevoTenant)) {
