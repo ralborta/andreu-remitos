@@ -522,10 +522,12 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
+        // No forzar TSB/Beraldi/M&E por conversación previa: el papel manda.
+        // Solo Corina se fuerza (flujo de marca de cliente).
         const resultado = await ingestarRemito(buffer, {
           filename,
           telefono,
-          tenantForzado: tenantFoto ?? undefined,
+          tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
           tenantSugerido: tenantFoto ?? tenantCfg ?? undefined,
           corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
         });
