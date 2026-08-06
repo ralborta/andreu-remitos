@@ -157,6 +157,8 @@ export const CAMPOS_BERALDI = [
   "origen",
   "destino",
   "peso_kg",
+  "km_inicial",
+  "km_final",
 ] as const;
 
 export const CAMPOS_CORINA = [
@@ -350,6 +352,8 @@ const CAMPO_LABEL: Record<string, string> = {
   hora_inicio: "Hora inicio",
   hora_fin: "Hora fin",
   peso_kg: "Peso (kg)",
+  km_inicial: "KM inicio",
+  km_final: "KM fin",
   malla: "Malla",
   remito_cliente: "Remito cliente",
   nro_interno: "Nro interno",
