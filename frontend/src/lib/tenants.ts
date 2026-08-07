@@ -21,7 +21,7 @@ export const REMITO_TENANTS: TenantConfig[] = [
     short: BRAND.shortName,
     description: "Guías de transporte — campos manuscritos + 5 horas de control",
     color: BRAND.accent,
-    whatsappHint: "Foto de guía / remito TransitOne",
+    whatsappHint: "Foto de guía / remito SOL · TransitOne",
     active: true,
   },
 ];

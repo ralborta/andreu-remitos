@@ -16,8 +16,8 @@ const display = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: `${BRAND.name} · Torre de Control Logística`,
-  description: `${BRAND.tagline}. Suite de automatización operativa para procesos logísticos.`,
+  title: `${BRAND.name} · ${BRAND.productName}`,
+  description: `${BRAND.name} ${BRAND.tagline} · ${BRAND.productName}. Suite de automatización operativa para procesos logísticos.`,
 };
 
 export default function RootLayout({

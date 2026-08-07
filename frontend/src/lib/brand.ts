@@ -1,13 +1,16 @@
-/** Marca del demo TransitOne (rama `demo`). Andreu prod usa otra rama. */
+/** Marca del demo SOL (rama `demo`). Andreu prod usa otra rama. */
 export const BRAND = {
-  name: "TransitOne",
-  shortName: "TransitOne",
-  tagline: "Logística que conecta",
+  /** Empresa / marca principal (logo). */
+  name: "SOL",
+  shortName: "SOL",
+  tagline: "Logística",
+  /** Producto secundario — se muestra más chico bajo el logo. */
+  productName: "TransitOne",
   /** Un solo cliente de remitos; pipeline Document AI = TSB. */
   remitoTenantSlug: "tsb" as const,
   remitoTenantLabel: "TransitOne",
-  logoPath: "/brand/transitone-logo.png",
+  logoPath: "/brand/sol-logistica.png",
   productLine: "Mesa de control",
-  primary: "#0a1f44",
-  accent: "#2f6bff",
+  primary: "#0a1628",
+  accent: "#00b8c4",
 };
