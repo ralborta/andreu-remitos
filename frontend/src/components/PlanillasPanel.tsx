@@ -15,7 +15,8 @@ type HojaProforma = "diaria" | "proforma";
 
 export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
   const cfg = getTenant(tenant)!;
-  const esCorina = tenant === "corina";
+  /** Demo TransitOne: pipeline/planillas tipo TSB (sin Corina/Beraldi en UI). */
+  const esCorina = false;
   const [vista, setVista] = useState<PlanillaFormato>("delfos");
   const [vistaCorina, setVistaCorina] = useState<VistaCorina>("local");
   const [hojaProforma, setHojaProforma] = useState<HojaProforma>("proforma");
@@ -67,11 +68,7 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
       ? "Delfos 25 cols — Corta Distancia, Cantidad en bultos, Unidad Pallet"
       : "Planilla Local — tramos, horas y bultos por remito"
     : vista === "proforma"
-      ? tenant === "beraldi"
-        ? "Excel 2 hojas: Planilla Diaria (horarios + OT) + Proforma Torre"
-        : "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
-      : tenant === "beraldi"
-      ? "Proforma importación Delfos: headers exactos, OT en NroDocumento, tramos ida/vuelta, km"
+      ? "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
       : "toneladas en Cantidad (Orden 1)";
 
   return (

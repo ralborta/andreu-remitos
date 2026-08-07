@@ -167,12 +167,6 @@ export function ParametrosPanel() {
     load();
   }, [load]);
 
-  useEffect(() => {
-    if (tab === "distancias" && tenant !== "beraldi") {
-      setTenant("beraldi");
-    }
-  }, [tab, tenant]);
-
   const lomaCampanaId =
     localidades.find((l) => l.nombre.toUpperCase().includes("LOMA CAMPANA"))?.id ?? "";
 
@@ -274,14 +268,14 @@ export function ParametrosPanel() {
     if (!origen_id || !distForm.destino_id || distForm.km === "") return;
     try {
       await createDistancia({
-        tenant: "beraldi",
+        tenant,
         origen_id,
         destino_id: distForm.destino_id,
         km: Number(distForm.km),
         activo: true,
       });
       setDistForm({ origen_id: lomaCampanaId, destino_id: "", km: "" });
-      syncMaestrosRemitos("beraldi");
+      syncMaestrosRemitos(tenant);
       load();
     } catch (err) {
       setErr(err);
