@@ -64,7 +64,7 @@ export function Sidebar({
       >
         <div className="flex h-14 shrink-0 items-center justify-between px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2">
-            <Brand size="sm" showProduct />
+            <Brand variant="product" size="sm" />
           </Link>
           <button
             onClick={onClose}

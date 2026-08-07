@@ -1,15 +1,16 @@
 /** Marca del demo SOL (rama `demo`). Andreu prod usa otra rama. */
 export const BRAND = {
-  /** Empresa / marca principal (logo). */
+  /** Empresa / marca (header derecha). */
   name: "SOL",
   shortName: "SOL",
   tagline: "Logística",
-  /** Producto secundario — se muestra más chico bajo el logo. */
+  logoPath: "/brand/sol-logistica.png",
+  /** Producto (sidebar). */
   productName: "TransitOne",
+  productLogoPath: "/brand/transitone-logo.png",
   /** Un solo cliente de remitos; pipeline Document AI = TSB. */
   remitoTenantSlug: "tsb" as const,
   remitoTenantLabel: "TransitOne",
-  logoPath: "/brand/sol-logistica.png",
   productLine: "Mesa de control",
   primary: "#0a1628",
   accent: "#00b8c4",

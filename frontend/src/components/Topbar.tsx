@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Menu, Bell, Moon, Sun } from "lucide-react";
 import { LiveClock } from "./LiveClock";
 import { TopbarSearch } from "./TopbarSearch";
+import { Brand } from "./Brand";
 
 const THEME_KEY = "andreu-theme";
 
@@ -78,6 +79,13 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         </button>
 
         <LiveClock />
+
+        <div className="ml-1 hidden border-l border-[var(--border)] pl-3 sm:block">
+          <Brand variant="company" size="md" />
+        </div>
+        <div className="sm:hidden">
+          <Brand variant="company" size="sm" />
+        </div>
       </div>
     </header>
   );

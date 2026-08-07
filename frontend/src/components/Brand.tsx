@@ -2,53 +2,120 @@ import Image from "next/image";
 import clsx from "clsx";
 import { BRAND } from "@/lib/brand";
 
+type BrandSize = "sm" | "md" | "lg";
+type BrandVariant = "product" | "company" | "stack";
+
+const PRODUCT_ASPECT = 540 / 147;
+const COMPANY_ASPECT = 1024 / 682;
+
+const PRODUCT_CFG: Record<BrandSize, { h: number; maxW: number }> = {
+  sm: { h: 26, maxW: 140 },
+  md: { h: 32, maxW: 160 },
+  lg: { h: 40, maxW: 200 },
+};
+
+const COMPANY_CFG: Record<BrandSize, { h: number; maxW: number }> = {
+  sm: { h: 28, maxW: 110 },
+  md: { h: 36, maxW: 140 },
+  lg: { h: 52, maxW: 190 },
+};
+
+function LogoImg({
+  src,
+  alt,
+  h,
+  maxW,
+  aspect,
+  className,
+}: {
+  src: string;
+  alt: string;
+  h: number;
+  maxW: number;
+  aspect: number;
+  className?: string;
+}) {
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={Math.round(h * aspect)}
+      height={h}
+      className={clsx("object-contain object-left", className)}
+      style={{ height: h, width: "auto", maxWidth: maxW }}
+      priority
+      unoptimized
+    />
+  );
+}
+
 /**
- * Logo SOL acotado por altura (el PNG es ancho ~1024×682).
- * Evitar h-auto/w-auto sin tope: rompe sidebar y login.
+ * product → TransitOne (sidebar)
+ * company → SOL (header derecha)
+ * stack → SOL + TransitOne (login)
  */
 export function Brand({
   className,
   size = "md",
-  showProduct = true,
+  variant = "product",
 }: {
   className?: string;
-  size?: "sm" | "md" | "lg";
-  /** TransitOne debajo del logo SOL (más chico). */
-  showProduct?: boolean;
+  size?: BrandSize;
+  variant?: BrandVariant;
 }) {
-  const cfg = {
-    sm: { h: 22, maxW: 96, product: "text-[8px] tracking-[0.14em]" },
-    md: { h: 28, maxW: 120, product: "text-[9px] tracking-[0.16em]" },
-    lg: { h: 48, maxW: 176, product: "text-[10px] tracking-[0.18em]" },
-  }[size];
+  if (variant === "company") {
+    const cfg = COMPANY_CFG[size];
+    return (
+      <span className={clsx("inline-flex select-none", className)}>
+        <LogoImg
+          src={BRAND.logoPath}
+          alt={`${BRAND.name} ${BRAND.tagline}`}
+          h={cfg.h}
+          maxW={cfg.maxW}
+          aspect={COMPANY_ASPECT}
+        />
+      </span>
+    );
+  }
 
+  if (variant === "stack") {
+    const company = COMPANY_CFG[size];
+    const product = PRODUCT_CFG.sm;
+    return (
+      <span
+        className={clsx(
+          "inline-flex flex-col items-center gap-2 select-none",
+          className,
+        )}
+      >
+        <LogoImg
+          src={BRAND.logoPath}
+          alt={`${BRAND.name} ${BRAND.tagline}`}
+          h={company.h}
+          maxW={company.maxW}
+          aspect={COMPANY_ASPECT}
+        />
+        <LogoImg
+          src={BRAND.productLogoPath}
+          alt={BRAND.productName}
+          h={product.h}
+          maxW={product.maxW}
+          aspect={PRODUCT_ASPECT}
+        />
+      </span>
+    );
+  }
+
+  const cfg = PRODUCT_CFG[size];
   return (
-    <span
-      className={clsx(
-        "inline-flex flex-col items-start gap-0.5 select-none",
-        className,
-      )}
-    >
-      <Image
-        src={BRAND.logoPath}
-        alt={`${BRAND.name} ${BRAND.tagline}`}
-        width={Math.round(cfg.h * (1024 / 682))}
-        height={cfg.h}
-        className="object-contain object-left"
-        style={{ height: cfg.h, width: "auto", maxWidth: cfg.maxW }}
-        priority
-        unoptimized
+    <span className={clsx("inline-flex min-w-0 select-none", className)}>
+      <LogoImg
+        src={BRAND.productLogoPath}
+        alt={BRAND.productName}
+        h={cfg.h}
+        maxW={cfg.maxW}
+        aspect={PRODUCT_ASPECT}
       />
-      {showProduct ? (
-        <span
-          className={clsx(
-            "font-medium uppercase leading-none text-[var(--text-dim)]",
-            cfg.product,
-          )}
-        >
-          {BRAND.productName}
-        </span>
-      ) : null}
     </span>
   );
 }
