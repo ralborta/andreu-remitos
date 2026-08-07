@@ -6,7 +6,8 @@ import { parsearHorarios, normalizarFecha, normalizarHora } from "./horarios.mjs
 
 function cap(texto, re, flags = "i") {
   const m = texto.match(new RegExp(re, flags));
-  return m ? m[1].trim() : null;
+  if (!m?.[1]) return null;
+  return m[1].trim();
 }
 
 function limpiar(texto) {
@@ -70,10 +71,14 @@ export function extraerBeraldi(texto) {
     tipo: cap(t, /(\d{2}\/\d{2,3})\s*(?:DRY|WET)/i) ?? cap(t, /TIPO[\s\S]{0,15}?(\d{2}\/\d+)/i),
     peso_kg: normalizarPeso(pesoRaw),
     origen: cap(t, /CARGA[\s\S]*?ALMACEN\s*(\w+)/i),
-    destino_locacion: cap(t, /LOCACION\s*([A-Z0-9\-]+)/i) ?? cap(t, /LLL-\d+/i),
+    destino_locacion: cap(t, /LOCACION\s*([A-Z0-9\-]+)/i) ?? cap(t, /(LLL-\d+)/i),
     destino_nombre: cap(t, /DENOMINAC\.?\s*([\w\-]+)/i),
-    km_inicial: cap(t, /Km\s*[Ii]nicial:?\s*([\d\.]+)/i),
-    km_final: cap(t, /Km\s*final\.?\s*([\d\.]+)/i),
+    km_inicial:
+      cap(t, /Km\.?\s*Inic\w*[:\s]*([0-9OIlSsgBG][0-9OIlSsgBG.,\/\-]{1,12})/i) ??
+      cap(t, /Km\s*[Ii]nicial:?\s*([0-9OIlSsgBG.,\/\-]+)/i),
+    km_final:
+      cap(t, /Km\.?\s*Fin(?:al)?\w*[:\s]*([0-9OIlSsgBG][0-9OIlSsgBG.,\/\-]{1,12})/i) ??
+      cap(t, /Km\s*[Ff]inal\.?\s*([0-9OIlSsgBG.,\/\-]+)/i),
     horarios,
   };
 }

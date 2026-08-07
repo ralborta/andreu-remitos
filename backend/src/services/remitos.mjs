@@ -77,9 +77,16 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
     datosNorm = enriquecerCorinaDesdeOcr(datosNorm, row.texto_ocr, { unidades });
     datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
   }
-  if (!editadoManual && row.tenant === "beraldi" && row.texto_ocr) {
-    datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
-    datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
+  // Beraldi: siempre completar KM vacíos desde OCR (aunque haya edición manual de otros campos).
+  if (row.tenant === "beraldi" && row.texto_ocr) {
+    if (!editadoManual) {
+      datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
+      datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
+    } else {
+      const enriq = enriquecerBeraldiDesdeTexto({}, row.texto_ocr);
+      if (!datosNorm.km_inicial && enriq.km_inicial) datosNorm.km_inicial = enriq.km_inicial;
+      if (!datosNorm.km_final && enriq.km_final) datosNorm.km_final = enriq.km_final;
+    }
   }
   if ((row.tenant === "beraldi" || row.tenant === "tsb" || row.tenant === "mye") && datosNorm.horarios?.horarios) {
     const fechaBase =
