@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useState } from "react";
 import { Brand } from "@/components/Brand";
+import { BRAND } from "@/lib/brand";
 
 function LoginForm() {
   const router = useRouter();
@@ -40,8 +41,8 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <Brand size="lg" />
-          <p className="text-sm text-[var(--text-dim)]">Mesa de control · Andreu Logística</p>
+          <Brand size="lg" showTagline />
+          <p className="text-sm text-[var(--text-dim)]">{BRAND.productLine} · {BRAND.name}</p>
         </div>
 
         <form

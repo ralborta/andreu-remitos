@@ -121,11 +121,10 @@ export function horaCorta(iso?: string) {
 }
 
 export function tenantLabel(t: string) {
-  if (t === "tsb") return "TSB";
-  if (t === "beraldi") return "Beraldi";
-  if (t === "corina") return "Corina";
-  if (t === "mye") return "M&E";
-  return t.toUpperCase();
+  if (t === "tsb" || t === "mye") return "TransitOne";
+  if (t === "beraldi") return "TransitOne";
+  if (t === "corina") return "TransitOne";
+  return "TransitOne";
 }
 
 export function esTenantCorina(tenant: string) {

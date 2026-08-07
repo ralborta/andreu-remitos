@@ -1,4 +1,4 @@
-export type TenantSlug = "tsb" | "beraldi" | "corina" | "mye";
+export type TenantSlug = "tsb";
 
 export interface ParametroBase {
   id: string;

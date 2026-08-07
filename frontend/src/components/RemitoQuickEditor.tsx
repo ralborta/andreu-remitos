@@ -24,6 +24,7 @@ import {
   tenantLabel,
 } from "@/lib/remitos-ui";
 import { REMITO_TENANTS } from "@/lib/tenants";
+import { BRAND } from "@/lib/brand";
 import { Card, Pill, SectionTitle } from "./ui";
 import { RemitoHorariosFields } from "./RemitoHorariosFields";
 import { RemitoCampoInput } from "./RemitoCampoInput";
@@ -245,7 +246,7 @@ function EditorBody({
           ))}
         </select>
         <span className="mt-1 block text-[10px] text-[var(--text-faint)]">
-          TSB ↔ Beraldi ↔ Corina — revalida destino y horarios al cambiar.
+          Empresa de remitos: {BRAND.remitoTenantLabel} (perfil guía).
         </span>
       </label>
 

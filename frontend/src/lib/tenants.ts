@@ -1,4 +1,7 @@
-export type TenantSlug = "tsb" | "beraldi" | "corina" | "mye";
+import type { BRAND as BrandConfig } from "./brand";
+import { BRAND } from "./brand";
+
+export type TenantSlug = typeof BRAND.remitoTenantSlug;
 
 export interface TenantConfig {
   slug: TenantSlug;
@@ -10,42 +13,15 @@ export interface TenantConfig {
   active: boolean;
 }
 
-/** Clientes con remitos — agregar acá cuando haya otro transporte */
+/** Demo: una sola empresa de remitos (TransitOne). Pipeline OCR = TSB. */
 export const REMITO_TENANTS: TenantConfig[] = [
   {
-    slug: "tsb",
-    name: "TSB",
-    short: "TSB",
-    description: "Guías de transporte TSB — campos manuscritos + 5 horas",
-    color: "#38bdf8",
-    whatsappHint: "Foto de guía TSB",
-    active: true,
-  },
-  {
-    slug: "beraldi",
-    name: "Beraldi",
-    short: "Beraldi",
-    description: "Remitos Beraldi — conductor, patentes y horarios",
-    color: "#a78bfa",
-    whatsappHint: "Foto de remito Beraldi",
-    active: true,
-  },
-  {
-    slug: "corina",
-    name: "Corina",
-    short: "Corina",
-    description: "Remitos Quilmes / local — tractor, semi, origen, destino y bultos",
-    color: "#fb923c",
-    whatsappHint: "Foto de remito Quilmes",
-    active: true,
-  },
-  {
-    slug: "mye",
-    name: "MyESA (M&E)",
-    short: "M&E",
-    description: "Remitos MyESA — mismos campos que TSB (carga, destino/pozo, equipo, 5 horas)",
-    color: "#34d399",
-    whatsappHint: "Foto de remito MyESA / M&E",
+    slug: BRAND.remitoTenantSlug,
+    name: BRAND.remitoTenantLabel,
+    short: BRAND.shortName,
+    description: "Guías de transporte — campos manuscritos + 5 horas de control",
+    color: BRAND.accent,
+    whatsappHint: "Foto de guía / remito TransitOne",
     active: true,
   },
 ];
@@ -59,5 +35,9 @@ export function isTenantSlug(slug: string): slug is TenantSlug {
 }
 
 export function tenantColor(slug: string) {
-  return getTenant(slug)?.color ?? "#a79fc9";
+  return getTenant(slug)?.color ?? BRAND.accent;
+}
+
+export function tenantDisplayName(slug: string) {
+  return getTenant(slug)?.name ?? BRAND.remitoTenantLabel;
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { MessageCircle, RefreshCw, Smartphone } from "lucide-react";
+import { BRAND } from "@/lib/brand";
 
 const QR_POLL_MS = 4000;
 
@@ -35,7 +36,7 @@ function QrFrame({ src, loading }: { src?: string | null; loading?: boolean }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={src}
-            alt="Código QR WhatsApp Andreu"
+            alt={`Código QR WhatsApp ${BRAND.name}`}
             className="block rounded-xl bg-white"
             width={306}
             height={306}
@@ -103,7 +104,7 @@ export function WhatsAppVincular() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366]/15 text-[#25d366]">
             <MessageCircle size={30} />
           </div>
-          <h1 className="text-2xl font-semibold">Vincular WhatsApp — Andreu</h1>
+          <h1 className="text-2xl font-semibold">Vincular WhatsApp — {BRAND.name}</h1>
           <p className="mt-2 text-sm text-[#8696a0]">
             Bot de remitos y gestión de viajes
           </p>

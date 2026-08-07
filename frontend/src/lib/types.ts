@@ -1,4 +1,4 @@
-export type Tenant = "tsb" | "beraldi" | "corina" | "mye";
+export type Tenant = "tsb";
 
 export type EstadoRemito =
   | "pendiente_revision"

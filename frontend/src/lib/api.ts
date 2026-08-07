@@ -413,7 +413,7 @@ export interface Viaje {
   codigo: string;
   estado: ViajeEstado;
   estadoLabel: string;
-  tenant: "tsb" | "beraldi" | "corina" | "mye" | null;
+  tenant: "tsb" | null;
   cliente: string;
   origen: string;
   destino: string;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { BRAND } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,9 +16,8 @@ const display = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Empliados.net · Torre de Control Logística",
-  description:
-    "Suite de automatización operativa para procesos logísticos. Agentes IA, trazabilidad y control en tiempo real.",
+  title: `${BRAND.name} · Torre de Control Logística`,
+  description: `${BRAND.tagline}. Suite de automatización operativa para procesos logísticos.`,
 };
 
 export default function RootLayout({

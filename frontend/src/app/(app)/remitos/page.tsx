@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { FileText, ChevronRight } from "lucide-react";
-import { PageHeader, Card, SectionTitle, Pill } from "@/components/ui";
+import { PageHeader, Card, Pill } from "@/components/ui";
 import { REMITO_TENANTS } from "@/lib/tenants";
+import { BRAND } from "@/lib/brand";
 import { RemitosResumen } from "@/components/RemitosResumen";
 
 export default function RemitosHubPage() {
@@ -9,7 +10,7 @@ export default function RemitosHubPage() {
     <div className="space-y-6">
       <PageHeader
         title="Remitos"
-        subtitle="Elegí cliente — los choferes mandan fotos por WhatsApp; acá revisás y corregís"
+        subtitle={`Los choferes mandan fotos por WhatsApp a ${BRAND.name}; acá revisás y corregís`}
         icon={<FileText size={24} />}
       />
 
@@ -37,13 +38,6 @@ export default function RemitosHubPage() {
           </Link>
         ))}
       </div>
-
-      <Card>
-        <SectionTitle>Próximos clientes</SectionTitle>
-        <p className="text-sm text-[var(--text-dim)]">
-          Cuando sumemos otro transporte, aparece acá como sub-opción (mismo flujo: WhatsApp → OCR → revisión).
-        </p>
-      </Card>
     </div>
   );
 }

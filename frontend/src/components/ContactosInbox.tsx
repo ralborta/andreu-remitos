@@ -16,6 +16,7 @@ import type { RemitoRow } from "@/lib/types";
 import type { Chofer } from "@/lib/parametros-types";
 import { tenantLabel } from "@/lib/remitos-ui";
 import { tenantColor } from "@/lib/tenants";
+import { BRAND } from "@/lib/brand";
 import { Card, PageHeader, Pill, SectionTitle } from "./ui";
 import { ContactoChatThread } from "./ContactoChatThread";
 import { ContactoMessageComposer } from "./ContactoMessageComposer";
@@ -130,7 +131,7 @@ export function ContactosInbox() {
       />
 
       <div className="flex flex-wrap gap-2">
-        {["", "tsb", "beraldi", "corina", "mye"].map((t) => (
+        {["", "tsb"].map((t) => (
           <button
             key={t || "all"}
             type="button"
@@ -191,7 +192,7 @@ export function ContactosInbox() {
                 </p>
                 <p className="mt-2 text-xs leading-relaxed text-[var(--text-dim)]">
                   {lista.length === 0
-                    ? 'Aparecen acá cuando un chofer escribe al bot de WhatsApp. Podés probar mandando "Hola" al número de Andreu Remitos.'
+                    ? `Aparecen acá cuando un chofer escribe al bot de WhatsApp. Podés probar mandando "Hola" al número de ${BRAND.name}.`
                     : "Probá otro nombre o teléfono."}
                 </p>
               </div>
