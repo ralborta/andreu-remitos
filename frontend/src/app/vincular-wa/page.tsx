@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { WhatsAppVincular } from "@/components/WhatsAppVincular";
 
 export const metadata: Metadata = {
-  title: "Vincular WhatsApp — SOL · TransitOne",
-  description: "Escaneá el QR para conectar el bot de WhatsApp de SOL.",
+  title: "Vincular WhatsApp — SOL",
+  description:
+    "Página externa de SOL Logística. Escaneá el QR para conectar el bot de WhatsApp (TransitOne).",
 };
 
 export default function VincularWaPage() {

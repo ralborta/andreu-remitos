@@ -2,12 +2,23 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth-server";
 
-const PUBLIC_PREFIXES = ["/login", "/api/auth", "/backend", "/conexion-prueba", "/vincular-wa"];
+const PUBLIC_PREFIXES = [
+  "/login",
+  "/api/auth",
+  "/api/vincular",
+  "/backend",
+  "/conexion-prueba",
+  "/vincular-wa",
+];
 
-/** Hosts que solo sirven la pantalla de conexión de prueba (URL neutra para compartir). */
+/** Hosts que solo sirven la pantalla de QR WhatsApp (URL externa para compartir). */
 const CONEXION_PRUEBA_HOSTS = new Set([
+  // Andreu prod (rama main)
   "logistica-vincular.wd75db.easypanel.host",
   "vincular.nivel41.com",
+  // SOL / TransitOne demo
+  "transitone-vincular.wd75db.easypanel.host",
+  "vincular-sol.nivel41.com",
 ]);
 
 function hostName(request: NextRequest) {

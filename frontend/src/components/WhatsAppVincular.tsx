@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { MessageCircle, RefreshCw, Smartphone } from "lucide-react";
+import { MessageCircle, RefreshCw } from "lucide-react";
+import { Brand } from "@/components/Brand";
 import { BRAND } from "@/lib/brand";
 
 const QR_POLL_MS = 4000;
@@ -100,13 +101,18 @@ export function WhatsAppVincular() {
   return (
     <div className="surface-dark min-h-screen bg-[#0b141a] text-[#e9edef]">
       <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-10">
-        <header className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366]/15 text-[#25d366]">
-            <MessageCircle size={30} />
-          </div>
-          <h1 className="text-2xl font-semibold">Vincular WhatsApp — {BRAND.name}</h1>
-          <p className="mt-2 text-sm text-[#8696a0]">
-            Bot de remitos y gestión de viajes
+        <header className="mb-8 flex flex-col items-center text-center">
+          <Brand variant="stack" size="lg" className="mb-5" />
+          <p className="rounded-full border border-[#25d366]/35 bg-[#25d366]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#25d366]">
+            Conexión WhatsApp · {BRAND.name}
+          </p>
+          <h1 className="mt-4 text-2xl font-semibold">
+            Vincular el bot de {BRAND.name}
+          </h1>
+          <p className="mt-2 max-w-sm text-sm text-[#8696a0]">
+            Esta página es de <strong className="text-[#e9edef]">{BRAND.name}</strong> (
+            {BRAND.productName}). Escaneá el QR con el teléfono del bot para conectar
+            remitos y viajes por WhatsApp.
           </p>
           {phoneFmt && (
             <p className="mt-3 font-mono text-sm tracking-wide text-[#e9edef]">{phoneFmt}</p>
@@ -123,10 +129,10 @@ export function WhatsAppVincular() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#25d366]/20 text-[#25d366]">
                 <MessageCircle size={32} />
               </div>
-              <p className="text-lg font-medium text-[#25d366]">WhatsApp listo</p>
+              <p className="text-lg font-medium text-[#25d366]">WhatsApp de {BRAND.name} listo</p>
               {phoneFmt && <p className="font-mono text-sm">{phoneFmt}</p>}
               <p className="max-w-xs text-sm text-[#8696a0]">
-                Podés probar enviando un mensaje al bot. Mantené el teléfono con internet.
+                Ya podés probar mandando un mensaje al bot. Mantené el teléfono con internet.
               </p>
             </div>
           ) : (
@@ -155,7 +161,7 @@ export function WhatsAppVincular() {
         {waitingQr && (
           <ol className="mt-8 space-y-3 text-sm text-[#8696a0]">
             {[
-              "Abrí WhatsApp en el teléfono del bot (+54 9 11 3585-7821)",
+              `Abrí WhatsApp en el teléfono que va a usar el bot de ${BRAND.name}`,
               "Menú → Dispositivos vinculados → Vincular dispositivo",
               "Si dice «No puede vincular dispositivos», desvinculá otros dispositivos viejos y esperá 1 minuto",
               "Apuntá la cámara al código QR de arriba (debe estar recién generado)",
@@ -180,10 +186,7 @@ export function WhatsAppVincular() {
         </button>
 
         <p className="mt-6 text-center text-xs text-[#667781]">
-          También disponible en{" "}
-          <a href="https://vincular.nivel41.com" className="text-[#25d366] hover:underline">
-            vincular.nivel41.com
-          </a>
+          Página externa de vinculación · {BRAND.name} {BRAND.tagline} · {BRAND.productName}
         </p>
       </div>
     </div>
