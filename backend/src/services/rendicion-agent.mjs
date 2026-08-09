@@ -1,6 +1,7 @@
 import {
   interpretarGastoWhatsApp,
   mensajeConfirmacionGasto,
+  mensajePedirFotoComprobante,
   pareceRendicionGasto,
 } from "../../../lib/rendicion-wa.mjs";
 import * as rendicionStore from "../db/rendicion-store.mjs";
@@ -56,29 +57,21 @@ export async function procesarGastoWhatsApp({
     );
   }
 
+  // Sin foto del comprobante NO se registra el gasto (aunque diga "peaje"/"nafta").
+  // Bug real: "ahora tengo un peaje para rendir" → pendiente de aprobación sin pedir foto.
+  const tieneFoto = !!(imageBuffer?.length || imagenPersistida);
+  if (!tieneFoto) {
+    const msg = mensajePedirFotoComprobante(t);
+    await enviar(phone, msg, { nombre });
+    return { flow: "rendicion_pedir_foto", mensaje: msg, message: msg };
+  }
+
   const interp = await interpretarGastoWhatsApp({
     texto: t,
     imageBuffer,
     mime,
     log,
   });
-
-  // Pedido genérico sin datos ni foto → pedir comprobante (no crear gasto vacío).
-  // Si ya dice nafta/peaje/etc. o la IA clasificó categoría, SÍ registramos (monto puede faltar).
-  const categoriaClara = interp.categoria && interp.categoria !== "otro";
-  const soloPedido =
-    !imageBuffer &&
-    interp.monto == null &&
-    !categoriaClara &&
-    (!t || t.length < 48) &&
-    /\b(rendici[oó]n|gasto|comprobante|ticket|factura)\b/i.test(t || "rendicion");
-  if (soloPedido && !/\d{3,}/.test(t || "")) {
-    const msg =
-      `Dale ✅ Mandame la *foto del ticket/factura* (nafta, peaje, llantas, aceite, remolque, auxilio o arreglo menor).\n\n` +
-      `También podés escribir el monto y qué es. Queda sujeto a *aprobación humana*.`;
-    await enviar(phone, msg, { nombre });
-    return { flow: "rendicion_pedir_foto", mensaje: msg, message: msg };
-  }
 
   const gasto = await rendicionStore.crearGasto({
     telefono: phone,
