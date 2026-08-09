@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Mic, Image as ImageIcon } from "lucide-react";
 import type { ConversacionMensaje } from "@/lib/conversaciones-types";
+import { browsableMediaUrl } from "@/lib/media-url";
 
 function formatTime(iso: string) {
   try {
@@ -20,8 +21,48 @@ function formatTime(iso: string) {
 
 function actorLabel(from?: string) {
   if (from === "human") return "Operador";
-  if (from === "bot") return "Bot";
+  if (from === "bot") return "Agente";
   return "Chofer";
+}
+
+function imageLabel(msg: ConversacionMensaje) {
+  const t = `${msg.texto || ""} ${msg.transcripcion || ""}`.toLowerCase();
+  if (/gasto|comprobante|nafta|peaje|ticket|factura|rendici/.test(t)) return "Comprobante";
+  if (/remito|gu[ií]a/.test(t)) return "Foto remito";
+  return "Foto";
+}
+
+function ChatImage({ msg }: { msg: ConversacionMensaje }) {
+  const src = browsableMediaUrl(msg.imagen_url);
+  const [failed, setFailed] = useState(false);
+  if (!src) return null;
+
+  if (failed) {
+    return (
+      <div className="mb-2 flex items-center gap-2 rounded-lg bg-black/20 p-2 text-xs">
+        <ImageIcon size={16} />
+        {imageLabel(msg)} (no disponible)
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={src}
+      target="_blank"
+      rel="noreferrer"
+      className="mb-2 block overflow-hidden rounded-lg bg-black/20"
+      title={imageLabel(msg)}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={imageLabel(msg)}
+        className="max-h-64 w-full object-contain"
+        onError={() => setFailed(true)}
+      />
+    </a>
+  );
 }
 
 function Bubble({ msg }: { msg: ConversacionMensaje }) {
@@ -41,19 +82,19 @@ function Bubble({ msg }: { msg: ConversacionMensaje }) {
         )}
       >
         <p className="mb-1 text-[10px] font-medium opacity-70">{actorLabel(msg.from)}</p>
-        {msg.tipo === "image" && msg.imagen_url && (
-          <div className="mb-2 flex items-center gap-2 rounded-lg bg-black/20 p-2 text-xs">
-            <ImageIcon size={16} />
-            Foto remito
-          </div>
-        )}
+        {msg.tipo === "image" && msg.imagen_url && <ChatImage msg={msg} />}
         {msg.tipo === "audio" && (
           <div className="mb-2 flex items-center gap-2 rounded-lg bg-black/20 p-2 text-xs">
             <Mic size={16} />
             Nota de voz
           </div>
         )}
-        {msg.texto && <p className="whitespace-pre-wrap leading-snug">{msg.texto}</p>}
+        {msg.texto && msg.tipo !== "image" && (
+          <p className="whitespace-pre-wrap leading-snug">{msg.texto}</p>
+        )}
+        {msg.texto && msg.tipo === "image" && !/^\[?comprobante|^envía imagen$/i.test(msg.texto) && (
+          <p className="whitespace-pre-wrap leading-snug">{msg.texto}</p>
+        )}
         {msg.transcripcion && msg.tipo === "audio" && msg.texto !== msg.transcripcion && (
           <p className="mt-1 text-xs opacity-75">Transcripción: {msg.transcripcion}</p>
         )}

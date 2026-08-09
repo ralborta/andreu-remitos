@@ -7,6 +7,7 @@ import * as rendicionStore from "../db/rendicion-store.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
+import { persistChatMedia } from "./chat-media.mjs";
 
 async function enviar(phone, mensaje, meta = {}) {
   const p = sanitizePhone(phone);
@@ -37,13 +38,19 @@ export async function procesarGastoWhatsApp({
   if (!phone) return null;
   if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
 
-  if (t || imagenUrl) {
+  let imagenPersistida = imagenUrl || null;
+  if (imageBuffer?.length) {
+    const saved = persistChatMedia(imageBuffer, mime || "image/jpeg");
+    if (saved?.publicUrl) imagenPersistida = saved.publicUrl;
+  }
+
+  if (t || imagenPersistida || imageBuffer) {
     await convStore.appendMensaje(
       phone,
       {
         texto: t || "[Comprobante de gasto]",
-        tipo: imageBuffer ? "image" : "text",
-        imagen_url: imagenUrl || null,
+        tipo: imageBuffer || imagenPersistida ? "image" : "text",
+        imagen_url: imagenPersistida,
       },
       { dir: "in", from: "client", nombre, agente: "rendicion" },
     );
@@ -82,7 +89,7 @@ export async function procesarGastoWhatsApp({
     fecha_comprobante: interp.fecha_comprobante,
     descripcion: interp.descripcion,
     nota_chofer: t || null,
-    imagen_url: imagenUrl || null,
+    imagen_url: imagenPersistida || null,
     estado: "pendiente_aprobacion",
   });
 

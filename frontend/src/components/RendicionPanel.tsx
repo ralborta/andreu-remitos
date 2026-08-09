@@ -10,6 +10,7 @@ import {
   type GastoRendicion,
   type ResumenRendicion,
 } from "@/lib/api";
+import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, KpiCard } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
 
@@ -164,6 +165,16 @@ export function RendicionPanel() {
                     <td className="py-3 pr-3 tabular text-white">{g.montoLabel}</td>
                     <td className="max-w-[240px] py-3 pr-3 text-[var(--text-dim)]">
                       <div className="truncate">{g.proveedor || g.descripcion || g.notaChofer || "—"}</div>
+                      {g.imagenUrl && (
+                        <a
+                          href={browsableMediaUrl(g.imagenUrl) || undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
+                        >
+                          Ver foto
+                        </a>
+                      )}
                     </td>
                     <td className="py-3 pr-3">
                       <span
