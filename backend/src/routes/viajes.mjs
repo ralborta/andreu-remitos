@@ -1,4 +1,15 @@
 import * as viajesStore from "../db/viajes-store.mjs";
+import {
+  actualizarCamionViajes,
+  actualizarChoferViajes,
+  crearCamionViajes,
+  crearChoferViajes,
+  DIAS_LABEL,
+  eliminarCamionViajes,
+  eliminarChoferViajes,
+  listCamionesViajes,
+  listChoferesViajes,
+} from "../db/viajes-flota-store.mjs";
 import { VIAJE_ESTADO_LABEL, VIAJE_ESTADOS, VIAJE_TRANSICIONES } from "../../../lib/viajes.mjs";
 import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
 import { cargarFlota } from "../services/viajes-flota.mjs";
@@ -61,11 +72,57 @@ export default async function viajesRoutes(fastify) {
     const flota = cargarFlota();
     return {
       fuente: flota.fuente,
-      choferes: flota.choferes.length,
-      camiones: flota.camiones.length,
-      choferesDisponibles: flota.choferes.filter((c) => c.disponible).length,
-      camionesDisponibles: flota.camiones.filter((c) => c.disponible).length,
+      choferes: flota.choferes,
+      camiones: flota.camiones,
+      resumen: {
+        choferes: flota.choferes.length,
+        camiones: flota.camiones.length,
+        choferesActivos: flota.choferes.filter((c) => c.activo !== false && c.disponible !== false).length,
+        camionesActivos: flota.camiones.filter((c) => c.activo !== false && c.disponible !== false).length,
+      },
+      diasLabel: DIAS_LABEL,
+      nota: "Maestros de Gestión de Viajes (independientes de Parámetros/Remitos)",
     };
+  });
+
+  fastify.get("/flota/choferes", async () => listChoferesViajes());
+  fastify.post("/flota/choferes", async (request, reply) => {
+    try {
+      const row = crearChoferViajes(request.body ?? {});
+      return reply.code(201).send(row);
+    } catch (err) {
+      return reply.code(err.statusCode || 500).send({ error: err.message });
+    }
+  });
+  fastify.patch("/flota/choferes/:id", async (request, reply) => {
+    const row = actualizarChoferViajes(request.params.id, request.body ?? {});
+    if (!row) return reply.code(404).send({ error: "Chofer no encontrado" });
+    return row;
+  });
+  fastify.delete("/flota/choferes/:id", async (request, reply) => {
+    const ok = eliminarChoferViajes(request.params.id);
+    if (!ok) return reply.code(404).send({ error: "Chofer no encontrado" });
+    return { ok: true };
+  });
+
+  fastify.get("/flota/camiones", async () => listCamionesViajes());
+  fastify.post("/flota/camiones", async (request, reply) => {
+    try {
+      const row = crearCamionViajes(request.body ?? {});
+      return reply.code(201).send(row);
+    } catch (err) {
+      return reply.code(err.statusCode || 500).send({ error: err.message });
+    }
+  });
+  fastify.patch("/flota/camiones/:id", async (request, reply) => {
+    const row = actualizarCamionViajes(request.params.id, request.body ?? {});
+    if (!row) return reply.code(404).send({ error: "Camión no encontrado" });
+    return row;
+  });
+  fastify.delete("/flota/camiones/:id", async (request, reply) => {
+    const ok = eliminarCamionViajes(request.params.id);
+    if (!ok) return reply.code(404).send({ error: "Camión no encontrado" });
+    return { ok: true };
   });
 
   /** Ingesta automática — email (Gmail webhook / manual demo). */

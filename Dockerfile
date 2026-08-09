@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 viajes-hora-registro
+# cache-bust 2026-08-09 viajes-flota-maestros
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/

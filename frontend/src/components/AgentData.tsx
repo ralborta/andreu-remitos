@@ -1,5 +1,6 @@
 import { DestinosPanel } from "./DestinosPanel";
 import { ViajesTable } from "./ViajesTable";
+import { ViajesFlotaPanel } from "./ViajesFlotaPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
@@ -66,7 +67,12 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "viajes") {
-    return <ViajesTable />;
+    return (
+      <div className="space-y-4">
+        <ViajesFlotaPanel />
+        <ViajesTable />
+      </div>
+    );
   }
 
   if (slug === "destinos") {

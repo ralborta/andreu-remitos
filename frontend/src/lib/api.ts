@@ -503,3 +503,72 @@ export function cambiarEstadoViaje(id: string, estado: ViajeEstado) {
 export function deleteViaje(id: string) {
   return api<{ ok: boolean }>(`/api/viajes/${id}`, { method: "DELETE" });
 }
+
+/** Maestros de flota de Gestión de Viajes (NO son Parámetros/Remitos). */
+export interface ViajesChoferFlota {
+  id: string;
+  nombre: string;
+  telefono: string;
+  licencia?: string;
+  activo: boolean;
+  dias_semana: number[];
+  horarios: string[];
+  excepciones?: Record<string, string[]>;
+}
+
+export interface ViajesCamionFlota {
+  id: string;
+  tractor: string;
+  semi: string | null;
+  tipo: string;
+  tipos_carga: string[];
+  capacidad_t: number;
+  activo: boolean;
+  dias_semana: number[];
+  horarios: string[];
+  excepciones?: Record<string, string[]>;
+}
+
+export function listViajesFlotaChoferes() {
+  return api<ViajesChoferFlota[]>("/api/viajes/flota/choferes");
+}
+
+export function createViajesFlotaChofer(body: Partial<ViajesChoferFlota>) {
+  return api<ViajesChoferFlota>("/api/viajes/flota/choferes", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateViajesFlotaChofer(id: string, body: Partial<ViajesChoferFlota>) {
+  return api<ViajesChoferFlota>(`/api/viajes/flota/choferes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteViajesFlotaChofer(id: string) {
+  return api<{ ok: boolean }>(`/api/viajes/flota/choferes/${id}`, { method: "DELETE" });
+}
+
+export function listViajesFlotaCamiones() {
+  return api<ViajesCamionFlota[]>("/api/viajes/flota/camiones");
+}
+
+export function createViajesFlotaCamion(body: Partial<ViajesCamionFlota>) {
+  return api<ViajesCamionFlota>("/api/viajes/flota/camiones", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateViajesFlotaCamion(id: string, body: Partial<ViajesCamionFlota>) {
+  return api<ViajesCamionFlota>(`/api/viajes/flota/camiones/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteViajesFlotaCamion(id: string) {
+  return api<{ ok: boolean }>(`/api/viajes/flota/camiones/${id}`, { method: "DELETE" });
+}

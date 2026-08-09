@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import XLSX from "xlsx";
 import { DEMO_FLOTA } from "../seed/demo-flota.mjs";
+import { flotaParaMatch } from "../db/viajes-flota-store.mjs";
 
 const backendRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const repoRoot = path.join(backendRoot, "..");
@@ -104,6 +105,12 @@ function offsetDesdeHoy(fechaIso, hoy = new Date()) {
 }
 
 function horariosDeItem(item, fechaIso) {
+  // Maestros Viajes: excepción por fecha exacta
+  if (item.excepciones && Object.prototype.hasOwnProperty.call(item.excepciones, fechaIso)) {
+    const h = item.excepciones[fechaIso];
+    return Array.isArray(h) ? h : [];
+  }
+  // Legacy seed offsets
   const off = String(offsetDesdeHoy(fechaIso));
   if (item.horarios_offset && Array.isArray(item.horarios_offset[off])) {
     return item.horarios_offset[off];
@@ -118,9 +125,23 @@ function horaDisponible(item, fechaIso, hora) {
 }
 
 function disponibleEnFecha(item, fechaIso) {
-  if (item.disponible === false) return false;
+  if (item.activo === false || item.disponible === false) return false;
+
+  // Maestros Viajes: excepción con lista vacía = no disponible ese día
+  if (item.excepciones && Object.prototype.hasOwnProperty.call(item.excepciones, fechaIso)) {
+    const h = item.excepciones[fechaIso];
+    return Array.isArray(h) && h.length > 0;
+  }
+
+  // Maestros Viajes: días de la semana (0=Dom … 6=Sáb)
+  if (Array.isArray(item.dias_semana) && item.dias_semana.length) {
+    const wd = parseIsoLocal(fechaIso).getDay();
+    return item.dias_semana.map(Number).includes(wd);
+  }
+
+  // Legacy: lista ISO
   const lista = item.disponibilidad;
-  if (!Array.isArray(lista) || lista.length === 0) return Boolean(item.disponible ?? true);
+  if (!Array.isArray(lista) || lista.length === 0) return Boolean(item.disponible ?? item.activo ?? true);
   return lista.includes(fechaIso);
 }
 
@@ -235,7 +256,20 @@ function readXlsxFlota(filePath) {
 
 /** @returns {{ choferes: object[], camiones: object[], fuente: string }} */
 export function cargarFlota() {
-  // Preferir JSON de prueba (tipos + fechas).
+  // 1) Maestros propios de Gestión de Viajes (NO Remitos/Parámetros)
+  try {
+    const maestros = flotaParaMatch();
+    if (maestros.camiones.length || maestros.choferes.length) {
+      return {
+        choferes: maestros.choferes,
+        camiones: maestros.camiones,
+        fuente: maestros.fuente,
+      };
+    }
+  } catch {
+    /* seguir con fallbacks */
+  }
+
   const json = readJsonFlota();
   if (json.camiones.length || json.choferes.length) {
     return { choferes: json.choferes, camiones: json.camiones, fuente: json._file };
@@ -248,7 +282,7 @@ export function cargarFlota() {
   if (fs.existsSync(localXlsx)) {
     return { ...readXlsxFlota(localXlsx), fuente: localXlsx };
   }
-  return { choferes: [], camiones: [], fuente: json._file };
+  return { choferes: [], camiones: [], fuente: "vacio" };
 }
 
 /**
