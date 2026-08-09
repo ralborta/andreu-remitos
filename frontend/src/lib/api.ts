@@ -785,6 +785,7 @@ export function consultarChoferIncidencia(body: {
   viaje_ref?: string;
   lat?: number;
   lng?: number;
+  direccion?: string;
   nota?: string;
   nombre?: string;
 }) {

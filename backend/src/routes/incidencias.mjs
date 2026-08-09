@@ -92,8 +92,16 @@ export default async function incidenciasRoutes(fastify) {
   /** Simula detección / consulta proactiva al chofer. */
   fastify.post("/consultar-chofer", async (request, reply) => {
     try {
+      const body = request.body ?? {};
       const out = await consultarChoferIncidencia({
-        ...(request.body ?? {}),
+        telefono: body.telefono,
+        tipo: body.tipo,
+        viaje_ref: body.viaje_ref,
+        lat: body.lat,
+        lng: body.lng,
+        direccion: body.direccion || body.formattedAddress || null,
+        nota: body.nota,
+        nombre: body.nombre,
         log: request.log,
       });
       return {

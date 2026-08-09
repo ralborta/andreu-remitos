@@ -1,14 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
-import clsx from "clsx";
-import { Check, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import clsx from "clsx";
+import {
+  Check,
+  ExternalLink,
+  Loader2,
+  MapPin,
+  MessageCircle,
+  RefreshCw,
+  TriangleAlert,
+} from "lucide-react";
+import {
+  autocompleteDestino,
   consultarChoferIncidencia,
   decidirIncidencia,
+  geocodeDestino,
   listChoferes,
+  listDestinos,
   listIncidencias,
   resumenIncidencias,
+  type AutocompleteSuggestion,
+  type DestinoValidacion,
+  type GeocodeResult,
   type IncidenciaCaso,
   type ResumenIncidencias,
 } from "@/lib/api";
@@ -19,6 +40,17 @@ import { useConfirm } from "@/lib/confirm-context";
 import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "abiertas" | "nueva" | "en_gestion" | "esperando_causa" | "resuelta" | "todos";
+
+type ChoferOpt = { tel: string; label: string; fuente: "destinos" | "parametros" };
+
+/** Puntos de demo (GBA / CABA) para simular “GPS detectó parada”. */
+const DEMO_PINS: { id: string; label: string; query: string }[] = [
+  { id: "pana", label: "Panamericana km 35", query: "Autopista Panamericana km 35, Buenos Aires" },
+  { id: "ezeiza", label: "Acceso Ezeiza", query: "Autopista Riccheri, Ezeiza, Buenos Aires" },
+  { id: "puerto", label: "Puerto Madero", query: "Puerto Madero, CABA" },
+  { id: "pacheco", label: "Pacheco", query: "General Pacheco, Buenos Aires" },
+  { id: "lujan", label: "Acceso Luján", query: "Acceso Oeste Luján, Buenos Aires" },
+];
 
 const BTN_TOMAR: CSSProperties = { background: "#0284c7", color: "#fff" };
 const BTN_OK: CSSProperties = { background: "#16a34a", color: "#fff" };
@@ -43,11 +75,20 @@ function codigo(g: IncidenciaCaso) {
   return g.codigo || g.id;
 }
 
+function mapsEmbedUrl(lat: number, lng: number) {
+  return `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+}
+
+function mapsOpenUrl(lat: number, lng: number) {
+  return `https://www.google.com/maps?q=${lat},${lng}`;
+}
+
 export function IncidenciasPanel() {
   const confirm = useConfirm();
   const [rows, setRows] = useState<IncidenciaCaso[]>([]);
   const [resumen, setResumen] = useState<ResumenIncidencias | null>(null);
   const [choferes, setChoferes] = useState<Chofer[]>([]);
+  const [destinos, setDestinos] = useState<DestinoValidacion[]>([]);
   const [filtro, setFiltro] = useState<Filtro>("abiertas");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -56,6 +97,44 @@ export function IncidenciasPanel() {
   const [consultaTel, setConsultaTel] = useState("");
   const [consultaTipo, setConsultaTipo] = useState("parada_no_prevista");
   const [consultando, setConsultando] = useState(false);
+  const [ubicQuery, setUbicQuery] = useState("");
+  const [placeId, setPlaceId] = useState<string | undefined>();
+  const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [ubic, setUbic] = useState<GeocodeResult | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [pinActivo, setPinActivo] = useState<string | null>(null);
+  const inputWrapRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const choferOpts = useMemo(() => {
+    const map = new Map<string, ChoferOpt>();
+    for (const d of destinos) {
+      const tel = d.telefonoChofer?.replace(/\D/g, "") || "";
+      if (tel.length < 8) continue;
+      const ch = choferes.find((c) => c.telefono?.replace(/\D/g, "") === tel);
+      if (!map.has(tel)) {
+        map.set(tel, {
+          tel,
+          label: `${ch?.nombre || "Chofer Destinos"} · ${tel} (Destinos)`,
+          fuente: "destinos",
+        });
+      }
+    }
+    for (const c of choferes) {
+      const tel = c.telefono?.replace(/\D/g, "") || "";
+      if (tel.length < 8 || map.has(tel)) continue;
+      map.set(tel, {
+        tel,
+        label: `${c.nombre} · ${tel}`,
+        fuente: "parametros",
+      });
+    }
+    return [...map.values()].sort((a, b) => {
+      if (a.fuente !== b.fuente) return a.fuente === "destinos" ? -1 : 1;
+      return a.label.localeCompare(b.label);
+    });
+  }, [choferes, destinos]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -63,10 +142,11 @@ export function IncidenciasPanel() {
     try {
       const estadoApi =
         filtro === "abiertas" || filtro === "todos" ? undefined : filtro;
-      const [list, sum, ch] = await Promise.all([
+      const [list, sum, ch, dest] = await Promise.all([
         listIncidencias({ limit: 100, estado: estadoApi }),
         resumenIncidencias(),
         listChoferes().catch(() => [] as Chofer[]),
+        listDestinos({ limit: 40 }).catch(() => [] as DestinoValidacion[]),
       ]);
       const filtered =
         filtro === "abiertas"
@@ -77,6 +157,7 @@ export function IncidenciasPanel() {
       setRows(filtered);
       setResumen(sum);
       setChoferes(ch);
+      setDestinos(dest);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pude cargar incidencias");
     } finally {
@@ -89,9 +170,39 @@ export function IncidenciasPanel() {
   }, [load]);
 
   useEffect(() => {
-    if (consultaTel || !choferes[0]?.telefono) return;
-    setConsultaTel(choferes[0].telefono.replace(/\D/g, ""));
-  }, [choferes, consultaTel]);
+    if (consultaTel || choferOpts.length === 0) return;
+    setConsultaTel(choferOpts[0].tel);
+  }, [choferOpts, consultaTel]);
+
+  useEffect(() => {
+    if (ubicQuery.trim().length < 3 || placeId) {
+      setSuggestions([]);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const items = await autocompleteDestino(ubicQuery);
+        setSuggestions(items);
+        setSuggestionsOpen(items.length > 0);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [ubicQuery, placeId]);
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (inputWrapRef.current && !inputWrapRef.current.contains(e.target as Node)) {
+        setSuggestionsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
 
   const kpis = useMemo(
     () => [
@@ -106,6 +217,27 @@ export function IncidenciasPanel() {
     ],
     [resumen],
   );
+
+  async function resolverUbicacion(query: string, opts?: { placeId?: string; pinId?: string }) {
+    setGeoLoading(true);
+    setError(null);
+    try {
+      const geo = await geocodeDestino({
+        query,
+        mode: "direccion",
+        placeId: opts?.placeId,
+      });
+      setUbic(geo);
+      setUbicQuery(geo.formattedAddress);
+      setPlaceId(geo.placeId || opts?.placeId);
+      setPinActivo(opts?.pinId ?? null);
+      setSuggestionsOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pude ubicar en Google Maps");
+    } finally {
+      setGeoLoading(false);
+    }
+  }
 
   async function decidir(g: IncidenciaCaso, estado: "en_gestion" | "resuelta") {
     const labels = { en_gestion: "Tomar en gestión", resuelta: "Marcar resuelta" };
@@ -129,15 +261,20 @@ export function IncidenciasPanel() {
   async function consultarChofer() {
     const tel = consultaTel.replace(/\D/g, "");
     if (tel.length < 8) {
-      setError("Elegí un chofer o ingresá un teléfono válido");
+      setError("Elegí un chofer (ideal: uno usado en Destinos)");
       return;
     }
-    const ch = choferes.find((c) => c.telefono?.replace(/\D/g, "") === tel);
+    if (!ubic) {
+      setError("Elegí una ubicación en el mapa (buscá o usá un pin de demo)");
+      return;
+    }
+    const opt = choferOpts.find((c) => c.tel === tel);
     const ok = await confirm({
-      title: "Consultar chofer",
+      title: "¿Por qué estás parado?",
       message:
-        `Se va a escribir por WhatsApp a ${ch?.nombre || tel} preguntando la causa del evento.\n` +
-        `Queda una incidencia en “Esperando causa”.`,
+        `Se simula detección GPS en:\n${ubic.formattedAddress}\n\n` +
+        `WhatsApp a ${opt?.label || tel}\n` +
+        `El agente pregunta la causa de la parada.`,
       confirmLabel: "Enviar WhatsApp",
     });
     if (!ok) return;
@@ -147,8 +284,11 @@ export function IncidenciasPanel() {
       await consultarChoferIncidencia({
         telefono: tel,
         tipo: consultaTipo,
-        nombre: ch?.nombre,
-        nota: "Consulta proactiva desde panel Incidencias",
+        nombre: opt?.label.split(" · ")[0],
+        lat: ubic.lat,
+        lng: ubic.lng,
+        direccion: ubic.formattedAddress,
+        nota: `Parada detectada (demo Maps) · ${ubic.formattedAddress}`,
       });
       setFiltro("esperando_causa");
       await load();
@@ -172,52 +312,170 @@ export function IncidenciasPanel() {
           <div>
             <h3 className="flex items-center gap-2 font-semibold text-white">
               <TriangleAlert size={16} className="text-amber-300" />
-              Flujo principal: preguntar por qué está parado
+              Flujo principal: parada en mapa → preguntar al chofer
             </h3>
             <p className="mt-0.5 text-xs text-[var(--text-faint)]">
-              El agente inicia la incidencia: escribe al chofer por WhatsApp y pregunta la causa de la
-              parada
+              Elegí un punto (Google Maps), un chofer de Destinos y el agente le pregunta por WhatsApp
+              por qué está parado
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="flex min-w-[180px] flex-1 flex-col gap-1 text-xs text-[var(--text-dim)]">
-            Chofer
-            <select
-              value={consultaTel}
-              onChange={(e) => setConsultaTel(e.target.value)}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none"
+
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+          <div className="space-y-3">
+            <div ref={inputWrapRef} className="relative">
+              <label className="mb-1 block text-xs text-[var(--text-dim)]">
+                Ubicación de la parada (Google Maps)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  value={ubicQuery}
+                  onChange={(e) => {
+                    setUbicQuery(e.target.value);
+                    setPlaceId(undefined);
+                    setPinActivo(null);
+                  }}
+                  onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
+                  placeholder="Ej: Panamericana km 35, Pacheco…"
+                  className="min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                />
+                <button
+                  type="button"
+                  disabled={geoLoading || ubicQuery.trim().length < 3}
+                  onClick={() => void resolverUbicacion(ubicQuery, { placeId })}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white hover:bg-white/15 disabled:opacity-50"
+                >
+                  {geoLoading ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
+                  Ubicar
+                </button>
+              </div>
+              {suggestionsOpen && suggestions.length > 0 && (
+                <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--panel-2)] py-1 shadow-xl">
+                  {suggestions.map((s) => (
+                    <li key={s.placeId}>
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2 text-left text-sm text-white hover:bg-white/5"
+                        onClick={() =>
+                          void resolverUbicacion(s.description, { placeId: s.placeId })
+                        }
+                      >
+                        <span className="font-medium">{s.mainText}</span>
+                        {s.secondaryText && (
+                          <span className="mt-0.5 block text-xs text-[var(--text-faint)]">
+                            {s.secondaryText}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-[11px] text-[var(--text-faint)]">
+                Pins de demo (simulá detección GPS)
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {DEMO_PINS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => void resolverUbicacion(p.query, { pinId: p.id })}
+                    className={clsx(
+                      "rounded-full px-2.5 py-1 text-[11px] font-medium",
+                      pinActivo === p.id
+                        ? "bg-[var(--violet)] text-white"
+                        : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+                Chofer (prioridad Destinos)
+                <select
+                  value={consultaTel}
+                  onChange={(e) => setConsultaTel(e.target.value)}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none"
+                >
+                  <option value="">Seleccionar…</option>
+                  {choferOpts.map((c) => (
+                    <option key={c.tel} value={c.tel}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+                Tipo sugerido
+                <select
+                  value={consultaTipo}
+                  onChange={(e) => setConsultaTipo(e.target.value)}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none"
+                >
+                  <option value="parada_no_prevista">Parada no prevista</option>
+                  <option value="desvio_ruta">Desvío de ruta</option>
+                  <option value="demora">Demora</option>
+                  <option value="anomalia">Anomalía</option>
+                </select>
+              </label>
+            </div>
+
+            <button
+              type="button"
+              disabled={consultando || !ubic || !consultaTel}
+              onClick={() => void consultarChofer()}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--violet)]/90 disabled:opacity-50"
             >
-              <option value="">Seleccionar…</option>
-              {choferes.map((c) => (
-                <option key={c.id} value={c.telefono?.replace(/\D/g, "") || ""}>
-                  {c.nombre} · {c.telefono}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex min-w-[160px] flex-col gap-1 text-xs text-[var(--text-dim)]">
-            Tipo sugerido
-            <select
-              value={consultaTipo}
-              onChange={(e) => setConsultaTipo(e.target.value)}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none"
-            >
-              <option value="parada_no_prevista">Parada no prevista</option>
-              <option value="desvio_ruta">Desvío de ruta</option>
-              <option value="demora">Demora</option>
-              <option value="anomalia">Anomalía</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            disabled={consultando}
-            onClick={() => void consultarChofer()}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--violet)]/90 disabled:opacity-50"
-          >
-            <MessageCircle size={16} />
-            {consultando ? "Enviando…" : "¿Por qué estás parado?"}
-          </button>
+              <MessageCircle size={16} />
+              {consultando ? "Enviando WhatsApp…" : "¿Por qué estás parado?"}
+            </button>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-black/30">
+            {ubic ? (
+              <>
+                <iframe
+                  title="Mapa parada"
+                  src={mapsEmbedUrl(ubic.lat, ubic.lng)}
+                  className="h-56 w-full border-0 lg:h-64"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                <div className="flex items-start justify-between gap-2 border-t border-[var(--border)] px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium text-white">{ubic.formattedAddress}</p>
+                    <p className="text-[10px] text-[var(--text-faint)]">
+                      {ubic.lat.toFixed(5)}, {ubic.lng.toFixed(5)}
+                    </p>
+                  </div>
+                  <a
+                    href={mapsOpenUrl(ubic.lat, ubic.lng)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1 text-[11px] text-[var(--violet-2)] hover:underline"
+                  >
+                    Abrir
+                    <ExternalLink size={11} />
+                  </a>
+                </div>
+              </>
+            ) : (
+              <div className="flex h-56 flex-col items-center justify-center gap-2 px-4 text-center lg:h-64">
+                <MapPin size={28} className="text-[var(--text-faint)]" />
+                <p className="text-sm text-[var(--text-dim)]">Sin ubicación todavía</p>
+                <p className="text-xs text-[var(--text-faint)]">
+                  Buscá una dirección o tocá un pin de demo
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </Card>
 

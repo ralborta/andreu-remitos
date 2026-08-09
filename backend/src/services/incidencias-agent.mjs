@@ -43,6 +43,7 @@ export async function consultarChoferIncidencia({
   viaje_ref,
   lat,
   lng,
+  direccion,
   nota,
   nombre,
   log,
@@ -57,23 +58,35 @@ export async function consultarChoferIncidencia({
     });
   }
 
+  const latN = lat != null && Number.isFinite(Number(lat)) ? Number(lat) : null;
+  const lngN = lng != null && Number.isFinite(Number(lng)) ? Number(lng) : null;
+  const dir = direccion ? String(direccion).trim() : null;
+
+  const hist = [];
+  if (dir) hist.push(`Ubicación: ${dir}`);
+  if (latN != null && lngN != null) hist.push(`Coords: ${latN}, ${lngN}`);
+  if (nota) hist.push(`Nota operativa: ${nota}`);
+
   const row = await incidenciasStore.crearIncidencia({
     telefono: phone,
     chofer_nombre: nombre || chofer.nombre || null,
-    tipo: tipo || null,
+    tipo: tipo || "parada_no_prevista",
     estado: "esperando_causa",
     origen: "agente",
     viaje_ref: viaje_ref || null,
-    lat: lat ?? null,
-    lng: lng ?? null,
-    resumen: nota || null,
-    historial: nota ? [`Nota operativa: ${nota}`] : [],
+    lat: latN,
+    lng: lngN,
+    resumen: dir || nota || "Parada detectada — consulta al chofer",
+    historial: hist,
   });
 
   const msg = mensajePedirCausaIncidencia({
-    tipoHint: tipo || null,
+    tipoHint: tipo || "parada_no_prevista",
     viajeRef: viaje_ref,
     proactivo: true,
+    direccion: dir,
+    lat: latN,
+    lng: lngN,
   });
   await enviar(phone, msg, { nombre: row.chofer_nombre, incidencia_id: row.id });
 
@@ -83,10 +96,10 @@ export async function consultarChoferIncidencia({
       texto: msg,
       at: new Date().toISOString(),
     },
-    historial_push: `${new Date().toISOString()} · Consulta WA al chofer`,
+    historial_push: `${new Date().toISOString()} · Consulta WA al chofer (parada)`,
   });
 
-  log?.info?.({ id: row.id, phone }, "Incidencia: consulta proactiva al chofer");
+  log?.info?.({ id: row.id, phone, lat: latN, lng: lngN }, "Incidencia: consulta proactiva al chofer");
   return { incidencia: row, mensaje: msg };
 }
 
