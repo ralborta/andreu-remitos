@@ -209,6 +209,20 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
   const pausado = conv?.bot_pausado;
   const remitoCtx = remitoCtxIn ?? (await resolverRemitoCorreccion(phone, conv, tenantCfg));
   const tenantEfectivo = remitoCtx?.tenant ?? tenantCfg ?? conv?.tenant;
+  const choferRemitos = phone ? await master.resolverChoferPorTelefono(phone) : null;
+
+  // El flujo/saludo de remitos SOLO es para choferes registrados en Parámetros/Remitos
+  if (!choferRemitos && !flujoRemitoAbierto(conv)) {
+    const msg =
+      `Hola 👋 ¿En qué te puedo ayudar?\n\n` +
+      `• *Viaje / flete* — pedir transporte\n` +
+      `• *Reclamo* — demora, faltante, daño…\n\n` +
+      `Contame qué necesitás.`;
+    if (phone && !pausado) {
+      await notificarChofer(phone, msg, { tenant: null, log });
+    }
+    return respuestaWebhook({ message: msg, flow: "no_chofer_remitos" });
+  }
 
   // Corina: elegir Cervecería vs Eco antes de la foto / sin remito abierto
   if (tenantEfectivo === "corina" && phone && !flujoRemitoAbierto(conv)) {
@@ -220,8 +234,7 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
       return respuestaWebhook({ message: msg, flow: "corina_cliente_ok", cliente_marca: marcaParseada });
     }
     if (!conv?.corina_cliente_marca) {
-      const chofer = await master.resolverChoferPorTelefono(phone);
-      const msg = mensajeSaludo("corina", chofer?.nombre);
+      const msg = mensajeSaludo("corina", choferRemitos?.nombre);
       if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
       return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
     }
@@ -286,12 +299,11 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
       : flujoRemitoAbierto(conv) && remitoCtx
         ? mensajeEsperandoCorreccion(remitoCtx)
         : await (async () => {
-              const chofer = phone ? await master.resolverChoferPorTelefono(phone) : null;
               const t = remitoCtx?.tenant ?? tenantCfg ?? conv?.tenant;
               if (t === "corina" && conv?.corina_cliente_marca && !flujoRemitoAbierto(conv)) {
                 return mensajeCorinaListoParaFoto(conv.corina_cliente_marca);
               }
-              return mensajeSaludo(t, chofer?.nombre);
+              return mensajeSaludo(t, choferRemitos?.nombre);
             })();
 
   if (phone && !pausado) {
@@ -306,7 +318,8 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
 
 async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) {
   if (!ev.from || !texto?.trim()) return null;
-  if (flujoRemitoAbierto(conv)) return null;
+  // Remito abierto solo bloquea viajes ambiguos; si el router ya dijo "viaje", no bloquear.
+  if (!forzar && flujoRemitoAbierto(conv)) return null;
 
   const pendingViaje = await solViajesStore.getSolicitudPendientePorTelefono(ev.from);
   const parece = forzar || pareceSolicitudViaje(texto);
@@ -403,7 +416,14 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   );
 
   if (intent.intent === "viaje") {
-    return tryProcesarViajes(ev, { texto, log, conv, forzar: true });
+    const out = await tryProcesarViajes(ev, { texto, log, conv, forzar: true });
+    if (out) return out;
+    // No caer a remitos si ya sabemos que es viaje
+    const msg =
+      `Perfecto, vamos con tu *viaje*.\n\n` +
+      `Pasame origen, destino, toneladas, tipo de carga y fecha/hora de retiro.`;
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "viajes_fallback", message: msg };
   }
 
   if (intent.intent === "reclamo") {
