@@ -2,16 +2,12 @@ import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import {
   camposFaltantes,
   esConfirmacionChofer,
-  esConfirmacionCliente,
   esRechazoChofer,
-  esRechazoCliente,
-  interpretarMensajeViaje,
   mensajeConsultandoDisponibilidad,
-  mensajePedirDatos,
-  mensajePropuestaReserva,
-  mensajeViajeAsignadoChofer,
-  mensajeViajeAsignadoCliente,
-  parseSeleccionOpcion,
+  redactarMensajeChofer,
+  redactarPropuestaDisponibilidad,
+  redactarReservaConfirmada,
+  turnoAgenteViajes,
 } from "../../../lib/viajes-agente.mjs";
 import {
   asignarDesdeFlota,
@@ -49,8 +45,7 @@ async function viajesActivosParaAsignacion() {
 }
 
 /**
- * Entrada conversacional WhatsApp:
- * datos → consulta disponibilidad → opciones → confirmación cliente → reserva → chofer.
+ * Agente IA WhatsApp: diálogo humano + hechos de flota + confirmación → reserva.
  */
 export async function procesarMensajeViajeWhatsApp({
   telefono,
@@ -69,7 +64,6 @@ export async function procesarMensajeViajeWhatsApp({
 
   let pending = await solStore.getSolicitudPendientePorTelefono(phone);
   const parece = pareceSolicitudViaje(t);
-
   if (!pending && !parece) return null;
 
   await convStore.appendMensaje(
@@ -78,10 +72,6 @@ export async function procesarMensajeViajeWhatsApp({
     { dir: "in", from: "client", nombre, agente: "viajes" },
   );
 
-  if (pending?.estado === "esperando_confirmacion_cliente") {
-    return procesarConfirmacionCliente(pending, { texto: t, nombre, log });
-  }
-
   if (!pending) {
     pending = await solStore.crearSolicitud({
       telefono: phone,
@@ -89,40 +79,106 @@ export async function procesarMensajeViajeWhatsApp({
     });
   }
 
-  const interpreted = await interpretarMensajeViaje(t, {
-    pendingDatos: pending.datos,
+  const fase =
+    pending.estado === "esperando_confirmacion_cliente" ? "propuesta" : "recolectando";
+
+  const turno = await turnoAgenteViajes({
+    texto: t,
+    fase,
+    datos: pending.datos,
+    propuesta: pending.propuesta,
     remitente: nombre || pending.nombre || "Cliente WhatsApp",
     log,
   });
 
   pending = await solStore.actualizarSolicitud(pending.id, {
-    datos: interpreted.datos,
+    datos: turno.datos,
     nombre: nombre || pending.nombre,
-    historial_push: `${new Date().toISOString()} · Datos (${interpreted.fuente}): ${t.slice(0, 120)}`,
+    historial_push: `${new Date().toISOString()} · Agente(${turno.fuente}/${turno.intent}): ${t.slice(0, 100)}`,
   });
 
-  const faltan = camposFaltantes(pending.datos);
-  if (faltan.length) {
-    const primera = (pending.historial?.length ?? 0) <= 2;
-    const mensaje = mensajePedirDatos(faltan, { datos: pending.datos, primera });
-    await enviar(phone, mensaje, { nombre });
+  // Confirmación / selección sobre propuesta activa
+  if (fase === "propuesta") {
+    const opciones = pending.propuesta?.opciones ?? [];
+    if (turno.accion === "reservar") {
+      let elegida = pending.propuesta?.elegida || opciones[0];
+      if (turno.seleccion != null && opciones[turno.seleccion - 1]) {
+        elegida = opciones[turno.seleccion - 1];
+      } else if (turno.seleccion != null && opciones[turno.seleccion]) {
+        // por si vino 0-based
+        elegida = opciones[turno.seleccion];
+      }
+      if (elegida) {
+        return finalizarAsignacion(pending, {
+          telefonoCliente: phone,
+          slot: elegida,
+          nombre,
+          log,
+        });
+      }
+    }
+
+    if (turno.accion === "rechazar") {
+      await enviar(phone, turno.mensaje, { nombre });
+      await solStore.actualizarSolicitud(pending.id, {
+        estado: "recolectando",
+        propuesta: null,
+        historial_push: `${new Date().toISOString()} · Cliente rechazó propuesta`,
+      });
+      return { flow: "viajes_propuesta_rechazada", mensaje: turno.mensaje };
+    }
+
+    // ¿Pidió otra fecha/hora? → reconsultar si ya tenemos datos completos
+    const faltan = camposFaltantes(pending.datos);
+    if (!faltan.length && (turno.accion === "consultar" || turno.intent === "dato")) {
+      return consultarYProponer(pending, {
+        telefonoCliente: phone,
+        nombre,
+        log,
+        introIa: turno.mensaje,
+      });
+    }
+
+    await enviar(phone, turno.mensaje, { nombre });
+    return { flow: "viajes_propuesta_seguimiento", mensaje: turno.mensaje };
+  }
+
+  // Recolectando
+  if (turno.faltan.length || turno.accion === "pedir_datos" || turno.accion === "chitchat") {
+    await enviar(phone, turno.mensaje, { nombre });
     await solStore.actualizarSolicitud(pending.id, {
-      historial_push: `${new Date().toISOString()} · Pedí datos: ${faltan.join(", ")}`,
+      historial_push: `${new Date().toISOString()} · Pedí datos (IA)`,
     });
     return {
       flow: "viajes_recolectando",
       solicitud: pending,
-      faltan,
-      mensaje,
+      faltan: turno.faltan,
+      mensaje: turno.mensaje,
     };
   }
 
-  return consultarYProponer(pending, { telefonoCliente: phone, nombre, log });
+  // Datos listos → consultar disponibilidad (hechos) y redactar con IA
+  return consultarYProponer(pending, {
+    telefonoCliente: phone,
+    nombre,
+    log,
+    introIa: turno.mensaje,
+  });
 }
 
-async function consultarYProponer(pending, { telefonoCliente, nombre, log } = {}) {
+async function consultarYProponer(
+  pending,
+  { telefonoCliente, nombre, log, introIa } = {},
+) {
   const datos = pending.datos;
-  await enviar(telefonoCliente, mensajeConsultandoDisponibilidad(datos), { nombre });
+  const intro = introIa?.trim() || mensajeConsultandoDisponibilidad(datos);
+  // Si la IA ya dijo que consulta, usamos ese texto; si no, un aviso corto.
+  if (!/consult/i.test(intro) && introIa) {
+    await enviar(telefonoCliente, intro, { nombre });
+    await enviar(telefonoCliente, mensajeConsultandoDisponibilidad(datos), { nombre });
+  } else {
+    await enviar(telefonoCliente, intro, { nombre });
+  }
 
   const activos = await viajesActivosParaAsignacion();
   const consulta = consultarDisponibilidad({
@@ -133,7 +189,12 @@ async function consultarYProponer(pending, { telefonoCliente, nombre, log } = {}
     viajesActivos: activos,
   });
 
-  const mensaje = mensajePropuestaReserva(consulta, datos);
+  const mensaje = await redactarPropuestaDisponibilidad({
+    datos,
+    consulta,
+    remitente: nombre || pending.nombre,
+    log,
+  });
   await enviar(telefonoCliente, mensaje, { nombre });
 
   if (!consulta.ok || !consulta.propuesta) {
@@ -156,7 +217,7 @@ async function consultarYProponer(pending, { telefonoCliente, nombre, log } = {}
       elegida: consulta.propuesta,
       opciones,
     },
-    historial_push: `${new Date().toISOString()} · Propuesta ${consulta.propuesta.fecha} ${consulta.propuesta.hora}`,
+    historial_push: `${new Date().toISOString()} · Propuesta IA ${consulta.propuesta.fecha} ${consulta.propuesta.hora}`,
   });
 
   log?.info?.(
@@ -166,86 +227,13 @@ async function consultarYProponer(pending, { telefonoCliente, nombre, log } = {}
       hora: consulta.propuesta.hora,
       opciones: opciones.length,
     },
-    "Viajes: disponibilidad ofrecida",
+    "Viajes: disponibilidad ofrecida (agente IA)",
   );
 
-  return {
-    flow: "viajes_propuesta",
-    solicitud: pending,
-    consulta,
-    mensaje,
-  };
+  return { flow: "viajes_propuesta", solicitud: pending, consulta, mensaje };
 }
 
-async function procesarConfirmacionCliente(pending, { texto, nombre, log } = {}) {
-  const phone = pending.telefono;
-  const idx = parseSeleccionOpcion(texto);
-  const propuesta = pending.propuesta ?? {};
-  const opciones = Array.isArray(propuesta.opciones) ? propuesta.opciones : [];
-
-  // Eligió número de opción
-  if (idx != null && opciones[idx]) {
-    const elegida = opciones[idx];
-    await solStore.actualizarSolicitud(pending.id, {
-      propuesta: { ...propuesta, elegida },
-      datos: {
-        fecha_retiro: elegida.fecha,
-        hora_retiro: elegida.hora,
-      },
-      historial_push: `${new Date().toISOString()} · Cliente eligió opción ${idx + 1}`,
-    });
-    return finalizarAsignacion(
-      { ...pending, propuesta: { ...propuesta, elegida }, datos: { ...pending.datos, fecha_retiro: elegida.fecha, hora_retiro: elegida.hora } },
-      { telefonoCliente: phone, slot: elegida, log },
-    );
-  }
-
-  if (esConfirmacionCliente(texto)) {
-    const elegida = propuesta.elegida || opciones[0];
-    if (!elegida) {
-      return consultarYProponer(pending, { telefonoCliente: phone, nombre, log });
-    }
-    return finalizarAsignacion(pending, { telefonoCliente: phone, slot: elegida, log });
-  }
-
-  if (esRechazoCliente(texto)) {
-    const msg =
-      `Entendido. Decime qué *fecha* y *horario* preferís y vuelvo a consultar disponibilidad.`;
-    await enviar(phone, msg, { nombre });
-    await solStore.actualizarSolicitud(pending.id, {
-      estado: "recolectando",
-      propuesta: null,
-      historial_push: `${new Date().toISOString()} · Cliente rechazó propuesta`,
-    });
-    return { flow: "viajes_propuesta_rechazada", mensaje: msg };
-  }
-
-  // ¿Cambiaron fecha/hora? → reconsultar
-  const interpreted = await interpretarMensajeViaje(texto, {
-    pendingDatos: pending.datos,
-    remitente: nombre || pending.nombre,
-    log,
-  });
-  const cambioFecha =
-    interpreted.datos.fecha_retiro !== pending.datos.fecha_retiro ||
-    interpreted.datos.hora_retiro !== pending.datos.hora_retiro;
-  if (cambioFecha && (interpreted.datos.fecha_retiro || interpreted.datos.hora_retiro)) {
-    pending = await solStore.actualizarSolicitud(pending.id, {
-      datos: interpreted.datos,
-      estado: "recolectando",
-      propuesta: null,
-      historial_push: `${new Date().toISOString()} · Nuevo pedido de fecha/hora`,
-    });
-    return consultarYProponer(pending, { telefonoCliente: phone, nombre, log });
-  }
-
-  const msg =
-    `Para generar la reserva respondé *SÍ*, el número de opción (*1*, *2*…), o pedime otra fecha/hora.`;
-  await enviar(phone, msg, { nombre });
-  return { flow: "viajes_pedir_confirmacion_cliente", mensaje: msg };
-}
-
-async function finalizarAsignacion(pending, { telefonoCliente, slot, log } = {}) {
+async function finalizarAsignacion(pending, { telefonoCliente, slot, nombre, log } = {}) {
   const datos = pending.datos;
   const fechaIso = slot?.fecha || normalizarFechaRetiro(datos.fecha_retiro);
   const hora = slot?.hora || normalizarHora(datos.hora_retiro);
@@ -275,10 +263,17 @@ async function finalizarAsignacion(pending, { telefonoCliente, slot, log } = {})
       });
 
   if (!asignacion.ok) {
-    const msg =
-      `Justo se ocupó ese cupo. Déjame consultar de nuevo…`;
-    await enviar(telefonoCliente, msg);
-    return consultarYProponer(pending, { telefonoCliente, log });
+    const turno = await turnoAgenteViajes({
+      texto: "(sistema: el cupo se ocupó; avisá y volvé a consultar)",
+      fase: "recolectando",
+      datos,
+      remitente: nombre || pending.nombre,
+      log,
+    });
+    await enviar(telefonoCliente, turno.mensaje || "Justo se ocupó ese cupo, consulto de nuevo…", {
+      nombre,
+    });
+    return consultarYProponer(pending, { telefonoCliente, nombre, log });
   }
 
   let viaje = await viajesStore.crearViaje({
@@ -308,12 +303,17 @@ async function finalizarAsignacion(pending, { telefonoCliente, slot, log } = {})
   });
   viaje = await viajesStore.cambiarEstadoViaje(viaje.id, "asignado");
 
-  const msgCliente = mensajeViajeAsignadoCliente(viaje, asignacion);
-  await enviar(telefonoCliente, msgCliente, { viaje_id: viaje.id });
+  const msgCliente = await redactarReservaConfirmada({
+    viaje,
+    asignacion,
+    remitente: nombre || pending.nombre,
+    log,
+  });
+  await enviar(telefonoCliente, msgCliente, { viaje_id: viaje.id, nombre });
 
   let msgChofer = null;
   if (asignacion.telefono_chofer) {
-    msgChofer = mensajeViajeAsignadoChofer(viaje, asignacion);
+    msgChofer = await redactarMensajeChofer({ viaje, asignacion, log });
     await enviar(asignacion.telefono_chofer, msgChofer, { viaje_id: viaje.id });
   }
 
@@ -345,7 +345,7 @@ async function finalizarAsignacion(pending, { telefonoCliente, slot, log } = {})
       fecha: asignacion.fecha,
       hora: asignacion.hora,
     },
-    "Viaje reservado tras confirmación cliente",
+    "Viaje reservado (agente IA)",
   );
 
   return {
@@ -367,36 +367,54 @@ async function procesarConfirmacionChofer(solChofer, { texto, log } = {}) {
 
   const viaje = solChofer.viaje_id ? await viajesStore.getViaje(solChofer.viaje_id) : null;
 
-  if (esConfirmacionChofer(texto)) {
+  const turno = await turnoAgenteViajes({
+    texto,
+    fase: "chofer",
+    viaje,
+    remitente: solChofer.nombre || viaje?.chofer,
+    log,
+  });
+
+  const confirma =
+    turno.intent === "confirmar" ||
+    turno.accion === "reservar" ||
+    esConfirmacionChofer(texto);
+  const rechaza =
+    turno.intent === "rechazar" ||
+    turno.accion === "rechazar" ||
+    esRechazoChofer(texto);
+
+  if (confirma) {
     if (viaje) {
       await viajesStore.cambiarEstadoViaje(viaje.id, "en_curso").catch(() => null);
     }
     const msg =
-      `Gracias ✅ Viaje *${viaje?.codigo ?? ""}* confirmado.\n` +
-      `Buen viaje. Si hay demora, avisá por acá.`;
+      turno.mensaje ||
+      `Gracias, viaje *${viaje?.codigo ?? ""}* confirmado. Buen viaje.`;
     await enviar(phone, msg, { viaje_id: viaje?.id });
 
     if (viaje?.telefono_cliente) {
-      const msgCli =
-        `🚚 El chofer *${viaje.chofer}* confirmó el viaje *${viaje.codigo}*.\n` +
-        `Ya está en curso: ${viaje.origen} → ${viaje.destino}.`;
-      await enviar(viaje.telefono_cliente, msgCli, { viaje_id: viaje.id });
+      const msgCli = await turnoAgenteViajes({
+        texto: "(sistema: el chofer confirmó; avisá al cliente con naturalidad)",
+        fase: "reservado",
+        viaje,
+        remitente: viaje.cliente,
+        log,
+      });
+      await enviar(viaje.telefono_cliente, msgCli.mensaje, { viaje_id: viaje.id });
     }
 
     await solStore.actualizarSolicitud(solChofer.id, {
       estado: "confirmada_chofer",
       historial_push: `${new Date().toISOString()} · Chofer confirmó`,
     });
-
-    log?.info?.({ codigo: viaje?.codigo }, "Chofer confirmó viaje");
     return { flow: "viajes_chofer_confirmado", viaje, mensaje: msg };
   }
 
-  if (esRechazoChofer(texto)) {
+  if (rechaza) {
     const msg =
-      `Entendido. Marco que no podés tomar el viaje` +
-      (viaje ? ` *${viaje.codigo}*` : "") +
-      `.\nTráfico lo reasignará.`;
+      turno.mensaje ||
+      `Entendido. Marcamos que no podés tomar el viaje${viaje ? ` *${viaje.codigo}*` : ""}.`;
     await enviar(phone, msg, { viaje_id: viaje?.id });
     if (viaje) {
       await viajesStore.actualizarViaje(viaje.id, {
@@ -412,36 +430,31 @@ async function procesarConfirmacionChofer(solChofer, { texto, log } = {}) {
     return { flow: "viajes_chofer_rechazo", viaje, mensaje: msg };
   }
 
-  const msg =
-    `Para el viaje` +
-    (viaje ? ` *${viaje.codigo}*` : "") +
-    ` respondé *SÍ* para confirmar o *NO* si no podés.`;
-  await enviar(phone, msg, { viaje_id: viaje?.id });
-  return { flow: "viajes_pedir_confirmacion_chofer", viaje, mensaje: msg };
+  await enviar(phone, turno.mensaje, { viaje_id: viaje?.id });
+  return { flow: "viajes_pedir_confirmacion_chofer", viaje, mensaje: turno.mensaje };
 }
 
-/**
- * Compat: ingest one-shot (email / API) — exige datos completos y reserva directo.
- */
 export async function procesarSolicitudViaje(input) {
   const { log } = input;
   const phone = sanitizePhone(input.telefono);
-  const interpreted = await interpretarMensajeViaje(input.texto, {
+  const turno = await turnoAgenteViajes({
+    texto: input.texto,
+    fase: "recolectando",
     remitente: input.remitente,
     log,
   });
-  const faltan = interpreted.faltan;
-  if (faltan.length) {
-    throw Object.assign(
-      new Error(`Faltan datos: ${faltan.join(", ")}`),
-      { statusCode: 422, faltan, datos: interpreted.datos },
-    );
+  if (turno.faltan.length) {
+    throw Object.assign(new Error(`Faltan datos: ${turno.faltan.join(", ")}`), {
+      statusCode: 422,
+      faltan: turno.faltan,
+      datos: turno.datos,
+    });
   }
 
   const pending = await solStore.crearSolicitud({
     telefono: phone || "0000000000",
     nombre: input.remitente,
-    datos: interpreted.datos,
+    datos: turno.datos,
   });
   const out = await finalizarAsignacion(pending, {
     telefonoCliente: phone,
@@ -450,7 +463,7 @@ export async function procesarSolicitudViaje(input) {
   return {
     ok: true,
     viaje: out.viaje,
-    parsed: interpreted.datos,
+    parsed: turno.datos,
     asignacion: out.asignacion,
     mensajes: [
       out.mensaje && { destino: "cliente", texto: out.mensaje },
