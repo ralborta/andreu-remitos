@@ -572,3 +572,66 @@ export function updateViajesFlotaCamion(id: string, body: Partial<ViajesCamionFl
 export function deleteViajesFlotaCamion(id: string) {
   return api<{ ok: boolean }>(`/api/viajes/flota/camiones/${id}`, { method: "DELETE" });
 }
+
+export type GastoRendicionEstado =
+  | "borrador"
+  | "pendiente_aprobacion"
+  | "aprobado"
+  | "rechazado";
+
+export interface GastoRendicion {
+  id: string;
+  codigo: string;
+  estado: GastoRendicionEstado;
+  estadoLabel: string;
+  categoria: string;
+  categoriaLabel: string;
+  monto: number | null;
+  montoLabel: string;
+  moneda: string;
+  proveedor: string | null;
+  fechaComprobante: string | null;
+  descripcion: string | null;
+  viajeRef: string | null;
+  telefono: string | null;
+  choferNombre: string | null;
+  imagenUrl: string | null;
+  notaChofer: string | null;
+  notaAprobacion: string | null;
+  aprobadoPor: string | null;
+  historial: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ResumenRendicion {
+  total: number;
+  pendientes: number;
+  aprobados: number;
+  rechazados: number;
+  monto_pendiente: number;
+  monto_aprobado: number;
+}
+
+export function listGastosRendicion(params?: { limit?: number; estado?: string; telefono?: string }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.telefono) q.set("telefono", params.telefono);
+  const qs = q.toString();
+  return api<GastoRendicion[]>(`/api/rendicion${qs ? `?${qs}` : ""}`);
+}
+
+export function resumenRendicion() {
+  return api<ResumenRendicion>("/api/rendicion/resumen");
+}
+
+export function decidirGastoRendicion(
+  id: string,
+  body: { estado: "aprobado" | "rechazado"; nota?: string; aprobado_por?: string },
+) {
+  return api<GastoRendicion>(`/api/rendicion/${id}/decidir`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

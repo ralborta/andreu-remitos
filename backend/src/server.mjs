@@ -12,6 +12,7 @@ import planillasRoutes from "./routes/planillas.mjs";
 import apiV1PlanillasRoutes from "./routes/api-v1-planillas.mjs";
 import destinosRoutes from "./routes/destinos.mjs";
 import viajesRoutes from "./routes/viajes.mjs";
+import rendicionRoutes from "./routes/rendicion.mjs";
 import authRoutes from "./routes/auth.mjs";
 import monitorRoutes from "./routes/monitor.mjs";
 import vincularRoutes from "./routes/vincular.mjs";
@@ -46,6 +47,7 @@ await app.register(planillasRoutes, { prefix: "/api/planillas" });
 await app.register(apiV1PlanillasRoutes, { prefix: "/api/v1" });
 await app.register(destinosRoutes, { prefix: "/api/destinos" });
 await app.register(viajesRoutes, { prefix: "/api/viajes" });
+await app.register(rendicionRoutes, { prefix: "/api/rendicion" });
 await app.register(monitorRoutes, { prefix: "/api/monitor" });
 await app.register(vincularRoutes, { prefix: "/api/vincular" });
 

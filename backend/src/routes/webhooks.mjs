@@ -29,8 +29,10 @@ import {
   procesarRespuestaDestinoChofer,
 } from "../services/destinos.mjs";
 import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
+import { procesarGastoWhatsApp } from "../services/rendicion-agent.mjs";
 import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
+import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
 import * as master from "../db/master-data-store.mjs";
@@ -352,6 +354,31 @@ async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) 
   }
 }
 
+async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
+  if (!ev.from) return null;
+  const t = String(texto ?? "").trim();
+  if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
+  try {
+    const out = await procesarGastoWhatsApp({
+      telefono: ev.from,
+      texto: t,
+      nombre: ev.nombre,
+      imageBuffer,
+      mime,
+      imagenUrl: ev.media?.url || null,
+      log,
+      forzar: Boolean(forzar || imageBuffer),
+    });
+    if (!out) return null;
+    return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "rendicion webhook error");
+    const msg = `Recibí tu gasto pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "rendicion_error", error: err.message, message: msg };
+  }
+}
+
 async function tryProcesarReclamo(ev, { texto, log } = {}) {
   if (!ev.from || !texto?.trim()) return null;
   try {
@@ -440,6 +467,17 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
     return tryProcesarReclamo(ev, { texto, log });
   }
 
+  if (intent.intent === "rendicion") {
+    const out = await tryProcesarRendicion(ev, { texto, log, forzar: true });
+    if (out) return out;
+    const msg =
+      `Perfecto, vamos con la *rendición de gastos*.\n\n` +
+      `Mandame la *foto del ticket/factura* o contame: nafta, peaje, llantas, aceite, remolque, auxilio o arreglo menor.\n` +
+      `Queda sujeto a *aprobación humana*.`;
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "rendicion_fallback", message: msg };
+  }
+
   if (intent.intent === "remito") {
     // Solo la lista de choferes de Remitos (Parámetros) entra al flujo de remitos
     if (esChoferRemitos) return null;
@@ -457,6 +495,7 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
       intent.mensaje ||
       `Hola 👋 ¿En qué te ayudo?\n\n` +
         `• *Viaje / flete*\n` +
+        `• *Rendición* (gastos)\n` +
         `• *Reclamo*\n\n` +
         `Decime cuál y seguimos.`;
     await convStore.appendMensaje(
@@ -540,7 +579,18 @@ export default async function webhooksRoutes(fastify) {
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "viajes", "reclamos", "intent-router", "tenant-ia"],
+    features: [
+      "foto",
+      "audio",
+      "correcciones",
+      "correcciones-ia",
+      "destinos",
+      "viajes",
+      "reclamos",
+      "rendicion",
+      "intent-router",
+      "tenant-ia",
+    ],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -725,7 +775,7 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        // Foto — solo remitos si NO hay destino pendiente para este número
+        // Foto — destino pendiente, rendición de gastos, o remito
         const destinoPendiente = ev.from
           ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
           : null;
@@ -738,6 +788,22 @@ export default async function webhooksRoutes(fastify) {
           }
           return respuestaWebhook({ message: hint, flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
         }
+
+        const caption = texto || ev.message?.trim() || "";
+        // Foto de gasto/ticket: solo si el caption lo indica (evita robar fotos de remito)
+        if (pareceRendicionGasto(caption)) {
+          const gastoOut = await tryProcesarRendicion(ev, {
+            texto: caption,
+            log: request.log,
+            imageBuffer: buffer,
+            mime,
+            forzar: true,
+          });
+          if (gastoOut) {
+            return respuestaWebhook({ ...gastoOut, received: true });
+          }
+        }
+
         const telefono = ev.from || null;
 
         if (ev.from) {
