@@ -1,11 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, RefreshCw } from "lucide-react";
 import { Brand } from "@/components/Brand";
 import { BRAND } from "@/lib/brand";
 
-const QR_POLL_MS = 4000;
+/** Poll de estado (no reemplaza el QR en pantalla). */
+const STATUS_POLL_MS = 5000;
+/**
+ * Mantener el mismo QR fijo este tiempo aunque el bot ya haya generado otro.
+ * Encelulares lentos la vinculación tarda: si el QR cambia a mitad, falla.
+ */
+const QR_HOLD_MS = 55_000;
 
 type QrResponse = {
   ok?: boolean;
@@ -15,8 +21,15 @@ type QrResponse = {
   qr_stale?: boolean;
   qr_available?: boolean;
   image_base64?: string;
+  qr_updated_at?: string | null;
   phone?: string | null;
   message?: string;
+};
+
+type PinnedQr = {
+  image: string;
+  updatedAt: string;
+  pinnedAt: number;
 };
 
 function fmtPhone(raw?: string | null) {
@@ -29,19 +42,40 @@ function fmtPhone(raw?: string | null) {
   return d.startsWith("+") ? raw : `+${d}`;
 }
 
-function QrFrame({ src, loading }: { src?: string | null; loading?: boolean }) {
+function QrFrame({
+  src,
+  loading,
+  secondsLeft,
+}: {
+  src?: string | null;
+  loading?: boolean;
+  secondsLeft?: number | null;
+}) {
   return (
     <div className="wa-qr-frame">
-      <div className="wa-qr-frame__inner flex min-h-[318px] min-w-[318px] items-center justify-center">
+      <div className="wa-qr-frame__inner flex min-h-[318px] min-w-[318px] flex-col items-center justify-center gap-3">
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt={`Código QR WhatsApp ${BRAND.name}`}
-            className="block rounded-xl bg-white"
-            width={306}
-            height={306}
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt={`Código QR WhatsApp ${BRAND.name}`}
+              className="block rounded-xl bg-white"
+              width={306}
+              height={306}
+            />
+            {typeof secondsLeft === "number" ? (
+              <p
+                className={
+                  secondsLeft <= 10
+                    ? "text-xs font-medium text-amber-300"
+                    : "text-xs text-[#8696a0]"
+                }
+              >
+                QR fijo · {secondsLeft}s para escanear (no cambia solo)
+              </p>
+            ) : null}
+          </>
         ) : (
           <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
             <RefreshCw className="animate-spin text-[#25d366]" size={28} />
@@ -57,46 +91,108 @@ function QrFrame({ src, loading }: { src?: string | null; loading?: boolean }) {
 
 export function WhatsAppVincular() {
   const [data, setData] = useState<QrResponse | null>(null);
-  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<PinnedQr | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [tick, setTick] = useState(0);
+  const pinnedRef = useRef<PinnedQr | null>(null);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/vincular/qr", { cache: "no-store" });
-      const json = (await res.json()) as QrResponse;
-      setData(json);
-      if (json.connected && json.can_send !== false) {
-        setQrImage(null);
-        setLoading(false);
-        return;
-      }
-      if (json.image_base64) {
-        setQrImage(json.image_base64);
-        setLoading(false);
-        return;
-      }
-      setQrImage(null);
-      setLoading(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cargar el QR");
+  useEffect(() => {
+    pinnedRef.current = pinned;
+  }, [pinned]);
+
+  const applyResponse = useCallback((json: QrResponse, forceNew: boolean) => {
+    setData(json);
+
+    if (json.connected && json.can_send !== false) {
+      setPinned(null);
       setLoading(false);
+      return;
     }
+
+    const current = pinnedRef.current;
+    const holdExpired =
+      !current || Date.now() - current.pinnedAt >= QR_HOLD_MS || Boolean(json.qr_stale);
+
+    if (json.image_base64 && (forceNew || holdExpired || !current)) {
+      const next: PinnedQr = {
+        image: json.image_base64,
+        updatedAt: json.qr_updated_at || new Date().toISOString(),
+        pinnedAt: Date.now(),
+      };
+      pinnedRef.current = next;
+      setPinned(next);
+      setLoading(false);
+      return;
+    }
+
+    if (current && !holdExpired) {
+      // Mantener el QR en pantalla aunque el servidor ya tenga otro.
+      setLoading(false);
+      return;
+    }
+
+    if (!json.image_base64) {
+      setPinned(null);
+      pinnedRef.current = null;
+      setLoading(true);
+      return;
+    }
+
+    setLoading(false);
+  }, []);
+
+  const refresh = useCallback(
+    async (forceNew = false) => {
+      if (forceNew) {
+        setLoading(true);
+        setPinned(null);
+        pinnedRef.current = null;
+      }
+      setError(null);
+      try {
+        const res = await fetch("/api/vincular/qr", { cache: "no-store" });
+        const json = (await res.json()) as QrResponse;
+        applyResponse(json, forceNew);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "No se pudo cargar el QR");
+        setLoading(false);
+      }
+    },
+    [applyResponse],
+  );
+
+  useEffect(() => {
+    void refresh(true);
+    const t = setInterval(() => void refresh(false), STATUS_POLL_MS);
+    return () => clearInterval(t);
+  }, [refresh]);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
-    void refresh();
-    const t = setInterval(() => void refresh(), QR_POLL_MS);
-    return () => clearInterval(t);
-  }, [refresh]);
+    if (!pinned) {
+      setSecondsLeft(null);
+      return;
+    }
+    const left = Math.max(0, Math.ceil((QR_HOLD_MS - (Date.now() - pinned.pinnedAt)) / 1000));
+    setSecondsLeft(left);
+    if (left === 0) {
+      void refresh(true);
+    }
+    // tick fuerza recálculo cada segundo
+  }, [pinned, tick, refresh]);
 
   const phoneFmt = fmtPhone(data?.phone);
   const ready = Boolean(data?.connected && data?.can_send !== false);
   const stale = Boolean(data?.session_stale);
-  const qrStale = Boolean(data?.qr_stale);
+  const qrStale = Boolean(data?.qr_stale) && !pinned;
   const waitingQr = !ready;
+  const qrImage = pinned?.image ?? null;
 
   return (
     <div className="surface-dark min-h-screen bg-[#0b141a] text-[#e9edef]">
@@ -144,14 +240,20 @@ export function WhatsAppVincular() {
               )}
               {qrStale && (
                 <p className="mb-4 max-w-sm rounded-lg bg-amber-500/10 px-3 py-2 text-center text-sm text-amber-200">
-                  El QR expiró. Se generará uno nuevo en unos segundos — tocá Actualizar.
+                  El QR expiró. Tocá Actualizar para pedir uno nuevo y escaneá sin apurarte.
                 </p>
               )}
-              <QrFrame src={qrImage} loading={loading} />
+              {qrImage && (
+                <p className="mb-4 max-w-sm rounded-lg bg-[#25d366]/10 px-3 py-2 text-center text-sm text-[#d1f4e0]">
+                  En celulares lentos: este QR se queda fijo ~55s. No toques Actualizar mientras
+                  escaneás.
+                </p>
+              )}
+              <QrFrame src={qrImage} loading={loading} secondsLeft={secondsLeft} />
               <p className="mt-6 text-center text-sm text-[#8696a0]">
                 {data?.message || "Escaneá con WhatsApp → Dispositivos vinculados"}
               </p>
-              {waitingQr && (
+              {waitingQr && qrImage && (
                 <p className="mt-2 animate-pulse text-xs text-[#25d366]">Esperando escaneo…</p>
               )}
             </>
@@ -161,10 +263,10 @@ export function WhatsAppVincular() {
         {waitingQr && (
           <ol className="mt-8 space-y-3 text-sm text-[#8696a0]">
             {[
-              `Abrí WhatsApp en el teléfono que va a usar el bot de ${BRAND.name}`,
+              `Abrí WhatsApp (actualizado) en el teléfono del bot de ${BRAND.name}`,
               "Menú → Dispositivos vinculados → Vincular dispositivo",
-              "Si dice «No puede vincular dispositivos», desvinculá otros dispositivos viejos y esperá 1 minuto",
-              "Apuntá la cámara al código QR de arriba (debe estar recién generado)",
+              "Si dice «No puede vincular», desvinculá dispositivos viejos, esperá 1 minuto y reintentá",
+              "Apuntá la cámara y esperá: el QR de arriba no cambia solo durante el conteo",
             ].map((step, i) => (
               <li key={step} className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#25d366]/20 text-xs font-semibold text-[#25d366]">
@@ -178,11 +280,11 @@ export function WhatsAppVincular() {
 
         <button
           type="button"
-          onClick={() => void refresh()}
+          onClick={() => void refresh(true)}
           className="mt-8 inline-flex items-center justify-center gap-2 self-center rounded-xl border border-[#222d34] px-4 py-2 text-sm text-[#8696a0] hover:text-white"
         >
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-          Actualizar
+          Pedir QR nuevo
         </button>
 
         <p className="mt-6 text-center text-xs text-[#667781]">
