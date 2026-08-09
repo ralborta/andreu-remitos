@@ -86,7 +86,11 @@ export default async function AgentPage({
       </Card>
 
       {/* Datos + Conversación (remitos/destinos/viajes a ancho completo) */}
-      {slug === "remitos" || slug === "destinos" || slug === "viajes" || slug === "rendicion" ? (
+      {slug === "remitos" ||
+      slug === "destinos" ||
+      slug === "viajes" ||
+      slug === "rendicion" ||
+      slug === "reclamos" ? (
         <div className="min-w-0">
           <AgentData slug={slug} />
         </div>

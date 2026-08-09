@@ -35,6 +35,7 @@ import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
+import * as reclamosStore from "../db/reclamos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 
 /**
@@ -379,12 +380,12 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   }
 }
 
-async function tryProcesarReclamo(ev, { texto, log } = {}) {
-  if (!ev.from || !texto?.trim()) return null;
+async function tryProcesarReclamo(ev, { texto, log, forzar = false } = {}) {
+  if (!ev.from || (!texto?.trim() && !forzar)) return null;
   try {
     await convStore.appendMensaje(
       ev.from,
-      { texto, tipo: "text" },
+      { texto: texto || "", tipo: "text" },
       { dir: "in", from: "client", nombre: ev.nombre, agente: "reclamos" },
     );
     const out = await procesarReclamoWhatsApp({
@@ -392,6 +393,7 @@ async function tryProcesarReclamo(ev, { texto, log } = {}) {
       texto,
       nombre: ev.nombre,
       log,
+      forzar,
     });
     if (!out?.mensaje) return null;
     await notificarChofer(ev.from, out.mensaje, { log, tenant: null }).catch(() => {});
@@ -400,10 +402,14 @@ async function tryProcesarReclamo(ev, { texto, log } = {}) {
       { texto: out.mensaje, tipo: "text", reclamo_id: out.reclamo?.id },
       { dir: "out", from: "bot", agente: "reclamos", nombre: ev.nombre },
     );
-    return { ...out, received: true };
+    return { ...out, message: out.mensaje, received: true };
   } catch (err) {
     log?.warn?.({ err: err.message, from: ev.from }, "reclamos webhook error");
-    return null;
+    const msg =
+      `Recibí tu reclamo pero tuve un problema: ${err.message}.\n` +
+      `¿Me lo volvés a contar en un momento?`;
+    if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "reclamo_error", error: err.message, message: msg };
   }
 }
 
@@ -694,6 +700,21 @@ export default async function webhooksRoutes(fastify) {
         });
         if (viajePend) {
           return respuestaWebhook({ ...viajePend, received: true });
+        }
+      }
+
+      // Reclamo pendiente (diálogo multi-turno 100% IA) — antes del router
+      const pendingReclamoEarly = ev.from
+        ? await reclamosStore.getReclamoPendientePorTelefono(ev.from)
+        : null;
+      if (pendingReclamoEarly && texto && !esFoto) {
+        const reclamoPend = await tryProcesarReclamo(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+        });
+        if (reclamoPend) {
+          return respuestaWebhook({ ...reclamoPend, received: true });
         }
       }
 

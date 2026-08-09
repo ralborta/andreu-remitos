@@ -635,3 +635,65 @@ export function decidirGastoRendicion(
     body: JSON.stringify(body),
   });
 }
+
+export type ReclamoEstado = "nuevo" | "en_proceso" | "escalado" | "resuelto";
+
+export interface ReclamoCaso {
+  id: string;
+  estado: ReclamoEstado | string;
+  estadoLabel: string;
+  motivo: string | null;
+  motivoLabel: string;
+  criticidad: string | null;
+  criticidadLabel: string;
+  cliente: string;
+  telefono: string | null;
+  canal: string;
+  viaje: string;
+  remito: string | null;
+  pedido: string | null;
+  resumen: string | null;
+  detalle: string | null;
+  escaladoA: string | null;
+  notaInterna: string | null;
+  sla: string;
+  historial: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ResumenReclamos {
+  abiertos: number;
+  nuevo: number;
+  en_proceso: number;
+  escalado: number;
+  resuelto: number;
+  total: number;
+}
+
+export function listReclamos(params?: { limit?: number; estado?: string; telefono?: string }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.telefono) q.set("telefono", params.telefono);
+  const qs = q.toString();
+  return api<ReclamoCaso[]>(`/api/reclamos${qs ? `?${qs}` : ""}`);
+}
+
+export function resumenReclamos() {
+  return api<ResumenReclamos>("/api/reclamos/resumen");
+}
+
+export function decidirReclamo(
+  id: string,
+  body: {
+    estado: "en_proceso" | "escalado" | "resuelto";
+    nota?: string;
+    aprobado_por?: string;
+  },
+) {
+  return api<ReclamoCaso>(`/api/reclamos/${id}/decidir`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

@@ -1,6 +1,7 @@
 import { DestinosPanel } from "./DestinosPanel";
 import { ViajesGestionPanel } from "./ViajesGestionPanel";
 import { RendicionPanel } from "./RendicionPanel";
+import { ReclamosPanel } from "./ReclamosPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
@@ -8,14 +9,12 @@ import { EtaLine, ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
 import {
   remitos,
   incidencias,
-  reclamos,
   etas,
   viajesPorDia,
   slaPorZona,
   incidenciasPorTipo,
   type Remito,
   type Incidencia,
-  type Reclamo,
   type EtaItem,
 } from "@/lib/data";
 
@@ -134,22 +133,7 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "reclamos") {
-    const cols: Column<Reclamo>[] = [
-      { key: "id", header: "Reclamo", render: (r) => <span className="font-medium text-white">{r.id}</span> },
-      { key: "cliente", header: "Cliente", className: "text-[var(--text-dim)]" },
-      { key: "viaje", header: "Viaje", className: "text-[var(--text-dim)]" },
-      { key: "motivo", header: "Motivo", className: "text-[var(--text-dim)]" },
-      { key: "canal", header: "Canal", render: (r) => <Pill color={r.canal === "WhatsApp" ? "#25d366" : r.canal === "Email" ? "#38bdf8" : "#a78bfa"}>{r.canal}</Pill> },
-      { key: "criticidad", header: "Criticidad", render: (r) => <CritBadge level={r.criticidad} /> },
-      { key: "estado", header: "Estado", render: (r) => estadoPill(r.estado) },
-      { key: "sla", header: "SLA", render: (r) => <span className={r.sla === "Por vencer" ? "text-[var(--amber)]" : "text-[var(--text-dim)]"}>{r.sla}</span> },
-    ];
-    return (
-      <Card>
-        <SectionTitle>Reclamos en gestión</SectionTitle>
-        <DataTable columns={cols} rows={reclamos} minWidth={920} />
-      </Card>
-    );
+    return <ReclamosPanel />;
   }
 
   if (slug === "analitica") {
