@@ -598,7 +598,12 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 
   if (intent.intent === "remito") {
     // Remitos: Parámetros/Remitos o flota Gestión de Viajes (demo TransitOne)
-    if (esChoferOperativo) return null;
+    if (esChoferOperativo) {
+      const msg =
+        "Perfecto 👍 Enviame una *foto clara del remito* (que se vea bien la guía y los datos).";
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      return { flow: "remito_pedir_foto", message: msg };
+    }
     const msg =
       intent.mensaje ||
       `Para *remitos* escriben los choferes registrados.\n\n` +
@@ -858,6 +863,35 @@ export default async function webhooksRoutes(fastify) {
         if (incOut) {
           return respuestaWebhook({ ...incOut, received: true });
         }
+      }
+
+      // Remito explícito ANTES de Destinos/ETA/router IA (choferes Remitos o flota Viajes).
+      if (
+        ev.from &&
+        texto &&
+        !esFoto &&
+        esChoferDb &&
+        pareceQuiereRemito(texto)
+      ) {
+        const msg =
+          "Perfecto 👍 Enviame una *foto clara del remito* (que se vea bien la guía y los datos).";
+        await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
+        await convStore
+          .appendMensaje(
+            ev.from,
+            { texto, tipo: "text" },
+            { dir: "in", from: "chofer", nombre: ev.nombre, agente: "remitos" },
+          )
+          .catch(() => {});
+        await convStore
+          .appendMensaje(
+            ev.from,
+            { texto: msg, tipo: "text" },
+            { dir: "out", from: "bot", agente: "remitos", nombre: ev.nombre },
+          )
+          .catch(() => {});
+        request.log.info({ from: ev.from }, "Remito: atajo pedir foto (salta Destinos/router)");
+        return respuestaWebhook({ message: msg, flow: "remito_pedir_foto", received: true });
       }
 
       // Rendición ANTES de destinos/ETA — SOLO choferes registrados en DB.

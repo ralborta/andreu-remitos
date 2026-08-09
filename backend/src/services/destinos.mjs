@@ -276,14 +276,13 @@ export async function procesarRespuestaDestinoChofer(telefono, { texto, nombre, 
 
   const parsed = await interpretarRespuestaChoferEta(t, { pending, log });
 
-  // chat sin mensaje = handoff a otro flujo (ej. remito); no inventar bloqueos
-  if (parsed.intent === "chat" && !parsed.mensaje) {
+  // chat libre = handoff (no inventar "viaje/reclamo" ni bloquear remitos)
+  if (parsed.intent === "chat") {
     return null;
   }
 
-  if (parsed.intent === "pedir_eta" || parsed.intent === "chat") {
+  if (parsed.intent === "pedir_eta") {
     const mensaje =
-      parsed.mensaje ||
       `¿En cuánto estimás llegar? (ej: *25 min*). Si hay retraso, avisame.`;
     historial.push(`Chofer: "${t}"`, `Agente (${parsed.fuente}): pidió ETA`);
     const updated = await destinosStore.actualizarDestino(pending.id, {
