@@ -67,11 +67,54 @@ export function normalizarFechaRetiro(texto, { hoy = new Date() } = {}) {
   return isoDate(base);
 }
 
+/** "8", "8:00", "08hs", "a las 11" → "HH:MM" o null. */
+export function normalizarHora(texto) {
+  const raw = String(texto ?? "").trim().toLowerCase();
+  if (!raw) return null;
+  const m =
+    raw.match(/\b(\d{1,2})[:.](\d{2})\b/) ||
+    raw.match(/\b(\d{1,2})\s*hs?\b/) ||
+    raw.match(/\ba\s*las?\s*(\d{1,2})(?::(\d{2}))?\b/) ||
+    raw.match(/^(\d{1,2})$/);
+  if (!m) return null;
+  let h = Number(m[1]);
+  const min = m[2] != null ? Number(m[2]) : 0;
+  if (!Number.isFinite(h) || h < 0 || h > 23) return null;
+  if (!Number.isFinite(min) || min < 0 || min > 59) return null;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
 function isoDate(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+function parseIsoLocal(fechaIso) {
+  const [y, m, d] = String(fechaIso).split("-").map(Number);
+  return new Date(y, m - 1, d, 12);
+}
+
+function offsetDesdeHoy(fechaIso, hoy = new Date()) {
+  const a = new Date(hoy);
+  a.setHours(12, 0, 0, 0);
+  const b = parseIsoLocal(fechaIso);
+  return Math.round((b - a) / 86400000);
+}
+
+function horariosDeItem(item, fechaIso) {
+  const off = String(offsetDesdeHoy(fechaIso));
+  if (item.horarios_offset && Array.isArray(item.horarios_offset[off])) {
+    return item.horarios_offset[off];
+  }
+  if (Array.isArray(item.horarios) && item.horarios.length) return item.horarios;
+  return ["08:00", "11:00", "14:00"];
+}
+
+function horaDisponible(item, fechaIso, hora) {
+  if (!hora) return true;
+  return horariosDeItem(item, fechaIso).includes(hora);
 }
 
 function disponibleEnFecha(item, fechaIso) {
@@ -98,12 +141,22 @@ function readJsonFlota() {
   const rolling = buildRollingDates(14);
   let raw = DEMO_FLOTA;
   let fuente = "seed:demo-flota";
-  if (file && fs.existsSync(file)) {
+  // Solo override con JSON externo si se pide explícito (demo usa seed versionado).
+  const forceJson = process.env.VIAJES_FLOTA_JSON?.trim();
+  const jsonPath = forceJson || null;
+  if (jsonPath && fs.existsSync(jsonPath)) {
+    try {
+      raw = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+      fuente = jsonPath;
+    } catch {
+      /* seed */
+    }
+  } else if (file && process.env.VIAJES_FLOTA_PREFER_JSON === "true") {
     try {
       raw = JSON.parse(fs.readFileSync(file, "utf8"));
       fuente = file;
     } catch {
-      /* usar seed embebido */
+      /* seed */
     }
   }
   return {
@@ -199,81 +252,169 @@ export function cargarFlota() {
 }
 
 /**
- * Asigna chofer + unidad por capacidad, tipo de carga y disponibilidad por fecha.
- * @param {{
- *   toneladas?: number,
- *   tipo_carga?: string|null,
- *   fecha_retiro?: string|null,
- *   viajesActivos?: { chofer?: string|null, tractor?: string|null }[]
- * }} opts
+ * Consulta disponibilidad y arma propuesta + alternativas (fecha/hora).
+ * No reserva: solo opciones para que el cliente confirme.
  */
-export function asignarDesdeFlota(opts = {}) {
+export function consultarDisponibilidad(opts = {}) {
   const toneladas = Number(opts.toneladas) || 20;
   const tipoCarga = opts.tipo_carga ?? null;
-  const fechaIso = normalizarFechaRetiro(opts.fecha_retiro);
-
-  const ocupadosChoferes = new Set(
-    (opts.viajesActivos ?? [])
-      .map((v) => String(v.chofer ?? "").trim().toLowerCase())
-      .filter(Boolean),
-  );
-  const ocupadosTractores = new Set(
-    (opts.viajesActivos ?? [])
-      .map((v) => String(v.tractor ?? "").trim().toUpperCase())
-      .filter(Boolean),
-  );
-
+  const fechaPedida = normalizarFechaRetiro(opts.fecha_retiro);
+  const horaPedida = normalizarHora(opts.hora_retiro);
   const { choferes, camiones, fuente } = cargarFlota();
+  const ocupados = ocupadosSets(opts.viajesActivos);
 
+  const slotExacto = encontrarSlot({
+    camiones,
+    choferes,
+    fechaIso: fechaPedida,
+    hora: horaPedida,
+    toneladas,
+    tipoCarga,
+    ocupados,
+    exigirHoraExacta: Boolean(horaPedida),
+  });
+
+  const alternativas = [];
+  const seen = new Set();
+  const pushAlt = (slot, motivo) => {
+    if (!slot) return;
+    const key = `${slot.fecha}|${slot.hora}|${slot.tractor}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    alternativas.push({ ...slot, motivo });
+  };
+
+  if (slotExacto) {
+    seen.add(`${slotExacto.fecha}|${slotExacto.hora}|${slotExacto.tractor}`);
+  }
+
+  // Misma fecha, otras horas
+  const horasDia = new Set();
+  for (const c of camiones) {
+    if (!disponibleEnFecha(c, fechaPedida) || !camionSirveParaCarga(c, tipoCarga)) continue;
+    if (c.capacidad_t < toneladas) continue;
+    for (const h of horariosDeItem(c, fechaPedida)) horasDia.add(h);
+  }
+  for (const h of [...horasDia].sort()) {
+    if (horaPedida && h === horaPedida) continue;
+    const s = encontrarSlot({
+      camiones,
+      choferes,
+      fechaIso: fechaPedida,
+      hora: h,
+      toneladas,
+      tipoCarga,
+      ocupados,
+      exigirHoraExacta: true,
+    });
+    pushAlt(s, horaPedida
+      ? `mismo día, ${h} en vez de ${horaPedida}`
+      : `horario ${h}`);
+  }
+
+  // Otras fechas (próx. 10 días)
+  const base = parseIsoLocal(fechaPedida);
+  for (let i = 1; i <= 10 && alternativas.length < 5; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    const fechaAlt = isoDate(d);
+    const s = encontrarSlot({
+      camiones,
+      choferes,
+      fechaIso: fechaAlt,
+      hora: horaPedida,
+      toneladas,
+      tipoCarga,
+      ocupados,
+      exigirHoraExacta: Boolean(horaPedida),
+    });
+    pushAlt(s, `otra fecha: ${fechaAlt}`);
+  }
+
+  const exactaOk = Boolean(
+    slotExacto &&
+      slotExacto.fecha === fechaPedida &&
+      (!horaPedida || slotExacto.hora === horaPedida),
+  );
+
+  const propuesta = exactaOk ? slotExacto : alternativas[0] ?? slotExacto ?? null;
+  const altsSinPropuesta = alternativas.filter(
+    (a) => !(propuesta && a.fecha === propuesta.fecha && a.hora === propuesta.hora && a.tractor === propuesta.tractor),
+  );
+
+  return {
+    ok: Boolean(propuesta),
+    fuente,
+    pedida: { fecha: fechaPedida, hora: horaPedida },
+    exacta: exactaOk ? slotExacto : null,
+    exacta_ok: exactaOk,
+    propuesta,
+    alternativas: altsSinPropuesta.slice(0, 4),
+    error: propuesta
+      ? null
+      : `Sin disponibilidad para ${fechaPedida}` +
+        (horaPedida ? ` ${horaPedida}` : "") +
+        (tipoCarga ? ` / ${tipoCarga}` : "") +
+        ` / ≥${toneladas} t`,
+  };
+}
+
+function ocupadosSets(viajesActivos) {
+  return {
+    choferes: new Set(
+      (viajesActivos ?? [])
+        .map((v) => String(v.chofer ?? "").trim().toLowerCase())
+        .filter(Boolean),
+    ),
+    tractores: new Set(
+      (viajesActivos ?? [])
+        .map((v) => String(v.tractor ?? "").trim().toUpperCase())
+        .filter(Boolean),
+    ),
+  };
+}
+
+function encontrarSlot({
+  camiones,
+  choferes,
+  fechaIso,
+  hora,
+  toneladas,
+  tipoCarga,
+  ocupados,
+  exigirHoraExacta,
+}) {
   const candidatos = camiones.filter(
     (c) =>
       disponibleEnFecha(c, fechaIso) &&
       c.capacidad_t >= toneladas &&
       camionSirveParaCarga(c, tipoCarga) &&
-      !ocupadosTractores.has(String(c.tractor).trim().toUpperCase()),
+      !ocupados.tractores.has(String(c.tractor).trim().toUpperCase()) &&
+      (!exigirHoraExacta || !hora || horaDisponible(c, fechaIso, hora)),
   );
 
-  // Preferir match de tipo de carga; si no hay, capacidada+fecha
   let camion = candidatos[0] ?? null;
-  if (!camion && tipoCarga) {
-    camion =
-      camiones.find(
-        (c) =>
-          disponibleEnFecha(c, fechaIso) &&
-          c.capacidad_t >= toneladas &&
-          !ocupadosTractores.has(String(c.tractor).trim().toUpperCase()),
-      ) ?? null;
-  }
+  if (!camion) return null;
 
-  if (!camion) {
-    return {
-      ok: false,
-      error: `Sin unidades disponibles para ${fechaIso}` +
-        (tipoCarga ? ` / carga "${tipoCarga}"` : "") +
-        ` / ≥${toneladas} t`,
-      fuente,
-      fecha: fechaIso,
-    };
-  }
+  const horaFinal =
+    (hora && horaDisponible(camion, fechaIso, hora) && hora) ||
+    horariosDeItem(camion, fechaIso)[0] ||
+    "08:00";
+
+  if (exigirHoraExacta && hora && horaFinal !== hora) return null;
 
   const chofer = choferes.find(
     (c) =>
       disponibleEnFecha(c, fechaIso) &&
-      !ocupadosChoferes.has(String(c.nombre).trim().toLowerCase()),
+      horaDisponible(c, fechaIso, horaFinal) &&
+      !ocupados.choferes.has(String(c.nombre).trim().toLowerCase()),
   );
-  if (!chofer) {
-    return {
-      ok: false,
-      error: `Sin choferes disponibles para ${fechaIso}`,
-      fuente,
-      fecha: fechaIso,
-    };
-  }
+  if (!chofer) return null;
 
   return {
     ok: true,
-    fuente,
     fecha: fechaIso,
+    hora: horaFinal,
     chofer: chofer.nombre,
     telefono_chofer: chofer.telefono || null,
     tractor: camion.tractor,
@@ -281,5 +422,39 @@ export function asignarDesdeFlota(opts = {}) {
     tipo_unidad: camion.tipo,
     capacidad_t: camion.capacidad_t,
     tipos_carga: camion.tipos_carga ?? [],
+  };
+}
+
+/**
+ * Asigna chofer + unidad por capacidad, tipo de carga y disponibilidad por fecha/hora.
+ */
+export function asignarDesdeFlota(opts = {}) {
+  const consulta = consultarDisponibilidad(opts);
+  if (!consulta.ok || !consulta.propuesta) {
+    return {
+      ok: false,
+      error: consulta.error,
+      fuente: consulta.fuente,
+      fecha: consulta.pedida.fecha,
+      hora: consulta.pedida.hora,
+    };
+  }
+  // Preferir exacta si pidieron confirmar esa; si no, propuesta
+  const slot =
+    opts.forzar_propuesta ||
+    (consulta.exacta_ok ? consulta.exacta : null) ||
+    consulta.propuesta;
+  return {
+    ok: true,
+    fuente: consulta.fuente,
+    fecha: slot.fecha,
+    hora: slot.hora,
+    chofer: slot.chofer,
+    telefono_chofer: slot.telefono_chofer,
+    tractor: slot.tractor,
+    semi: slot.semi,
+    tipo_unidad: slot.tipo_unidad,
+    capacidad_t: slot.capacidad_t,
+    tipos_carga: slot.tipos_carga,
   };
 }

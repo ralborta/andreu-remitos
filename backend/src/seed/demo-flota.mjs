@@ -1,6 +1,8 @@
 /**
- * Flota de prueba para Gestión de Viajes (match por tipo de carga + fecha).
+ * Flota de prueba para Gestión de Viajes (match por tipo de carga + fecha + hora).
  * disponibilidad_dias: índices 0..13 desde hoy (rolling).
+ * horarios: franjas HH:MM disponibles (salvo override por día).
+ * horarios_offset: { "0": ["11:00","14:00"] } bloquea/reemplaza franjas de ese día.
  */
 export const DEMO_FLOTA = {
   camiones: [
@@ -13,6 +15,9 @@ export const DEMO_FLOTA = {
       capacidad_t: 28,
       disponible: true,
       disponibilidad_dias: [0, 1, 2, 3, 4, 5, 6],
+      horarios: ["08:00", "11:00", "14:00", "16:00"],
+      // Demo: hoy no hay 08:00, sí 11:00 / 14:00
+      horarios_offset: { "0": ["11:00", "14:00", "16:00"] },
     },
     {
       id: "CAM-02",
@@ -23,6 +28,7 @@ export const DEMO_FLOTA = {
       capacidad_t: 24,
       disponible: true,
       disponibilidad_dias: [0, 1, 2, 3, 4, 5, 6, 7],
+      horarios: ["08:00", "10:00", "13:00", "15:00"],
     },
     {
       id: "CAM-03",
@@ -33,6 +39,8 @@ export const DEMO_FLOTA = {
       capacidad_t: 22,
       disponible: true,
       disponibilidad_dias: [1, 2, 3, 4, 5],
+      horarios: ["07:00", "09:00", "12:00", "15:00"],
+      horarios_offset: { "1": ["09:00", "12:00", "15:00"] },
     },
     {
       id: "CAM-04",
@@ -43,6 +51,7 @@ export const DEMO_FLOTA = {
       capacidad_t: 30,
       disponible: true,
       disponibilidad_dias: [0, 2, 3, 6, 7],
+      horarios: ["08:00", "11:00", "14:00"],
     },
     {
       id: "CAM-05",
@@ -53,6 +62,7 @@ export const DEMO_FLOTA = {
       capacidad_t: 26,
       disponible: true,
       disponibilidad_dias: [0, 1, 4, 5, 6],
+      horarios: ["07:30", "10:00", "13:00", "16:00"],
     },
     {
       id: "CAM-06",
@@ -63,6 +73,7 @@ export const DEMO_FLOTA = {
       capacidad_t: 28,
       disponible: true,
       disponibilidad_dias: [2, 3, 4, 5, 6, 7],
+      horarios: ["08:00", "12:00", "16:00"],
     },
     {
       id: "CAM-07",
@@ -73,6 +84,8 @@ export const DEMO_FLOTA = {
       capacidad_t: 28,
       disponible: true,
       disponibilidad_dias: [0, 3, 4],
+      horarios: ["09:00", "11:00", "14:00"],
+      horarios_offset: { "0": ["11:00", "14:00"] },
     },
   ],
   choferes: [
@@ -83,6 +96,8 @@ export const DEMO_FLOTA = {
       licencia: "E",
       disponible: true,
       disponibilidad_dias: [0, 1, 2, 3, 4, 5, 6],
+      horarios: ["08:00", "11:00", "14:00", "16:00"],
+      horarios_offset: { "0": ["11:00", "14:00", "16:00"] },
     },
     {
       id: "CHF-02",
@@ -91,6 +106,7 @@ export const DEMO_FLOTA = {
       licencia: "E",
       disponible: true,
       disponibilidad_dias: [0, 1, 2, 5, 6, 7],
+      horarios: ["08:00", "10:00", "13:00", "15:00"],
     },
     {
       id: "CHF-03",
@@ -99,6 +115,7 @@ export const DEMO_FLOTA = {
       licencia: "E",
       disponible: true,
       disponibilidad_dias: [1, 2, 3, 4, 5],
+      horarios: ["07:00", "09:00", "12:00", "15:00"],
     },
     {
       id: "CHF-04",
@@ -107,6 +124,7 @@ export const DEMO_FLOTA = {
       licencia: "E",
       disponible: true,
       disponibilidad_dias: [0, 3, 4, 6, 7],
+      horarios: ["08:00", "11:00", "14:00"],
     },
     {
       id: "CHF-05",
@@ -115,6 +133,7 @@ export const DEMO_FLOTA = {
       licencia: "E",
       disponible: true,
       disponibilidad_dias: [2, 3, 4, 5, 6, 7],
+      horarios: ["08:00", "12:00", "16:00"],
     },
   ],
 };

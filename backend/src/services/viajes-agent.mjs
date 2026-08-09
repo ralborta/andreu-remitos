@@ -2,13 +2,23 @@ import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import {
   camposFaltantes,
   esConfirmacionChofer,
+  esConfirmacionCliente,
   esRechazoChofer,
+  esRechazoCliente,
   interpretarMensajeViaje,
+  mensajeConsultandoDisponibilidad,
   mensajePedirDatos,
+  mensajePropuestaReserva,
   mensajeViajeAsignadoChofer,
   mensajeViajeAsignadoCliente,
+  parseSeleccionOpcion,
 } from "../../../lib/viajes-agente.mjs";
-import { asignarDesdeFlota, normalizarFechaRetiro } from "./viajes-flota.mjs";
+import {
+  asignarDesdeFlota,
+  consultarDisponibilidad,
+  normalizarFechaRetiro,
+  normalizarHora,
+} from "./viajes-flota.mjs";
 import * as viajesStore from "../db/viajes-store.mjs";
 import * as solStore from "../db/viajes-solicitudes-store.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
@@ -39,7 +49,8 @@ async function viajesActivosParaAsignacion() {
 }
 
 /**
- * Entrada conversacional WhatsApp (recolecta datos → asigna → confirma).
+ * Entrada conversacional WhatsApp:
+ * datos → consulta disponibilidad → opciones → confirmación cliente → reserva → chofer.
  */
 export async function procesarMensajeViajeWhatsApp({
   telefono,
@@ -51,7 +62,6 @@ export async function procesarMensajeViajeWhatsApp({
   const t = String(texto ?? "").trim();
   if (!phone || !t) return null;
 
-  // ¿Chofer respondiendo confirmación de un viaje asignado?
   const solChofer = await solStore.getSolicitudPendientePorTelefono(phone);
   if (solChofer?.estado === "esperando_confirmacion_chofer") {
     return procesarConfirmacionChofer(solChofer, { texto: t, log });
@@ -67,6 +77,10 @@ export async function procesarMensajeViajeWhatsApp({
     { texto: t, tipo: "text" },
     { dir: "in", from: "client", nombre, agente: "viajes" },
   );
+
+  if (pending?.estado === "esperando_confirmacion_cliente") {
+    return procesarConfirmacionCliente(pending, { texto: t, nombre, log });
+  }
 
   if (!pending) {
     pending = await solStore.crearSolicitud({
@@ -103,31 +117,168 @@ export async function procesarMensajeViajeWhatsApp({
     };
   }
 
-  // Datos completos → match + asignar
-  return finalizarAsignacion(pending, { telefonoCliente: phone, log });
+  return consultarYProponer(pending, { telefonoCliente: phone, nombre, log });
 }
 
-async function finalizarAsignacion(pending, { telefonoCliente, log } = {}) {
+async function consultarYProponer(pending, { telefonoCliente, nombre, log } = {}) {
   const datos = pending.datos;
-  const fechaIso = normalizarFechaRetiro(datos.fecha_retiro);
+  await enviar(telefonoCliente, mensajeConsultandoDisponibilidad(datos), { nombre });
+
   const activos = await viajesActivosParaAsignacion();
-  const asignacion = asignarDesdeFlota({
+  const consulta = consultarDisponibilidad({
     toneladas: datos.toneladas ?? 20,
     tipo_carga: datos.tipo_carga,
-    fecha_retiro: fechaIso,
+    fecha_retiro: datos.fecha_retiro,
+    hora_retiro: datos.hora_retiro,
     viajesActivos: activos,
   });
 
+  const mensaje = mensajePropuestaReserva(consulta, datos);
+  await enviar(telefonoCliente, mensaje, { nombre });
+
+  if (!consulta.ok || !consulta.propuesta) {
+    await solStore.actualizarSolicitud(pending.id, {
+      estado: "recolectando",
+      propuesta: null,
+      historial_push: `${new Date().toISOString()} · Sin disponibilidad`,
+    });
+    return { flow: "viajes_sin_disponibilidad", solicitud: pending, consulta, mensaje };
+  }
+
+  const opciones = [consulta.propuesta, ...(consulta.alternativas ?? [])].slice(0, 4);
+  pending = await solStore.actualizarSolicitud(pending.id, {
+    estado: "esperando_confirmacion_cliente",
+    propuesta: {
+      consulta: {
+        pedida: consulta.pedida,
+        exacta_ok: consulta.exacta_ok,
+      },
+      elegida: consulta.propuesta,
+      opciones,
+    },
+    historial_push: `${new Date().toISOString()} · Propuesta ${consulta.propuesta.fecha} ${consulta.propuesta.hora}`,
+  });
+
+  log?.info?.(
+    {
+      exacta: consulta.exacta_ok,
+      fecha: consulta.propuesta.fecha,
+      hora: consulta.propuesta.hora,
+      opciones: opciones.length,
+    },
+    "Viajes: disponibilidad ofrecida",
+  );
+
+  return {
+    flow: "viajes_propuesta",
+    solicitud: pending,
+    consulta,
+    mensaje,
+  };
+}
+
+async function procesarConfirmacionCliente(pending, { texto, nombre, log } = {}) {
+  const phone = pending.telefono;
+  const idx = parseSeleccionOpcion(texto);
+  const propuesta = pending.propuesta ?? {};
+  const opciones = Array.isArray(propuesta.opciones) ? propuesta.opciones : [];
+
+  // Eligió número de opción
+  if (idx != null && opciones[idx]) {
+    const elegida = opciones[idx];
+    await solStore.actualizarSolicitud(pending.id, {
+      propuesta: { ...propuesta, elegida },
+      datos: {
+        fecha_retiro: elegida.fecha,
+        hora_retiro: elegida.hora,
+      },
+      historial_push: `${new Date().toISOString()} · Cliente eligió opción ${idx + 1}`,
+    });
+    return finalizarAsignacion(
+      { ...pending, propuesta: { ...propuesta, elegida }, datos: { ...pending.datos, fecha_retiro: elegida.fecha, hora_retiro: elegida.hora } },
+      { telefonoCliente: phone, slot: elegida, log },
+    );
+  }
+
+  if (esConfirmacionCliente(texto)) {
+    const elegida = propuesta.elegida || opciones[0];
+    if (!elegida) {
+      return consultarYProponer(pending, { telefonoCliente: phone, nombre, log });
+    }
+    return finalizarAsignacion(pending, { telefonoCliente: phone, slot: elegida, log });
+  }
+
+  if (esRechazoCliente(texto)) {
+    const msg =
+      `Entendido. Decime qué *fecha* y *horario* preferís y vuelvo a consultar disponibilidad.`;
+    await enviar(phone, msg, { nombre });
+    await solStore.actualizarSolicitud(pending.id, {
+      estado: "recolectando",
+      propuesta: null,
+      historial_push: `${new Date().toISOString()} · Cliente rechazó propuesta`,
+    });
+    return { flow: "viajes_propuesta_rechazada", mensaje: msg };
+  }
+
+  // ¿Cambiaron fecha/hora? → reconsultar
+  const interpreted = await interpretarMensajeViaje(texto, {
+    pendingDatos: pending.datos,
+    remitente: nombre || pending.nombre,
+    log,
+  });
+  const cambioFecha =
+    interpreted.datos.fecha_retiro !== pending.datos.fecha_retiro ||
+    interpreted.datos.hora_retiro !== pending.datos.hora_retiro;
+  if (cambioFecha && (interpreted.datos.fecha_retiro || interpreted.datos.hora_retiro)) {
+    pending = await solStore.actualizarSolicitud(pending.id, {
+      datos: interpreted.datos,
+      estado: "recolectando",
+      propuesta: null,
+      historial_push: `${new Date().toISOString()} · Nuevo pedido de fecha/hora`,
+    });
+    return consultarYProponer(pending, { telefonoCliente: phone, nombre, log });
+  }
+
+  const msg =
+    `Para generar la reserva respondé *SÍ*, el número de opción (*1*, *2*…), o pedime otra fecha/hora.`;
+  await enviar(phone, msg, { nombre });
+  return { flow: "viajes_pedir_confirmacion_cliente", mensaje: msg };
+}
+
+async function finalizarAsignacion(pending, { telefonoCliente, slot, log } = {}) {
+  const datos = pending.datos;
+  const fechaIso = slot?.fecha || normalizarFechaRetiro(datos.fecha_retiro);
+  const hora = slot?.hora || normalizarHora(datos.hora_retiro);
+  const activos = await viajesActivosParaAsignacion();
+
+  let asignacion = slot
+    ? {
+        ok: true,
+        fecha: slot.fecha,
+        hora: slot.hora,
+        chofer: slot.chofer,
+        telefono_chofer: slot.telefono_chofer,
+        tractor: slot.tractor,
+        semi: slot.semi,
+        tipo_unidad: slot.tipo_unidad,
+        capacidad_t: slot.capacidad_t,
+        tipos_carga: slot.tipos_carga ?? [],
+        fuente: "propuesta-confirmada",
+      }
+    : asignarDesdeFlota({
+        toneladas: datos.toneladas ?? 20,
+        tipo_carga: datos.tipo_carga,
+        fecha_retiro: fechaIso,
+        hora_retiro: hora,
+        viajesActivos: activos,
+        forzar_propuesta: pending.propuesta?.elegida,
+      });
+
   if (!asignacion.ok) {
     const msg =
-      `Tengo todos los datos pero *no encontré transporte disponible*.\n\n` +
-      `${asignacion.error}\n\n` +
-      `¿Querés probar otra fecha o tipo de carga?`;
+      `Justo se ocupó ese cupo. Déjame consultar de nuevo…`;
     await enviar(telefonoCliente, msg);
-    await solStore.actualizarSolicitud(pending.id, {
-      historial_push: `${new Date().toISOString()} · Sin flota: ${asignacion.error}`,
-    });
-    return { flow: "viajes_sin_flota", solicitud: pending, error: asignacion.error, mensaje: msg };
+    return consultarYProponer(pending, { telefonoCliente, log });
   }
 
   let viaje = await viajesStore.crearViaje({
@@ -135,11 +286,12 @@ async function finalizarAsignacion(pending, { telefonoCliente, log } = {}) {
     origen: datos.origen,
     destino: datos.destino,
     carga: datos.carga || `${datos.tipo_carga} ${datos.toneladas} t`,
-    fecha: fechaIso,
+    fecha: asignacion.fecha || fechaIso,
     telefono_cliente: telefonoCliente || null,
     notas: [
       datos.notas,
       `tipo_carga=${datos.tipo_carga}`,
+      asignacion.hora ? `hora=${asignacion.hora}` : null,
       `solicitud=${pending.id}`,
       `canal=whatsapp`,
     ]
@@ -166,13 +318,12 @@ async function finalizarAsignacion(pending, { telefonoCliente, log } = {}) {
   }
 
   await solStore.actualizarSolicitud(pending.id, {
-    estado: asignacion.telefono_chofer ? "esperando_confirmacion_chofer" : "asignada",
+    estado: "asignada",
     viaje_id: viaje.id,
-    // Para que el chofer responda, movemos el pending “lógico” al teléfono del chofer:
-    historial_push: `${new Date().toISOString()} · Asignado ${viaje.codigo} → ${asignacion.chofer}`,
+    propuesta: null,
+    historial_push: `${new Date().toISOString()} · Reserva ${viaje.codigo} → ${asignacion.chofer}`,
   });
 
-  // Duplicar solicitud en estado espera bajo teléfono del chofer
   if (asignacion.telefono_chofer) {
     const solChofer = await solStore.crearSolicitud({
       telefono: asignacion.telefono_chofer,
@@ -184,10 +335,6 @@ async function finalizarAsignacion(pending, { telefonoCliente, log } = {}) {
       viaje_id: viaje.id,
       historial_push: `${new Date().toISOString()} · Esperando confirmación chofer`,
     });
-    // Cerrar la del cliente
-    await solStore.actualizarSolicitud(pending.id, {
-      estado: "asignada",
-    });
   }
 
   log?.info?.(
@@ -195,9 +342,10 @@ async function finalizarAsignacion(pending, { telefonoCliente, log } = {}) {
       codigo: viaje.codigo,
       chofer: viaje.chofer,
       tipo: asignacion.tipo_unidad,
-      fecha: fechaIso,
+      fecha: asignacion.fecha,
+      hora: asignacion.hora,
     },
-    "Viaje asignado (agente conversacional)",
+    "Viaje reservado tras confirmación cliente",
   );
 
   return {
@@ -273,7 +421,7 @@ async function procesarConfirmacionChofer(solChofer, { texto, log } = {}) {
 }
 
 /**
- * Compat: ingest one-shot (email / API) — exige datos completos o falla.
+ * Compat: ingest one-shot (email / API) — exige datos completos y reserva directo.
  */
 export async function procesarSolicitudViaje(input) {
   const { log } = input;
@@ -290,7 +438,6 @@ export async function procesarSolicitudViaje(input) {
     );
   }
 
-  // Crear solicitud sintética y asignar
   const pending = await solStore.crearSolicitud({
     telefono: phone || "0000000000",
     nombre: input.remitente,

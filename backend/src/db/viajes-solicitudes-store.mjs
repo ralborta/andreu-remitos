@@ -6,6 +6,12 @@ import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const FILE = path.join(DATA_DIR, "viajes-solicitudes.json");
 
+const ESTADOS_PENDIENTES = new Set([
+  "recolectando",
+  "esperando_confirmacion_cliente",
+  "esperando_confirmacion_chofer",
+]);
+
 function readAll() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(FILE)) return [];
@@ -22,11 +28,7 @@ export async function getSolicitudPendientePorTelefono(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return null;
   return (
-    readAll().find(
-      (r) =>
-        r.telefono === phone &&
-        (r.estado === "recolectando" || r.estado === "esperando_confirmacion_chofer"),
-    ) ?? null
+    readAll().find((r) => r.telefono === phone && ESTADOS_PENDIENTES.has(r.estado)) ?? null
   );
 }
 
@@ -45,16 +47,22 @@ export async function crearSolicitud({ telefono, nombre, datos = {} }) {
       toneladas: null,
       tipo_carga: null,
       fecha_retiro: null,
+      hora_retiro: null,
       notas: null,
       ...datos,
     },
+    propuesta: null,
     historial: [`${now} · Solicitud iniciada`],
     viaje_id: null,
     created_at: now,
     updated_at: now,
   };
   const rows = readAll().filter(
-    (r) => !(r.telefono === phone && r.estado === "recolectando"),
+    (r) =>
+      !(
+        r.telefono === phone &&
+        (r.estado === "recolectando" || r.estado === "esperando_confirmacion_cliente")
+      ),
   );
   rows.unshift(row);
   writeAll(rows);
@@ -70,6 +78,7 @@ export async function actualizarSolicitud(id, patch = {}) {
   if (patch.estado) row.estado = patch.estado;
   if (patch.viaje_id !== undefined) row.viaje_id = patch.viaje_id;
   if (patch.nombre !== undefined) row.nombre = patch.nombre;
+  if (patch.propuesta !== undefined) row.propuesta = patch.propuesta;
   if (patch.historial_push) {
     row.historial = [...(row.historial ?? []), patch.historial_push];
   }
