@@ -28,7 +28,6 @@ import {
   procesarRespuestaDestinoChofer,
 } from "../services/destinos.mjs";
 import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
-import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
@@ -318,22 +317,13 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
 
 async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) {
   if (!ev.from || !texto?.trim()) return null;
-  // Remito abierto solo bloquea viajes ambiguos; si el router ya dijo "viaje", no bloquear.
+  // Remito abierto solo bloquea si nadie forzó el agente (router IA / pending).
   if (!forzar && flujoRemitoAbierto(conv)) return null;
 
   const pendingViaje = await solViajesStore.getSolicitudPendientePorTelefono(ev.from);
-  const parece = forzar || pareceSolicitudViaje(texto);
-
-  // Continuar conversación pendiente O nueva solicitud (heurística o forzada por router IA)
-  if (!pendingViaje && !parece) return null;
-
-  // Si es chofer de remitos y NO forzó el router, no robar remitos con mensajes ambiguos
-  if (!pendingViaje && !forzar) {
-    const chofer = await master.resolverChoferPorTelefono(ev.from);
-    if (chofer && !/\b(necesitamos|solicitamos|pedimos|transporte|flete|viaje)\b/i.test(texto)) {
-      return null;
-    }
-  }
+  // Full IA: solo entra por solicitud pendiente o porque el router IA ya decidió "viaje".
+  // No usamos heurística regex para abrir o cerrar el agente.
+  if (!pendingViaje && !forzar) return null;
 
   try {
     const out = await procesarMensajeViajeWhatsApp({
@@ -341,7 +331,7 @@ async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) 
       texto,
       nombre: ev.nombre,
       log,
-      forzar: Boolean(forzar || pendingViaje),
+      forzar: true,
     });
     if (!out) return null;
     return {
@@ -604,22 +594,17 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
-      // Texto nuevo (sin foto): router IA remito vs viaje vs reclamo.
-      // Con remito abierto solo saltamos el router si NO parece viaje/reclamo.
+      // Texto nuevo (sin foto): SIEMPRE router IA (remito / viaje / reclamo / chat).
+      // Si hay remito abierto de un chofer de remitos, el router puede devolver null
+      // en intent=remito y sigue el flujo de correcciones más abajo.
       if (texto && !ev.media?.url) {
-        const pareceOtroAgente =
-          /\b(viaje|flete|transporte|reclamo|necesito|necesitamos|solicitamos|pedimos)\b/i.test(
-            texto,
-          );
-        if (!flujoRemitoAbierto(convEarly) || pareceOtroAgente) {
-          const routed = await enrutarPorIntencion(ev, {
-            texto,
-            conv: convEarly,
-            log: request.log,
-          });
-          if (routed) {
-            return respuestaWebhook({ ...routed, received: true });
-          }
+        const routed = await enrutarPorIntencion(ev, {
+          texto,
+          conv: convEarly,
+          log: request.log,
+        });
+        if (routed) {
+          return respuestaWebhook({ ...routed, received: true });
         }
       }
 

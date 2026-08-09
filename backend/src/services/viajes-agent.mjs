@@ -1,4 +1,3 @@
-import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import {
   camposFaltantes,
   esConfirmacionChofer,
@@ -64,8 +63,8 @@ export async function procesarMensajeViajeWhatsApp({
   }
 
   let pending = await solStore.getSolicitudPendientePorTelefono(phone);
-  const parece = forzar || pareceSolicitudViaje(t);
-  if (!pending && !parece) return null;
+  // Full IA: no hay gate regex. Solo entramos con solicitud abierta o forzado por router IA.
+  if (!pending && !forzar) return null;
 
   await convStore.appendMensaje(
     phone,

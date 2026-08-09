@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 viajes-forzar-parece
+# cache-bust 2026-08-09 full-ia-viajes
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
