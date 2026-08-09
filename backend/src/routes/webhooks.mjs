@@ -517,6 +517,8 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 
 async function tryProcesarDestinos(ev, { texto, log } = {}) {
   if (!ev.from) return null;
+  // No robar mensajes de rendición de gastos (nafta, peaje, ticket…)
+  if (pareceRendicionGasto(texto)) return null;
 
   const pendingCliente = await destinosStore.getDestinoPendientePorTelefono(ev.from);
   if (pendingCliente) {
@@ -623,7 +625,36 @@ export default async function webhooksRoutes(fastify) {
       const texto = ev.message?.trim() || "";
       const convEarly = ev.from ? await convStore.getConversacion(ev.from) : null;
 
-      // Destinos primero — cliente en validación no debe caer en flujo de remitos
+      // Rendición de gastos ANTES de destinos/ETA: si el chofer dice "rendir nafta"
+      // no debe caer en "pasame el ETA" por un destino activo.
+      if (ev.from && pareceRendicionGasto(texto)) {
+        let imageBuffer = null;
+        let mime = null;
+        const mediaEsAudio = esEventoAudio(ev, null);
+        if (ev.media?.url && !mediaEsAudio) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            if (!/audio/i.test(dl.mime || "")) {
+              imageBuffer = dl.buffer;
+              mime = dl.mime;
+            }
+          } catch (err) {
+            request.log.warn({ err: err.message }, "Rendición: no pude bajar media");
+          }
+        }
+        const gastoOut = await tryProcesarRendicion(ev, {
+          texto,
+          log: request.log,
+          imageBuffer,
+          mime,
+          forzar: true,
+        });
+        if (gastoOut) {
+          return respuestaWebhook({ ...gastoOut, received: true });
+        }
+      }
+
+      // Destinos — cliente en validación / ETA chofer (no si ya es rendición)
       const destinoOut = await tryProcesarDestinos(ev, { texto, log: request.log });
       if (destinoOut) {
         return respuestaWebhook({ ...destinoOut, received: true });
@@ -775,22 +806,8 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        // Foto — destino pendiente, rendición de gastos, o remito
-        const destinoPendiente = ev.from
-          ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
-          : null;
-        if (destinoPendiente) {
-          const hint =
-            "Recibí una imagen, pero estoy esperando que confirmes el *destino*.\n" +
-            "Respondé *SÍ*, escribí la dirección corregida, o enviá tu ubicación 📌";
-          if (ev.from) {
-            await notificarChofer(ev.from, hint, { log: request.log }).catch(() => {});
-          }
-          return respuestaWebhook({ message: hint, flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
-        }
-
+        // Foto — rendición de gastos (caption), destino pendiente, o remito
         const caption = texto || ev.message?.trim() || "";
-        // Foto de gasto/ticket: solo si el caption lo indica (evita robar fotos de remito)
         if (pareceRendicionGasto(caption)) {
           const gastoOut = await tryProcesarRendicion(ev, {
             texto: caption,
@@ -802,6 +819,19 @@ export default async function webhooksRoutes(fastify) {
           if (gastoOut) {
             return respuestaWebhook({ ...gastoOut, received: true });
           }
+        }
+
+        const destinoPendiente = ev.from
+          ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
+          : null;
+        if (destinoPendiente) {
+          const hint =
+            "Recibí una imagen, pero estoy esperando que confirmes el *destino*.\n" +
+            "Respondé *SÍ*, escribí la dirección corregida, o enviá tu ubicación 📌";
+          if (ev.from) {
+            await notificarChofer(ev.from, hint, { log: request.log }).catch(() => {});
+          }
+          return respuestaWebhook({ message: hint, flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
         }
 
         const telefono = ev.from || null;

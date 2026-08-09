@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 rendicion-gastos
+# cache-bust 2026-08-09 rendicion-antes-destinos
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
