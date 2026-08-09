@@ -640,6 +640,10 @@ export type ReclamoEstado = "nuevo" | "en_proceso" | "escalado" | "resuelto";
 
 export interface ReclamoCaso {
   id: string;
+  /** Código público RC-YYYYMMDD-0001-PD */
+  codigo: string;
+  tipoAbbr?: string | null;
+  tipoAbbrLabel?: string | null;
   estado: ReclamoEstado | string;
   estadoLabel: string;
   motivo: string | null;
@@ -659,6 +663,12 @@ export interface ReclamoCaso {
   notaInterna: string | null;
   sla: string;
   historial: string[];
+  mensajes?: Array<{
+    dir?: string;
+    texto?: string;
+    at?: string;
+    imagen_url?: string | null;
+  }>;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { ArrowUpRight, Check, RefreshCw } from "lucide-react";
+import { ArrowUpRight, Check, RefreshCw, X } from "lucide-react";
 import {
   decidirReclamo,
   listReclamos,
@@ -27,6 +27,211 @@ function estadoColor(estado: string) {
   return "#a79fc9";
 }
 
+function codigoCaso(g: ReclamoCaso) {
+  return g.codigo || g.id;
+}
+
+function ReclamoDetalleModal({
+  caso,
+  onClose,
+  onVerFoto,
+  busyId,
+  onDecidir,
+}: {
+  caso: ReclamoCaso;
+  onClose: () => void;
+  onVerFoto: () => void;
+  busyId: string | null;
+  onDecidir: (estado: "en_proceso" | "escalado" | "resuelto") => void;
+}) {
+  const fotoSrc = browsableMediaUrl(caso.imagenUrl);
+  const mensajes = (caso.mensajes || []).slice(-12);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reclamo-detalle-title"
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 id="reclamo-detalle-title" className="text-base font-semibold text-white">
+              {codigoCaso(caso)}
+            </h3>
+            <p className="mt-0.5 text-xs text-[var(--text-faint)]">
+              {caso.motivoLabel}
+              {caso.tipoAbbr ? ` · ${caso.tipoAbbr}` : ""}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-white/5 hover:text-white"
+            aria-label="Cerrar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Pill color={caso.canal === "WhatsApp" ? "#25d366" : "#a78bfa"}>{caso.canal}</Pill>
+          {caso.criticidadLabel !== "—" && (
+            <CritBadge level={caso.criticidadLabel as "Alta" | "Media" | "Baja"} />
+          )}
+          <Pill color={estadoColor(caso.estado)}>{caso.estadoLabel}</Pill>
+          <span
+            className={clsx(
+              "rounded-full px-2.5 py-0.5 text-xs",
+              caso.sla === "Por vencer"
+                ? "bg-amber-500/15 text-amber-300"
+                : "bg-white/5 text-[var(--text-dim)]",
+            )}
+          >
+            {caso.sla}
+          </span>
+        </div>
+
+        <dl className="space-y-2.5 text-sm">
+          <div>
+            <dt className="text-xs text-[var(--text-faint)]">Cliente</dt>
+            <dd className="text-white">{caso.cliente}</dd>
+            {caso.telefono && (
+              <dd className="text-xs text-[var(--text-dim)]">{caso.telefono}</dd>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <dt className="text-xs text-[var(--text-faint)]">Viaje</dt>
+              <dd className="text-[var(--text-dim)]">{caso.viaje}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-[var(--text-faint)]">Remito / pedido</dt>
+              <dd className="text-[var(--text-dim)]">
+                {caso.remito || caso.pedido || "—"}
+              </dd>
+            </div>
+          </div>
+          {(caso.resumen || caso.detalle) && (
+            <div>
+              <dt className="text-xs text-[var(--text-faint)]">Detalle</dt>
+              <dd className="whitespace-pre-wrap text-[var(--text-dim)]">
+                {caso.detalle || caso.resumen}
+              </dd>
+            </div>
+          )}
+          {caso.escaladoA && (
+            <div>
+              <dt className="text-xs text-[var(--text-faint)]">Escalado a</dt>
+              <dd className="text-[var(--text-dim)]">{caso.escaladoA}</dd>
+            </div>
+          )}
+          {caso.notaInterna && (
+            <div>
+              <dt className="text-xs text-[var(--text-faint)]">Nota interna</dt>
+              <dd className="text-[var(--text-dim)]">{caso.notaInterna}</dd>
+            </div>
+          )}
+        </dl>
+
+        {fotoSrc && (
+          <div className="mt-4">
+            <p className="mb-2 text-xs text-[var(--text-faint)]">Evidencia</p>
+            <button
+              type="button"
+              onClick={onVerFoto}
+              className="group relative block w-full overflow-hidden rounded-xl border border-[var(--border)]"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={fotoSrc}
+                alt={`Foto ${codigoCaso(caso)}`}
+                className="max-h-52 w-full object-contain bg-black/40"
+              />
+              <span className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 text-center text-xs text-white opacity-90 group-hover:opacity-100">
+                Abrir foto
+              </span>
+            </button>
+          </div>
+        )}
+
+        {mensajes.length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 text-xs text-[var(--text-faint)]">Últimos mensajes</p>
+            <ul className="max-h-40 space-y-1.5 overflow-y-auto rounded-xl border border-[var(--border)] bg-black/20 p-2.5 text-xs">
+              {mensajes.map((m, i) => (
+                <li
+                  key={`${m.at || i}-${i}`}
+                  className={clsx(
+                    m.dir === "out" ? "text-sky-300/90" : "text-[var(--text-dim)]",
+                  )}
+                >
+                  <span className="text-[var(--text-faint)]">
+                    {m.dir === "out" ? "Agente" : "Cliente"}:{" "}
+                  </span>
+                  {m.texto || (m.imagen_url ? "[foto]" : "—")}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {(caso.historial || []).length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 text-xs text-[var(--text-faint)]">Historial</p>
+            <ul className="max-h-28 space-y-1 overflow-y-auto text-xs text-[var(--text-dim)]">
+              {(caso.historial || []).slice(-8).map((h, i) => (
+                <li key={`${h}-${i}`}>{h}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {caso.estado !== "resuelto" && (
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+            {caso.estado === "nuevo" && (
+              <button
+                type="button"
+                disabled={busyId === caso.id}
+                onClick={() => onDecidir("en_proceso")}
+                className="inline-flex items-center gap-1 rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+              >
+                Tomar
+              </button>
+            )}
+            {caso.estado !== "escalado" && (
+              <button
+                type="button"
+                disabled={busyId === caso.id}
+                onClick={() => onDecidir("escalado")}
+                className="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 px-3 py-1.5 text-xs text-amber-300 hover:bg-amber-500/30 disabled:opacity-50"
+              >
+                <ArrowUpRight size={14} />
+                Escalar
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={busyId === caso.id}
+              onClick={() => onDecidir("resuelto")}
+              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50"
+            >
+              <Check size={14} />
+              OK
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ReclamosPanel() {
   const confirm = useConfirm();
   const [rows, setRows] = useState<ReclamoCaso[]>([]);
@@ -36,6 +241,7 @@ export function ReclamosPanel() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [foto, setFoto] = useState<FotoPreview | null>(null);
+  const [detalle, setDetalle] = useState<ReclamoCaso | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,6 +259,10 @@ export function ReclamosPanel() {
           : list;
       setRows(filtered);
       setResumen(sum);
+      setDetalle((prev) => {
+        if (!prev) return null;
+        return filtered.find((r) => r.id === prev.id) || list.find((r) => r.id === prev.id) || null;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pude cargar reclamos");
     } finally {
@@ -85,7 +295,7 @@ export function ReclamosPanel() {
     };
     const ok = await confirm({
       title: labels[estado],
-      message: `${g.id} · ${g.motivoLabel} · ${g.cliente}\n${g.viaje !== "—" ? g.viaje : g.resumen || ""}`,
+      message: `${codigoCaso(g)} · ${g.motivoLabel} · ${g.cliente}\n${g.viaje !== "—" ? g.viaje : g.resumen || ""}`,
       confirmLabel: labels[estado],
     });
     if (!ok) return;
@@ -98,6 +308,15 @@ export function ReclamosPanel() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  function abrirFoto(g: ReclamoCaso) {
+    const src = browsableMediaUrl(g.imagenUrl);
+    if (!src) return;
+    setFoto({
+      src,
+      title: `${codigoCaso(g)} · ${g.motivoLabel}`,
+    });
   }
 
   return (
@@ -113,7 +332,7 @@ export function ReclamosPanel() {
           <div>
             <h3 className="font-semibold text-white">Reclamos en gestión</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Clientes por WhatsApp · diálogo 100% IA · clasificación y escalamiento
+              Clientes por WhatsApp · diálogo 100% IA · click en la fila para ver detalle
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -180,8 +399,20 @@ export function ReclamosPanel() {
               </thead>
               <tbody>
                 {rows.map((g) => (
-                  <tr key={g.id} className="border-b border-[var(--border)]/60">
-                    <td className="py-3 pr-3 font-medium text-white">{g.id}</td>
+                  <tr
+                    key={g.id}
+                    className="cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.03]"
+                    onClick={() => setDetalle(g)}
+                  >
+                    <td className="py-3 pr-3 font-medium text-white">
+                      <div>{codigoCaso(g)}</div>
+                      {g.tipoAbbr && (
+                        <div className="text-[10px] font-normal text-[var(--text-faint)]">
+                          {g.tipoAbbr}
+                          {g.tipoAbbrLabel ? ` · ${g.tipoAbbrLabel}` : ""}
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 pr-3 text-[var(--text-dim)]">
                       <div>{g.cliente}</div>
                       <div className="text-xs text-[var(--text-faint)]">{g.telefono || ""}</div>
@@ -197,13 +428,9 @@ export function ReclamosPanel() {
                       {g.imagenUrl && (
                         <button
                           type="button"
-                          onClick={() => {
-                            const src = browsableMediaUrl(g.imagenUrl);
-                            if (!src) return;
-                            setFoto({
-                              src,
-                              title: `${g.id} · ${g.motivoLabel}`,
-                            });
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            abrirFoto(g);
                           }}
                           className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
                         >
@@ -232,7 +459,7 @@ export function ReclamosPanel() {
                     >
                       {g.sla}
                     </td>
-                    <td className="py-3">
+                    <td className="py-3" onClick={(e) => e.stopPropagation()}>
                       {g.estado === "resuelto" ? (
                         <span className="text-xs text-[var(--text-faint)]">—</span>
                       ) : (
@@ -277,6 +504,16 @@ export function ReclamosPanel() {
           </div>
         )}
       </Card>
+
+      {detalle && (
+        <ReclamoDetalleModal
+          caso={detalle}
+          onClose={() => setDetalle(null)}
+          onVerFoto={() => abrirFoto(detalle)}
+          busyId={busyId}
+          onDecidir={(estado) => void decidir(detalle, estado)}
+        />
+      )}
 
       <RemitoImageLightbox
         src={foto?.src ?? ""}

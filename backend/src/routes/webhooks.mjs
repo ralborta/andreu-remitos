@@ -32,6 +32,10 @@ import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
 import { procesarGastoWhatsApp } from "../services/rendicion-agent.mjs";
 import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
+import {
+  extractCodigoReclamo,
+  pareceConsultaEstadoReclamo,
+} from "../../../lib/reclamos.mjs";
 import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
@@ -683,6 +687,25 @@ export default async function webhooksRoutes(fastify) {
         });
         if (reclamoPend) {
           return respuestaWebhook({ ...reclamoPend, received: true });
+        }
+      }
+
+      // Consulta de caso ya abierto (código RC-… o "estado de mi reclamo")
+      // antes de rendición/remito, para no mezclar flujos.
+      if (
+        ev.from &&
+        texto &&
+        !esFoto &&
+        !pendingReclamoEarly &&
+        (extractCodigoReclamo(texto) || pareceConsultaEstadoReclamo(texto))
+      ) {
+        const consulta = await tryProcesarReclamo(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+        });
+        if (consulta) {
+          return respuestaWebhook({ ...consulta, received: true });
         }
       }
 

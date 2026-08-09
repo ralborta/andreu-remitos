@@ -1,13 +1,16 @@
 import * as reclamosStore from "../db/reclamos-store.mjs";
 import {
   calcularSlaLabel,
+  codigoVisible,
   labelCriticidad,
   labelEstadoReclamo,
   labelMotivo,
+  RECLAMO_ABBR_LABEL,
   RECLAMO_CRITICIDAD_LABEL,
   RECLAMO_CRITICIDADES,
   RECLAMO_ESTADO_LABEL,
   RECLAMO_ESTADOS,
+  RECLAMO_MOTIVO_ABBR,
   RECLAMO_MOTIVO_LABEL,
   RECLAMO_MOTIVOS,
 } from "../../../lib/reclamos.mjs";
@@ -17,8 +20,13 @@ import * as convStore from "../db/conversations-store.mjs";
 
 function mapReclamo(row) {
   if (!row) return null;
+  const codigo = codigoVisible(row);
+  const abbr = row.motivo ? RECLAMO_MOTIVO_ABBR[row.motivo] || "OT" : null;
   return {
     id: row.id,
+    codigo,
+    tipoAbbr: abbr,
+    tipoAbbrLabel: abbr ? RECLAMO_ABBR_LABEL[abbr] || null : null,
     estado: row.estado,
     estadoLabel: labelEstadoReclamo(row.estado),
     motivo: row.motivo,
@@ -38,6 +46,7 @@ function mapReclamo(row) {
     notaInterna: row.nota_interna,
     sla: calcularSlaLabel(row),
     historial: row.historial ?? [],
+    mensajes: row.mensajes ?? [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

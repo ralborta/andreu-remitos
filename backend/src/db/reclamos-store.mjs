@@ -3,6 +3,8 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import {
+  buildCodigoReclamo,
+  extractCodigoReclamo,
   RECLAMO_CRITICIDADES,
   RECLAMO_ESTADOS,
   RECLAMO_MOTIVOS,
@@ -12,6 +14,7 @@ const DATA_DIR = process.env.DATA_DIR || "./data";
 const FILE = path.join(DATA_DIR, "reclamos.json");
 
 const ESTADOS_DIALOG_ABIERTOS = new Set(["recolectando"]);
+const ESTADOS_CASO_ACTIVOS = new Set(["nuevo", "en_proceso", "escalado"]);
 
 function readAll() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -29,15 +32,14 @@ function writeAll(rows) {
   fs.writeFileSync(FILE, JSON.stringify(rows, null, 2));
 }
 
-function codigoNuevo() {
-  return `RC-${randomUUID().slice(0, 8).toUpperCase()}`;
+function idInterno() {
+  return `RID-${randomUUID().slice(0, 10).toUpperCase()}`;
 }
 
 function normalizeMotivo(v) {
   const m = String(v || "otro").toLowerCase().trim();
   if (RECLAMO_MOTIVOS.includes(m)) return m;
-  // aliases IA
-  if (/demora/.test(m)) return "demora_entrega";
+  if (/demora|retraso|tard/.test(m)) return "demora_entrega";
   if (/equivoc|incorrect|mal\s*producto|producto\s*mal|no\s*era\s*lo|otro\s*producto/.test(m)) {
     return "producto_equivocado";
   }
@@ -62,8 +64,39 @@ export async function getReclamoPendientePorTelefono(telefono) {
   );
 }
 
-export async function getReclamo(id) {
-  return readAll().find((r) => r.id === id) ?? null;
+export async function getReclamo(idOrCodigo) {
+  const key = String(idOrCodigo || "").trim();
+  if (!key) return null;
+  const rows = readAll();
+  const byId = rows.find((r) => r.id === key);
+  if (byId) return byId;
+  const codigo = extractCodigoReclamo(key) || key.toUpperCase();
+  return (
+    rows.find(
+      (r) =>
+        String(r.codigo || "").toUpperCase() === codigo ||
+        String(r.id || "").toUpperCase() === codigo,
+    ) ?? null
+  );
+}
+
+/** Último caso activo (abierto) del teléfono — para consultas de estado. */
+export async function getReclamoActivoPorTelefono(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return null;
+  return (
+    readAll().find(
+      (r) => r.telefono === phone && ESTADOS_CASO_ACTIVOS.has(r.estado) && r.codigo,
+    ) ?? null
+  );
+}
+
+export async function listReclamosActivosPorTelefono(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return [];
+  return readAll().filter(
+    (r) => r.telefono === phone && ESTADOS_CASO_ACTIVOS.has(r.estado) && r.codigo,
+  );
 }
 
 export async function crearReclamoDialogo({ telefono, nombre, seed = {} } = {}) {
@@ -71,13 +104,13 @@ export async function crearReclamoDialogo({ telefono, nombre, seed = {} } = {}) 
   if (!phone) throw Object.assign(new Error("Teléfono inválido"), { statusCode: 400 });
   const now = new Date().toISOString();
 
-  // Un solo diálogo abierto por teléfono
   const rows = readAll().filter(
     (r) => !(r.telefono === phone && ESTADOS_DIALOG_ABIERTOS.has(r.estado)),
   );
 
   const row = {
-    id: codigoNuevo(),
+    id: idInterno(),
+    codigo: null, // se asigna al abrir el caso (fecha + seq + tipo)
     telefono: phone,
     nombre: nombre || null,
     cliente: seed.cliente || nombre || null,
@@ -112,6 +145,7 @@ export async function actualizarReclamo(id, patch = {}) {
 
   if (patch.nombre !== undefined) row.nombre = patch.nombre;
   if (patch.cliente !== undefined) row.cliente = patch.cliente;
+  if (patch.codigo !== undefined) row.codigo = patch.codigo;
   if (patch.estado && RECLAMO_ESTADOS.includes(patch.estado)) row.estado = patch.estado;
   if (patch.motivo !== undefined) row.motivo = normalizeMotivo(patch.motivo);
   if (patch.criticidad !== undefined) row.criticidad = normalizeCriticidad(patch.criticidad);
@@ -136,22 +170,56 @@ export async function actualizarReclamo(id, patch = {}) {
   return row;
 }
 
-/** Cierra el diálogo: pasa a nuevo/escalado con datos clasificados. */
-export async function abrirCasoDesdeDialogo(id, { motivo, criticidad, resumen, detalle, viaje_ref, remito_ref, pedido_ref, imagen_url, escalar = false, escalado_a = null } = {}) {
-  const now = new Date().toISOString();
-  return actualizarReclamo(id, {
-    estado: escalar ? "escalado" : "nuevo",
-    motivo: motivo || "otro",
-    criticidad: criticidad || "media",
+/** Cierra el diálogo: asigna código público y pasa a nuevo/escalado. */
+export async function abrirCasoDesdeDialogo(
+  id,
+  {
+    motivo,
+    criticidad,
     resumen,
     detalle,
     viaje_ref,
     remito_ref,
     pedido_ref,
-    imagen_url: imagen_url || undefined,
-    escalado_a: escalar ? escalado_a || "Coordinación operativa" : null,
-    historial_push: `${now} · Caso ${escalar ? "escalado" : "abierto"}`,
-  });
+    imagen_url,
+    escalar = false,
+    escalado_a = null,
+  } = {},
+) {
+  const now = new Date().toISOString();
+  const rows = readAll();
+  const i = rows.findIndex((r) => r.id === id);
+  if (i < 0) return null;
+
+  const motivoNorm = normalizeMotivo(motivo || rows[i].motivo || "otro");
+  const codigo =
+    rows[i].codigo ||
+    buildCodigoReclamo(
+      motivoNorm,
+      rows.map((r) => ({ codigo: r.codigo || r.id })),
+    );
+
+  rows[i] = {
+    ...rows[i],
+    codigo,
+    estado: escalar ? "escalado" : "nuevo",
+    motivo: motivoNorm,
+    criticidad: normalizeCriticidad(criticidad || rows[i].criticidad || "media"),
+    resumen: resumen ?? rows[i].resumen,
+    detalle: detalle ?? rows[i].detalle,
+    viaje_ref: viaje_ref !== undefined ? viaje_ref : rows[i].viaje_ref,
+    remito_ref: remito_ref !== undefined ? remito_ref : rows[i].remito_ref,
+    pedido_ref: pedido_ref !== undefined ? pedido_ref : rows[i].pedido_ref,
+    imagen_url: imagen_url !== undefined ? imagen_url : rows[i].imagen_url,
+    escalado_a: escalar ? escalado_a || "Coordinación operativa" : rows[i].escalado_a,
+    historial: [
+      ...(rows[i].historial || []),
+      `${now} · Caso ${escalar ? "escalado" : "abierto"} · ${codigo}`,
+    ],
+    updated_at: now,
+  };
+  writeAll(rows);
+  return rows[i];
 }
 
 export async function decidirReclamo(id, { estado, nota, aprobado_por } = {}) {
@@ -175,7 +243,6 @@ export async function listReclamos({ limit = 100, estado, telefono } = {}) {
   if (estado && estado !== "todos") {
     rows = rows.filter((r) => r.estado === estado);
   }
-  // No listar diálogos a medias en cola operativa por defecto
   if (!estado || estado === "todos") {
     rows = rows.filter((r) => r.estado !== "recolectando");
   }
