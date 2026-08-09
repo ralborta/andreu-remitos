@@ -7,13 +7,13 @@ import {
   reverseGeocode,
 } from "../../../lib/geocoding.mjs";
 import {
-  esConfirmacionDestino,
   extraerDireccionCorreccion,
   localidadDesdeDireccion,
   mensajeDestinoActualizadoCliente,
   mensajeDestinoConfirmadoChofer,
   mensajePropuestaCliente,
 } from "../../../lib/destinos.mjs";
+import { interpretarRespuestaDestinoCliente } from "../../../lib/destinos-ia.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 
@@ -73,6 +73,9 @@ export async function iniciarValidacionDestino(body, { log } = {}) {
 
   if (!query) throw new Error("Falta query");
   if (!telefonoCliente) throw new Error("Falta teléfono del cliente");
+  if (!telefonoChofer) {
+    throw new Error("Falta teléfono del chofer — al confirmar se le envía el destino");
+  }
 
   const geo = await geocodeInput({ query, mode, placeId: body.placeId });
   const mensaje = mensajePropuestaCliente({
@@ -82,16 +85,13 @@ export async function iniciarValidacionDestino(body, { log } = {}) {
     cliente,
   });
 
-  try {
-    await setBuilderBotBlacklist(telefonoCliente, "add");
-  } catch (err) {
-    log?.warn?.({ err: err.message }, "Blacklist cliente opcional falló");
-  }
+  // No blacklist: Destinos se atiende primero en el webhook. Blacklistear al cliente
+  // hacía que WhatsApp llegara al bot pero nunca a la API (sin respuesta del "agente").
 
   const destino = await destinosStore.crearDestinoPendiente({
     cliente,
     telefono_cliente: telefonoCliente,
-    telefono_chofer: telefonoChofer || null,
+    telefono_chofer: telefonoChofer,
     input_raw: query,
     formatted_address: geo.formattedAddress,
     lat: geo.lat,
@@ -154,9 +154,31 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
   }
 
   const t = String(texto ?? "").trim();
-  if (!t) return { flow: "destinos_sin_contenido", destino: pending };
+  const parsed = await interpretarRespuestaDestinoCliente(t, { pending, log });
 
-  if (esConfirmacionDestino(t)) {
+  if (parsed.intent === "pedir_direccion" || parsed.intent === "chat") {
+    const mensaje =
+      parsed.mensaje ||
+      `Para confirmar el destino necesito la dirección correcta (calle, número y localidad) o tu ubicación 📌`;
+    historial.push(
+      parsed.intent === "chat"
+        ? `Cliente preguntó/charló: "${t}"`
+        : `Cliente rechazó sin dirección: "${t}"`,
+      `Agente (${parsed.fuente}): pidió dirección / respondió`,
+    );
+    const updated = await destinosStore.actualizarDestino(pending.id, {
+      ultima_respuesta_cliente: t || null,
+      historial,
+    });
+    await enviarWhatsApp(phone, mensaje, { destino_id: pending.id, from: "bot" });
+    return {
+      flow: parsed.intent === "chat" ? "destinos_chat" : "destinos_pedir_direccion",
+      destino: updated,
+      mensaje,
+    };
+  }
+
+  if (parsed.intent === "confirm") {
     historial.push("Cliente: SÍ → confirmado");
     const updated = await destinosStore.actualizarDestino(pending.id, {
       estado: "confirmado",
@@ -164,6 +186,7 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
       historial,
     });
 
+    // Limpieza por si quedó blacklist vieja de versiones anteriores
     try {
       await setBuilderBotBlacklist(phone, "remove");
     } catch (err) {
@@ -189,8 +212,14 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
     return { flow: "destinos_confirmado", destino: updated, mensaje_chofer: mensajeChofer };
   }
 
-  const { geo, queryUsada } = await geocodeCorreccion(t, pending);
-  historial.push(`Cliente corrige: "${t}"`, `Dirección usada: "${queryUsada}"`, `Re-geocode: ${geo.formattedAddress}`);
+  // correccion (con dirección usable)
+  const textoGeo = parsed.direccion || t;
+  const { geo, queryUsada } = await geocodeCorreccion(textoGeo, pending);
+  historial.push(
+    `Cliente corrige: "${t}"`,
+    `Dirección usada: "${queryUsada}"`,
+    `Re-geocode: ${geo.formattedAddress}`,
+  );
   const mensaje = mensajeDestinoActualizadoCliente({
     formattedAddress: geo.formattedAddress,
     lat: geo.lat,

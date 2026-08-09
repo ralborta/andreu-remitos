@@ -29,8 +29,15 @@ import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 
-/** En modo IA (webhook de proyecto BB), no devolvemos texto al chofer — responde add_chatpdf. */
-const webhookSilent = process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
+/**
+ * Con Baileys self-hosted el envío confiable es POST /v1/messages.
+ * fallBack del bot falla seguido con contactos nuevos (sesión Signal).
+ * Si hay BAILEYS_BOT_URL: enviamos por API y no devolvemos `message` al bot
+ * (evita doble envío y el canal frágil).
+ */
+const baileysBotUrl = process.env.BAILEYS_BOT_URL?.trim() || "";
+const webhookSilent =
+  Boolean(baileysBotUrl) || process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
 
 function respuestaWebhook({ message = "", ...rest } = {}) {
   if (webhookSilent) return { received: true, ...rest };
@@ -41,8 +48,7 @@ function respuestaWebhook({ message = "", ...rest } = {}) {
 async function notificarChofer(phone, message, { tenant, remito_id, log } = {}) {
   if (!phone || !message?.trim()) return false;
   try {
-    // Con bot Baileys self-hosted y WEBHOOK_SILENT=false, el bot ya envía vía fallBack
-    // con el `message` del webhook — evitar doble envío (API + bot).
+    // silent (o Baileys): enviar por API. Si no, el bot manda vía fallBack.
     if (webhookSilent) {
       await sendWhatsAppMessage({ number: phone, message });
     }
@@ -54,6 +60,16 @@ async function notificarChofer(phone, message, { tenant, remito_id, log } = {}) 
     return true;
   } catch (err) {
     log?.warn?.({ err: err.message, phone }, "No se pudo enviar WhatsApp al chofer");
+    // Igual persistimos para que Contactos muestre lo que el agente “dijo”.
+    try {
+      await convStore.appendMensaje(
+        phone,
+        { texto: message, tipo: "text", remito_id: remito_id ?? null },
+        { tenant, remito_id, dir: "out", from: "bot" },
+      );
+    } catch {
+      /* ignore */
+    }
     return false;
   }
 }
@@ -320,23 +336,24 @@ async function tryProcesarDestinos(ev, { texto, log } = {}) {
   if (!ev.from) return null;
   const pending = await destinosStore.getDestinoPendientePorTelefono(ev.from);
   if (!pending) return null;
-  if (!ev.location && !String(texto ?? "").trim()) {
-    return { flow: "destinos_sin_contenido", destino: pending };
-  }
 
   try {
-    return await procesarRespuestaDestinoCliente(ev.from, {
+    const out = await procesarRespuestaDestinoCliente(ev.from, {
       texto,
       lat: ev.location?.lat,
       lng: ev.location?.lng,
       nombre: ev.nombre,
       log,
     });
+    if (!out) return null;
+    // Normalizar: el servicio usa `mensaje`; el webhook/`fallBack` usa `message`
+    return { ...out, message: out.message ?? out.mensaje ?? "" };
   } catch (err) {
     log?.error?.({ err: err.message, from: ev.from }, "destinos webhook error");
     const msg =
       `No pude ubicar esa dirección.\n\n` +
-      `Escribí *calle, número y ciudad* (ej: Echeverría 1200, Pacheco) o enviá tu ubicación 📌`;
+      `¿Me pasás *calle, número y localidad* (ej: Echeverría 1200, Pacheco) o tu ubicación 📌?\n` +
+      `La necesitamos para que el chofer llegue bien.`;
     if (ev.from) {
       await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     }
