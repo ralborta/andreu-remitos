@@ -414,7 +414,7 @@ function ViajeDetalleModal({
                 }}
               >
                 <Check size={16} />
-                {TRIP_STATUS_LABEL[mapEstadoViaje(est)] || est}
+                {VIAJE_ESTADO_UI[est] || est}
               </button>
             ))}
           </div>

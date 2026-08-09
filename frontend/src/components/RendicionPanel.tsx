@@ -192,10 +192,10 @@ export function RendicionPanel() {
                     <td className="py-3 pr-3">
                       <span
                         className={clsx(
-                          "rounded-md px-2 py-0.5 text-xs",
-                          g.estado === "pendiente_aprobacion" && "bg-amber-500/15 text-amber-300",
-                          g.estado === "aprobado" && "bg-emerald-500/15 text-emerald-300",
-                          g.estado === "rechazado" && "bg-rose-500/15 text-rose-300",
+                          "rounded-md px-2 py-0.5 text-xs font-semibold",
+                          g.estado === "pendiente_aprobacion" && "bg-amber-500/15 text-amber-400",
+                          g.estado === "aprobado" && "bg-emerald-500/15 text-emerald-400",
+                          g.estado === "rechazado" && "bg-rose-500/15 text-rose-500",
                         )}
                       >
                         {g.estadoLabel}
@@ -208,7 +208,7 @@ export function RendicionPanel() {
                             type="button"
                             disabled={busyId === g.id}
                             onClick={() => void decidir(g, "aprobado")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 disabled:opacity-50"
                           >
                             <Check size={14} />
                             OK
@@ -217,7 +217,7 @@ export function RendicionPanel() {
                             type="button"
                             disabled={busyId === g.id}
                             onClick={() => void decidir(g, "rechazado")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-2.5 py-1.5 text-xs text-rose-300 hover:bg-rose-500/30 disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/30 disabled:opacity-50"
                           >
                             <X size={14} />
                             No
