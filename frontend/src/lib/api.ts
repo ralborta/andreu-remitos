@@ -708,3 +708,88 @@ export function decidirReclamo(
     body: JSON.stringify(body),
   });
 }
+
+export type IncidenciaEstado = "esperando_causa" | "nueva" | "en_gestion" | "resuelta";
+
+export interface IncidenciaCaso {
+  id: string;
+  codigo: string;
+  tipoAbbr?: string | null;
+  tipoAbbrLabel?: string | null;
+  estado: IncidenciaEstado | string;
+  estadoLabel: string;
+  tipo: string | null;
+  tipoLabel: string;
+  criticidad: string | null;
+  criticidadLabel: string;
+  chofer: string;
+  telefono: string | null;
+  canal: string;
+  origen: string;
+  viaje: string;
+  causa: string | null;
+  resumen: string | null;
+  destinoId: string | null;
+  lat: number | null;
+  lng: number | null;
+  imagenUrl: string | null;
+  notaInterna: string | null;
+  sla: string;
+  historial: string[];
+  mensajes?: Array<{
+    dir?: string;
+    texto?: string;
+    at?: string;
+    imagen_url?: string | null;
+  }>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ResumenIncidencias {
+  total: number;
+  abiertas: number;
+  nueva: number;
+  en_gestion: number;
+  esperando_causa: number;
+  resuelta: number;
+  alta: number;
+}
+
+export function listIncidencias(params?: { limit?: number; estado?: string; telefono?: string }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.telefono) q.set("telefono", params.telefono);
+  const qs = q.toString();
+  return api<IncidenciaCaso[]>(`/api/incidencias${qs ? `?${qs}` : ""}`);
+}
+
+export function resumenIncidencias() {
+  return api<ResumenIncidencias>("/api/incidencias/resumen");
+}
+
+export function decidirIncidencia(
+  id: string,
+  body: { estado: "nueva" | "en_gestion" | "resuelta"; nota?: string },
+) {
+  return api<IncidenciaCaso>(`/api/incidencias/${id}/decidir`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function consultarChoferIncidencia(body: {
+  telefono: string;
+  tipo?: string;
+  viaje_ref?: string;
+  lat?: number;
+  lng?: number;
+  nota?: string;
+  nombre?: string;
+}) {
+  return api<{ ok: boolean; incidencia: IncidenciaCaso; mensaje: string }>(
+    "/api/incidencias/consultar-chofer",
+    { method: "POST", body: JSON.stringify(body) },
+  );
+}

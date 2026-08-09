@@ -34,6 +34,10 @@ import {
   telefonoEsChoferRegistrado,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
+import {
+  procesarIncidenciaWhatsApp,
+  mensajeIncidenciaSoloChoferes,
+} from "../services/incidencias-agent.mjs";
 import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import {
@@ -41,9 +45,11 @@ import {
   pareceConsultaEstadoReclamo,
 } from "../../../lib/reclamos.mjs";
 import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
+import { pareceIncidenciaEnRuta } from "../../../lib/incidencias-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
 import * as reclamosStore from "../db/reclamos-store.mjs";
+import * as incidenciasStore from "../db/incidencias-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 
 /**
@@ -363,6 +369,33 @@ async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) 
   }
 }
 
+async function tryProcesarIncidencia(
+  ev,
+  { texto, log, imageBuffer, mime, forzar = false } = {},
+) {
+  if (!ev.from) return null;
+  try {
+    const out = await procesarIncidenciaWhatsApp({
+      telefono: ev.from,
+      texto,
+      nombre: ev.nombre,
+      imageBuffer,
+      mime,
+      imagenUrl: ev.media?.url || null,
+      log,
+      forzar,
+    });
+    if (!out) return null;
+    return { ...out, message: out.message ?? out.mensaje ?? "" };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "incidencia webhook error");
+    const msg =
+      `Recibí tu incidencia pero tuve un problema: ${err.message}.\n` +
+      `Intentá de nuevo en un momento.`;
+    return { flow: "incidencia_error", error: err.message, message: msg };
+  }
+}
+
 async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
   if (!ev.from) return null;
   const t = String(texto ?? "").trim();
@@ -508,6 +541,21 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
     return tryProcesarReclamo(ev, { texto, log });
   }
 
+  if (intent.intent === "incidencia") {
+    if (!esChoferRemitos) {
+      const msg = mensajeIncidenciaSoloChoferes();
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      return { flow: "incidencia_solo_choferes", message: msg };
+    }
+    const out = await tryProcesarIncidencia(ev, { texto, log, forzar: true });
+    if (out) return out;
+    const msg =
+      `Perfecto, vamos con la *incidencia*.\n\n` +
+      `Contame qué pasó (pinchazo, demora, control, mecánico, desvío…) y lo registro.`;
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "incidencia_fallback", message: msg };
+  }
+
   if (intent.intent === "rendicion") {
     if (!esChoferRemitos) {
       const msg = mensajeRendicionSoloChoferes();
@@ -570,8 +618,9 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 
 async function tryProcesarDestinos(ev, { texto, log, tieneFoto = false } = {}) {
   if (!ev.from) return null;
-  // No robar mensajes de rendición de gastos (nafta, peaje, ticket…)
+  // No robar mensajes de rendición ni incidencias en ruta
   if (pareceRendicionGasto(texto)) return null;
+  if (pareceIncidenciaEnRuta(texto)) return null;
 
   const pendingCliente = await destinosStore.getDestinoPendientePorTelefono(ev.from);
   if (pendingCliente) {
@@ -648,6 +697,7 @@ export default async function webhooksRoutes(fastify) {
       "viajes",
       "reclamos",
       "rendicion",
+      "incidencias",
       "intent-router",
       "tenant-ia",
     ],
@@ -741,12 +791,61 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
-      // Rendición ANTES de destinos/ETA — SOLO choferes registrados en DB.
-      // - texto "nafta/gasto/ticket", o
-      // - foto de comprobante (aunque no tenga caption) si hay ETA pendiente
+      // Incidencia pendiente (agente preguntó causa) — ANTES de destinos/ETA
+      const pendingIncidenciaEarly = ev.from
+        ? await incidenciasStore.getIncidenciaPendientePorTelefono(ev.from)
+        : null;
+      if (pendingIncidenciaEarly && (texto || esFoto)) {
+        let imageBuffer = null;
+        let mime = null;
+        if (esFoto) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            if (!/audio/i.test(dl.mime || "")) {
+              imageBuffer = dl.buffer;
+              mime = dl.mime;
+            }
+          } catch (err) {
+            request.log.warn({ err: err.message }, "Incidencia: no pude bajar foto");
+          }
+        }
+        const incPend = await tryProcesarIncidencia(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+          imageBuffer,
+          mime,
+        });
+        if (incPend) {
+          return respuestaWebhook({ ...incPend, received: true });
+        }
+      }
+
+      // Chofer reporta incidencia (pinchazo, etc.) ANTES de ETA/destinos
       const esChoferDb = ev.from
         ? await telefonoEsChoferRegistrado(ev.from)
         : false;
+      if (
+        ev.from &&
+        esChoferDb &&
+        !pendingIncidenciaEarly &&
+        texto &&
+        !esFoto &&
+        pareceIncidenciaEnRuta(texto)
+      ) {
+        const incOut = await tryProcesarIncidencia(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+        });
+        if (incOut) {
+          return respuestaWebhook({ ...incOut, received: true });
+        }
+      }
+
+      // Rendición ANTES de destinos/ETA — SOLO choferes registrados en DB.
+      // - texto "nafta/gasto/ticket", o
+      // - foto de comprobante (aunque no tenga caption) si hay ETA pendiente
       const quiereRendicion =
         esChoferDb &&
         (pareceRendicionGasto(texto) || (esFoto && Boolean(destinoChoferActivo)));

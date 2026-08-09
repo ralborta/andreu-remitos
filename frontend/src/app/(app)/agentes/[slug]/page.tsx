@@ -90,7 +90,8 @@ export default async function AgentPage({
       slug === "destinos" ||
       slug === "viajes" ||
       slug === "rendicion" ||
-      slug === "reclamos" ? (
+      slug === "reclamos" ||
+      slug === "incidencias" ? (
         <div className="min-w-0">
           <AgentData slug={slug} />
         </div>

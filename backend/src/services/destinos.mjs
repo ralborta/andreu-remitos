@@ -323,6 +323,24 @@ export async function procesarRespuestaDestinoChofer(telefono, { texto, nombre, 
     historial,
   });
 
+  // Demora en ruta → también queda como incidencia (trazabilidad operaciones)
+  if (demora) {
+    try {
+      const { registrarDemoraDesdeDestinos } = await import("./incidencias-agent.mjs");
+      await registrarDemoraDesdeDestinos({
+        telefono: phone,
+        nombre: nombre || pending.chofer_nombre || null,
+        causa: t,
+        viaje_ref: pending.viaje_ref || pending.remito_ref || null,
+        destino_id: pending.id,
+        eta_texto: etaTexto,
+        log,
+      });
+    } catch (err) {
+      log?.warn?.({ err: err.message }, "No pude crear incidencia desde demora Destinos");
+    }
+  }
+
   return {
     flow: demora ? "destinos_demora_chofer" : "destinos_eta_chofer",
     destino: updated,

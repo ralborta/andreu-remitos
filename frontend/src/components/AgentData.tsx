@@ -2,19 +2,16 @@ import { DestinosPanel } from "./DestinosPanel";
 import { ViajesGestionPanel } from "./ViajesGestionPanel";
 import { RendicionPanel } from "./RendicionPanel";
 import { ReclamosPanel } from "./ReclamosPanel";
+import { IncidenciasPanel } from "./IncidenciasPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
 import { EtaLine, ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
 import {
-  remitos,
-  incidencias,
   etas,
   viajesPorDia,
   slaPorZona,
   incidenciasPorTipo,
-  type Remito,
-  type Incidencia,
   type EtaItem,
 } from "@/lib/data";
 
@@ -70,21 +67,7 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "incidencias") {
-    const cols: Column<Incidencia>[] = [
-      { key: "id", header: "Incidencia", render: (r) => <span className="font-medium text-white">{r.id}</span> },
-      { key: "viaje", header: "Viaje", className: "text-[var(--text-dim)]" },
-      { key: "tipo", header: "Tipo", className: "text-[var(--text-dim)]" },
-      { key: "criticidad", header: "Criticidad", render: (r) => <CritBadge level={r.criticidad} /> },
-      { key: "causa", header: "Causa declarada", className: "text-[var(--text-dim)] max-w-[280px]" },
-      { key: "estado", header: "Estado", render: (r) => estadoPill(r.estado) },
-      { key: "hora", header: "Hora", className: "tabular text-[var(--text-dim)]" },
-    ];
-    return (
-      <Card>
-        <SectionTitle>Incidencias del día</SectionTitle>
-        <DataTable columns={cols} rows={incidencias} minWidth={900} />
-      </Card>
-    );
+    return <IncidenciasPanel />;
   }
 
   if (slug === "rendicion") {
