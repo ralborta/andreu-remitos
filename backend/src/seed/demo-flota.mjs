@@ -24,7 +24,7 @@ export const DEMO_FLOTA = {
       tractor: "AC456EF",
       semi: "ZA111BB",
       tipo: "sider",
-      tipos_carga: ["general", "palets", "mercaderia", "paquetes", "cajas"],
+      tipos_carga: ["general", "palets", "mercaderia", "paquetes", "cajas", "muebles", "madera", "mudanza"],
       capacidad_t: 24,
       disponible: true,
       disponibilidad_dias: [0, 1, 2, 3, 4, 5, 6, 7],

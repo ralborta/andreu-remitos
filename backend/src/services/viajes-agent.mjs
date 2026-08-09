@@ -144,6 +144,15 @@ export async function procesarMensajeViajeWhatsApp({
   }
 
   // Recolectando
+  // "Sí" sin propuesta activa = quiere que busquemos / sigamos, NO reservar
+  if (
+    (turno.accion === "reservar" || turno.intent === "confirmar") &&
+    !(pending.propuesta?.elegida || (pending.propuesta?.opciones || []).length)
+  ) {
+    turno.accion = "consultar";
+    turno.intent = "dato";
+  }
+
   if (turno.faltan.length || turno.accion === "pedir_datos" || turno.accion === "chitchat") {
     await enviar(phone, turno.mensaje, { nombre });
     await solStore.actualizarSolicitud(pending.id, {
@@ -157,7 +166,7 @@ export async function procesarMensajeViajeWhatsApp({
     };
   }
 
-  // Datos listos → consultar disponibilidad (hechos) y redactar con IA
+  // Datos listos → consultar disponibilidad REAL (maestros Viajes) y redactar con IA
   return consultarYProponer(pending, {
     telefonoCliente: phone,
     nombre,
@@ -189,6 +198,28 @@ async function consultarYProponer(
     viajesActivos: activos,
   });
 
+  log?.info?.(
+    {
+      fuente: consulta.fuente,
+      flota: consulta.flota,
+      pedida: consulta.pedida,
+      ok: consulta.ok,
+      exacta_ok: consulta.exacta_ok,
+      match_flexible: consulta.match_flexible,
+      propuesta: consulta.propuesta
+        ? {
+            fecha: consulta.propuesta.fecha,
+            hora: consulta.propuesta.hora,
+            tractor: consulta.propuesta.tractor,
+            chofer: consulta.propuesta.chofer,
+          }
+        : null,
+      alternativas: (consulta.alternativas || []).length,
+      error: consulta.error,
+    },
+    "Viajes: consulta flota DB",
+  );
+
   const mensaje = await redactarPropuestaDisponibilidad({
     datos,
     consulta,
@@ -201,7 +232,7 @@ async function consultarYProponer(
     await solStore.actualizarSolicitud(pending.id, {
       estado: "recolectando",
       propuesta: null,
-      historial_push: `${new Date().toISOString()} · Sin disponibilidad`,
+      historial_push: `${new Date().toISOString()} · Sin disponibilidad (${consulta.fuente})`,
     });
     return { flow: "viajes_sin_disponibilidad", solicitud: pending, consulta, mensaje };
   }
@@ -209,15 +240,22 @@ async function consultarYProponer(
   const opciones = [consulta.propuesta, ...(consulta.alternativas ?? [])].slice(0, 4);
   pending = await solStore.actualizarSolicitud(pending.id, {
     estado: "esperando_confirmacion_cliente",
+    // Si ofreciamos alternativa (no exacta), alineamos datos a lo propuesto
+    datos: {
+      fecha_retiro: consulta.propuesta.fecha,
+      hora_retiro: consulta.propuesta.hora,
+    },
     propuesta: {
       consulta: {
         pedida: consulta.pedida,
         exacta_ok: consulta.exacta_ok,
+        fuente: consulta.fuente,
+        match_flexible: consulta.match_flexible,
       },
       elegida: consulta.propuesta,
       opciones,
     },
-    historial_push: `${new Date().toISOString()} · Propuesta IA ${consulta.propuesta.fecha} ${consulta.propuesta.hora}`,
+    historial_push: `${new Date().toISOString()} · Propuesta DB ${consulta.propuesta.fecha} ${consulta.propuesta.hora} · ${consulta.fuente}`,
   });
 
   log?.info?.(
@@ -226,8 +264,9 @@ async function consultarYProponer(
       fecha: consulta.propuesta.fecha,
       hora: consulta.propuesta.hora,
       opciones: opciones.length,
+      fuente: consulta.fuente,
     },
-    "Viajes: disponibilidad ofrecida (agente IA)",
+    "Viajes: disponibilidad ofrecida (flota DB)",
   );
 
   return { flow: "viajes_propuesta", solicitud: pending, consulta, mensaje };
