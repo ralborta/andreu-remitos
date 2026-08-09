@@ -160,6 +160,20 @@ export function listChoferesViajes() {
   return getViajesFlotaMaestros().choferes;
 }
 
+/** Busca chofer de flota Viajes por WhatsApp (solo dígitos). */
+export function getChoferViajesPorTelefono(telefono) {
+  const phone = String(telefono || "").replace(/\D/g, "");
+  if (!phone) return null;
+  const rows = listChoferesViajes();
+  return (
+    rows.find((c) => {
+      const t = String(c.telefono || "").replace(/\D/g, "");
+      if (!t) return false;
+      return t === phone || t.endsWith(phone) || phone.endsWith(t);
+    }) ?? null
+  );
+}
+
 export function listCamionesViajes() {
   return getViajesFlotaMaestros().camiones;
 }

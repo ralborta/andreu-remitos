@@ -9,16 +9,47 @@ import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import * as master from "../db/master-data-store.mjs";
+import { getChoferViajesPorTelefono } from "../db/viajes-flota-store.mjs";
 import { persistChatMedia } from "./chat-media.mjs";
 
+/**
+ * Incidencias usan la flota de Gestión de Viajes (principal).
+ * Fallback: choferes de Remitos/Parámetros.
+ */
+export async function resolverChoferIncidencia(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return null;
+  const flota = getChoferViajesPorTelefono(phone);
+  if (flota) {
+    return {
+      nombre: flota.nombre || null,
+      telefono: flota.telefono || phone,
+      fuente: "viajes_flota",
+    };
+  }
+  const remitos = await master.resolverChoferPorTelefono(phone);
+  if (remitos) {
+    return {
+      nombre: remitos.nombre || null,
+      telefono: remitos.telefono || phone,
+      fuente: "remitos",
+    };
+  }
+  return null;
+}
+
+export async function telefonoEsChoferIncidencia(telefono) {
+  return Boolean(await resolverChoferIncidencia(telefono));
+}
+
+/** @deprecated usar telefonoEsChoferIncidencia */
 export async function telefonoEsChoferRegistrado(telefono) {
-  const chofer = await master.resolverChoferPorTelefono(telefono);
-  return Boolean(chofer);
+  return telefonoEsChoferIncidencia(telefono);
 }
 
 export function mensajeIncidenciaSoloChoferes() {
   return (
-    `Las *incidencias en ruta* las registran los *choferes*.\n\n` +
+    `Las *incidencias en ruta* son para *choferes de la flota de Viajes*.\n\n` +
     `Si sos cliente y tenés un problema con una entrega, pedime abrir un *reclamo*.`
   );
 }
@@ -51,11 +82,14 @@ export async function consultarChoferIncidencia({
   const phone = sanitizePhone(telefono);
   if (!phone) throw Object.assign(new Error("Teléfono inválido"), { statusCode: 400 });
 
-  const chofer = await master.resolverChoferPorTelefono(phone);
+  const chofer = await resolverChoferIncidencia(phone);
   if (!chofer) {
-    throw Object.assign(new Error("El teléfono no es un chofer registrado"), {
-      statusCode: 400,
-    });
+    throw Object.assign(
+      new Error(
+        "El teléfono no está en la flota de Viajes (Gestión de Viajes → Choferes). Usá p. ej. Raúl 5491133788190.",
+      ),
+      { statusCode: 400 },
+    );
   }
 
   const latN = lat != null && Number.isFinite(Number(lat)) ? Number(lat) : null;
@@ -66,6 +100,7 @@ export async function consultarChoferIncidencia({
   if (dir) hist.push(`Ubicación: ${dir}`);
   if (latN != null && lngN != null) hist.push(`Coords: ${latN}, ${lngN}`);
   if (nota) hist.push(`Nota operativa: ${nota}`);
+  hist.push(`Chofer flota: ${chofer.fuente}`);
 
   const row = await incidenciasStore.crearIncidencia({
     telefono: phone,
@@ -161,7 +196,7 @@ export async function procesarIncidenciaWhatsApp({
   const pending = await incidenciasStore.getIncidenciaPendientePorTelefono(phone);
   if (!forzar && !pending && !pareceIncidenciaEnRuta(t) && !imageBuffer) return null;
 
-  const chofer = await master.resolverChoferPorTelefono(phone);
+  const chofer = await resolverChoferIncidencia(phone);
   if (!chofer) {
     if (!forzar && !pending) return null;
     const msg = mensajeIncidenciaSoloChoferes();

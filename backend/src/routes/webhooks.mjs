@@ -37,6 +37,8 @@ import {
 import {
   procesarIncidenciaWhatsApp,
   mensajeIncidenciaSoloChoferes,
+  telefonoEsChoferIncidencia,
+  resolverChoferIncidencia,
 } from "../services/incidencias-agent.mjs";
 import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
@@ -488,12 +490,16 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   if (!ev.from || !texto?.trim()) return null;
 
   const choferRemitos = await master.resolverChoferPorTelefono(ev.from);
+  const choferIncidencia = await resolverChoferIncidencia(ev.from);
   const esChoferRemitos = Boolean(choferRemitos);
+  const esChoferFlotaViajes = choferIncidencia?.fuente === "viajes_flota";
+  const esChoferOperativo = esChoferRemitos || Boolean(choferIncidencia);
 
   const intent = await clasificarIntencionWhatsApp({
     texto,
     esChoferRemitos,
-    nombre: ev.nombre || choferRemitos?.nombre || null,
+    esChoferFlotaViajes,
+    nombre: ev.nombre || choferIncidencia?.nombre || choferRemitos?.nombre || null,
     log,
   });
 
@@ -504,6 +510,9 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
       fuente: intent.fuente,
       confianza: intent.confianza,
       esChoferRemitos,
+      esChoferFlotaViajes,
+      esChoferOperativo,
+      choferFuente: choferIncidencia?.fuente || (esChoferRemitos ? "remitos" : null),
     },
     "WA intent router",
   );
@@ -542,7 +551,7 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   }
 
   if (intent.intent === "incidencia") {
-    if (!esChoferRemitos) {
+    if (!esChoferOperativo) {
       const msg = mensajeIncidenciaSoloChoferes();
       await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
       return { flow: "incidencia_solo_choferes", message: msg };
@@ -822,12 +831,16 @@ export default async function webhooksRoutes(fastify) {
       }
 
       // Chofer reporta incidencia (pinchazo, etc.) ANTES de ETA/destinos
+      // Flota Viajes (principal) o Remitos
+      const esChoferIncidencia = ev.from
+        ? await telefonoEsChoferIncidencia(ev.from)
+        : false;
       const esChoferDb = ev.from
         ? await telefonoEsChoferRegistrado(ev.from)
         : false;
       if (
         ev.from &&
-        esChoferDb &&
+        esChoferIncidencia &&
         !pendingIncidenciaEarly &&
         texto &&
         !esFoto &&

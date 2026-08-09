@@ -23,17 +23,17 @@ import {
   consultarChoferIncidencia,
   decidirIncidencia,
   geocodeDestino,
-  listChoferes,
   listDestinos,
   listIncidencias,
+  listViajesFlotaChoferes,
   resumenIncidencias,
   type AutocompleteSuggestion,
   type DestinoValidacion,
   type GeocodeResult,
   type IncidenciaCaso,
   type ResumenIncidencias,
+  type ViajesChoferFlota,
 } from "@/lib/api";
-import type { Chofer } from "@/lib/parametros-types";
 import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, CritBadge, KpiCard, Pill } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
@@ -41,7 +41,7 @@ import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "abiertas" | "nueva" | "en_gestion" | "esperando_causa" | "resuelta" | "todos";
 
-type ChoferOpt = { tel: string; label: string; fuente: "destinos" | "parametros" };
+type ChoferOpt = { tel: string; label: string; fuente: "viajes" | "destinos" };
 
 /** Puntos de demo (GBA / CABA) para simular “GPS detectó parada”. */
 const DEMO_PINS: { id: string; label: string; query: string }[] = [
@@ -87,7 +87,7 @@ export function IncidenciasPanel() {
   const confirm = useConfirm();
   const [rows, setRows] = useState<IncidenciaCaso[]>([]);
   const [resumen, setResumen] = useState<ResumenIncidencias | null>(null);
-  const [choferes, setChoferes] = useState<Chofer[]>([]);
+  const [choferesViajes, setChoferesViajes] = useState<ViajesChoferFlota[]>([]);
   const [destinos, setDestinos] = useState<DestinoValidacion[]>([]);
   const [filtro, setFiltro] = useState<Filtro>("abiertas");
   const [loading, setLoading] = useState(true);
@@ -109,32 +109,32 @@ export function IncidenciasPanel() {
 
   const choferOpts = useMemo(() => {
     const map = new Map<string, ChoferOpt>();
+    // Principal: flota Gestión de Viajes (Raúl, Carlos, …)
+    for (const c of choferesViajes) {
+      if (c.activo === false) continue;
+      const tel = c.telefono?.replace(/\D/g, "") || "";
+      if (tel.length < 8) continue;
+      map.set(tel, {
+        tel,
+        label: `${c.nombre} · ${tel} (Viajes)`,
+        fuente: "viajes",
+      });
+    }
+    // Complemento: teléfonos usados como chofer en Destinos
     for (const d of destinos) {
       const tel = d.telefonoChofer?.replace(/\D/g, "") || "";
-      if (tel.length < 8) continue;
-      const ch = choferes.find((c) => c.telefono?.replace(/\D/g, "") === tel);
-      if (!map.has(tel)) {
-        map.set(tel, {
-          tel,
-          label: `${ch?.nombre || "Chofer Destinos"} · ${tel} (Destinos)`,
-          fuente: "destinos",
-        });
-      }
-    }
-    for (const c of choferes) {
-      const tel = c.telefono?.replace(/\D/g, "") || "";
       if (tel.length < 8 || map.has(tel)) continue;
       map.set(tel, {
         tel,
-        label: `${c.nombre} · ${tel}`,
-        fuente: "parametros",
+        label: `Chofer Destinos · ${tel}`,
+        fuente: "destinos",
       });
     }
     return [...map.values()].sort((a, b) => {
-      if (a.fuente !== b.fuente) return a.fuente === "destinos" ? -1 : 1;
+      if (a.fuente !== b.fuente) return a.fuente === "viajes" ? -1 : 1;
       return a.label.localeCompare(b.label);
     });
-  }, [choferes, destinos]);
+  }, [choferesViajes, destinos]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -142,10 +142,10 @@ export function IncidenciasPanel() {
     try {
       const estadoApi =
         filtro === "abiertas" || filtro === "todos" ? undefined : filtro;
-      const [list, sum, ch, dest] = await Promise.all([
+      const [list, sum, chViajes, dest] = await Promise.all([
         listIncidencias({ limit: 100, estado: estadoApi }),
         resumenIncidencias(),
-        listChoferes().catch(() => [] as Chofer[]),
+        listViajesFlotaChoferes().catch(() => [] as ViajesChoferFlota[]),
         listDestinos({ limit: 40 }).catch(() => [] as DestinoValidacion[]),
       ]);
       const filtered =
@@ -156,7 +156,7 @@ export function IncidenciasPanel() {
           : list;
       setRows(filtered);
       setResumen(sum);
-      setChoferes(ch);
+      setChoferesViajes(chViajes);
       setDestinos(dest);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pude cargar incidencias");
@@ -261,7 +261,7 @@ export function IncidenciasPanel() {
   async function consultarChofer() {
     const tel = consultaTel.replace(/\D/g, "");
     if (tel.length < 8) {
-      setError("Elegí un chofer (ideal: uno usado en Destinos)");
+      setError("Elegí un chofer de la flota de Viajes (ej. Raúl 5491133788190)");
       return;
     }
     if (!ubic) {
@@ -315,8 +315,8 @@ export function IncidenciasPanel() {
               Flujo principal: parada en mapa → preguntar al chofer
             </h3>
             <p className="mt-0.5 text-xs text-[var(--text-faint)]">
-              Elegí un punto (Google Maps), un chofer de Destinos y el agente le pregunta por WhatsApp
-              por qué está parado
+              Elegí un punto (Google Maps) y un chofer de la flota de Viajes (ej. Raúl) — el agente le
+              pregunta por WhatsApp por qué está parado
             </p>
           </div>
         </div>
@@ -398,7 +398,7 @@ export function IncidenciasPanel() {
 
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
-                Chofer (prioridad Destinos)
+                Chofer (flota Viajes)
                 <select
                   value={consultaTel}
                   onChange={(e) => setConsultaTel(e.target.value)}
