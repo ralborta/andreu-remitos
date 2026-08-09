@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 audio-correcciones
+# cache-bust 2026-08-09 fix-cmd-server
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
@@ -17,9 +17,9 @@ WORKDIR /app/backend
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOST=0.0.0.0
-ENV UPLOAD_DIR=./uploads
-ENV DATA_DIR=./data
+ENV UPLOAD_DIR=/app/backend/uploads
+ENV DATA_DIR=/app/backend/data
 
 EXPOSE 3001
 
-CMD ["node", "src/index.mjs"]
+CMD ["node", "src/server.mjs"]
