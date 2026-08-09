@@ -50,11 +50,29 @@ const main = async () => {
   });
   const adapterDB = new Database({ filename: process.env.BOT_DB_PATH || "db.json" });
 
-  const { handleCtx, httpServer } = await createBot({
+  const botCore = await createBot({
     flow: adapterFlow,
     provider: adapterProvider,
     database: adapterDB,
   });
+  const { handleCtx, httpServer } = botCore;
+
+  // Si un número queda en blacklist (p.ej. "Bot pausado" en Contactos), BuilderBot
+  // recibe el WA pero NO reenvía a la API — sin log. Avisamos en consola.
+  const blacklist = botCore.dynamicBlacklist;
+  if (blacklist?.checkIf) {
+    const originalCheckIf = blacklist.checkIf.bind(blacklist);
+    blacklist.checkIf = (phoneNumber) => {
+      const blocked = originalCheckIf(phoneNumber);
+      if (blocked) {
+        console.warn(
+          `[andreu-bot] mensaje ignorado: ${phoneNumber} está en blacklist`,
+          `(lista: ${JSON.stringify(blacklist.getList?.() ?? [])})`,
+        );
+      }
+      return blocked;
+    };
+  }
 
   mountFileRoutes(adapterProvider.server);
 
@@ -101,16 +119,37 @@ const main = async () => {
     }),
   );
 
-  adapterProvider.server.post(
-    "/v1/blacklist",
-    handleCtx(async (bot, req, res) => {
-      const { number, intent } = req.body ?? {};
-      if (intent === "remove") bot.blacklist.remove(number);
-      if (intent === "add") bot.blacklist.add(number);
+  /** Blacklist sin handleCtx: remove() tira si no está y BuilderBot lo reporta como "escaneá QR". */
+  adapterProvider.server.post("/v1/blacklist", (req, res) => {
+    const { number, intent } = req.body ?? {};
+    const phone = String(number ?? "").replace(/\D/g, "");
+    if (phone.length < 9 || !["add", "remove"].includes(intent)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "number e intent (add|remove) requeridos" }));
+    }
+    try {
+      if (intent === "add") blacklist?.add?.(phone);
+      if (intent === "remove") {
+        try {
+          blacklist?.remove?.(phone);
+        } catch {
+          /* ya no estaba */
+        }
+      }
       res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ status: "ok", number, intent }));
-    }),
-  );
+      return res.end(
+        JSON.stringify({ status: "ok", number: phone, intent, list: blacklist?.getList?.() ?? [] }),
+      );
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message || "blacklist error" }));
+    }
+  });
+
+  adapterProvider.server.get("/v1/blacklist", (_req, res) => {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ list: blacklist?.getList?.() ?? [] }));
+  });
 
   adapterProvider.server.get("/health", (_req, res) => {
     const snap = getSessionSnapshot(adapterProvider);
