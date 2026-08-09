@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import clsx from "clsx";
 import { ArrowUpRight, Check, RefreshCw, X } from "lucide-react";
 import {
@@ -30,6 +36,22 @@ function estadoColor(estado: string) {
 function codigoCaso(g: ReclamoCaso) {
   return g.codigo || g.id;
 }
+
+/** Botones de acción con contraste alto (texto blanco sobre color sólido). */
+const BTN_TOMAR: React.CSSProperties = {
+  background: "#0284c7",
+  color: "#ffffff",
+};
+const BTN_ESCALAR: React.CSSProperties = {
+  background: "#d97706",
+  color: "#ffffff",
+};
+const BTN_OK: React.CSSProperties = {
+  background: "#16a34a",
+  color: "#ffffff",
+};
+const btnAccionClass =
+  "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50";
 
 function ReclamoDetalleModal({
   caso,
@@ -215,7 +237,8 @@ function ReclamoDetalleModal({
                 type="button"
                 disabled={busyId === caso.id}
                 onClick={() => onDecidir("en_proceso")}
-                className="inline-flex items-center gap-1 rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+                className={btnAccionClass}
+                style={BTN_TOMAR}
               >
                 Tomar
               </button>
@@ -225,7 +248,8 @@ function ReclamoDetalleModal({
                 type="button"
                 disabled={busyId === caso.id}
                 onClick={() => onDecidir("escalado")}
-                className="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 px-3 py-1.5 text-xs text-amber-300 hover:bg-amber-500/30 disabled:opacity-50"
+                className={btnAccionClass}
+                style={BTN_ESCALAR}
               >
                 <ArrowUpRight size={14} />
                 Escalar
@@ -235,7 +259,8 @@ function ReclamoDetalleModal({
               type="button"
               disabled={busyId === caso.id}
               onClick={() => onDecidir("resuelto")}
-              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50"
+              className={btnAccionClass}
+              style={BTN_OK}
             >
               <Check size={14} />
               OK
@@ -484,7 +509,8 @@ export function ReclamosPanel() {
                               type="button"
                               disabled={busyId === g.id}
                               onClick={() => void decidir(g, "en_proceso")}
-                              className="inline-flex items-center gap-1 rounded-lg bg-sky-500/20 px-2.5 py-1.5 text-xs text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+                              className={btnAccionClass}
+                              style={BTN_TOMAR}
                             >
                               Tomar
                             </button>
@@ -494,7 +520,8 @@ export function ReclamosPanel() {
                               type="button"
                               disabled={busyId === g.id}
                               onClick={() => void decidir(g, "escalado")}
-                              className="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 px-2.5 py-1.5 text-xs text-amber-300 hover:bg-amber-500/30 disabled:opacity-50"
+                              className={btnAccionClass}
+                              style={BTN_ESCALAR}
                             >
                               <ArrowUpRight size={14} />
                               Escalar
@@ -504,7 +531,8 @@ export function ReclamosPanel() {
                             type="button"
                             disabled={busyId === g.id}
                             onClick={() => void decidir(g, "resuelto")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50"
+                            className={btnAccionClass}
+                            style={BTN_OK}
                           >
                             <Check size={14} />
                             OK
