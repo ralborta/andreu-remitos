@@ -6,12 +6,12 @@ import { Brand } from "@/components/Brand";
 import { BRAND } from "@/lib/brand";
 
 /** Poll de estado (no reemplaza el QR en pantalla). */
-const STATUS_POLL_MS = 5000;
+const STATUS_POLL_MS = 6000;
 /**
  * Mantener el mismo QR fijo este tiempo aunque el bot ya haya generado otro.
  * Encelulares lentos la vinculación tarda: si el QR cambia a mitad, falla.
  */
-const QR_HOLD_MS = 55_000;
+const QR_HOLD_MS = 90_000;
 
 type QrResponse = {
   ok?: boolean;
@@ -67,12 +67,12 @@ function QrFrame({
             {typeof secondsLeft === "number" ? (
               <p
                 className={
-                  secondsLeft <= 10
-                    ? "text-xs font-medium text-amber-300"
-                    : "text-xs text-[#8696a0]"
+                  secondsLeft <= 15
+                    ? "text-base font-semibold tabular-nums text-amber-300"
+                    : "text-base font-semibold tabular-nums text-[#25d366]"
                 }
               >
-                QR fijo · {secondsLeft}s para escanear (no cambia solo)
+                {secondsLeft}s — QR fijo (no cambia solo)
               </p>
             ) : null}
           </>
@@ -112,8 +112,8 @@ export function WhatsAppVincular() {
     }
 
     const current = pinnedRef.current;
-    const holdExpired =
-      !current || Date.now() - current.pinnedAt >= QR_HOLD_MS || Boolean(json.qr_stale);
+    // Solo el tiempo local decide el hold: no usar qr_stale del server (corta el QR a mitad).
+    const holdExpired = !current || Date.now() - current.pinnedAt >= QR_HOLD_MS;
 
     if (json.image_base64 && (forceNew || holdExpired || !current)) {
       const next: PinnedQr = {
@@ -245,8 +245,8 @@ export function WhatsAppVincular() {
               )}
               {qrImage && (
                 <p className="mb-4 max-w-sm rounded-lg bg-[#25d366]/10 px-3 py-2 text-center text-sm text-[#d1f4e0]">
-                  En celulares lentos: este QR se queda fijo ~55s. No toques Actualizar mientras
-                  escaneás.
+                  En celulares lentos: este QR se queda fijo ~90s. No toques «Pedir QR nuevo»
+                  mientras escaneás.
                 </p>
               )}
               <QrFrame src={qrImage} loading={loading} secondsLeft={secondsLeft} />
