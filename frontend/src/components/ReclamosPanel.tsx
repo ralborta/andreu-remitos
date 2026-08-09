@@ -6,9 +6,32 @@ import {
   useMemo,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from "react";
 import clsx from "clsx";
-import { ArrowUpRight, Check, RefreshCw, X } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Calendar,
+  Camera,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  ExternalLink,
+  FileText,
+  Headphones,
+  ImageIcon,
+  MessageCircle,
+  MessageSquareText,
+  Package,
+  RefreshCw,
+  Sparkles,
+  UserRound,
+  X,
+} from "lucide-react";
 import {
   decidirReclamo,
   listReclamos,
@@ -29,12 +52,47 @@ function estadoColor(estado: string) {
   if (estado === "resuelto") return "#22c55e";
   if (estado === "escalado") return "#f59e0b";
   if (estado === "en_proceso") return "#38bdf8";
-  if (estado === "nuevo") return "#d946ef";
+  if (estado === "nuevo") return "#a855f7";
   return "#a79fc9";
 }
 
 function codigoCaso(g: ReclamoCaso) {
   return g.codigo || g.id;
+}
+
+function formatFechaCorta(iso?: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatHoraMsg(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    // Puede venir como "21:20" o similar
+    const m = String(iso).match(/(\d{1,2}:\d{2})/);
+    return m?.[1] ?? "";
+  }
+  return d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function collectEvidencias(caso: ReclamoCaso): string[] {
+  const out: string[] = [];
+  const push = (raw?: string | null) => {
+    const u = browsableMediaUrl(raw);
+    if (u && !out.includes(u)) out.push(u);
+  };
+  push(caso.imagenUrl);
+  for (const m of caso.mensajes || []) push(m.imagen_url);
+  return out;
 }
 
 /** Botones de acción con contraste alto (texto blanco sobre color sólido). */
@@ -52,6 +110,32 @@ const BTN_OK: CSSProperties = {
 };
 const btnAccionClass =
   "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50";
+const btnModalAccionClass =
+  "inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-sm disabled:opacity-50";
+
+function SoftBadge({
+  color,
+  icon,
+  children,
+}: {
+  color: string;
+  icon?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+      style={{
+        color,
+        background: `${color}18`,
+        boxShadow: `inset 0 0 0 1px ${color}40`,
+      }}
+    >
+      {icon}
+      {children}
+    </span>
+  );
+}
 
 function ReclamoDetalleModal({
   caso,
@@ -62,166 +146,347 @@ function ReclamoDetalleModal({
 }: {
   caso: ReclamoCaso;
   onClose: () => void;
-  onVerFoto: () => void;
+  onVerFoto: (src?: string) => void;
   busyId: string | null;
   onDecidir: (estado: "en_proceso" | "escalado" | "resuelto") => void;
 }) {
-  const fotoSrc = browsableMediaUrl(caso.imagenUrl);
-  const mensajes = (caso.mensajes || []).slice(-12);
+  const evidencias = useMemo(() => collectEvidencias(caso), [caso]);
+  const [fotoIdx, setFotoIdx] = useState(0);
+  const mensajes = (caso.mensajes || []).slice(-8);
+  const historial = (caso.historial || []).slice(-8);
+  const detalleTxt = caso.detalle || caso.resumen;
+  const remitoPedido = caso.remito || caso.pedido || "—";
+  const fotoActual = evidencias[fotoIdx] || evidencias[0];
+  const chatHref = caso.telefono
+    ? `/contactos?tel=${encodeURIComponent(caso.telefono.replace(/\D/g, ""))}`
+    : "/contactos";
+
+  useEffect(() => {
+    setFotoIdx(0);
+  }, [caso.id]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm sm:p-6"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] p-5 shadow-2xl"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="reclamo-detalle-title"
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h3 id="reclamo-detalle-title" className="text-base font-semibold text-white">
-              {codigoCaso(caso)}
-            </h3>
-            <p className="mt-0.5 text-xs text-[var(--text-faint)]">
-              {caso.motivoLabel}
-              {caso.tipoAbbr ? ` · ${caso.tipoAbbr}` : ""}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-white/5 hover:text-white"
-            aria-label="Cerrar"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="mb-4 flex flex-wrap gap-2">
-          <Pill color={caso.canal === "WhatsApp" ? "#25d366" : "#a78bfa"}>{caso.canal}</Pill>
-          {caso.criticidadLabel !== "—" && (
-            <CritBadge level={caso.criticidadLabel as "Alta" | "Media" | "Baja"} />
-          )}
-          <Pill color={estadoColor(caso.estado)}>{caso.estadoLabel}</Pill>
-          <span
-            className={clsx(
-              "rounded-full px-2.5 py-0.5 text-xs",
-              caso.sla === "Por vencer"
-                ? "bg-amber-500/15 text-amber-300"
-                : "bg-white/5 text-[var(--text-dim)]",
-            )}
-          >
-            {caso.sla}
-          </span>
-        </div>
-
-        <dl className="space-y-2.5 text-sm">
-          <div>
-            <dt className="text-xs text-[var(--text-faint)]">Cliente</dt>
-            <dd className="text-white">{caso.cliente}</dd>
-            {caso.telefono && (
-              <dd className="text-xs text-[var(--text-dim)]">{caso.telefono}</dd>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <dt className="text-xs text-[var(--text-faint)]">Viaje</dt>
-              <dd className="text-[var(--text-dim)]">{caso.viaje}</dd>
+        <div className="overflow-y-auto p-5 sm:p-6">
+          {/* Header */}
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--violet)]/20 text-[var(--violet-2)] ring-1 ring-[var(--violet)]/35">
+                <FileText size={20} />
+              </div>
+              <div className="min-w-0">
+                <h3
+                  id="reclamo-detalle-title"
+                  className="truncate text-lg font-bold tracking-tight text-white"
+                >
+                  {codigoCaso(caso)}
+                </h3>
+                <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                  {caso.motivoLabel}
+                  {caso.tipoAbbr ? ` · ${caso.tipoAbbr}` : ""}
+                </p>
+              </div>
             </div>
-            <div>
-              <dt className="text-xs text-[var(--text-faint)]">Remito / pedido</dt>
-              <dd className="text-[var(--text-dim)]">
-                {caso.remito || caso.pedido || "—"}
-              </dd>
-            </div>
-          </div>
-          {(caso.resumen || caso.detalle) && (
-            <div>
-              <dt className="text-xs text-[var(--text-faint)]">Detalle</dt>
-              <dd className="whitespace-pre-wrap text-[var(--text-dim)]">
-                {caso.detalle || caso.resumen}
-              </dd>
-            </div>
-          )}
-          {caso.escaladoA && (
-            <div>
-              <dt className="text-xs text-[var(--text-faint)]">Escalado a</dt>
-              <dd className="text-[var(--text-dim)]">{caso.escaladoA}</dd>
-            </div>
-          )}
-          {caso.notaInterna && (
-            <div>
-              <dt className="text-xs text-[var(--text-faint)]">Nota interna</dt>
-              <dd className="text-[var(--text-dim)]">{caso.notaInterna}</dd>
-            </div>
-          )}
-        </dl>
-
-        {fotoSrc && (
-          <div className="mt-4">
-            <p className="mb-2 text-xs text-[var(--text-faint)]">Evidencia</p>
             <button
               type="button"
-              onClick={onVerFoto}
-              className="group relative block w-full overflow-hidden rounded-xl border border-[var(--border)]"
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-white/5 hover:text-white"
+              aria-label="Cerrar"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={fotoSrc}
-                alt={`Foto ${codigoCaso(caso)}`}
-                className="max-h-52 w-full object-contain bg-black/40"
-              />
-              <span className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 text-center text-xs text-white opacity-90 group-hover:opacity-100">
-                Abrir foto
-              </span>
+              <X size={18} />
             </button>
           </div>
-        )}
 
-        {mensajes.length > 0 && (
-          <div className="mt-4">
-            <p className="mb-2 text-xs text-[var(--text-faint)]">Últimos mensajes</p>
-            <ul className="max-h-48 space-y-1.5 overflow-y-auto rounded-xl border border-[var(--border)] bg-black/30 p-2.5 text-xs leading-relaxed">
-              {mensajes.map((m, i) => (
-                <li key={`${m.at || i}-${i}`}>
-                  <span style={{ color: "#22c55e", fontWeight: 700 }}>
-                    {m.dir === "out" ? "Agente" : "Cliente"}:{" "}
-                  </span>
-                  <span style={{ color: "#4ade80" }}>
-                    {m.texto || (m.imagen_url ? "[foto]" : "—")}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          {/* Badges */}
+          <div className="mb-5 flex flex-wrap gap-2">
+            <SoftBadge
+              color={caso.canal === "WhatsApp" ? "#25d366" : "#a78bfa"}
+              icon={<MessageCircle size={12} />}
+            >
+              {caso.canal}
+            </SoftBadge>
+            {evidencias.length > 0 && (
+              <SoftBadge color="#f59e0b" icon={<ImageIcon size={12} />}>
+                Media
+              </SoftBadge>
+            )}
+            {caso.criticidadLabel !== "—" && (
+              <CritBadge level={caso.criticidadLabel as "Alta" | "Media" | "Baja"} />
+            )}
+            <SoftBadge
+              color={estadoColor(caso.estado)}
+              icon={caso.estado === "nuevo" ? <Sparkles size={12} /> : undefined}
+            >
+              {caso.estadoLabel}
+            </SoftBadge>
+            <SoftBadge
+              color={caso.sla === "Por vencer" ? "#f59e0b" : "#94a3b8"}
+              icon={<Clock size={12} />}
+            >
+              {caso.sla}
+            </SoftBadge>
           </div>
-        )}
 
-        {(caso.historial || []).length > 0 && (
-          <div className="mt-4">
-            <p className="mb-2 text-xs text-[var(--text-faint)]">Historial</p>
-            <ul className="max-h-28 space-y-1 overflow-y-auto text-xs text-[var(--text-dim)]">
-              {(caso.historial || []).slice(-8).map((h, i) => (
-                <li key={`${h}-${i}`}>{h}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {/* Info card */}
+          <section className="mb-4 space-y-3 rounded-2xl border border-[var(--border)] bg-black/20 p-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 text-[var(--violet-2)]">
+                <UserRound size={16} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-white">{caso.cliente}</p>
+                {caso.telefono && (
+                  <p className="text-xs text-[var(--text-dim)]">{caso.telefono}</p>
+                )}
+              </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-[var(--border)]/70 bg-white/[0.03] px-3 py-2.5">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                  <Package size={12} />
+                  Viaje
+                </div>
+                <p className="text-sm text-[var(--text-dim)]">{caso.viaje || "—"}</p>
+              </div>
+              <div className="rounded-xl border border-[var(--border)]/70 bg-white/[0.03] px-3 py-2.5">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                  <ClipboardList size={12} />
+                  Remito / pedido
+                </div>
+                <p className="text-sm text-[var(--text-dim)]">{remitoPedido}</p>
+              </div>
+            </div>
+
+            {detalleTxt && (
+              <div className="flex items-start gap-3 border-t border-[var(--border)]/60 pt-3">
+                <span className="mt-0.5 text-[var(--violet-2)]">
+                  <MessageSquareText size={16} />
+                </span>
+                <div>
+                  <p className="mb-0.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                    Detalle
+                  </p>
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-dim)]">
+                    {detalleTxt}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {(caso.escaladoA || caso.notaInterna) && (
+              <div className="space-y-2 border-t border-[var(--border)]/60 pt-3 text-sm">
+                {caso.escaladoA && (
+                  <p>
+                    <span className="text-[var(--text-faint)]">Escalado a · </span>
+                    <span className="text-[var(--text-dim)]">{caso.escaladoA}</span>
+                  </p>
+                )}
+                {caso.notaInterna && (
+                  <p>
+                    <span className="text-[var(--text-faint)]">Nota · </span>
+                    <span className="text-[var(--text-dim)]">{caso.notaInterna}</span>
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Evidencia */}
+          {evidencias.length > 0 && fotoActual && (
+            <section className="mb-4 rounded-2xl border border-[var(--border)] bg-black/20 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <ImageIcon size={16} className="text-[var(--violet-2)]" />
+                  Evidencia
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onVerFoto(fotoActual)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--violet-2)] hover:underline"
+                >
+                  Ver en grande
+                  <ExternalLink size={12} />
+                </button>
+              </div>
+              <div className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-black/40">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={fotoActual}
+                  alt={`Evidencia ${codigoCaso(caso)}`}
+                  className="mx-auto max-h-56 w-full cursor-zoom-in object-contain"
+                  onClick={() => onVerFoto(fotoActual)}
+                />
+                {evidencias.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Foto anterior"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/55 p-1.5 text-white hover:bg-black/75"
+                      onClick={() =>
+                        setFotoIdx((i) => (i - 1 + evidencias.length) % evidencias.length)
+                      }
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Foto siguiente"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/55 p-1.5 text-white hover:bg-black/75"
+                      onClick={() => setFotoIdx((i) => (i + 1) % evidencias.length)}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                    <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+                      {evidencias.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-label={`Foto ${i + 1}`}
+                          onClick={() => setFotoIdx(i)}
+                          className={clsx(
+                            "h-1.5 w-1.5 rounded-full transition",
+                            i === fotoIdx ? "bg-[var(--violet-2)]" : "bg-white/35",
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Mensajes */}
+          {mensajes.length > 0 && (
+            <section className="mb-4 rounded-2xl border border-[var(--border)] bg-black/20 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-white">Últimos mensajes</p>
+                <Link
+                  href={chatHref}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--violet-2)] hover:underline"
+                >
+                  Ver conversación completa
+                  <ArrowRight size={12} />
+                </Link>
+              </div>
+              <ul className="max-h-52 space-y-2 overflow-y-auto">
+                {mensajes.map((m, i) => {
+                  const esAgente = m.dir === "out";
+                  return (
+                    <li
+                      key={`${m.at || i}-${i}`}
+                      className={clsx(
+                        "flex items-start justify-between gap-3 rounded-xl border px-3 py-2.5",
+                        esAgente
+                          ? "border-emerald-500/35 bg-emerald-500/10"
+                          : "border-[var(--border)]/70 bg-white/[0.03]",
+                      )}
+                    >
+                      <div className="min-w-0">
+                        <p
+                          className={clsx(
+                            "text-[11px] font-semibold",
+                            esAgente ? "text-emerald-300" : "text-[var(--text-faint)]",
+                          )}
+                        >
+                          {esAgente ? "Agente" : "Cliente"}
+                          {m.at ? (
+                            <span className="ml-1.5 font-normal opacity-80">
+                              {formatHoraMsg(m.at)}
+                            </span>
+                          ) : null}
+                        </p>
+                        <p
+                          className={clsx(
+                            "mt-0.5 text-sm leading-relaxed",
+                            esAgente ? "text-emerald-100" : "text-[var(--text-dim)]",
+                          )}
+                        >
+                          {m.texto || (m.imagen_url ? "[foto]" : "—")}
+                        </p>
+                      </div>
+                      <span
+                        className={clsx(
+                          "mt-0.5 shrink-0 rounded-full p-1.5",
+                          esAgente
+                            ? "bg-emerald-500/20 text-emerald-300"
+                            : "bg-white/5 text-[var(--text-faint)]",
+                        )}
+                      >
+                        {esAgente ? <Headphones size={14} /> : <UserRound size={14} />}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {/* Historial + meta */}
+          <section className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
+            <div className="rounded-2xl border border-[var(--border)] bg-black/20 p-4">
+              <p className="mb-3 text-sm font-semibold text-white">Historial</p>
+              {historial.length === 0 ? (
+                <p className="text-xs text-[var(--text-faint)]">Sin eventos todavía.</p>
+              ) : (
+                <ul className="relative max-h-36 space-y-3 overflow-y-auto pl-1">
+                  {historial.map((h, i) => (
+                    <li key={`${h}-${i}`} className="relative flex gap-3 pl-4">
+                      <span className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-[var(--violet-2)] ring-2 ring-[var(--violet)]/30" />
+                      {i < historial.length - 1 && (
+                        <span className="absolute left-[3px] top-3.5 h-[calc(100%+4px)] w-px bg-[var(--border)]" />
+                      )}
+                      <p className="text-xs leading-relaxed text-[var(--text-dim)]">{h}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-[var(--border)] bg-black/20 px-4 py-3">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                  <Calendar size={12} />
+                  Creado
+                </div>
+                <p className="text-sm text-[var(--text-dim)]">
+                  {formatFechaCorta(caso.createdAt)}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[var(--border)] bg-black/20 px-4 py-3">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                  <MessageCircle size={12} />
+                  Canal
+                </div>
+                <p className="text-sm text-[var(--text-dim)]">{caso.canal}</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Acciones */}
         {caso.estado !== "resuelto" && (
-          <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+          <div className="flex flex-wrap gap-2 border-t border-[var(--border)] bg-black/25 p-4 sm:p-5">
             {caso.estado === "nuevo" && (
               <button
                 type="button"
                 disabled={busyId === caso.id}
                 onClick={() => onDecidir("en_proceso")}
-                className={btnAccionClass}
+                className={btnModalAccionClass}
                 style={BTN_TOMAR}
               >
+                <Camera size={16} />
                 Tomar
               </button>
             )}
@@ -230,10 +495,10 @@ function ReclamoDetalleModal({
                 type="button"
                 disabled={busyId === caso.id}
                 onClick={() => onDecidir("escalado")}
-                className={btnAccionClass}
+                className={btnModalAccionClass}
                 style={BTN_ESCALAR}
               >
-                <ArrowUpRight size={14} />
+                <ArrowUpRight size={16} />
                 Escalar
               </button>
             )}
@@ -241,10 +506,10 @@ function ReclamoDetalleModal({
               type="button"
               disabled={busyId === caso.id}
               onClick={() => onDecidir("resuelto")}
-              className={btnAccionClass}
+              className={btnModalAccionClass}
               style={BTN_OK}
             >
-              <Check size={14} />
+              <Check size={16} />
               OK
             </button>
           </div>
@@ -332,8 +597,8 @@ export function ReclamosPanel() {
     }
   }
 
-  function abrirFoto(g: ReclamoCaso) {
-    const src = browsableMediaUrl(g.imagenUrl);
+  function abrirFoto(g: ReclamoCaso, srcOverride?: string) {
+    const src = srcOverride || browsableMediaUrl(g.imagenUrl);
     if (!src) return;
     setFoto({
       src,
@@ -534,7 +799,7 @@ export function ReclamosPanel() {
         <ReclamoDetalleModal
           caso={detalle}
           onClose={() => setDetalle(null)}
-          onVerFoto={() => abrirFoto(detalle)}
+          onVerFoto={(src) => abrirFoto(detalle, src)}
           busyId={busyId}
           onDecidir={(estado) => void decidir(detalle, estado)}
         />

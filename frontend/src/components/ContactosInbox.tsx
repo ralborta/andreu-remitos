@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MessageCircle, RefreshCw, Search } from "lucide-react";
 import {
   getConversacion,
@@ -27,9 +28,11 @@ function formatPhone(p: string) {
 }
 
 export function ContactosInbox() {
+  const searchParams = useSearchParams();
+  const telFromQuery = searchParams.get("tel")?.replace(/\D/g, "") || null;
   const [lista, setLista] = useState<ConversacionListItem[]>([]);
   const [choferes, setChoferes] = useState<Chofer[]>([]);
-  const [selectedTel, setSelectedTel] = useState<string | null>(null);
+  const [selectedTel, setSelectedTel] = useState<string | null>(telFromQuery);
   const [conv, setConv] = useState<Conversacion | null>(null);
   const [remito, setRemito] = useState<RemitoRow | null>(null);
   const [filtroTenant, setFiltroTenant] = useState<string>("");
@@ -50,13 +53,22 @@ export function ContactosInbox() {
       ]);
       setLista(data);
       setChoferes(ch);
-      if (data.length > 0 && !selectedTel) setSelectedTel(data[0].telefono);
+      if (!selectedTel) {
+        if (telFromQuery) {
+          const match = data.find(
+            (c) => c.telefono.replace(/\D/g, "") === telFromQuery || c.telefono === telFromQuery,
+          );
+          setSelectedTel(match?.telefono || telFromQuery);
+        } else if (data.length > 0) {
+          setSelectedTel(data[0].telefono);
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
       setLoading(false);
     }
-  }, [filtroTenant, selectedTel]);
+  }, [filtroTenant, selectedTel, telFromQuery]);
 
   const loadConv = useCallback(async (tel: string) => {
     try {
