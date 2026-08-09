@@ -3,6 +3,7 @@ import {
   mensajeEsperandoCorreccion,
   mensajeAudioSoloConfirmacion,
   mensajeAudioFallidoConfirmacion,
+  mensajeAudioSinCorreccion,
   mensajeProcesandoRemito,
   mensajeSaludo,
   mensajeCorinaListoParaFoto,
@@ -624,7 +625,7 @@ export default async function webhooksRoutes(fastify) {
           if (!flujoRemitoAbierto(convAudio) || !remitoAudio) {
             const msg =
               "Mandame una *foto del remito* para empezar.\n" +
-              "Las correcciones van *por texto*; el *audio* es solo para confirmar con *OK*.";
+              "Después podés *dictar* correcciones por audio o escribirlas, y confirmar con *OK*.";
             if (ev.from && !pausadoAudio) {
               await notificarChofer(ev.from, msg, { tenant: tenantCfg, log: request.log });
             }
@@ -678,7 +679,38 @@ export default async function webhooksRoutes(fastify) {
             return respuestaWebhook({ message: msg, transcripcion, flow: "confirmado_repetido" });
           }
 
-          const msg = mensajeAudioSoloConfirmacion();
+          // Correcciones por audio: misma IA/heurística que el texto
+          const correccionesAudio = await resolveCorreccionesChofer(transcripcion, {
+            tenant: remitoAudio?.tenant ?? tenantCfg,
+            datos: remitoAudio?.datos,
+            remitoVinculado: Boolean(remitoAudio),
+            log: request.log,
+          });
+          if (correccionesAudio.length > 0) {
+            if (ev.from) {
+              await convStore.setCorreccionesPendientes(ev.from, correccionesAudio);
+            }
+            const out = await aplicarCorreccionesChofer({
+              phone: ev.from,
+              conv: convAudio,
+              tenantCfg,
+              correcciones: correccionesAudio,
+              pausado: pausadoAudio,
+              log: request.log,
+            });
+            if (out) {
+              return respuestaWebhook({
+                ...out,
+                transcripcion,
+                flow: out.flow ?? "audio_correccion",
+              });
+            }
+          }
+
+          const msg =
+            correccionesAudio.length === 0
+              ? mensajeAudioSinCorreccion(transcripcion)
+              : mensajeAudioSoloConfirmacion();
           if (ev.from && !pausadoAudio) {
             await notificarChofer(ev.from, msg, {
               tenant: remitoAudio.tenant,
@@ -686,7 +718,11 @@ export default async function webhooksRoutes(fastify) {
               log: request.log,
             });
           }
-          return respuestaWebhook({ message: msg, transcripcion, flow: "audio_no_es_ok" });
+          return respuestaWebhook({
+            message: msg,
+            transcripcion,
+            flow: "audio_sin_correccion",
+          });
         }
 
         // Foto — solo remitos si NO hay destino pendiente para este número
