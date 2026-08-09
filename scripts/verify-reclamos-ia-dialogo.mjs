@@ -9,6 +9,7 @@ import {
   RECLAMO_MOTIVO_LABEL,
   labelMotivo,
   calcularSlaLabel,
+  motivoRequiereFoto,
 } from "../lib/reclamos.mjs";
 import {
   procesarReclamoWhatsApp,
@@ -17,7 +18,12 @@ import {
 } from "../lib/reclamos-wa.mjs";
 
 assert.ok(RECLAMO_MOTIVOS.includes("demora_entrega"));
+assert.ok(RECLAMO_MOTIVOS.includes("producto_equivocado"));
 assert.equal(labelMotivo("faltante"), RECLAMO_MOTIVO_LABEL.faltante);
+assert.equal(motivoRequiereFoto("averia"), true, "dañado pide foto");
+assert.equal(motivoRequiereFoto("producto_equivocado"), true, "equivocado pide foto");
+assert.equal(motivoRequiereFoto("demora_entrega"), false, "demora NO pide foto");
+assert.equal(motivoRequiereFoto("faltante"), false, "faltante NO pide foto");
 assert.equal(typeof procesarReclamoWhatsApp, "function");
 assert.equal(typeof turnoAgenteReclamos, "function");
 assert.ok(

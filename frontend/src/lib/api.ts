@@ -654,6 +654,7 @@ export interface ReclamoCaso {
   pedido: string | null;
   resumen: string | null;
   detalle: string | null;
+  imagenUrl: string | null;
   escaladoA: string | null;
   notaInterna: string | null;
   sla: string;

@@ -380,12 +380,20 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   }
 }
 
-async function tryProcesarReclamo(ev, { texto, log, forzar = false } = {}) {
-  if (!ev.from || (!texto?.trim() && !forzar)) return null;
+async function tryProcesarReclamo(
+  ev,
+  { texto, log, forzar = false, imageBuffer = null, mime = null } = {},
+) {
+  const tieneFoto = Boolean(imageBuffer?.length || ev.media?.url);
+  if (!ev.from || (!texto?.trim() && !tieneFoto && !forzar)) return null;
   try {
     await convStore.appendMensaje(
       ev.from,
-      { texto: texto || "", tipo: "text" },
+      {
+        texto: texto || (tieneFoto ? "[Foto del producto / daño]" : ""),
+        tipo: tieneFoto ? "image" : "text",
+        imagen_url: ev.media?.url || null,
+      },
       { dir: "in", from: "client", nombre: ev.nombre, agente: "reclamos" },
     );
     const out = await procesarReclamoWhatsApp({
@@ -394,6 +402,9 @@ async function tryProcesarReclamo(ev, { texto, log, forzar = false } = {}) {
       nombre: ev.nombre,
       log,
       forzar,
+      imageBuffer,
+      mime,
+      imagenUrl: ev.media?.url || null,
     });
     if (!out?.mensaje) return null;
     await notificarChofer(ev.from, out.mensaje, { log, tenant: null }).catch(() => {});
@@ -644,6 +655,37 @@ export default async function webhooksRoutes(fastify) {
         ? await destinosStore.getDestinoActivoPorChofer(ev.from)
         : null;
 
+      // Reclamo pendiente + foto/texto: ANTES de rendición/remito
+      // (foto de producto dañado / equivocado no debe caer a OCR de remito)
+      const pendingReclamoEarly = ev.from
+        ? await reclamosStore.getReclamoPendientePorTelefono(ev.from)
+        : null;
+      if (pendingReclamoEarly && (texto || esFoto)) {
+        let imageBuffer = null;
+        let mime = null;
+        if (esFoto) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            if (!/audio/i.test(dl.mime || "")) {
+              imageBuffer = dl.buffer;
+              mime = dl.mime;
+            }
+          } catch (err) {
+            request.log.warn({ err: err.message }, "Reclamos: no pude bajar foto");
+          }
+        }
+        const reclamoPend = await tryProcesarReclamo(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+          imageBuffer,
+          mime,
+        });
+        if (reclamoPend) {
+          return respuestaWebhook({ ...reclamoPend, received: true });
+        }
+      }
+
       // Rendición ANTES de destinos/ETA:
       // - texto "nafta/gasto/ticket", o
       // - foto de comprobante (aunque no tenga caption) si hay ETA pendiente
@@ -700,21 +742,6 @@ export default async function webhooksRoutes(fastify) {
         });
         if (viajePend) {
           return respuestaWebhook({ ...viajePend, received: true });
-        }
-      }
-
-      // Reclamo pendiente (diálogo multi-turno 100% IA) — antes del router
-      const pendingReclamoEarly = ev.from
-        ? await reclamosStore.getReclamoPendientePorTelefono(ev.from)
-        : null;
-      if (pendingReclamoEarly && texto && !esFoto) {
-        const reclamoPend = await tryProcesarReclamo(ev, {
-          texto,
-          log: request.log,
-          forzar: true,
-        });
-        if (reclamoPend) {
-          return respuestaWebhook({ ...reclamoPend, received: true });
         }
       }
 

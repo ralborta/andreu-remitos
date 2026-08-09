@@ -38,8 +38,11 @@ function normalizeMotivo(v) {
   if (RECLAMO_MOTIVOS.includes(m)) return m;
   // aliases IA
   if (/demora/.test(m)) return "demora_entrega";
+  if (/equivoc|incorrect|mal\s*producto|producto\s*mal|no\s*era\s*lo|otro\s*producto/.test(m)) {
+    return "producto_equivocado";
+  }
   if (/faltante|falta|faltan/.test(m)) return "faltante";
-  if (/aver|dañ|dano|roto|rotura/.test(m)) return "averia";
+  if (/aver|dañ|dano|roto|rotura|golpead|quebr/.test(m)) return "averia";
   if (/docum|remito|factura/.test(m)) return "documentacion";
   if (/trato|atenci|maltrato/.test(m)) return "trato";
   return "otro";
@@ -87,6 +90,7 @@ export async function crearReclamoDialogo({ telefono, nombre, seed = {} } = {}) 
     pedido_ref: seed.pedido_ref || null,
     resumen: null,
     detalle: seed.detalle || null,
+    imagen_url: seed.imagen_url || null,
     mensajes: [],
     historial: [`${now} · Diálogo iniciado`],
     escalado_a: null,
@@ -116,6 +120,7 @@ export async function actualizarReclamo(id, patch = {}) {
   if (patch.pedido_ref !== undefined) row.pedido_ref = patch.pedido_ref;
   if (patch.resumen !== undefined) row.resumen = patch.resumen;
   if (patch.detalle !== undefined) row.detalle = patch.detalle;
+  if (patch.imagen_url !== undefined) row.imagen_url = patch.imagen_url;
   if (patch.escalado_a !== undefined) row.escalado_a = patch.escalado_a;
   if (patch.nota_interna !== undefined) row.nota_interna = patch.nota_interna;
   if (patch.mensaje_push) {
@@ -132,7 +137,7 @@ export async function actualizarReclamo(id, patch = {}) {
 }
 
 /** Cierra el diálogo: pasa a nuevo/escalado con datos clasificados. */
-export async function abrirCasoDesdeDialogo(id, { motivo, criticidad, resumen, detalle, viaje_ref, remito_ref, pedido_ref, escalar = false, escalado_a = null } = {}) {
+export async function abrirCasoDesdeDialogo(id, { motivo, criticidad, resumen, detalle, viaje_ref, remito_ref, pedido_ref, imagen_url, escalar = false, escalado_a = null } = {}) {
   const now = new Date().toISOString();
   return actualizarReclamo(id, {
     estado: escalar ? "escalado" : "nuevo",
@@ -143,6 +148,7 @@ export async function abrirCasoDesdeDialogo(id, { motivo, criticidad, resumen, d
     viaje_ref,
     remito_ref,
     pedido_ref,
+    imagen_url: imagen_url || undefined,
     escalado_a: escalar ? escalado_a || "Coordinación operativa" : null,
     historial_push: `${now} · Caso ${escalar ? "escalado" : "abierto"}`,
   });

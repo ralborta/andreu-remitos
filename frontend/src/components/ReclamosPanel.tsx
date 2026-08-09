@@ -10,10 +10,14 @@ import {
   type ReclamoCaso,
   type ResumenReclamos,
 } from "@/lib/api";
+import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, CritBadge, KpiCard, Pill } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
+import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "abiertos" | "nuevo" | "en_proceso" | "escalado" | "resuelto" | "todos";
+
+type FotoPreview = { src: string; title: string };
 
 function estadoColor(estado: string) {
   if (estado === "resuelto") return "#22c55e";
@@ -31,6 +35,7 @@ export function ReclamosPanel() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [foto, setFoto] = useState<FotoPreview | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -189,6 +194,22 @@ export function ReclamosPanel() {
                           {g.resumen || g.detalle}
                         </div>
                       )}
+                      {g.imagenUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const src = browsableMediaUrl(g.imagenUrl);
+                            if (!src) return;
+                            setFoto({
+                              src,
+                              title: `${g.id} · ${g.motivoLabel}`,
+                            });
+                          }}
+                          className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
+                        >
+                          Ver foto
+                        </button>
+                      )}
                     </td>
                     <td className="py-3 pr-3">
                       <Pill color={g.canal === "WhatsApp" ? "#25d366" : "#a78bfa"}>{g.canal}</Pill>
@@ -256,6 +277,13 @@ export function ReclamosPanel() {
           </div>
         )}
       </Card>
+
+      <RemitoImageLightbox
+        src={foto?.src ?? ""}
+        alt={foto?.title ?? "Foto del reclamo"}
+        open={!!foto}
+        onClose={() => setFoto(null)}
+      />
     </div>
   );
 }

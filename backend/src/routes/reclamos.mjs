@@ -33,6 +33,7 @@ function mapReclamo(row) {
     pedido: row.pedido_ref || null,
     resumen: row.resumen,
     detalle: row.detalle,
+    imagenUrl: row.imagen_url || null,
     escaladoA: row.escalado_a,
     notaInterna: row.nota_interna,
     sla: calcularSlaLabel(row),
