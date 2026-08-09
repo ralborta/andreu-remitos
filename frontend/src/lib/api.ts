@@ -366,6 +366,10 @@ export interface DestinoValidacion {
   partial?: boolean;
   correccion?: string;
   ultimaRespuestaCliente?: string | null;
+  ultimaRespuestaChofer?: string | null;
+  etaMinutos?: number | null;
+  etaTexto?: string | null;
+  etaAt?: string | null;
   historial: string[];
   whatsappSent?: boolean;
   mensajeCliente?: string;
@@ -413,7 +417,7 @@ export interface Viaje {
   codigo: string;
   estado: ViajeEstado;
   estadoLabel: string;
-  tenant: "tsb" | null;
+  tenant: "tsb" | "beraldi" | "corina" | "mye" | null;
   cliente: string;
   origen: string;
   destino: string;

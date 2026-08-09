@@ -50,6 +50,18 @@ export async function getDestinoPendientePorTelefono(telefono) {
   return rows[0];
 }
 
+/** Chofer con destino confirmado esperando ETA, o en ruta (puede avisar demora). */
+export async function getDestinoActivoPorChofer(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return null;
+  const activos = new Set(["esperando_eta_chofer", "en_ruta"]);
+  const rows = readAll().filter(
+    (r) => r.telefono_chofer === phone && activos.has(r.estado),
+  );
+  if (rows.length === 0) return null;
+  return rows[0];
+}
+
 export async function cancelarPendientesPorTelefono(telefono, exceptId) {
   const phone = sanitizePhone(telefono);
   if (!phone) return 0;

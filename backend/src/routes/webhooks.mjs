@@ -23,7 +23,10 @@ import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { syncBotPausa } from "../../../lib/bot-pausa.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/remitos.mjs";
-import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
+import {
+  procesarRespuestaDestinoCliente,
+  procesarRespuestaDestinoChofer,
+} from "../services/destinos.mjs";
 import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
 import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
@@ -334,33 +337,58 @@ async function tryProcesarViajes(ev, { texto, log, conv } = {}) {
 
 async function tryProcesarDestinos(ev, { texto, log } = {}) {
   if (!ev.from) return null;
-  const pending = await destinosStore.getDestinoPendientePorTelefono(ev.from);
-  if (!pending) return null;
+
+  const pendingCliente = await destinosStore.getDestinoPendientePorTelefono(ev.from);
+  if (pendingCliente) {
+    try {
+      const out = await procesarRespuestaDestinoCliente(ev.from, {
+        texto,
+        lat: ev.location?.lat,
+        lng: ev.location?.lng,
+        nombre: ev.nombre,
+        log,
+      });
+      if (!out) return null;
+      return { ...out, message: out.message ?? out.mensaje ?? "" };
+    } catch (err) {
+      log?.error?.({ err: err.message, from: ev.from }, "destinos webhook error");
+      const msg =
+        `No pude ubicar esa dirección.\n\n` +
+        `¿Me pasás *calle, número y localidad* (ej: Echeverría 1200, Pacheco) o tu ubicación 📌?\n` +
+        `La necesitamos para que el chofer llegue bien.`;
+      if (ev.from) {
+        await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      }
+      return {
+        flow: "destinos_error",
+        error: err.message,
+        destino: pendingCliente,
+        message: msg,
+      };
+    }
+  }
+
+  const pendingChofer = await destinosStore.getDestinoActivoPorChofer(ev.from);
+  if (!pendingChofer) return null;
 
   try {
-    const out = await procesarRespuestaDestinoCliente(ev.from, {
+    const out = await procesarRespuestaDestinoChofer(ev.from, {
       texto,
-      lat: ev.location?.lat,
-      lng: ev.location?.lng,
       nombre: ev.nombre,
       log,
     });
     if (!out) return null;
-    // Normalizar: el servicio usa `mensaje`; el webhook/`fallBack` usa `message`
     return { ...out, message: out.message ?? out.mensaje ?? "" };
   } catch (err) {
-    log?.error?.({ err: err.message, from: ev.from }, "destinos webhook error");
-    const msg =
-      `No pude ubicar esa dirección.\n\n` +
-      `¿Me pasás *calle, número y localidad* (ej: Echeverría 1200, Pacheco) o tu ubicación 📌?\n` +
-      `La necesitamos para que el chofer llegue bien.`;
+    log?.error?.({ err: err.message, from: ev.from }, "destinos ETA chofer error");
+    const msg = `No pude interpretar el tiempo. Mandame algo como *30 min* o *1 hora*.`;
     if (ev.from) {
       await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     }
     return {
-      flow: "destinos_error",
+      flow: "destinos_eta_error",
       error: err.message,
-      destino: pending,
+      destino: pendingChofer,
       message: msg,
     };
   }

@@ -19,8 +19,14 @@ function mapDestino(row) {
     partial: row.partial,
     correccion: row.correccion,
     ultimaRespuestaCliente: row.ultima_respuesta_cliente ?? null,
+    ultimaRespuestaChofer: row.ultima_respuesta_chofer ?? null,
+    etaMinutos: row.eta_minutos ?? null,
+    etaTexto: row.eta_texto ?? null,
+    etaAt: row.eta_at ?? null,
     historial: row.historial ?? [],
-    whatsappSent: row.whatsapp_sent ?? row.estado === "esperando_cliente",
+    whatsappSent:
+      row.whatsapp_sent ??
+      ["esperando_cliente", "esperando_eta_chofer", "en_ruta"].includes(row.estado),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

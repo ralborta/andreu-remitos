@@ -9,11 +9,17 @@ import {
 import {
   extraerDireccionCorreccion,
   localidadDesdeDireccion,
+  mensajeAckEtaChofer,
+  mensajeClienteDestinoConfirmado,
+  mensajeClienteEstimadoEntrega,
   mensajeDestinoActualizadoCliente,
   mensajeDestinoConfirmadoChofer,
   mensajePropuestaCliente,
 } from "../../../lib/destinos.mjs";
-import { interpretarRespuestaDestinoCliente } from "../../../lib/destinos-ia.mjs";
+import {
+  interpretarRespuestaChoferEta,
+  interpretarRespuestaDestinoCliente,
+} from "../../../lib/destinos-ia.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 
@@ -180,11 +186,6 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
 
   if (parsed.intent === "confirm") {
     historial.push("Cliente: SÍ → confirmado");
-    const updated = await destinosStore.actualizarDestino(pending.id, {
-      estado: "confirmado",
-      ultima_respuesta_cliente: t,
-      historial,
-    });
 
     // Limpieza por si quedó blacklist vieja de versiones anteriores
     try {
@@ -193,23 +194,37 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
       log?.warn?.({ err: err.message }, "Blacklist remove falló");
     }
 
+    const mensajeCliente = mensajeClienteDestinoConfirmado({ cliente: pending.cliente });
+    await enviarWhatsApp(phone, mensajeCliente, { destino_id: pending.id, from: "bot" });
+    historial.push("WhatsApp confirmación al cliente");
+
     let mensajeChofer = null;
-    if (updated.telefono_chofer) {
+    if (pending.telefono_chofer) {
       mensajeChofer = mensajeDestinoConfirmadoChofer({
-        formattedAddress: updated.formatted_address,
-        lat: updated.lat,
-        lng: updated.lng,
-        cliente: updated.cliente,
+        formattedAddress: pending.formatted_address,
+        lat: pending.lat,
+        lng: pending.lng,
+        cliente: pending.cliente,
       });
-      await enviarWhatsApp(updated.telefono_chofer, mensajeChofer, {
-        destino_id: updated.id,
+      await enviarWhatsApp(pending.telefono_chofer, mensajeChofer, {
+        destino_id: pending.id,
         from: "bot",
       });
-      historial.push("WhatsApp enviado al chofer");
-      await destinosStore.actualizarDestino(updated.id, { historial });
+      historial.push("WhatsApp al chofer: destino + pedido de ETA");
     }
 
-    return { flow: "destinos_confirmado", destino: updated, mensaje_chofer: mensajeChofer };
+    const updated = await destinosStore.actualizarDestino(pending.id, {
+      estado: pending.telefono_chofer ? "esperando_eta_chofer" : "confirmado",
+      ultima_respuesta_cliente: t,
+      historial,
+    });
+
+    return {
+      flow: "destinos_confirmado",
+      destino: updated,
+      mensaje: mensajeCliente,
+      mensaje_chofer: mensajeChofer,
+    };
   }
 
   // correccion (con dirección usable)
@@ -238,6 +253,82 @@ export async function procesarRespuestaDestinoCliente(telefono, { texto, lat, ln
   });
   await enviarWhatsApp(phone, mensaje, { destino_id: pending.id, from: "bot" });
   return { flow: "destinos_correccion_texto", destino: updated, mensaje };
+}
+
+/**
+ * Respuesta del chofer: ETA de llegada o demora → avisa al cliente.
+ */
+export async function procesarRespuestaDestinoChofer(telefono, { texto, nombre, log } = {}) {
+  const pending = await destinosStore.getDestinoActivoPorChofer(telefono);
+  if (!pending) return null;
+
+  const phone = sanitizePhone(telefono);
+  const t = String(texto ?? "").trim();
+  const historial = [...(pending.historial ?? [])];
+
+  if (phone && t) {
+    await convStore.appendMensaje(
+      phone,
+      { texto: t, tipo: "text", destino_id: pending.id },
+      { dir: "in", from: "chofer", nombre },
+    );
+  }
+
+  const parsed = await interpretarRespuestaChoferEta(t, { pending, log });
+
+  if (parsed.intent === "pedir_eta" || parsed.intent === "chat") {
+    const mensaje =
+      parsed.mensaje ||
+      `¿En cuánto estimás llegar? (ej: *25 min*). Si hay retraso, avisame.`;
+    historial.push(`Chofer: "${t}"`, `Agente (${parsed.fuente}): pidió ETA`);
+    const updated = await destinosStore.actualizarDestino(pending.id, {
+      ultima_respuesta_chofer: t || null,
+      historial,
+    });
+    await enviarWhatsApp(phone, mensaje, { destino_id: pending.id, from: "bot" });
+    return { flow: "destinos_pedir_eta_chofer", destino: updated, mensaje };
+  }
+
+  const demora = parsed.intent === "demora";
+  const actualizacion = !demora && pending.estado === "en_ruta";
+  const etaTexto = parsed.etaTexto;
+  historial.push(
+    demora
+      ? `Chofer demora: ${etaTexto} ("${t}")`
+      : actualizacion
+        ? `Chofer actualiza ETA: ${etaTexto} ("${t}")`
+        : `Chofer ETA: ${etaTexto} ("${t}")`,
+  );
+
+  const mensajeCliente = mensajeClienteEstimadoEntrega({ etaTexto, demora, actualizacion });
+  if (pending.telefono_cliente) {
+    await enviarWhatsApp(pending.telefono_cliente, mensajeCliente, {
+      destino_id: pending.id,
+      from: "bot",
+      nombre: pending.cliente,
+    });
+    historial.push(demora ? "Estimado actualizado → cliente" : "Estimado de entrega → cliente");
+  }
+
+  const mensajeChofer = mensajeAckEtaChofer({ etaTexto, demora });
+  await enviarWhatsApp(phone, mensajeChofer, { destino_id: pending.id, from: "bot" });
+  historial.push("Ack ETA al chofer");
+
+  const updated = await destinosStore.actualizarDestino(pending.id, {
+    estado: "en_ruta",
+    eta_minutos: parsed.minutos,
+    eta_texto: etaTexto,
+    eta_at: new Date().toISOString(),
+    ultima_respuesta_chofer: t,
+    historial,
+  });
+
+  return {
+    flow: demora ? "destinos_demora_chofer" : "destinos_eta_chofer",
+    destino: updated,
+    mensaje: mensajeChofer,
+    mensaje_cliente: mensajeCliente,
+  };
 }
 
 export { geocodeInput };

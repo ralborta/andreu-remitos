@@ -26,6 +26,8 @@ function mapsUrl(lat: number, lng: number) {
 function estadoColor(estado: string) {
   const map: Record<string, string> = {
     esperando_cliente: "#f59e0b",
+    esperando_eta_chofer: "#38bdf8",
+    en_ruta: "#22c55e",
     confirmado: "#22c55e",
     cancelado: "#a79fc9",
   };
@@ -35,6 +37,8 @@ function estadoColor(estado: string) {
 function estadoLabel(estado: string) {
   const map: Record<string, string> = {
     esperando_cliente: "Esperando cliente",
+    esperando_eta_chofer: "Esperando ETA chofer",
+    en_ruta: "En ruta",
     confirmado: "Confirmado",
     cancelado: "Cancelado",
   };
@@ -85,7 +89,10 @@ export function DestinosPanel() {
       if (id) {
         const fresh = await getDestino(id);
         setActivo(fresh);
-      } else if (rows.length > 0 && rows[0].estado === "esperando_cliente") {
+      } else if (
+        rows.length > 0 &&
+        ["esperando_cliente", "esperando_eta_chofer"].includes(rows[0].estado)
+      ) {
         setActivo(rows[0]);
         activoIdRef.current = rows[0].id;
       }
@@ -135,6 +142,10 @@ export function DestinosPanel() {
       setError("Ingresá el WhatsApp del cliente (ej: 5492616168767)");
       return;
     }
+    if (!telefonoChofer.trim()) {
+      setError("Ingresá el WhatsApp del chofer — al confirmar se le envía el destino");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -144,7 +155,7 @@ export function DestinosPanel() {
         placeId: opts?.placeId ?? placeId,
         cliente: cliente.trim() || undefined,
         telefonoCliente: telefonoCliente.trim(),
-        telefonoChofer: telefonoChofer.trim() || undefined,
+        telefonoChofer: telefonoChofer.trim(),
       });
       setActivo(out);
       activoIdRef.current = out.id;
@@ -300,13 +311,17 @@ export function DestinosPanel() {
           </label>
           <label className="block sm:col-span-2">
             <span className="mb-1 block text-[10px] font-semibold uppercase text-[var(--text-faint)]">
-              WhatsApp chofer
+              WhatsApp chofer *
             </span>
             <input
               className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
+              placeholder="54911…"
               value={telefonoChofer}
               onChange={(e) => setTelefonoChofer(e.target.value)}
             />
+            <span className="mt-1 block text-[10px] text-[var(--text-faint)]">
+              Obligatorio: cuando el cliente confirma, se le envía el destino al chofer
+            </span>
           </label>
         </div>
 
@@ -381,16 +396,39 @@ export function DestinosPanel() {
               </Card>
             )}
 
-            {activo.estado === "confirmado" && (
+            {activo.estado === "esperando_eta_chofer" && (
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-sm text-sky-400">
+                  <Loader2 size={16} className="animate-spin" />
+                  Destino OK — esperando estimado del chofer…
+                </div>
+                {activo.telefonoChofer && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-[var(--violet-2)]">
+                    <Truck size={14} />
+                    WhatsApp al chofer …{activo.telefonoChofer.slice(-4)}
+                  </div>
+                )}
+                <p className="mt-2 text-xs text-[var(--text-faint)]">
+                  El chofer debe indicar en cuánto llega; eso se le envía al cliente
+                </p>
+              </Card>
+            )}
+
+            {(activo.estado === "en_ruta" || activo.estado === "confirmado") && (
               <Card className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-sm text-[#22c55e]">
                   <CheckCircle2 size={16} />
-                  Destino confirmado
+                  {activo.estado === "en_ruta" ? "En ruta — estimado enviado" : "Destino confirmado"}
                 </div>
+                {activo.etaTexto && (
+                  <p className="text-sm text-[var(--text-dim)]">
+                    ETA: <span className="text-[var(--text)]">{activo.etaTexto}</span>
+                  </p>
+                )}
                 {activo.telefonoChofer && (
-                  <div className="flex items-center gap-2 text-xs text-[var(--violet-2)]">
+                  <div className="mt-2 flex items-center gap-2 text-xs text-[var(--violet-2)]">
                     <Truck size={14} />
-                    WhatsApp al chofer …{activo.telefonoChofer.slice(-4)}
+                    Chofer …{activo.telefonoChofer.slice(-4)}
                   </div>
                 )}
               </Card>
