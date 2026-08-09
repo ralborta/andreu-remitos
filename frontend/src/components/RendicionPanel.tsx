@@ -13,8 +13,14 @@ import {
 import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, KpiCard } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
+import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "todos" | "pendiente_aprobacion" | "aprobado" | "rechazado";
+
+type FotoPreview = {
+  src: string;
+  title: string;
+};
 
 export function RendicionPanel() {
   const confirm = useConfirm();
@@ -24,6 +30,7 @@ export function RendicionPanel() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [foto, setFoto] = useState<FotoPreview | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -166,14 +173,20 @@ export function RendicionPanel() {
                     <td className="max-w-[240px] py-3 pr-3 text-[var(--text-dim)]">
                       <div className="truncate">{g.proveedor || g.descripcion || g.notaChofer || "—"}</div>
                       {g.imagenUrl && (
-                        <a
-                          href={browsableMediaUrl(g.imagenUrl) || undefined}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const src = browsableMediaUrl(g.imagenUrl);
+                            if (!src) return;
+                            setFoto({
+                              src,
+                              title: `${g.codigo} · ${g.categoriaLabel}${g.montoLabel ? ` · ${g.montoLabel}` : ""}`,
+                            });
+                          }}
                           className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
                         >
                           Ver foto
-                        </a>
+                        </button>
                       )}
                     </td>
                     <td className="py-3 pr-3">
@@ -221,6 +234,13 @@ export function RendicionPanel() {
           </div>
         )}
       </Card>
+
+      <RemitoImageLightbox
+        src={foto?.src ?? ""}
+        alt={foto?.title ?? "Comprobante"}
+        open={!!foto}
+        onClose={() => setFoto(null)}
+      />
     </div>
   );
 }
