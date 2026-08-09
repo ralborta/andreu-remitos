@@ -29,7 +29,11 @@ import {
   procesarRespuestaDestinoChofer,
 } from "../services/destinos.mjs";
 import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
-import { procesarGastoWhatsApp } from "../services/rendicion-agent.mjs";
+import {
+  procesarGastoWhatsApp,
+  telefonoEsChoferRegistrado,
+  mensajeRendicionSoloChoferes,
+} from "../services/rendicion-agent.mjs";
 import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import {
@@ -363,6 +367,22 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   if (!ev.from) return null;
   const t = String(texto ?? "").trim();
   if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
+
+  // Gate duro: rendición = solo choferes en DB (Parámetros).
+  if (!(await telefonoEsChoferRegistrado(ev.from))) {
+    log?.info?.({ from: ev.from }, "Rendición omitida: no es chofer registrado");
+    const msg = mensajeRendicionSoloChoferes();
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    await convStore
+      .appendMensaje(
+        ev.from,
+        { texto: msg, tipo: "text" },
+        { dir: "out", from: "bot", agente: "rendicion", nombre: ev.nombre },
+      )
+      .catch(() => {});
+    return { flow: "rendicion_solo_choferes", message: msg, received: true, bloqueado: true };
+  }
+
   try {
     const out = await procesarGastoWhatsApp({
       telefono: ev.from,
@@ -489,6 +509,18 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   }
 
   if (intent.intent === "rendicion") {
+    if (!esChoferRemitos) {
+      const msg = mensajeRendicionSoloChoferes();
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      await convStore
+        .appendMensaje(
+          ev.from,
+          { texto: msg, tipo: "text" },
+          { dir: "out", from: "bot", agente: "rendicion", nombre: ev.nombre },
+        )
+        .catch(() => {});
+      return { flow: "rendicion_solo_choferes", message: msg };
+    }
     const out = await tryProcesarRendicion(ev, { texto, log, forzar: true });
     if (out) return out;
     const msg =
@@ -512,11 +544,11 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 
   if (intent.intent === "chat" || intent.intent === "desconocido") {
     if (esChoferRemitos) return null; // ayuda típica de remitos
+    // Clientes: NUNCA ofrecer rendición (solo choferes registrados).
     const msg =
       intent.mensaje ||
       `Hola 👋 ¿En qué te ayudo?\n\n` +
         `• *Viaje / flete*\n` +
-        `• *Rendición* (gastos)\n` +
         `• *Reclamo*\n\n` +
         `Decime cuál y seguimos.`;
     await convStore.appendMensaje(
@@ -709,12 +741,15 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
-      // Rendición ANTES de destinos/ETA:
+      // Rendición ANTES de destinos/ETA — SOLO choferes registrados en DB.
       // - texto "nafta/gasto/ticket", o
       // - foto de comprobante (aunque no tenga caption) si hay ETA pendiente
-      //   (si no, la foto sola seguiría a remito más abajo)
+      const esChoferDb = ev.from
+        ? await telefonoEsChoferRegistrado(ev.from)
+        : false;
       const quiereRendicion =
-        pareceRendicionGasto(texto) || (esFoto && Boolean(destinoChoferActivo));
+        esChoferDb &&
+        (pareceRendicionGasto(texto) || (esFoto && Boolean(destinoChoferActivo)));
 
       if (ev.from && quiereRendicion) {
         let imageBuffer = null;
@@ -898,9 +933,12 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        // Foto — rendición de gastos (caption), destino pendiente, o remito
+        // Foto — rendición de gastos (caption) SOLO choferes registrados
         const caption = texto || ev.message?.trim() || "";
-        if (pareceRendicionGasto(caption)) {
+        if (
+          pareceRendicionGasto(caption) &&
+          (await telefonoEsChoferRegistrado(ev.from))
+        ) {
           const gastoOut = await tryProcesarRendicion(ev, {
             texto: caption,
             log: request.log,

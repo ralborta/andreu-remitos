@@ -8,7 +8,21 @@ import * as rendicionStore from "../db/rendicion-store.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
+import * as master from "../db/master-data-store.mjs";
 import { persistChatMedia } from "./chat-media.mjs";
+
+/** Solo choferes registrados en Parámetros/choferes pueden rendir gastos. */
+export async function telefonoEsChoferRegistrado(telefono) {
+  const chofer = await master.resolverChoferPorTelefono(telefono);
+  return Boolean(chofer);
+}
+
+export function mensajeRendicionSoloChoferes() {
+  return (
+    `La *rendición de gastos* es solo para *choferes registrados*.\n\n` +
+    `Si necesitás un *viaje/flete* o abrir un *reclamo*, contame y te ayudo.`
+  );
+}
 
 async function enviar(phone, mensaje, meta = {}) {
   const p = sanitizePhone(phone);
@@ -38,6 +52,20 @@ export async function procesarGastoWhatsApp({
   const t = String(texto ?? "").trim();
   if (!phone) return null;
   if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
+
+  // Clientes / números no registrados: NUNCA crear gasto ni pedir comprobante de rendición.
+  const chofer = await master.resolverChoferPorTelefono(phone);
+  if (!chofer) {
+    log?.info?.({ phone }, "Rendición bloqueada: teléfono no es chofer registrado");
+    const msg = mensajeRendicionSoloChoferes();
+    await enviar(phone, msg, { nombre });
+    return {
+      flow: "rendicion_solo_choferes",
+      mensaje: msg,
+      message: msg,
+      bloqueado: true,
+    };
+  }
 
   let imagenPersistida = imagenUrl || null;
   if (imageBuffer?.length) {
