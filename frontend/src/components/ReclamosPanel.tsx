@@ -23,11 +23,12 @@ import {
   ExternalLink,
   FileText,
   Headphones,
+  History,
   ImageIcon,
   MessageCircle,
   MessageSquareText,
-  Package,
   RefreshCw,
+  ShoppingBag,
   Sparkles,
   UserRound,
   X,
@@ -73,16 +74,45 @@ function formatFechaCorta(iso?: string | null) {
   });
 }
 
-function formatHoraMsg(iso?: string | null) {
+function formatFechaMsg(iso?: string | null) {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) {
-    // Puede venir como "21:20" o similar
     const m = String(iso).match(/(\d{1,2}:\d{2})/);
-    return m?.[1] ?? "";
+    return m?.[1] ?? String(iso);
   }
-  return d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
+
+/** Paleta del modal de detalle (mockup claro). */
+const RC = {
+  purple: "#7c3aed",
+  purpleSoft: "#f3e8ff",
+  purpleText: "#6d28d9",
+  border: "#e5e7eb",
+  label: "#9ca3af",
+  body: "#374151",
+  title: "#111827",
+  muted: "#6b7280",
+  chatBg: "#111827",
+  chatAgentBg: "#14532d",
+  chatAgentText: "#4ade80",
+  chatClientText: "#e5e7eb",
+  wa: "#16a34a",
+  waBg: "#dcfce7",
+  media: "#ea580c",
+  mediaBg: "#ffedd5",
+  sla: "#6b7280",
+  slaBg: "#f3f4f6",
+  nuevo: "#9333ea",
+  nuevoBg: "#f3e8ff",
+} as const;
 
 function collectEvidencias(caso: ReclamoCaso): string[] {
   const out: string[] = [];
@@ -111,13 +141,15 @@ const BTN_OK: CSSProperties = {
 const btnAccionClass =
   "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50";
 const btnModalAccionClass =
-  "inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-sm disabled:opacity-50";
+  "inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-50";
 
-function SoftBadge({
+function LightBadge({
+  bg,
   color,
   icon,
   children,
 }: {
+  bg: string;
   color: string;
   icon?: ReactNode;
   children: ReactNode;
@@ -125,16 +157,20 @@ function SoftBadge({
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-      style={{
-        color,
-        background: `${color}18`,
-        boxShadow: `inset 0 0 0 1px ${color}40`,
-      }}
+      style={{ background: bg, color }}
     >
       {icon}
       {children}
     </span>
   );
+}
+
+function estadoBadgeStyle(estado: string) {
+  if (estado === "nuevo") return { bg: RC.nuevoBg, color: RC.nuevo };
+  if (estado === "resuelto") return { bg: "#dcfce7", color: "#16a34a" };
+  if (estado === "escalado") return { bg: "#ffedd5", color: "#ea580c" };
+  if (estado === "en_proceso") return { bg: "#e0f2fe", color: "#0284c7" };
+  return { bg: RC.slaBg, color: RC.sla };
 }
 
 function ReclamoDetalleModal({
@@ -160,6 +196,7 @@ function ReclamoDetalleModal({
   const chatHref = caso.telefono
     ? `/contactos?tel=${encodeURIComponent(caso.telefono.replace(/\D/g, ""))}`
     : "/contactos";
+  const estadoStyle = estadoBadgeStyle(caso.estado);
 
   useEffect(() => {
     setFotoIdx(0);
@@ -167,32 +204,36 @@ function ReclamoDetalleModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 backdrop-blur-[2px] sm:p-6"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] shadow-2xl"
+        className="flex max-h-[94vh] w-full max-w-[640px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="reclamo-detalle-title"
       >
-        <div className="overflow-y-auto p-5 sm:p-6">
+        <div className="overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
           {/* Header */}
-          <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="mb-3 flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--violet)]/20 text-[var(--violet-2)] ring-1 ring-[var(--violet)]/35">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
+                style={{ background: RC.purple }}
+              >
                 <FileText size={20} />
               </div>
               <div className="min-w-0">
                 <h3
                   id="reclamo-detalle-title"
-                  className="truncate text-lg font-bold tracking-tight text-white"
+                  className="truncate text-[1.15rem] font-bold tracking-tight sm:text-xl"
+                  style={{ color: RC.title }}
                 >
                   {codigoCaso(caso)}
                 </h3>
-                <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                <p className="mt-0.5 text-sm" style={{ color: RC.muted }}>
                   {caso.motivoLabel}
                   {caso.tipoAbbr ? ` · ${caso.tipoAbbr}` : ""}
                 </p>
@@ -201,7 +242,7 @@ function ReclamoDetalleModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-white/5 hover:text-white"
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
               aria-label="Cerrar"
             >
               <X size={18} />
@@ -209,76 +250,99 @@ function ReclamoDetalleModal({
           </div>
 
           {/* Badges */}
-          <div className="mb-5 flex flex-wrap gap-2">
-            <SoftBadge
-              color={caso.canal === "WhatsApp" ? "#25d366" : "#a78bfa"}
+          <div className="mb-4 flex flex-wrap gap-2">
+            <LightBadge
+              bg={caso.canal === "WhatsApp" ? RC.waBg : RC.purpleSoft}
+              color={caso.canal === "WhatsApp" ? RC.wa : RC.purpleText}
               icon={<MessageCircle size={12} />}
             >
               {caso.canal}
-            </SoftBadge>
+            </LightBadge>
             {evidencias.length > 0 && (
-              <SoftBadge color="#f59e0b" icon={<ImageIcon size={12} />}>
+              <LightBadge bg={RC.mediaBg} color={RC.media} icon={<ImageIcon size={12} />}>
                 Media
-              </SoftBadge>
+              </LightBadge>
             )}
-            {caso.criticidadLabel !== "—" && (
-              <CritBadge level={caso.criticidadLabel as "Alta" | "Media" | "Baja"} />
-            )}
-            <SoftBadge
-              color={estadoColor(caso.estado)}
+            <LightBadge
+              bg={estadoStyle.bg}
+              color={estadoStyle.color}
               icon={caso.estado === "nuevo" ? <Sparkles size={12} /> : undefined}
             >
               {caso.estadoLabel}
-            </SoftBadge>
-            <SoftBadge
-              color={caso.sla === "Por vencer" ? "#f59e0b" : "#94a3b8"}
+            </LightBadge>
+            <LightBadge
+              bg={caso.sla === "Por vencer" ? "#fef3c7" : RC.slaBg}
+              color={caso.sla === "Por vencer" ? "#d97706" : RC.sla}
               icon={<Clock size={12} />}
             >
               {caso.sla}
-            </SoftBadge>
+            </LightBadge>
           </div>
 
-          {/* Info card */}
-          <section className="mb-4 space-y-3 rounded-2xl border border-[var(--border)] bg-black/20 p-4">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 text-[var(--violet-2)]">
-                <UserRound size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-white">{caso.cliente}</p>
-                {caso.telefono && (
-                  <p className="text-xs text-[var(--text-dim)]">{caso.telefono}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-[var(--border)]/70 bg-white/[0.03] px-3 py-2.5">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
-                  <Package size={12} />
-                  Viaje
+          {/* Info card — 3 columnas */}
+          <section
+            className="mb-4 rounded-2xl border bg-white p-4"
+            style={{ borderColor: RC.border }}
+          >
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="flex items-start gap-2.5">
+                <UserRound size={16} className="mt-0.5 shrink-0" style={{ color: RC.purple }} />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium" style={{ color: RC.label }}>
+                    Cliente
+                  </p>
+                  <p className="truncate text-sm font-bold" style={{ color: RC.purpleText }}>
+                    {caso.cliente}
+                  </p>
+                  {caso.telefono && (
+                    <p className="text-xs" style={{ color: RC.muted }}>
+                      {caso.telefono}
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm text-[var(--text-dim)]">{caso.viaje || "—"}</p>
               </div>
-              <div className="rounded-xl border border-[var(--border)]/70 bg-white/[0.03] px-3 py-2.5">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
-                  <ClipboardList size={12} />
-                  Remito / pedido
+              <div className="flex items-start gap-2.5">
+                <ShoppingBag size={16} className="mt-0.5 shrink-0" style={{ color: RC.purple }} />
+                <div>
+                  <p className="text-[11px] font-medium" style={{ color: RC.label }}>
+                    Viaje
+                  </p>
+                  <p className="text-sm font-medium" style={{ color: RC.body }}>
+                    {caso.viaje || "—"}
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--text-dim)]">{remitoPedido}</p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <ClipboardList size={16} className="mt-0.5 shrink-0" style={{ color: RC.purple }} />
+                <div>
+                  <p className="text-[11px] font-medium" style={{ color: RC.label }}>
+                    Remito / pedido
+                  </p>
+                  <p className="text-sm font-medium" style={{ color: RC.body }}>
+                    {remitoPedido}
+                  </p>
+                </div>
               </div>
             </div>
 
             {detalleTxt && (
-              <div className="flex items-start gap-3 border-t border-[var(--border)]/60 pt-3">
-                <span className="mt-0.5 text-[var(--violet-2)]">
-                  <MessageSquareText size={16} />
-                </span>
+              <div
+                className="mt-4 flex items-start gap-2.5 border-t pt-3"
+                style={{ borderColor: RC.border }}
+              >
+                <MessageSquareText
+                  size={16}
+                  className="mt-0.5 shrink-0"
+                  style={{ color: RC.purple }}
+                />
                 <div>
-                  <p className="mb-0.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                  <p className="text-[11px] font-medium" style={{ color: RC.label }}>
                     Detalle
                   </p>
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-dim)]">
+                  <p
+                    className="whitespace-pre-wrap text-sm leading-relaxed"
+                    style={{ color: RC.body }}
+                  >
                     {detalleTxt}
                   </p>
                 </div>
@@ -286,17 +350,20 @@ function ReclamoDetalleModal({
             )}
 
             {(caso.escaladoA || caso.notaInterna) && (
-              <div className="space-y-2 border-t border-[var(--border)]/60 pt-3 text-sm">
+              <div
+                className="mt-3 space-y-1.5 border-t pt-3 text-sm"
+                style={{ borderColor: RC.border, color: RC.body }}
+              >
                 {caso.escaladoA && (
                   <p>
-                    <span className="text-[var(--text-faint)]">Escalado a · </span>
-                    <span className="text-[var(--text-dim)]">{caso.escaladoA}</span>
+                    <span style={{ color: RC.label }}>Escalado a · </span>
+                    {caso.escaladoA}
                   </p>
                 )}
                 {caso.notaInterna && (
                   <p>
-                    <span className="text-[var(--text-faint)]">Nota · </span>
-                    <span className="text-[var(--text-dim)]">{caso.notaInterna}</span>
+                    <span style={{ color: RC.label }}>Nota · </span>
+                    {caso.notaInterna}
                   </p>
                 )}
               </div>
@@ -305,22 +372,29 @@ function ReclamoDetalleModal({
 
           {/* Evidencia */}
           {evidencias.length > 0 && fotoActual && (
-            <section className="mb-4 rounded-2xl border border-[var(--border)] bg-black/20 p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <ImageIcon size={16} className="text-[var(--violet-2)]" />
+            <section className="mb-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div
+                  className="flex items-center gap-2 text-sm font-semibold"
+                  style={{ color: RC.title }}
+                >
+                  <ImageIcon size={16} style={{ color: RC.purple }} />
                   Evidencia
                 </div>
                 <button
                   type="button"
                   onClick={() => onVerFoto(fotoActual)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--violet-2)] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-semibold hover:underline"
+                  style={{ color: RC.purpleText }}
                 >
                   Ver en grande
                   <ExternalLink size={12} />
                 </button>
               </div>
-              <div className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-black/40">
+              <div
+                className="relative overflow-hidden rounded-2xl border bg-gray-50"
+                style={{ borderColor: RC.border }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={fotoActual}
@@ -333,7 +407,7 @@ function ReclamoDetalleModal({
                     <button
                       type="button"
                       aria-label="Foto anterior"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/55 p-1.5 text-white hover:bg-black/75"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white p-1.5 text-gray-600 shadow hover:bg-gray-50"
                       onClick={() =>
                         setFotoIdx((i) => (i - 1 + evidencias.length) % evidencias.length)
                       }
@@ -343,22 +417,22 @@ function ReclamoDetalleModal({
                     <button
                       type="button"
                       aria-label="Foto siguiente"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/55 p-1.5 text-white hover:bg-black/75"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-gray-200 bg-white p-1.5 text-gray-600 shadow hover:bg-gray-50"
                       onClick={() => setFotoIdx((i) => (i + 1) % evidencias.length)}
                     >
                       <ChevronRight size={16} />
                     </button>
-                    <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+                    <div className="absolute inset-x-0 bottom-2.5 flex justify-center gap-1.5">
                       {evidencias.map((_, i) => (
                         <button
                           key={i}
                           type="button"
                           aria-label={`Foto ${i + 1}`}
                           onClick={() => setFotoIdx(i)}
-                          className={clsx(
-                            "h-1.5 w-1.5 rounded-full transition",
-                            i === fotoIdx ? "bg-[var(--violet-2)]" : "bg-white/35",
-                          )}
+                          className="h-2 w-2 rounded-full transition"
+                          style={{
+                            background: i === fotoIdx ? RC.purple : "#d1d5db",
+                          }}
                         />
                       ))}
                     </div>
@@ -368,65 +442,78 @@ function ReclamoDetalleModal({
             </section>
           )}
 
-          {/* Mensajes */}
+          {/* Últimos mensajes — chat oscuro con timeline */}
           {mensajes.length > 0 && (
-            <section className="mb-4 rounded-2xl border border-[var(--border)] bg-black/20 p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-white">Últimos mensajes</p>
+            <section className="mb-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div
+                  className="flex items-center gap-2 text-sm font-semibold"
+                  style={{ color: RC.title }}
+                >
+                  <MessageCircle size={16} style={{ color: RC.purple }} />
+                  Últimos mensajes
+                </div>
                 <Link
                   href={chatHref}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--violet-2)] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-semibold hover:underline"
+                  style={{ color: RC.purpleText }}
                 >
                   Ver conversación completa
                   <ArrowRight size={12} />
                 </Link>
               </div>
-              <ul className="max-h-52 space-y-2 overflow-y-auto">
+              <ul className="relative max-h-64 space-y-2.5 overflow-y-auto pl-3">
+                <span
+                  className="absolute bottom-3 left-[18px] top-3 w-px"
+                  style={{ background: "#d8b4fe" }}
+                  aria-hidden
+                />
                 {mensajes.map((m, i) => {
                   const esAgente = m.dir === "out";
                   return (
-                    <li
-                      key={`${m.at || i}-${i}`}
-                      className={clsx(
-                        "flex items-start justify-between gap-3 rounded-xl border px-3 py-2.5",
-                        esAgente
-                          ? "border-emerald-500/35 bg-emerald-500/10"
-                          : "border-[var(--border)]/70 bg-white/[0.03]",
-                      )}
-                    >
-                      <div className="min-w-0">
-                        <p
-                          className={clsx(
-                            "text-[11px] font-semibold",
-                            esAgente ? "text-emerald-300" : "text-[var(--text-faint)]",
-                          )}
-                        >
-                          {esAgente ? "Agente" : "Cliente"}
-                          {m.at ? (
-                            <span className="ml-1.5 font-normal opacity-80">
-                              {formatHoraMsg(m.at)}
-                            </span>
-                          ) : null}
-                        </p>
-                        <p
-                          className={clsx(
-                            "mt-0.5 text-sm leading-relaxed",
-                            esAgente ? "text-emerald-100" : "text-[var(--text-dim)]",
-                          )}
-                        >
-                          {m.texto || (m.imagen_url ? "[foto]" : "—")}
-                        </p>
-                      </div>
+                    <li key={`${m.at || i}-${i}`} className="relative pl-5">
                       <span
-                        className={clsx(
-                          "mt-0.5 shrink-0 rounded-full p-1.5",
-                          esAgente
-                            ? "bg-emerald-500/20 text-emerald-300"
-                            : "bg-white/5 text-[var(--text-faint)]",
-                        )}
+                        className="absolute left-[10px] top-4 z-[1] h-2.5 w-2.5 rounded-full ring-2 ring-white"
+                        style={{ background: RC.purple }}
+                      />
+                      <div
+                        className="flex items-start justify-between gap-3 rounded-xl px-3.5 py-3"
+                        style={{
+                          background: esAgente ? RC.chatAgentBg : RC.chatBg,
+                        }}
                       >
-                        {esAgente ? <Headphones size={14} /> : <UserRound size={14} />}
-                      </span>
+                        <div className="min-w-0">
+                          <p
+                            className="text-[11px] font-bold"
+                            style={{
+                              color: esAgente ? RC.chatAgentText : "#c4b5fd",
+                            }}
+                          >
+                            {esAgente ? "Agente" : "Cliente"}
+                            {m.at ? (
+                              <span className="ml-2 font-normal opacity-80">
+                                {formatFechaMsg(m.at)}
+                              </span>
+                            ) : null}
+                          </p>
+                          <p
+                            className="mt-1 text-sm leading-relaxed"
+                            style={{
+                              color: esAgente ? RC.chatAgentText : RC.chatClientText,
+                            }}
+                          >
+                            {m.texto || (m.imagen_url ? "[foto]" : "—")}
+                          </p>
+                        </div>
+                        <span
+                          className="mt-0.5 shrink-0 opacity-70"
+                          style={{
+                            color: esAgente ? RC.chatAgentText : "#a78bfa",
+                          }}
+                        >
+                          {esAgente ? <Headphones size={16} /> : <UserRound size={16} />}
+                        </span>
+                      </div>
                     </li>
                   );
                 })}
@@ -435,41 +522,62 @@ function ReclamoDetalleModal({
           )}
 
           {/* Historial + meta */}
-          <section className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
-            <div className="rounded-2xl border border-[var(--border)] bg-black/20 p-4">
-              <p className="mb-3 text-sm font-semibold text-white">Historial</p>
+          <section className="grid gap-3 sm:grid-cols-[1.45fr_1fr]">
+            <div>
+              <div
+                className="mb-2 flex items-center gap-2 text-sm font-semibold"
+                style={{ color: RC.title }}
+              >
+                <History size={16} style={{ color: RC.purple }} />
+                Historial
+              </div>
               {historial.length === 0 ? (
-                <p className="text-xs text-[var(--text-faint)]">Sin eventos todavía.</p>
+                <p className="text-xs" style={{ color: RC.label }}>
+                  Sin eventos todavía.
+                </p>
               ) : (
-                <ul className="relative max-h-36 space-y-3 overflow-y-auto pl-1">
+                <ul className="relative max-h-36 space-y-2.5 overflow-y-auto pl-1">
                   {historial.map((h, i) => (
                     <li key={`${h}-${i}`} className="relative flex gap-3 pl-4">
-                      <span className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-[var(--violet-2)] ring-2 ring-[var(--violet)]/30" />
+                      <span
+                        className="absolute left-0 top-1.5 h-2 w-2 rounded-full"
+                        style={{ background: RC.purple }}
+                      />
                       {i < historial.length - 1 && (
-                        <span className="absolute left-[3px] top-3.5 h-[calc(100%+4px)] w-px bg-[var(--border)]" />
+                        <span
+                          className="absolute left-[3px] top-3.5 h-[calc(100%+2px)] w-px"
+                          style={{ background: "#e9d5ff" }}
+                        />
                       )}
-                      <p className="text-xs leading-relaxed text-[var(--text-dim)]">{h}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: RC.body }}>
+                        {h}
+                      </p>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-            <div className="space-y-3">
-              <div className="rounded-2xl border border-[var(--border)] bg-black/20 px-4 py-3">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
-                  <Calendar size={12} />
-                  Creado
-                </div>
-                <p className="text-sm text-[var(--text-dim)]">
-                  {formatFechaCorta(caso.createdAt)}
+            <div className="space-y-2.5">
+              <div
+                className="flex items-center gap-2.5 rounded-xl border bg-white px-3.5 py-3"
+                style={{ borderColor: RC.border }}
+              >
+                <Calendar size={15} style={{ color: RC.purple }} />
+                <p className="text-xs font-medium" style={{ color: RC.body }}>
+                  Creado el {formatFechaCorta(caso.createdAt)}
                 </p>
               </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-black/20 px-4 py-3">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
-                  <MessageCircle size={12} />
-                  Canal
-                </div>
-                <p className="text-sm text-[var(--text-dim)]">{caso.canal}</p>
+              <div
+                className="flex items-center gap-2.5 rounded-xl border bg-white px-3.5 py-3"
+                style={{ borderColor: RC.border }}
+              >
+                <MessageCircle
+                  size={15}
+                  style={{ color: caso.canal === "WhatsApp" ? RC.wa : RC.purple }}
+                />
+                <p className="text-xs font-medium" style={{ color: RC.body }}>
+                  Canal {caso.canal}
+                </p>
               </div>
             </div>
           </section>
@@ -477,7 +585,10 @@ function ReclamoDetalleModal({
 
         {/* Acciones */}
         {caso.estado !== "resuelto" && (
-          <div className="flex flex-wrap gap-2 border-t border-[var(--border)] bg-black/25 p-4 sm:p-5">
+          <div
+            className="flex flex-wrap gap-2.5 border-t bg-white px-5 py-4 sm:px-6"
+            style={{ borderColor: RC.border }}
+          >
             {caso.estado === "nuevo" && (
               <button
                 type="button"
