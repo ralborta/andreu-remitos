@@ -172,10 +172,11 @@ export function IncidenciasPanel() {
           <div>
             <h3 className="flex items-center gap-2 font-semibold text-white">
               <TriangleAlert size={16} className="text-amber-300" />
-              Consulta proactiva al chofer
+              Flujo principal: preguntar por qué está parado
             </h3>
             <p className="mt-0.5 text-xs text-[var(--text-faint)]">
-              Simula detección (parada / desvío): el agente escribe por WhatsApp y pide la causa
+              El agente inicia la incidencia: escribe al chofer por WhatsApp y pregunta la causa de la
+              parada
             </p>
           </div>
         </div>
@@ -215,7 +216,7 @@ export function IncidenciasPanel() {
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--violet)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--violet)]/90 disabled:opacity-50"
           >
             <MessageCircle size={16} />
-            {consultando ? "Enviando…" : "Preguntar por WhatsApp"}
+            {consultando ? "Enviando…" : "¿Por qué estás parado?"}
           </button>
         </div>
       </Card>
@@ -225,7 +226,7 @@ export function IncidenciasPanel() {
           <div>
             <h3 className="font-semibold text-white">Incidencias en ruta</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Chofer reporta por WA · agente consulta · demoras de Destinos también quedan acá
+              Principal: agente pregunta al chofer · también puede reportar solo · demoras de Destinos
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -272,8 +273,8 @@ export function IncidenciasPanel() {
           <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
         ) : rows.length === 0 ? (
           <p className="text-sm text-[var(--text-dim)]">
-            Todavía no hay incidencias. El chofer puede escribir “tuve un pinchazo” o usá la consulta
-            proactiva arriba.
+            Todavía no hay incidencias. Usá arriba “Preguntar por WhatsApp” (flujo principal), o el
+            chofer puede avisar solo (“tuve un pinchazo”).
           </p>
         ) : (
           <div className="overflow-x-auto">
