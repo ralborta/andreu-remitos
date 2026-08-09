@@ -232,9 +232,11 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
   const remitoCtx = remitoCtxIn ?? (await resolverRemitoCorreccion(phone, conv, tenantCfg));
   const tenantEfectivo = remitoCtx?.tenant ?? tenantCfg ?? conv?.tenant;
   const choferRemitos = phone ? await master.resolverChoferPorTelefono(phone) : null;
+  const choferFlota = phone ? await resolverChoferIncidencia(phone) : null;
+  const esChoferOperativo = Boolean(choferRemitos || choferFlota);
 
-  // El flujo/saludo de remitos SOLO es para choferes registrados en Parámetros/Remitos
-  if (!choferRemitos && !flujoRemitoAbierto(conv)) {
+  // Remitos: Parámetros/Remitos o flota Gestión de Viajes (ej. Raúl demo)
+  if (!esChoferOperativo && !flujoRemitoAbierto(conv)) {
     const msg =
       `Hola 👋 ¿En qué te puedo ayudar?\n\n` +
       `• *Viaje / flete* — pedir transporte\n` +
@@ -325,7 +327,10 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
               if (t === "corina" && conv?.corina_cliente_marca && !flujoRemitoAbierto(conv)) {
                 return mensajeCorinaListoParaFoto(conv.corina_cliente_marca);
               }
-              return mensajeSaludo(t, choferRemitos?.nombre);
+              return mensajeSaludo(
+                t,
+                choferRemitos?.nombre || choferFlota?.nombre || null,
+              );
             })();
 
   if (phone && !pausado) {
@@ -569,7 +574,7 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   }
 
   if (intent.intent === "rendicion") {
-    if (!esChoferRemitos) {
+    if (!esChoferOperativo) {
       const msg = mensajeRendicionSoloChoferes();
       await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
       await convStore
@@ -592,8 +597,8 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   }
 
   if (intent.intent === "remito") {
-    // Solo la lista de choferes de Remitos (Parámetros) entra al flujo de remitos
-    if (esChoferRemitos) return null;
+    // Remitos: Parámetros/Remitos o flota Gestión de Viajes (demo TransitOne)
+    if (esChoferOperativo) return null;
     const msg =
       intent.mensaje ||
       `Para *remitos* escriben los choferes registrados.\n\n` +
@@ -603,8 +608,8 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   }
 
   if (intent.intent === "chat" || intent.intent === "desconocido") {
-    if (esChoferRemitos) return null; // ayuda típica de remitos
-    // Clientes: NUNCA ofrecer rendición (solo choferes registrados).
+    if (esChoferOperativo) return null; // saludo / ayuda típica de chofer
+    // Clientes: NUNCA ofrecer rendición (solo choferes).
     const msg =
       intent.mensaje ||
       `Hola 👋 ¿En qué te ayudo?\n\n` +

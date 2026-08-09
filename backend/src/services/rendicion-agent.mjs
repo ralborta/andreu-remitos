@@ -9,12 +9,15 @@ import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import * as master from "../db/master-data-store.mjs";
+import { getChoferViajesPorTelefono } from "../db/viajes-flota-store.mjs";
 import { persistChatMedia } from "./chat-media.mjs";
 
-/** Solo choferes registrados en Parámetros/choferes pueden rendir gastos. */
+/** Choferes de Parámetros/Remitos o flota Gestión de Viajes. */
 export async function telefonoEsChoferRegistrado(telefono) {
-  const chofer = await master.resolverChoferPorTelefono(telefono);
-  return Boolean(chofer);
+  const phone = sanitizePhone(telefono);
+  if (!phone) return false;
+  if (await master.resolverChoferPorTelefono(phone)) return true;
+  return Boolean(getChoferViajesPorTelefono(phone));
 }
 
 export function mensajeRendicionSoloChoferes() {
@@ -22,6 +25,18 @@ export function mensajeRendicionSoloChoferes() {
     `La *rendición de gastos* es solo para *choferes registrados*.\n\n` +
     `Si necesitás un *viaje/flete* o abrir un *reclamo*, contame y te ayudo.`
   );
+}
+
+async function resolverChoferRendicion(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return null;
+  const remitos = await master.resolverChoferPorTelefono(phone);
+  if (remitos) return remitos;
+  const flota = getChoferViajesPorTelefono(phone);
+  if (flota) {
+    return { nombre: flota.nombre || null, telefono: flota.telefono || phone };
+  }
+  return null;
 }
 
 async function enviar(phone, mensaje, meta = {}) {
@@ -54,7 +69,7 @@ export async function procesarGastoWhatsApp({
   if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
 
   // Clientes / números no registrados: NUNCA crear gasto ni pedir comprobante de rendición.
-  const chofer = await master.resolverChoferPorTelefono(phone);
+  const chofer = await resolverChoferRendicion(phone);
   if (!chofer) {
     log?.info?.({ phone }, "Rendición bloqueada: teléfono no es chofer registrado");
     const msg = mensajeRendicionSoloChoferes();
