@@ -29,6 +29,8 @@ import {
 } from "../services/destinos.mjs";
 import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
 import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
+import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
+import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
 import * as master from "../db/master-data-store.mjs";
@@ -302,18 +304,18 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
   });
 }
 
-async function tryProcesarViajes(ev, { texto, log, conv } = {}) {
+async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) {
   if (!ev.from || !texto?.trim()) return null;
   if (flujoRemitoAbierto(conv)) return null;
 
   const pendingViaje = await solViajesStore.getSolicitudPendientePorTelefono(ev.from);
-  const parece = pareceSolicitudViaje(texto);
+  const parece = forzar || pareceSolicitudViaje(texto);
 
-  // Continuar conversación pendiente O nueva solicitud reconocible
+  // Continuar conversación pendiente O nueva solicitud (heurística o forzada por router IA)
   if (!pendingViaje && !parece) return null;
 
-  // Si es chofer del maestro y NO hay solicitud pendiente de viajes, no robar remitos
-  if (!pendingViaje) {
+  // Si es chofer de remitos y NO forzó el router, no robar remitos con mensajes ambiguos
+  if (!pendingViaje && !forzar) {
     const chofer = await master.resolverChoferPorTelefono(ev.from);
     if (chofer && !/\b(necesitamos|solicitamos|pedimos|transporte|flete|viaje)\b/i.test(texto)) {
       return null;
@@ -343,6 +345,105 @@ async function tryProcesarViajes(ev, { texto, log, conv } = {}) {
     }
     return { flow: "viajes_error", error: err.message, message: msg };
   }
+}
+
+async function tryProcesarReclamo(ev, { texto, log } = {}) {
+  if (!ev.from || !texto?.trim()) return null;
+  try {
+    await convStore.appendMensaje(
+      ev.from,
+      { texto, tipo: "text" },
+      { dir: "in", from: "client", nombre: ev.nombre, agente: "reclamos" },
+    );
+    const out = await procesarReclamoWhatsApp({
+      telefono: ev.from,
+      texto,
+      nombre: ev.nombre,
+      log,
+    });
+    if (!out?.mensaje) return null;
+    await notificarChofer(ev.from, out.mensaje, { log, tenant: null }).catch(() => {});
+    await convStore.appendMensaje(
+      ev.from,
+      { texto: out.mensaje, tipo: "text", reclamo_id: out.reclamo?.id },
+      { dir: "out", from: "bot", agente: "reclamos", nombre: ev.nombre },
+    );
+    return { ...out, received: true };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "reclamos webhook error");
+    return null;
+  }
+}
+
+/**
+ * Router IA de inicio: remito (choferes de remitos) vs viaje vs reclamo.
+ */
+async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
+  if (!ev.from || !texto?.trim()) return null;
+
+  const choferRemitos = await master.resolverChoferPorTelefono(ev.from);
+  const esChoferRemitos = Boolean(choferRemitos);
+
+  const intent = await clasificarIntencionWhatsApp({
+    texto,
+    esChoferRemitos,
+    nombre: ev.nombre || choferRemitos?.nombre || null,
+    log,
+  });
+
+  log?.info?.(
+    {
+      from: ev.from,
+      intent: intent.intent,
+      fuente: intent.fuente,
+      confianza: intent.confianza,
+      esChoferRemitos,
+    },
+    "WA intent router",
+  );
+
+  if (intent.intent === "viaje") {
+    return tryProcesarViajes(ev, { texto, log, conv, forzar: true });
+  }
+
+  if (intent.intent === "reclamo") {
+    return tryProcesarReclamo(ev, { texto, log });
+  }
+
+  if (intent.intent === "remito") {
+    // Solo la lista de choferes de Remitos (Parámetros) entra al flujo de remitos
+    if (esChoferRemitos) return null;
+    const msg =
+      intent.mensaje ||
+      `Para *remitos* escriben los choferes registrados.\n\n` +
+        `Si necesitás un *viaje/flete* o abrir un *reclamo*, contame y te ayudo.`;
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "remito_solo_choferes", message: msg };
+  }
+
+  if (intent.intent === "chat" || intent.intent === "desconocido") {
+    if (esChoferRemitos) return null; // ayuda típica de remitos
+    const msg =
+      intent.mensaje ||
+      `Hola 👋 ¿En qué te ayudo?\n\n` +
+        `• *Viaje / flete*\n` +
+        `• *Reclamo*\n\n` +
+        `Decime cuál y seguimos.`;
+    await convStore.appendMensaje(
+      ev.from,
+      { texto, tipo: "text" },
+      { dir: "in", from: "client", nombre: ev.nombre, agente: "router" },
+    );
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    await convStore.appendMensaje(
+      ev.from,
+      { texto: msg, tipo: "text" },
+      { dir: "out", from: "bot", agente: "router" },
+    );
+    return { flow: "intent_clarificar", message: msg };
+  }
+
+  return null;
 }
 
 async function tryProcesarDestinos(ev, { texto, log } = {}) {
@@ -409,7 +510,7 @@ export default async function webhooksRoutes(fastify) {
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "viajes", "tenant-ia"],
+    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "viajes", "reclamos", "intent-router", "tenant-ia"],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -448,10 +549,33 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...destinoOut, received: true });
       }
 
-      // Gestión de viajes — solicitudes de transporte por WhatsApp (background)
-      const viajeOut = await tryProcesarViajes(ev, { texto, log: request.log, conv: convEarly });
-      if (viajeOut) {
-        return respuestaWebhook({ ...viajeOut, received: true });
+      // Viaje pendiente: siempre continuar (aunque sea chofer de remitos)
+      const pendingViajeEarly = ev.from
+        ? await solViajesStore.getSolicitudPendientePorTelefono(ev.from)
+        : null;
+      if (pendingViajeEarly) {
+        const viajePend = await tryProcesarViajes(ev, {
+          texto,
+          log: request.log,
+          conv: convEarly,
+          forzar: true,
+        });
+        if (viajePend) {
+          return respuestaWebhook({ ...viajePend, received: true });
+        }
+      }
+
+      // Texto nuevo (sin foto): router IA remito vs viaje vs reclamo
+      // (si hay remito abierto, no ruteamos: sigue correcciones de remito)
+      if (texto && !ev.media?.url && !flujoRemitoAbierto(convEarly)) {
+        const routed = await enrutarPorIntencion(ev, {
+          texto,
+          conv: convEarly,
+          log: request.log,
+        });
+        if (routed) {
+          return respuestaWebhook({ ...routed, received: true });
+        }
       }
 
       // Media adjunto — audio (nota de voz) o foto de remito
