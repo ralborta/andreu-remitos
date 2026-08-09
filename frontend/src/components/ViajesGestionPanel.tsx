@@ -152,7 +152,7 @@ function waLink(telefono: string) {
 
 export function ViajesGestionPanel() {
   const confirm = useConfirm();
-  const [tab, setTab] = useState<"choferes" | "camiones" | "viajes">("choferes");
+  const [tab, setTab] = useState<"viajes" | "choferes" | "camiones">("viajes");
   const [choferes, setChoferes] = useState<ViajesChoferFlota[]>([]);
   const [camiones, setCamiones] = useState<ViajesCamionFlota[]>([]);
   const [viajes, setViajes] = useState<Viaje[]>([]);
@@ -391,9 +391,9 @@ export function ViajesGestionPanel() {
       <div className="flex gap-1 border-b border-[var(--border)]">
         {(
           [
+            ["viajes", "Viajes"],
             ["choferes", "Choferes"],
             ["camiones", "Camiones"],
-            ["viajes", "Viajes"],
           ] as const
         ).map(([id, label]) => (
           <button
