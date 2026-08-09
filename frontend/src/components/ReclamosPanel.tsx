@@ -164,25 +164,23 @@ function ReclamoDetalleModal({
         {mensajes.length > 0 && (
           <div className="mt-4">
             <p className="mb-2 text-xs text-[var(--text-faint)]">Últimos mensajes</p>
-            <ul className="max-h-40 space-y-1.5 overflow-y-auto rounded-xl border border-[var(--border)] bg-black/20 p-2.5 text-xs">
-              {mensajes.map((m, i) => (
-                <li
-                  key={`${m.at || i}-${i}`}
-                  className={clsx(
-                    m.dir === "out" ? "text-emerald-300" : "text-zinc-200",
-                  )}
-                >
-                  <span
-                    className={clsx(
-                      "font-medium",
-                      m.dir === "out" ? "text-emerald-400" : "text-violet-300",
-                    )}
-                  >
-                    {m.dir === "out" ? "Agente" : "Cliente"}:{" "}
-                  </span>
-                  {m.texto || (m.imagen_url ? "[foto]" : "—")}
-                </li>
-              ))}
+            <ul className="max-h-40 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-black/30 p-2.5 text-xs leading-relaxed">
+              {mensajes.map((m, i) => {
+                const esAgente = m.dir === "out";
+                return (
+                  <li key={`${m.at || i}-${i}`}>
+                    <span
+                      className="font-semibold"
+                      style={{ color: esAgente ? "#4ade80" : "#c4b5fd" }}
+                    >
+                      {esAgente ? "Agente" : "Cliente"}:{" "}
+                    </span>
+                    <span style={{ color: esAgente ? "#86efac" : "#e4e4e7" }}>
+                      {m.texto || (m.imagen_url ? "[foto]" : "—")}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
