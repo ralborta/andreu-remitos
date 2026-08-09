@@ -169,10 +169,15 @@ function ReclamoDetalleModal({
                 <li
                   key={`${m.at || i}-${i}`}
                   className={clsx(
-                    m.dir === "out" ? "text-sky-300/90" : "text-[var(--text-dim)]",
+                    m.dir === "out" ? "text-emerald-300" : "text-zinc-200",
                   )}
                 >
-                  <span className="text-[var(--text-faint)]">
+                  <span
+                    className={clsx(
+                      "font-medium",
+                      m.dir === "out" ? "text-emerald-400" : "text-violet-300",
+                    )}
+                  >
                     {m.dir === "out" ? "Agente" : "Cliente"}:{" "}
                   </span>
                   {m.texto || (m.imagen_url ? "[foto]" : "—")}
