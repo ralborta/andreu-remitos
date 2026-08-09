@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 rendicion-antes-destinos
+# cache-bust 2026-08-09 foto-no-es-eta
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/

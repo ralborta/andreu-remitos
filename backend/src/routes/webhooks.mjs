@@ -515,13 +515,15 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   return null;
 }
 
-async function tryProcesarDestinos(ev, { texto, log } = {}) {
+async function tryProcesarDestinos(ev, { texto, log, tieneFoto = false } = {}) {
   if (!ev.from) return null;
   // No robar mensajes de rendición de gastos (nafta, peaje, ticket…)
   if (pareceRendicionGasto(texto)) return null;
 
   const pendingCliente = await destinosStore.getDestinoPendientePorTelefono(ev.from);
   if (pendingCliente) {
+    // Foto suelta no confirma dirección (sí ubicación GPS o texto)
+    if (tieneFoto && !ev.location && !String(texto || "").trim()) return null;
     try {
       const out = await procesarRespuestaDestinoCliente(ev.from, {
         texto,
@@ -552,6 +554,9 @@ async function tryProcesarDestinos(ev, { texto, log } = {}) {
 
   const pendingChofer = await destinosStore.getDestinoActivoPorChofer(ev.from);
   if (!pendingChofer) return null;
+
+  // ETA del chofer es solo texto ("30 min") — nunca una foto de ticket
+  if (tieneFoto || ev.media?.url) return null;
 
   try {
     const out = await procesarRespuestaDestinoChofer(ev.from, {
@@ -624,14 +629,26 @@ export default async function webhooksRoutes(fastify) {
 
       const texto = ev.message?.trim() || "";
       const convEarly = ev.from ? await convStore.getConversacion(ev.from) : null;
+      const mediaEsAudio = esEventoAudio(ev, null);
+      const esFoto =
+        Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
 
-      // Rendición de gastos ANTES de destinos/ETA: si el chofer dice "rendir nafta"
-      // no debe caer en "pasame el ETA" por un destino activo.
-      if (ev.from && pareceRendicionGasto(texto)) {
+      // ¿Hay destino activo pidiendo ETA al chofer?
+      const destinoChoferActivo = ev.from
+        ? await destinosStore.getDestinoActivoPorChofer(ev.from)
+        : null;
+
+      // Rendición ANTES de destinos/ETA:
+      // - texto "nafta/gasto/ticket", o
+      // - foto de comprobante (aunque no tenga caption) si hay ETA pendiente
+      //   (si no, la foto sola seguiría a remito más abajo)
+      const quiereRendicion =
+        pareceRendicionGasto(texto) || (esFoto && Boolean(destinoChoferActivo));
+
+      if (ev.from && quiereRendicion) {
         let imageBuffer = null;
         let mime = null;
-        const mediaEsAudio = esEventoAudio(ev, null);
-        if (ev.media?.url && !mediaEsAudio) {
+        if (esFoto) {
           try {
             const dl = await downloadMedia(ev.media.url);
             if (!/audio/i.test(dl.mime || "")) {
@@ -643,7 +660,7 @@ export default async function webhooksRoutes(fastify) {
           }
         }
         const gastoOut = await tryProcesarRendicion(ev, {
-          texto,
+          texto: texto || (esFoto ? "comprobante de gasto" : ""),
           log: request.log,
           imageBuffer,
           mime,
@@ -654,8 +671,12 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
-      // Destinos — cliente en validación / ETA chofer (no si ya es rendición)
-      const destinoOut = await tryProcesarDestinos(ev, { texto, log: request.log });
+      // Destinos — cliente en validación / ETA chofer (nunca con foto: ETA es texto)
+      const destinoOut = await tryProcesarDestinos(ev, {
+        texto,
+        log: request.log,
+        tieneFoto: esFoto,
+      });
       if (destinoOut) {
         return respuestaWebhook({ ...destinoOut, received: true });
       }
