@@ -56,10 +56,13 @@ export async function procesarGastoWhatsApp({
     log,
   });
 
-  // Pedido genérico sin datos ni foto → pedir comprobante (no crear gasto vacío)
+  // Pedido genérico sin datos ni foto → pedir comprobante (no crear gasto vacío).
+  // Si ya dice nafta/peaje/etc. o la IA clasificó categoría, SÍ registramos (monto puede faltar).
+  const categoriaClara = interp.categoria && interp.categoria !== "otro";
   const soloPedido =
     !imageBuffer &&
     interp.monto == null &&
+    !categoriaClara &&
     (!t || t.length < 48) &&
     /\b(rendici[oó]n|gasto|comprobante|ticket|factura)\b/i.test(t || "rendicion");
   if (soloPedido && !/\d{3,}/.test(t || "")) {
