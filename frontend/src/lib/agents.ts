@@ -62,7 +62,7 @@ export const agents: Agent[] = [
     slug: "viajes",
     name: "Agente de Gestión de Viajes",
     short: "Gestión de Viajes",
-    subtitle: "Recepción, programación, asignación y coordinación operativa",
+    subtitle: "Configura y administra los horarios y disponibilidad de tu flota",
     status: "operativo",
     icon: "Route",
     what: "Recibe solicitudes de transporte por distintos canales, principalmente email y WhatsApp. Valida la información, consulta disponibilidad de camiones y capacidad, confirma el viaje, lo registra en el TMS y coordina con el chofer asignado.",
