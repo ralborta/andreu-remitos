@@ -423,8 +423,12 @@ export interface Viaje {
   destino: string;
   carga: string | null;
   fecha: string | null;
+  hora: string | null;
+  tipoCarga: string | null;
+  tipoUnidad: string | null;
   chofer: string | null;
   telefonoChofer: string | null;
+  telefonoCliente: string | null;
   tractor: string | null;
   semi: string | null;
   notas: string | null;
@@ -454,6 +458,9 @@ export function createViaje(body: {
   destino: string;
   carga?: string;
   fecha?: string;
+  hora?: string;
+  tipoCarga?: string;
+  tipoUnidad?: string;
   tenant?: string;
   chofer?: string;
   telefonoChofer?: string;
@@ -472,6 +479,9 @@ export function patchViaje(
     destino: string;
     carga: string | null;
     fecha: string | null;
+    hora: string | null;
+    tipoCarga: string | null;
+    tipoUnidad: string | null;
     tenant: string | null;
     chofer: string | null;
     telefonoChofer: string | null;

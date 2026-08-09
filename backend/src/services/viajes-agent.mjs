@@ -282,11 +282,12 @@ async function finalizarAsignacion(pending, { telefonoCliente, slot, nombre, log
     destino: datos.destino,
     carga: datos.carga || `${datos.tipo_carga} ${datos.toneladas} t`,
     fecha: asignacion.fecha || fechaIso,
+    hora: asignacion.hora || hora || null,
+    tipo_carga: datos.tipo_carga || null,
+    tipo_unidad: asignacion.tipo_unidad || null,
     telefono_cliente: telefonoCliente || null,
     notas: [
       datos.notas,
-      `tipo_carga=${datos.tipo_carga}`,
-      asignacion.hora ? `hora=${asignacion.hora}` : null,
       `solicitud=${pending.id}`,
       `canal=whatsapp`,
     ]
@@ -300,6 +301,8 @@ async function finalizarAsignacion(pending, { telefonoCliente, slot, nombre, log
     telefono_chofer: asignacion.telefono_chofer,
     tractor: asignacion.tractor,
     semi: asignacion.semi,
+    hora: asignacion.hora || viaje.hora || null,
+    tipo_unidad: asignacion.tipo_unidad || viaje.tipo_unidad || null,
   });
   viaje = await viajesStore.cambiarEstadoViaje(viaje.id, "asignado");
 
