@@ -27,9 +27,10 @@ import {
   procesarRespuestaDestinoCliente,
   procesarRespuestaDestinoChofer,
 } from "../services/destinos.mjs";
-import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
+import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
 import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
+import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 
 /**
@@ -304,30 +305,39 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
 async function tryProcesarViajes(ev, { texto, log, conv } = {}) {
   if (!ev.from || !texto?.trim()) return null;
   if (flujoRemitoAbierto(conv)) return null;
-  if (!pareceSolicitudViaje(texto)) return null;
 
-  const chofer = await master.resolverChoferPorTelefono(ev.from);
-  if (chofer && !/\b(necesitamos|solicitamos|pedimos|transporte para|flete)\b/i.test(texto)) {
-    return null;
+  const pendingViaje = await solViajesStore.getSolicitudPendientePorTelefono(ev.from);
+  const parece = pareceSolicitudViaje(texto);
+
+  // Continuar conversación pendiente O nueva solicitud reconocible
+  if (!pendingViaje && !parece) return null;
+
+  // Si es chofer del maestro y NO hay solicitud pendiente de viajes, no robar remitos
+  if (!pendingViaje) {
+    const chofer = await master.resolverChoferPorTelefono(ev.from);
+    if (chofer && !/\b(necesitamos|solicitamos|pedimos|transporte|flete|viaje)\b/i.test(texto)) {
+      return null;
+    }
   }
 
   try {
-    const out = await procesarSolicitudViaje({
-      texto,
-      canal: "whatsapp",
-      remitente: ev.nombre || chofer?.nombre || "Cliente WhatsApp",
+    const out = await procesarMensajeViajeWhatsApp({
       telefono: ev.from,
+      texto,
+      nombre: ev.nombre,
       log,
     });
-    const msg =
-      out.mensajes.find((m) => m.destino === "cliente")?.texto ??
-      `Viaje ${out.viaje.codigo} confirmado y asignado a ${out.viaje.chofer}.`;
-    return { flow: "viajes_asignado", codigo: out.viaje.codigo, message: msg, viaje: out.viaje };
+    if (!out) return null;
+    return {
+      ...out,
+      message: out.message ?? out.mensaje ?? "",
+      received: true,
+    };
   } catch (err) {
-    log?.warn?.({ err: err.message, from: ev.from }, "viajes webhook no pudo asignar");
+    log?.warn?.({ err: err.message, from: ev.from }, "viajes webhook error");
     const msg =
-      `Recibí su solicitud pero no pude completar la asignación automática.\n` +
-      `${err.message}\n\nUn coordinador la revisará en breve.`;
+      `Recibí tu mensaje de viaje pero tuve un problema: ${err.message}\n\n` +
+      `Probá de nuevo o pedí a tráfico que lo cargue.`;
     if (ev.from) {
       await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     }

@@ -90,6 +90,7 @@ export async function actualizarViaje(id, patch = {}) {
     "tractor",
     "semi",
     "notas",
+    "telefono_cliente",
     "remito_ids",
     "destino_validacion_id",
     "tms_id",
@@ -98,6 +99,7 @@ export async function actualizarViaje(id, patch = {}) {
     if (patch[k] !== undefined) row[k] = patch[k];
   }
   if (patch.telefonoChofer !== undefined) row.telefono_chofer = patch.telefonoChofer;
+  if (patch.telefonoCliente !== undefined) row.telefono_cliente = patch.telefonoCliente;
   if (patch.destinoValidacionId !== undefined) row.destino_validacion_id = patch.destinoValidacionId;
   if (patch.tmsId !== undefined) row.tms_id = patch.tmsId;
   row.updated_at = new Date().toISOString();
