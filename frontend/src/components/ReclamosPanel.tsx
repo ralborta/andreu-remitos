@@ -164,20 +164,32 @@ function ReclamoDetalleModal({
         {mensajes.length > 0 && (
           <div className="mt-4">
             <p className="mb-2 text-xs text-[var(--text-faint)]">Últimos mensajes</p>
-            <ul className="max-h-40 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-black/30 p-2.5 text-xs leading-relaxed">
+            <ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[#0b1020] p-2.5 text-xs leading-relaxed">
               {mensajes.map((m, i) => {
                 const esAgente = m.dir === "out";
                 return (
-                  <li key={`${m.at || i}-${i}`}>
-                    <span
-                      className="font-semibold"
-                      style={{ color: esAgente ? "#4ade80" : "#c4b5fd" }}
+                  <li
+                    key={`${m.at || i}-${i}`}
+                    style={{
+                      borderLeft: `3px solid ${esAgente ? "#22c55e" : "#a78bfa"}`,
+                      background: esAgente ? "rgba(34,197,94,0.12)" : "rgba(167,139,250,0.10)",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                      color: "#f8fafc",
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: esAgente ? "#4ade80" : "#c4b5fd",
+                        fontWeight: 700,
+                        marginBottom: 2,
+                      }}
                     >
-                      {esAgente ? "Agente" : "Cliente"}:{" "}
-                    </span>
-                    <span style={{ color: esAgente ? "#86efac" : "#e4e4e7" }}>
+                      {esAgente ? "Agente" : "Cliente"}
+                    </div>
+                    <div style={{ color: "#f1f5f9" }}>
                       {m.texto || (m.imagen_url ? "[foto]" : "—")}
-                    </span>
+                    </div>
                   </li>
                 );
               })}
