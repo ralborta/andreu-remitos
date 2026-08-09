@@ -21,6 +21,7 @@ import monitorRoutes from "./routes/monitor.mjs";
 import vincularRoutes from "./routes/vincular.mjs";
 import { registerAuthGuard } from "./plugins/auth-guard.mjs";
 import { ensureSeedAdmin } from "./db/users-store.mjs";
+import { startSeguimientoIncidencias } from "./services/incidencias-agent.mjs";
 
 const backendRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(backendRoot, ".env") });
@@ -62,6 +63,7 @@ const host = process.env.HOST || "0.0.0.0";
 
 try {
   await app.listen({ port, host });
+  startSeguimientoIncidencias(app.log);
 } catch (err) {
   app.log.error(err);
   process.exit(1);

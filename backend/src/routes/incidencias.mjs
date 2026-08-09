@@ -51,6 +51,9 @@ function mapIncidencia(row) {
     sla: calcularSlaLabel(row),
     historial: row.historial ?? [],
     mensajes: row.mensajes ?? [],
+    consultaAt: row.consulta_at || null,
+    recordatorioEnviadoAt: row.recordatorio_enviado_at || null,
+    cerradoSinRespuesta: Boolean(row.cerrado_sin_respuesta),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

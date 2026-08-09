@@ -138,6 +138,10 @@ export async function crearIncidencia(body = {}) {
       ...(Array.isArray(body.historial) ? body.historial : []),
     ],
     nota_interna: null,
+    /** Cuándo se hizo la 1ª pregunta al chofer (seguimiento auto). */
+    consulta_at: estado === "esperando_causa" ? now : null,
+    recordatorio_enviado_at: null,
+    cerrado_sin_respuesta: false,
     created_at: now,
     updated_at: now,
   };
@@ -174,6 +178,9 @@ export async function actualizarIncidencia(id, patch = {}) {
     "imagen_url",
     "nota_interna",
     "origen",
+    "consulta_at",
+    "recordatorio_enviado_at",
+    "cerrado_sin_respuesta",
   ]) {
     if (patch[k] !== undefined) row[k] = patch[k];
   }
@@ -237,6 +244,10 @@ export async function decidirIncidencia(id, { estado, nota } = {}) {
     nota_interna: nota ?? undefined,
     historial_push: `${new Date().toISOString()} · ${estado}${nota ? `: ${nota}` : ""}`,
   });
+}
+
+export async function listIncidenciasEsperandoCausa() {
+  return readAll().filter((r) => r.estado === "esperando_causa");
 }
 
 export async function resumenIncidencias() {

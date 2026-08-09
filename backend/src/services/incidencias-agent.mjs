@@ -1,7 +1,9 @@
 import {
   interpretarIncidenciaWhatsApp,
+  mensajeCierreSinRespuesta,
   mensajeConfirmacionIncidencia,
   mensajePedirCausaIncidencia,
+  mensajeRecordatorioParada,
   pareceIncidenciaEnRuta,
 } from "../../../lib/incidencias-wa.mjs";
 import * as incidenciasStore from "../db/incidencias-store.mjs";
@@ -367,4 +369,123 @@ export async function procesarIncidenciaWhatsApp({
     mensaje,
     message: mensaje,
   };
+}
+
+function msEnv(name, fallback) {
+  const n = Number(process.env[name]);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+/**
+ * Seguimiento demo:
+ * - a los ~5 min sin causa → repregunta por WA
+ * - a los ~10 min sin causa → cierra incidencia
+ */
+export async function tickSeguimientoIncidencias({ log } = {}) {
+  const recordatorioMs = msEnv("INCIDENCIAS_RECORDATORIO_MS", 5 * 60 * 1000);
+  const cierreMs = msEnv("INCIDENCIAS_CIERRE_MS", 10 * 60 * 1000);
+  const pending = await incidenciasStore.listIncidenciasEsperandoCausa();
+  const now = Date.now();
+  let recordatorios = 0;
+  let cierres = 0;
+
+  for (const row of pending) {
+    const base = new Date(row.consulta_at || row.created_at || now).getTime();
+    if (!Number.isFinite(base)) continue;
+    const age = now - base;
+
+    // Cierre a los ~10 min sin causa
+    if (age >= cierreMs) {
+      const nota = "Cerrada automáticamente por falta de respuesta del chofer";
+      const closed = await incidenciasStore.actualizarIncidencia(row.id, {
+        estado: "resuelta",
+        cerrado_sin_respuesta: true,
+        nota_interna: nota,
+        historial_push: `${new Date().toISOString()} · Cierre auto sin respuesta`,
+      });
+      // Asignar código mínimo si no había
+      if (closed && !closed.codigo) {
+        await incidenciasStore.actualizarIncidencia(row.id, {
+          tipo: closed.tipo || "parada_no_prevista",
+          asignar_codigo: true,
+          estado: "resuelta",
+        });
+      }
+      const fresh = await incidenciasStore.getIncidencia(row.id);
+      const msg = mensajeCierreSinRespuesta(fresh || closed);
+      try {
+        await enviar(row.telefono, msg, {
+          nombre: row.chofer_nombre,
+          incidencia_id: row.id,
+        });
+      } catch (err) {
+        log?.warn?.({ err: err.message, id: row.id }, "Incidencia: fallo WA cierre auto");
+      }
+      await incidenciasStore.actualizarIncidencia(row.id, {
+        mensaje_push: {
+          dir: "out",
+          texto: msg,
+          at: new Date().toISOString(),
+        },
+      });
+      cierres += 1;
+      log?.info?.({ id: row.id, ageMin: Math.round(age / 60000) }, "Incidencia: cierre auto");
+      continue;
+    }
+
+    // Recordatorio a los 5 min
+    if (age >= recordatorioMs && !row.recordatorio_enviado_at) {
+      const msg = mensajeRecordatorioParada({
+        direccion: row.resumen || null,
+      });
+      try {
+        await enviar(row.telefono, msg, {
+          nombre: row.chofer_nombre,
+          incidencia_id: row.id,
+        });
+      } catch (err) {
+        log?.warn?.({ err: err.message, id: row.id }, "Incidencia: fallo WA recordatorio");
+        continue;
+      }
+      await incidenciasStore.actualizarIncidencia(row.id, {
+        recordatorio_enviado_at: new Date().toISOString(),
+        mensaje_push: {
+          dir: "out",
+          texto: msg,
+          at: new Date().toISOString(),
+        },
+        historial_push: `${new Date().toISOString()} · Recordatorio WA (sin respuesta)`,
+      });
+      recordatorios += 1;
+      log?.info?.(
+        { id: row.id, ageMin: Math.round(age / 60000) },
+        "Incidencia: recordatorio enviado",
+      );
+    }
+  }
+
+  return { recordatorios, cierres, pending: pending.length };
+}
+
+let _seguimientoTimer = null;
+
+export function startSeguimientoIncidencias(log) {
+  if (_seguimientoTimer) return;
+  const every = msEnv("INCIDENCIAS_POLL_MS", 30_000);
+  const run = () => {
+    tickSeguimientoIncidencias({ log }).catch((err) => {
+      log?.warn?.({ err: err.message }, "Incidencia: tick seguimiento falló");
+    });
+  };
+  // primer tick a los 15s (dar tiempo al boot)
+  setTimeout(run, 15_000);
+  _seguimientoTimer = setInterval(run, every);
+  log?.info?.(
+    {
+      recordatorioMin: msEnv("INCIDENCIAS_RECORDATORIO_MS", 5 * 60 * 1000) / 60000,
+      cierreMin: msEnv("INCIDENCIAS_CIERRE_MS", 10 * 60 * 1000) / 60000,
+      pollSec: every / 1000,
+    },
+    "Incidencias: seguimiento auto activo (repregunta + cierre)",
+  );
 }

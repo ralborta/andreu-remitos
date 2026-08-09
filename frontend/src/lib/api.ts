@@ -742,6 +742,9 @@ export interface IncidenciaCaso {
     at?: string;
     imagen_url?: string | null;
   }>;
+  consultaAt?: string | null;
+  recordatorioEnviadoAt?: string | null;
+  cerradoSinRespuesta?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

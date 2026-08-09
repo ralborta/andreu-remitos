@@ -315,8 +315,8 @@ export function IncidenciasPanel() {
               Flujo principal: parada en mapa → preguntar al chofer
             </h3>
             <p className="mt-0.5 text-xs text-[var(--text-faint)]">
-              Elegí un punto (Google Maps) y un chofer de la flota de Viajes (ej. Raúl) — el agente le
-              pregunta por WhatsApp por qué está parado
+              Elegí punto + chofer de Viajes → WhatsApp “¿por qué estás parado?”. Si no responde: a los
+              5 min repregunta y a los 10 min cierra sola
             </p>
           </div>
         </div>
