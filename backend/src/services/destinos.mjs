@@ -276,6 +276,11 @@ export async function procesarRespuestaDestinoChofer(telefono, { texto, nombre, 
 
   const parsed = await interpretarRespuestaChoferEta(t, { pending, log });
 
+  // chat sin mensaje = handoff a otro flujo (ej. remito); no inventar bloqueos
+  if (parsed.intent === "chat" && !parsed.mensaje) {
+    return null;
+  }
+
   if (parsed.intent === "pedir_eta" || parsed.intent === "chat") {
     const mensaje =
       parsed.mensaje ||

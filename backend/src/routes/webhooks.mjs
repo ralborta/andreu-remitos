@@ -40,7 +40,10 @@ import {
   telefonoEsChoferIncidencia,
   resolverChoferIncidencia,
 } from "../services/incidencias-agent.mjs";
-import { clasificarIntencionWhatsApp } from "../../../lib/wa-intent-router.mjs";
+import {
+  clasificarIntencionWhatsApp,
+  pareceQuiereRemito,
+} from "../../../lib/wa-intent-router.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import {
   extractCodigoReclamo,
@@ -627,9 +630,10 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 
 async function tryProcesarDestinos(ev, { texto, log, tieneFoto = false } = {}) {
   if (!ev.from) return null;
-  // No robar mensajes de rendición ni incidencias en ruta
+  // No robar mensajes de rendición, incidencias ni remitos (full IA / OCR)
   if (pareceRendicionGasto(texto)) return null;
   if (pareceIncidenciaEnRuta(texto)) return null;
+  if (pareceQuiereRemito(texto)) return null;
 
   const pendingCliente = await destinosStore.getDestinoPendientePorTelefono(ev.from);
   if (pendingCliente) {
@@ -745,11 +749,6 @@ export default async function webhooksRoutes(fastify) {
       const esFoto =
         Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
 
-      // ¿Hay destino activo pidiendo ETA al chofer?
-      const destinoChoferActivo = ev.from
-        ? await destinosStore.getDestinoActivoPorChofer(ev.from)
-        : null;
-
       // Reclamo pendiente + foto/texto: ANTES de rendición/remito
       // (foto de producto dañado / equivocado no debe caer a OCR de remito)
       const pendingReclamoEarly = ev.from
@@ -857,11 +856,12 @@ export default async function webhooksRoutes(fastify) {
       }
 
       // Rendición ANTES de destinos/ETA — SOLO choferes registrados en DB.
-      // - texto "nafta/gasto/ticket", o
-      // - foto de comprobante (aunque no tenga caption) si hay ETA pendiente
+      // Solo si el texto/caption habla de gasto. NUNCA robar fotos de remito
+      // solo porque hay un destino/ETA activo (bug: remito iba a rendición).
       const quiereRendicion =
         esChoferDb &&
-        (pareceRendicionGasto(texto) || (esFoto && Boolean(destinoChoferActivo)));
+        !pareceQuiereRemito(texto) &&
+        pareceRendicionGasto(texto);
 
       if (ev.from && quiereRendicion) {
         let imageBuffer = null;
