@@ -585,16 +585,22 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
-      // Texto nuevo (sin foto): router IA remito vs viaje vs reclamo
-      // (si hay remito abierto, no ruteamos: sigue correcciones de remito)
-      if (texto && !ev.media?.url && !flujoRemitoAbierto(convEarly)) {
-        const routed = await enrutarPorIntencion(ev, {
-          texto,
-          conv: convEarly,
-          log: request.log,
-        });
-        if (routed) {
-          return respuestaWebhook({ ...routed, received: true });
+      // Texto nuevo (sin foto): router IA remito vs viaje vs reclamo.
+      // Con remito abierto solo saltamos el router si NO parece viaje/reclamo.
+      if (texto && !ev.media?.url) {
+        const pareceOtroAgente =
+          /\b(viaje|flete|transporte|reclamo|necesito|necesitamos|solicitamos|pedimos)\b/i.test(
+            texto,
+          );
+        if (!flujoRemitoAbierto(convEarly) || pareceOtroAgente) {
+          const routed = await enrutarPorIntencion(ev, {
+            texto,
+            conv: convEarly,
+            log: request.log,
+          });
+          if (routed) {
+            return respuestaWebhook({ ...routed, received: true });
+          }
         }
       }
 
