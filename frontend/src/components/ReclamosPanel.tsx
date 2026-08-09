@@ -38,15 +38,15 @@ function codigoCaso(g: ReclamoCaso) {
 }
 
 /** Botones de acción con contraste alto (texto blanco sobre color sólido). */
-const BTN_TOMAR: React.CSSProperties = {
+const BTN_TOMAR: CSSProperties = {
   background: "#0284c7",
   color: "#ffffff",
 };
-const BTN_ESCALAR: React.CSSProperties = {
+const BTN_ESCALAR: CSSProperties = {
   background: "#d97706",
   color: "#ffffff",
 };
-const BTN_OK: React.CSSProperties = {
+const BTN_OK: CSSProperties = {
   background: "#16a34a",
   color: "#ffffff",
 };
@@ -186,35 +186,17 @@ function ReclamoDetalleModal({
         {mensajes.length > 0 && (
           <div className="mt-4">
             <p className="mb-2 text-xs text-[var(--text-faint)]">Últimos mensajes</p>
-            <ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[#0b1020] p-2.5 text-xs leading-relaxed">
-              {mensajes.map((m, i) => {
-                const esAgente = m.dir === "out";
-                return (
-                  <li
-                    key={`${m.at || i}-${i}`}
-                    style={{
-                      borderLeft: `3px solid ${esAgente ? "#22c55e" : "#a78bfa"}`,
-                      background: esAgente ? "rgba(34,197,94,0.12)" : "rgba(167,139,250,0.10)",
-                      borderRadius: 8,
-                      padding: "8px 10px",
-                      color: "#f8fafc",
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: esAgente ? "#4ade80" : "#c4b5fd",
-                        fontWeight: 700,
-                        marginBottom: 2,
-                      }}
-                    >
-                      {esAgente ? "Agente" : "Cliente"}
-                    </div>
-                    <div style={{ color: "#f1f5f9" }}>
-                      {m.texto || (m.imagen_url ? "[foto]" : "—")}
-                    </div>
-                  </li>
-                );
-              })}
+            <ul className="max-h-48 space-y-1.5 overflow-y-auto rounded-xl border border-[var(--border)] bg-black/30 p-2.5 text-xs leading-relaxed">
+              {mensajes.map((m, i) => (
+                <li key={`${m.at || i}-${i}`}>
+                  <span style={{ color: "#22c55e", fontWeight: 700 }}>
+                    {m.dir === "out" ? "Agente" : "Cliente"}:{" "}
+                  </span>
+                  <span style={{ color: "#4ade80" }}>
+                    {m.texto || (m.imagen_url ? "[foto]" : "—")}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
         )}
