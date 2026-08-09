@@ -52,6 +52,7 @@ export async function procesarMensajeViajeWhatsApp({
   texto,
   nombre,
   log,
+  forzar = false,
 } = {}) {
   const phone = sanitizePhone(telefono);
   const t = String(texto ?? "").trim();
@@ -63,7 +64,7 @@ export async function procesarMensajeViajeWhatsApp({
   }
 
   let pending = await solStore.getSolicitudPendientePorTelefono(phone);
-  const parece = pareceSolicitudViaje(t);
+  const parece = forzar || pareceSolicitudViaje(t);
   if (!pending && !parece) return null;
 
   await convStore.appendMensaje(

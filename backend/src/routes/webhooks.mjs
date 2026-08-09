@@ -341,6 +341,7 @@ async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) 
       texto,
       nombre: ev.nombre,
       log,
+      forzar: Boolean(forzar || pendingViaje),
     });
     if (!out) return null;
     return {
@@ -418,11 +419,29 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
   if (intent.intent === "viaje") {
     const out = await tryProcesarViajes(ev, { texto, log, conv, forzar: true });
     if (out) return out;
-    // No caer a remitos si ya sabemos que es viaje
+    // Último recurso: abrir solicitud para no perder el hilo en el próximo mensaje
+    try {
+      const pending = await solViajesStore.getSolicitudPendientePorTelefono(ev.from);
+      if (!pending) {
+        await solViajesStore.crearSolicitud({
+          telefono: ev.from,
+          nombre: ev.nombre || null,
+        });
+      }
+    } catch (err) {
+      log?.warn?.({ err: err.message }, "viajes: no pude abrir solicitud fallback");
+    }
     const msg =
       `Perfecto, vamos con tu *viaje*.\n\n` +
       `Pasame origen, destino, toneladas, tipo de carga y fecha/hora de retiro.`;
     await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    await convStore
+      .appendMensaje(
+        ev.from,
+        { texto: msg, tipo: "text" },
+        { dir: "out", from: "bot", agente: "viajes", nombre: ev.nombre },
+      )
+      .catch(() => {});
     return { flow: "viajes_fallback", message: msg };
   }
 
