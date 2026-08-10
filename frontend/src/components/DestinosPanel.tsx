@@ -45,6 +45,66 @@ function estadoLabel(estado: string) {
   return map[estado] ?? estado;
 }
 
+/** Resumen legible a partir del caso (no el log técnico completo). */
+function buildResumenDestino(d: DestinoValidacion): string[] {
+  const hist = (d.historial || []).join(" · ").toLowerCase();
+  const bullets: string[] = [];
+
+  bullets.push(`Estado: ${estadoLabel(d.estado)}`);
+
+  if (d.formattedAddress) {
+    bullets.push(
+      d.partial
+        ? `Dirección ubicada (parcial): ${d.formattedAddress}`
+        : `Dirección: ${d.formattedAddress}`,
+    );
+  }
+
+  if (d.correccion) {
+    bullets.push(`Cliente corrigió la dirección a: ${d.correccion}`);
+  } else if (/rechaz|no quiere|sin dirección|"no"/.test(hist)) {
+    bullets.push("El cliente rechazó o cuestionó la dirección en algún momento");
+  }
+
+  if (d.whatsappSent || /whatsapp enviado al cliente/.test(hist)) {
+    bullets.push(
+      d.telefonoCliente
+        ? `Se contactó al cliente por WhatsApp (…${d.telefonoCliente.slice(-4)})`
+        : "Se contactó al cliente por WhatsApp",
+    );
+  }
+
+  if (d.ultimaRespuestaCliente) {
+    bullets.push(`Última respuesta del cliente: “${d.ultimaRespuestaCliente}”`);
+  } else if (/cliente:\s*sí|confirmado/.test(hist)) {
+    bullets.push("El cliente confirmó el destino");
+  }
+
+  if (
+    d.telefonoChofer &&
+    (d.estado === "confirmado" ||
+      d.estado === "en_ruta" ||
+      d.estado === "esperando_eta_chofer" ||
+      /whatsapp enviado al chofer/.test(hist))
+  ) {
+    bullets.push(`Se avisó al chofer (…${d.telefonoChofer.slice(-4)})`);
+  }
+
+  if (d.etaTexto) {
+    bullets.push(`Estimado de llegada: ${d.etaTexto}`);
+  } else if (d.estado === "esperando_eta_chofer") {
+    bullets.push("Pendiente: el chofer debe indicar en cuánto llega");
+  } else if (d.estado === "esperando_cliente") {
+    bullets.push("Pendiente: esperando confirmación del cliente");
+  }
+
+  if (/ubicación gps|envió ubicación/.test(hist)) {
+    bullets.push("El cliente compartió su ubicación por GPS");
+  }
+
+  return bullets.slice(0, 6);
+}
+
 type ColaRow = {
   id: string;
   cliente: string;
@@ -71,12 +131,14 @@ export function DestinosPanel() {
   >([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [ultimaSync, setUltimaSync] = useState<Date | null>(null);
+  const [verHistorialTecnico, setVerHistorialTecnico] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputWrapRef = useRef<HTMLLabelElement>(null);
   const activoIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     activoIdRef.current = activo?.id ?? null;
+    setVerHistorialTecnico(false);
   }, [activo?.id]);
 
   const refrescar = useCallback(async () => {
@@ -364,13 +426,39 @@ export function DestinosPanel() {
                 <span className="text-white/90">{activo.ultimaRespuestaCliente}</span>
               </div>
             )}
-            {activo.historial.length > 0 && (
-              <ul className="mt-3 space-y-1 border-t border-[var(--border-soft)] pt-3 text-[11px] text-[var(--text-faint)]">
-                {activo.historial.map((h, i) => (
-                  <li key={`${h}-${i}`}>{h}</li>
+            <div className="mt-3 border-t border-[var(--border-soft)] pt-3">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+                Resumen
+              </p>
+              <ul className="space-y-1.5 text-sm text-[var(--text-dim)]">
+                {buildResumenDestino(activo).map((line, i) => (
+                  <li key={`${activo.id}-r-${i}`} className="flex gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--violet)]" />
+                    <span>{line}</span>
+                  </li>
                 ))}
               </ul>
-            )}
+              {activo.historial.length > 0 && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setVerHistorialTecnico((v) => !v)}
+                    className="text-[11px] text-[var(--violet-2)] hover:underline"
+                  >
+                    {verHistorialTecnico
+                      ? "Ocultar detalle técnico"
+                      : "Ver detalle técnico"}
+                  </button>
+                  {verHistorialTecnico && (
+                    <ul className="mt-2 space-y-1 text-[11px] text-[var(--text-faint)]">
+                      {activo.historial.map((h, i) => (
+                        <li key={`${h}-${i}`}>{h}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
           </Card>
 
           <div className="space-y-4">
