@@ -13,10 +13,10 @@ import {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Mapa real de flota (Carto dark / OSM).
- * No usamos Google Maps acá: la key del proyecto no sirve para Maps JS en el browser
- * (ApiNotActivated / billing). Leaflet + tiles oscuros dan el mismo UX con los puntos.
+ * Mapa real de flota (Carto Voyager / OSM) + rutas por camino (OSRM).
  */
+
+type LatLng = [number, number];
 
 function loadLeaflet(): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -47,11 +47,40 @@ function loadLeaflet(): Promise<any> {
   });
 }
 
+/** Ruta por caminos (OSRM público). Fallback: línea recta. */
+async function fetchRoadRoute(
+  from: { lat: number; lng: number },
+  to: { lat: number; lng: number },
+): Promise<LatLng[]> {
+  const straight: LatLng[] = [
+    [from.lat, from.lng],
+    [to.lat, to.lng],
+  ];
+  try {
+    const url =
+      `https://router.project-osrm.org/route/v1/driving/` +
+      `${from.lng},${from.lat};${to.lng},${to.lat}` +
+      `?overview=full&geometries=geojson`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return straight;
+    const data = (await res.json()) as {
+      code?: string;
+      routes?: { geometry?: { coordinates?: [number, number][] } }[];
+    };
+    const coords = data.routes?.[0]?.geometry?.coordinates;
+    if (!coords?.length) return straight;
+    // GeoJSON = [lng, lat] → Leaflet [lat, lng]
+    return coords.map(([lng, lat]) => [lat, lng] as LatLng);
+  } catch {
+    return straight;
+  }
+}
+
 function leafletDivIcon(L: any, color: string, pulse: boolean) {
   const size = pulse ? 16 : 12;
   return L.divIcon({
     className: "",
-    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:99px;background:${color};border:2px solid #0c0a18;box-shadow:0 0 0 ${pulse ? 6 : 0}px ${color}55"></span>`,
+    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:99px;background:${color};border:2px solid #fff;box-shadow:0 0 0 ${pulse ? 6 : 0}px ${color}55,0 1px 4px rgba(0,0,0,.35)"></span>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -76,6 +105,7 @@ export function FleetMap() {
   const [hover, setHover] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [rutasOk, setRutasOk] = useState(0);
 
   const activos = trips.filter((t) => t.estado === "en_curso").length;
   const detenidos = trips.filter((t) => t.estado === "detenido").length;
@@ -99,33 +129,62 @@ export function FleetMap() {
           maxZoom: 18,
         }).addTo(map);
 
-        const bounds: [number, number][] = [];
+        const bounds: LatLng[] = [];
 
         for (const [name, p] of Object.entries(CIUDADES)) {
           L.circleMarker([p.lat, p.lng], {
-            radius: 3,
-            color: "#6f6796",
-            fillColor: "#6f6796",
-            fillOpacity: 0.9,
-            weight: 0,
+            radius: 4,
+            color: "#fff",
+            weight: 1.5,
+            fillColor: "#64748b",
+            fillOpacity: 0.95,
           })
-            .bindTooltip(name, { direction: "top", opacity: 0.9 })
+            .bindTooltip(name, { direction: "top", opacity: 0.95 })
             .addTo(map);
           bounds.push([p.lat, p.lng]);
         }
 
-        for (const t of trips.filter((x) => x.estado === "en_curso" || x.estado === "detenido")) {
+        // Rutas visibles: en curso + detenidos (por caminos)
+        const conRuta = trips.filter(
+          (x) => x.estado === "en_curso" || x.estado === "detenido",
+        );
+        let dibujadas = 0;
+
+        // Secuencial suave para no saturar OSRM demo
+        for (const t of conRuta) {
+          if (cancelled) return;
           const o = CIUDADES[t.origen];
           const d = CIUDADES[t.destino];
           if (!o || !d) continue;
-          L.polyline(
-            [
-              [o.lat, o.lng],
-              [d.lat, d.lng],
-            ],
-            { color: "#6f5aad", weight: 2, opacity: 0.65 },
-          ).addTo(map);
+
+          const path = await fetchRoadRoute(o, d);
+          if (cancelled) return;
+
+          const color = TRIP_STATUS_COLOR[t.estado];
+          // Halo blanco para que se lea sobre el mapa a color
+          L.polyline(path, {
+            color: "#ffffff",
+            weight: 6,
+            opacity: 0.85,
+            lineJoin: "round",
+            lineCap: "round",
+          }).addTo(map);
+          const line = L.polyline(path, {
+            color,
+            weight: 3.5,
+            opacity: 0.95,
+            lineJoin: "round",
+            lineCap: "round",
+          }).addTo(map);
+          line.bindTooltip(`${t.id}: ${t.origen} → ${t.destino}`, {
+            sticky: true,
+            opacity: 0.95,
+          });
+          dibujadas += 1;
+          for (const pt of path) bounds.push(pt);
         }
+
+        if (!cancelled) setRutasOk(dibujadas);
 
         for (const t of trips) {
           const pos = tripLatLng(t);
@@ -133,6 +192,7 @@ export function FleetMap() {
           const color = TRIP_STATUS_COLOR[t.estado];
           const m = L.marker([pos.lat, pos.lng], {
             icon: leafletDivIcon(L, color, t.estado === "en_curso"),
+            zIndexOffset: 500,
           }).addTo(map);
           m.bindPopup(popupHtml(t));
           m.on("mouseover", () => {
@@ -147,7 +207,6 @@ export function FleetMap() {
           map.fitBounds(bounds, { padding: [40, 40], maxZoom: 7 });
         }
 
-        // Leaflet a veces necesita invalidateSize tras el layout
         setTimeout(() => map.invalidateSize(), 80);
 
         cleanupRef.current = () => map.remove();
@@ -183,6 +242,11 @@ export function FleetMap() {
           <span className="h-2 w-2 rounded-full" style={{ background: "#22c55e" }} />
           entregados
         </span>
+        {rutasOk > 0 && (
+          <span className="rounded-full bg-white/5 px-2.5 py-1 text-[var(--text-faint)]">
+            {rutasOk} rutas
+          </span>
+        )}
         {hover && (
           <span className="text-[var(--text-faint)]">{trips.find((t) => t.id === hover)?.id}</span>
         )}
@@ -193,7 +257,7 @@ export function FleetMap() {
 
         {!ready && !error && (
           <div className="absolute inset-0 z-10 flex items-center justify-center text-xs text-[var(--text-faint)]">
-            Cargando mapa…
+            Cargando mapa y rutas…
           </div>
         )}
         {error && (
@@ -203,7 +267,7 @@ export function FleetMap() {
         )}
 
         <div className="pointer-events-none absolute bottom-3 left-3 z-10 rounded-lg bg-black/50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[var(--text-faint)] backdrop-blur">
-          Flota en tiempo real · Argentina
+          Flota en tiempo real · Rutas · Argentina
         </div>
       </div>
     </div>
