@@ -13,6 +13,8 @@ export interface Agent {
   benefits: string[];
   channels: string[];
   kpis: { label: string; value: string; trend?: string }[];
+  /** Otros agentes con los que se comunica (slugs). */
+  collaboratesWith?: string[];
 }
 
 export const STATUS_LABEL: Record<AgentStatus, string> = {
@@ -65,7 +67,7 @@ export const agents: Agent[] = [
     subtitle: "Configura y administra los horarios y disponibilidad de tu flota",
     status: "operativo",
     icon: "Route",
-    what: "Recibe solicitudes de transporte por distintos canales, principalmente email y WhatsApp. Valida la información, consulta disponibilidad de camiones y capacidad, confirma el viaje, lo registra en el TMS y coordina con el chofer asignado.",
+    what: "Recibe solicitudes de transporte por distintos canales, principalmente email y WhatsApp. Valida la información, consulta disponibilidad de camiones y capacidad, confirma el viaje, lo registra en el TMS y coordina con el chofer asignado. Se comunica con el agente de ETA (compromiso de llegada) y con Incidencias cuando hay eventos en ruta.",
     flow: [
       "Solicitud por email o WhatsApp",
       "Interpretación y validación de datos",
@@ -73,19 +75,22 @@ export const agents: Agent[] = [
       "Confirmación del viaje",
       "Registro en el TMS",
       "Asignación del chofer",
+      "Aviso al agente ETA (compromiso de llegada)",
       "Coordinación y seguimiento",
     ],
     benefits: [
       "Menos coordinación manual",
       "Mejor uso de flota",
       "Carga ordenada en el TMS",
+      "ETA alineado con el viaje",
     ],
-    channels: ["Email", "WhatsApp", "TMS"],
+    channels: ["Email", "WhatsApp", "TMS", "Agente ETA"],
     kpis: [
       { label: "Viajes coordinados hoy", value: "97", trend: "+14%" },
       { label: "Uso de flota", value: "91%", trend: "+8 pts" },
       { label: "Tiempo de asignación", value: "3,6 min", trend: "-63%" },
     ],
+    collaboratesWith: ["eta", "incidencias"],
   },
   {
     id: 3,
@@ -124,26 +129,29 @@ export const agents: Agent[] = [
     subtitle: "Detección, consulta y clasificación de eventos en ruta",
     status: "beta",
     icon: "TriangleAlert",
-    what: "Lo principal: el agente detecta que el chofer está parado y le pregunta por WhatsApp *por qué*. El chofer responde, la IA clasifica y abre el caso. Como opción secundaria, el chofer también puede reportar solo (pinchazo, control, mecánico…). Las demoras de Destinos quedan registradas acá.",
+    what: "Lo principal: el agente detecta que el chofer está parado y le pregunta por WhatsApp *por qué*. El chofer responde, la IA clasifica y abre el caso. Como opción secundaria, el chofer también puede reportar solo (pinchazo, control, mecánico…). Las demoras de Destinos quedan registradas acá. Cuando hay demora, se comunica con el agente ETA para recalcular llegada y avisar.",
     flow: [
       "Sistema / operaciones detecta parada en ruta",
       "Agente escribe al chofer: ¿por qué estás parado?",
       "Chofer responde la causa",
       "IA clasifica tipo y criticidad",
       "Caso abierto en el panel (INC-…)",
+      "Aviso al agente ETA (recalcular / notificar demora)",
       "Operaciones toma o resuelve (el chofer también puede reportar por su cuenta)",
     ],
     benefits: [
       "Reacción más rápida ante paradas",
       "Trazabilidad de incidencias",
       "El chofer también puede avisar solo",
+      "ETA actualizado ante demoras",
     ],
-    channels: ["WhatsApp", "Destinos / ETA", "Backoffice"],
+    channels: ["WhatsApp", "Agente ETA", "Destinos", "Backoffice"],
     kpis: [
       { label: "Eventos detectados hoy", value: "52", trend: "" },
       { label: "Causa declarada", value: "94%", trend: "+13 pts" },
       { label: "Tiempo de respuesta", value: "2,8 min", trend: "-68%" },
     ],
+    collaboratesWith: ["eta", "viajes"],
   },
   {
     id: 5,
@@ -181,26 +189,28 @@ export const agents: Agent[] = [
     subtitle: "Avisos automáticos de llegada, demoras y cambios de estado",
     status: "beta",
     icon: "Clock",
-    what: "Usa datos del viaje, ubicación y ruta para estimar horarios de llegada y comunicar de forma proactiva al cliente, destinatario o equipo interno. Reduce consultas manuales y mejora la visibilidad del proceso.",
+    what: "Agente independiente que estima horarios de llegada y avisa de forma proactiva. Se comunica con Gestión de Viajes (toma el viaje y el compromiso) y con Incidencias (si hay demora, recalcula y notifica). No reemplaza a esos agentes: depende de ellos y les responde con el ETA actualizado.",
     flow: [
-      "Tracking o TMS actualiza ubicación",
-      "IA estima ETA con ruta y estado del viaje",
-      "Valida ventana horaria o compromiso",
+      "Recibe del agente Viajes: viaje, chofer y ventana comprometida",
+      "Tracking / ruta actualiza ubicación",
+      "IA estima ETA",
       "Notifica al cliente o destinatario",
-      "Informa demoras o cambios",
-      "Registra comunicación y estado",
+      "Si Incidencias reporta demora → recalcula ETA y reenvía aviso",
+      "Devuelve ETA y estado al agente Viajes",
     ],
     benefits: [
       "Menos consultas",
       "Mejor experiencia del cliente",
       "Visibilidad de llegada",
+      "Reacciona a demoras vía Incidencias",
     ],
-    channels: ["Tracking GPS", "Google Maps", "WhatsApp", "Email"],
+    channels: ["Agente Viajes", "Agente Incidencias", "WhatsApp", "Google Maps"],
     kpis: [
       { label: "Notificaciones enviadas hoy", value: "618", trend: "+22%" },
       { label: "Precisión de ETA (±15 min)", value: "92,4%", trend: "+3,6%" },
       { label: "Consultas evitadas", value: "-47%", trend: "" },
     ],
+    collaboratesWith: ["viajes", "incidencias"],
   },
   {
     id: 7,
