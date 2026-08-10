@@ -636,7 +636,8 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
     if (out) return out;
     const msg =
       `Perfecto, vamos con la *constancia de entrega (POD)*.\n\n` +
-      `Decime *a quién* le entregaste y después mandame la *foto* de la prueba.`;
+      `Mandame una *foto clara* del *formulario de entrega* y/o del *producto entregado*. ` +
+      `La leo yo y cargo los datos.`;
     await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     return { flow: "pod_fallback", message: msg };
   }

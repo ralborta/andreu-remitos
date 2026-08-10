@@ -96,7 +96,7 @@ export function PodPanel() {
           <div>
             <h3 className="font-semibold text-white">Constancias de entrega (POD)</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              WhatsApp: chofer indica receptor + foto de prueba · confirmación en mesa
+              WhatsApp: foto del formulario/producto → la IA lee los datos · confirmación en mesa
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -177,8 +177,13 @@ export function PodPanel() {
                       <div>{g.chofer}</div>
                       <div className="text-xs text-[var(--text-faint)]">{g.telefono}</div>
                     </td>
-                    <td className="max-w-[200px] truncate py-3 pr-3 text-[var(--text-dim)]">
-                      {g.destino}
+                    <td className="max-w-[200px] py-3 pr-3 text-[var(--text-dim)]">
+                      <div className="truncate">{g.destino}</div>
+                      {g.notaChofer && (
+                        <div className="mt-0.5 line-clamp-2 text-[10px] text-[var(--text-faint)]">
+                          {g.notaChofer}
+                        </div>
+                      )}
                     </td>
                     <td className="py-3 pr-3">
                       {g.imagenUrl ? (

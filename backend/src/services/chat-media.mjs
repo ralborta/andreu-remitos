@@ -28,10 +28,13 @@ export function persistChatMedia(buffer, mime = "image/jpeg") {
   const filename = `${Date.now()}-${randomUUID().slice(0, 8)}${extFromMime(mime)}`;
   const absPath = path.join(MEDIA_DIR, filename);
   fs.writeFileSync(absPath, buffer);
+  const publicUrl = `/api/media/local/${filename}`;
   return {
     absPath,
     filename,
-    publicUrl: `/api/media/local/${filename}`,
+    publicUrl,
+    /** Alias por compatibilidad (algunos agentes usaban `.url`). */
+    url: publicUrl,
   };
 }
 

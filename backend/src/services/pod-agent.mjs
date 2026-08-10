@@ -1,10 +1,13 @@
 import {
   extraerNombreReceptor,
+  esIntencionOSaludoPod,
+  leerPodDesdeImagen,
   mensajeConfirmacionPod,
   mensajeDecisionPod,
   mensajePedirFotoPod,
   mensajePedirNombreReceptor,
   mensajePodSoloChoferes,
+  mensajeProcesandoPod,
   parecePod,
 } from "../../../lib/pod-wa.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
@@ -65,8 +68,19 @@ async function enriquecerConDestino(phone) {
   }
 }
 
+function notaDesdeLectura(lectura, textoChofer) {
+  const parts = [];
+  if (lectura?.resumen) parts.push(lectura.resumen);
+  if (lectura?.pedido_ref) parts.push(`Ref: ${lectura.pedido_ref}`);
+  if (textoChofer && !esIntencionOSaludoPod(textoChofer) && !parecePod(textoChofer)) {
+    parts.push(textoChofer);
+  }
+  return parts.length ? parts.join(" · ").slice(0, 400) : null;
+}
+
 /**
- * Diálogo POD: receptor → foto → pendiente backoffice.
+ * Diálogo POD: foto del formulario → visión OCR → pendiente backoffice.
+ * Si falta el receptor en el papel, se pide por texto.
  */
 export async function procesarPodWhatsApp({
   telefono,
@@ -93,9 +107,9 @@ export async function procesarPodWhatsApp({
   }
 
   let fotoUrl = imagenUrl || null;
-  if (imageBuffer && !fotoUrl) {
+  if (imageBuffer?.length && !fotoUrl) {
     const saved = persistChatMedia(imageBuffer, mime || "image/jpeg");
-    fotoUrl = saved?.url || null;
+    fotoUrl = saved?.publicUrl || saved?.url || null;
   }
 
   await convStore.appendMensaje(
@@ -110,6 +124,7 @@ export async function procesarPodWhatsApp({
 
   // ——— Diálogo pendiente ———
   if (pending) {
+    // Esperando nombre (OCR no lo sacó)
     if (pending.estado === "esperando_receptor") {
       const receptor = extraerNombreReceptor(t);
       if (!receptor && !fotoUrl) {
@@ -118,14 +133,59 @@ export async function procesarPodWhatsApp({
         return { flow: "pod_pedir_receptor", mensaje: msg, message: msg, pod: pending };
       }
 
-      const receptorFinal = receptor || pending.receptor_nombre || "Receptor";
-      if (fotoUrl) {
+      // Nueva foto: reintentar OCR
+      if (fotoUrl && imageBuffer?.length) {
+        await enviar(phone, mensajeProcesandoPod(), { pod_id: pending.id, nombre });
+        const lectura = await leerPodDesdeImagen({
+          imageBuffer,
+          mime,
+          texto: t,
+          log,
+        });
+        const receptorFinal =
+          receptor ||
+          lectura?.receptor_nombre ||
+          pending.receptor_nombre ||
+          null;
+        if (!receptorFinal) {
+          const updated = await podStore.actualizarPod(pending.id, {
+            imagen_url: fotoUrl,
+            viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
+            destino: lectura?.destino || pending.destino,
+            nota_chofer: notaDesdeLectura(lectura, t) || pending.nota_chofer,
+            historial_push: "Foto recibida; falta receptor",
+          });
+          const msg = mensajePedirNombreReceptor();
+          await enviar(phone, msg, { pod_id: updated.id, nombre });
+          return { flow: "pod_pedir_receptor", mensaje: msg, message: msg, pod: updated };
+        }
         const closed = await podStore.actualizarPod(pending.id, {
           estado: "pendiente",
           receptor_nombre: receptorFinal,
           imagen_url: fotoUrl,
+          viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
+          destino: lectura?.destino || pending.destino,
           chofer_nombre: chofer.nombre || pending.chofer_nombre,
-          historial_push: `Completado · receptor ${receptorFinal} + foto`,
+          nota_chofer: notaDesdeLectura(lectura, t) || pending.nota_chofer,
+          historial_push: `Completado · OCR + receptor ${receptorFinal}`,
+        });
+        const msg = mensajeConfirmacionPod(closed, lectura);
+        await enviar(phone, msg, { pod_id: closed.id, nombre });
+        return { flow: "pod_pendiente", mensaje: msg, message: msg, pod: closed };
+      }
+
+      const receptorFinal = receptor || pending.receptor_nombre;
+      if (!receptorFinal) {
+        const msg = mensajePedirNombreReceptor();
+        await enviar(phone, msg, { pod_id: pending.id, nombre });
+        return { flow: "pod_pedir_receptor", mensaje: msg, message: msg, pod: pending };
+      }
+
+      if (pending.imagen_url) {
+        const closed = await podStore.actualizarPod(pending.id, {
+          estado: "pendiente",
+          receptor_nombre: receptorFinal,
+          historial_push: `Receptor: ${receptorFinal}`,
         });
         const msg = mensajeConfirmacionPod(closed);
         await enviar(phone, msg, { pod_id: closed.id, nombre });
@@ -143,17 +203,57 @@ export async function procesarPodWhatsApp({
     }
 
     if (pending.estado === "esperando_foto") {
-      if (!fotoUrl) {
-        const msg = mensajePedirFotoPod(pending.receptor_nombre);
+      if (!fotoUrl || !imageBuffer?.length) {
+        // Si mandó un nombre válido sin foto, lo guardamos y seguimos pidiendo foto
+        const receptor = extraerNombreReceptor(t);
+        if (receptor) {
+          await podStore.actualizarPod(pending.id, {
+            receptor_nombre: receptor,
+            historial_push: `Receptor: ${receptor}`,
+          });
+        }
+        const msg = mensajePedirFotoPod(receptor || pending.receptor_nombre);
         await enviar(phone, msg, { pod_id: pending.id, nombre });
         return { flow: "pod_pedir_foto", mensaje: msg, message: msg, pod: pending };
       }
+
+      await enviar(phone, mensajeProcesandoPod(), { pod_id: pending.id, nombre });
+      const lectura = await leerPodDesdeImagen({
+        imageBuffer,
+        mime,
+        texto: t,
+        log,
+      });
+      const receptorFinal =
+        pending.receptor_nombre ||
+        lectura?.receptor_nombre ||
+        extraerNombreReceptor(t) ||
+        null;
+
+      if (!receptorFinal) {
+        const updated = await podStore.actualizarPod(pending.id, {
+          estado: "esperando_receptor",
+          imagen_url: fotoUrl,
+          viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
+          destino: lectura?.destino || pending.destino,
+          nota_chofer: notaDesdeLectura(lectura, t) || pending.nota_chofer,
+          historial_push: "Foto leída; falta nombre receptor",
+        });
+        const msg = mensajePedirNombreReceptor();
+        await enviar(phone, msg, { pod_id: updated.id, nombre });
+        return { flow: "pod_pedir_receptor", mensaje: msg, message: msg, pod: updated };
+      }
+
       const closed = await podStore.actualizarPod(pending.id, {
         estado: "pendiente",
+        receptor_nombre: receptorFinal,
         imagen_url: fotoUrl,
-        historial_push: "Foto de prueba recibida",
+        viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
+        destino: lectura?.destino || pending.destino,
+        nota_chofer: notaDesdeLectura(lectura, t) || pending.nota_chofer,
+        historial_push: `Foto OCR · receptor ${receptorFinal}`,
       });
-      const msg = mensajeConfirmacionPod(closed);
+      const msg = mensajeConfirmacionPod(closed, lectura);
       await enviar(phone, msg, { pod_id: closed.id, nombre });
       return { flow: "pod_pendiente", mensaje: msg, message: msg, pod: closed };
     }
@@ -163,56 +263,63 @@ export async function procesarPodWhatsApp({
   const extra = await enriquecerConDestino(phone);
   const receptorFromText = extraerNombreReceptor(t);
 
-  if (fotoUrl && receptorFromText) {
-    const row = await podStore.crearPod({
-      telefono: phone,
-      chofer_nombre: chofer.nombre || nombre,
-      receptor_nombre: receptorFromText,
-      imagen_url: fotoUrl,
-      estado: "pendiente",
-      nota_chofer: t || null,
-      ...extra,
+  // Foto de entrada → OCR
+  if (fotoUrl && imageBuffer?.length) {
+    await enviar(phone, mensajeProcesandoPod(), { nombre });
+    const lectura = await leerPodDesdeImagen({
+      imageBuffer,
+      mime,
+      texto: t,
+      log,
     });
-    const msg = mensajeConfirmacionPod(row);
-    await enviar(phone, msg, { pod_id: row.id, nombre });
-    return { flow: "pod_pendiente", mensaje: msg, message: msg, pod: row };
-  }
+    const receptorFinal =
+      receptorFromText || lectura?.receptor_nombre || null;
 
-  if (fotoUrl && !receptorFromText) {
+    if (receptorFinal) {
+      const row = await podStore.crearPod({
+        telefono: phone,
+        chofer_nombre: chofer.nombre || nombre,
+        receptor_nombre: receptorFinal,
+        imagen_url: fotoUrl,
+        estado: "pendiente",
+        nota_chofer: notaDesdeLectura(lectura, t),
+        viaje_ref: lectura?.pedido_ref || extra.viaje_ref || null,
+        destino: lectura?.destino || extra.destino || null,
+        destino_id: extra.destino_id || null,
+      });
+      const msg = mensajeConfirmacionPod(row, lectura);
+      await enviar(phone, msg, { pod_id: row.id, nombre });
+      return { flow: "pod_pendiente", mensaje: msg, message: msg, pod: row };
+    }
+
     const row = await podStore.crearPod({
       telefono: phone,
       chofer_nombre: chofer.nombre || nombre,
       imagen_url: fotoUrl,
       estado: "esperando_receptor",
-      nota_chofer: t || null,
-      ...extra,
+      nota_chofer: notaDesdeLectura(lectura, t),
+      viaje_ref: lectura?.pedido_ref || extra.viaje_ref || null,
+      destino: lectura?.destino || extra.destino || null,
+      destino_id: extra.destino_id || null,
     });
-    const msg =
-      `Recibí la *foto*.\n\n` +
-      `¿*A quién* le entregaste? (nombre de quien recibió)`;
+    const msg = mensajePedirNombreReceptor();
     await enviar(phone, msg, { pod_id: row.id, nombre });
     return { flow: "pod_pedir_receptor", mensaje: msg, message: msg, pod: row };
   }
 
-  // Solo texto (entregué / pod)
+  // Solo texto: pedir foto (no tomar la intención como receptor)
   const row = await podStore.crearPod({
     telefono: phone,
     chofer_nombre: chofer.nombre || nombre,
     receptor_nombre: receptorFromText,
-    estado: receptorFromText ? "esperando_foto" : "esperando_receptor",
-    nota_chofer: t || null,
+    estado: "esperando_foto",
+    nota_chofer: receptorFromText ? null : t || null,
     ...extra,
   });
 
-  if (receptorFromText) {
-    const msg = mensajePedirFotoPod(receptorFromText);
-    await enviar(phone, msg, { pod_id: row.id, nombre });
-    return { flow: "pod_pedir_foto", mensaje: msg, message: msg, pod: row };
-  }
-
-  const msg = mensajePedirNombreReceptor();
+  const msg = mensajePedirFotoPod(receptorFromText);
   await enviar(phone, msg, { pod_id: row.id, nombre });
-  return { flow: "pod_pedir_receptor", mensaje: msg, message: msg, pod: row };
+  return { flow: "pod_pedir_foto", mensaje: msg, message: msg, pod: row };
 }
 
 export async function notificarDecisionPod(caso, { log } = {}) {
