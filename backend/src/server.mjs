@@ -19,6 +19,7 @@ import mediaRoutes from "./routes/media.mjs";
 import authRoutes from "./routes/auth.mjs";
 import monitorRoutes from "./routes/monitor.mjs";
 import vincularRoutes from "./routes/vincular.mjs";
+import configRoutes from "./routes/config.mjs";
 import { registerAuthGuard } from "./plugins/auth-guard.mjs";
 import { ensureSeedAdmin } from "./db/users-store.mjs";
 import { startSeguimientoIncidencias } from "./services/incidencias-agent.mjs";
@@ -57,6 +58,7 @@ await app.register(incidenciasRoutes, { prefix: "/api/incidencias" });
 await app.register(mediaRoutes, { prefix: "/api/media" });
 await app.register(monitorRoutes, { prefix: "/api/monitor" });
 await app.register(vincularRoutes, { prefix: "/api/vincular" });
+await app.register(configRoutes, { prefix: "/api/config" });
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const host = process.env.HOST || "0.0.0.0";
