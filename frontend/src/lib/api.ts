@@ -876,3 +876,61 @@ export function avisarEtaIncidencia(incidenciaId: string, body?: { etaTexto?: st
     { method: "POST", body: JSON.stringify(body || {}) },
   );
 }
+
+export type PodEstado = "pendiente" | "ok" | "rechazado";
+
+export interface PodCaso {
+  id: string;
+  codigo: string;
+  estado: PodEstado | string;
+  estadoLabel: string;
+  chofer: string;
+  telefono: string;
+  receptor: string;
+  imagenUrl: string | null;
+  viaje: string;
+  destino: string;
+  destinoId?: string | null;
+  notaChofer?: string | null;
+  notaBackoffice?: string | null;
+  aprobadoPor?: string | null;
+  historial?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ResumenPods {
+  total: number;
+  pendientes: number;
+  ok: number;
+  rechazados: number;
+  en_dialogo: number;
+}
+
+export function listPods(params?: { limit?: number; estado?: string; telefono?: string }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.telefono) q.set("telefono", params.telefono);
+  const qs = q.toString();
+  return api<PodCaso[]>(`/api/pod${qs ? `?${qs}` : ""}`);
+}
+
+export function resumenPods() {
+  return api<ResumenPods>("/api/pod/resumen");
+}
+
+export function decidirPod(
+  id: string,
+  body: {
+    estado: "ok" | "rechazado";
+    nota?: string;
+    aprobado_por?: string;
+    notificar?: boolean;
+  },
+) {
+  return api<PodCaso>(`/api/pod/${id}/decidir`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

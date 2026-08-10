@@ -40,6 +40,12 @@ import {
   telefonoEsChoferIncidencia,
   resolverChoferIncidencia,
 } from "../services/incidencias-agent.mjs";
+import {
+  procesarPodWhatsApp,
+  mensajePodSoloChoferes,
+  parecePod,
+} from "../services/pod-agent.mjs";
+import * as podStore from "../db/pod-store.mjs";
 import { clasificarIntencionWhatsApp, pareceQuiereRemito } from "../../../lib/wa-intent-router.mjs";
 import { esContactoOculto } from "../../../lib/contactos-ocultos.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
@@ -445,6 +451,32 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   }
 }
 
+async function tryProcesarPod(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
+  if (!ev.from) return null;
+  const t = String(texto ?? "").trim();
+  if (!forzar && !imageBuffer && !parecePod(t)) return null;
+
+  try {
+    const out = await procesarPodWhatsApp({
+      telefono: ev.from,
+      texto: t,
+      nombre: ev.nombre,
+      imageBuffer,
+      mime,
+      imagenUrl: null,
+      log,
+      forzar: Boolean(forzar || imageBuffer),
+    });
+    if (!out) return null;
+    return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "pod webhook error");
+    const msg = `Recibí tu POD pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "pod_error", error: err.message, message: msg };
+  }
+}
+
 async function tryProcesarReclamo(
   ev,
   { texto, log, forzar = false, imageBuffer = null, mime = null } = {},
@@ -592,6 +624,21 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
       `Queda sujeto a *aprobación humana*.`;
     await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     return { flow: "rendicion_fallback", message: msg };
+  }
+
+  if (intent.intent === "pod") {
+    if (!esChoferOperativo) {
+      const msg = mensajePodSoloChoferes();
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      return { flow: "pod_solo_choferes", message: msg };
+    }
+    const out = await tryProcesarPod(ev, { texto, log, forzar: true });
+    if (out) return out;
+    const msg =
+      `Perfecto, vamos con la *constancia de entrega (POD)*.\n\n` +
+      `Decime *a quién* le entregaste y después mandame la *foto* de la prueba.`;
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "pod_fallback", message: msg };
   }
 
   if (intent.intent === "remito") {
@@ -843,6 +890,36 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
+      // POD pendiente (receptor / foto) — ANTES de destinos/rendición
+      const pendingPodEarly = ev.from
+        ? await podStore.getPodPendientePorTelefono(ev.from)
+        : null;
+      if (pendingPodEarly && (texto || esFoto)) {
+        let imageBuffer = null;
+        let mime = null;
+        if (esFoto) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            if (!/audio/i.test(dl.mime || "")) {
+              imageBuffer = dl.buffer;
+              mime = dl.mime;
+            }
+          } catch (err) {
+            request.log.warn({ err: err.message }, "POD: no pude bajar foto");
+          }
+        }
+        const podPend = await tryProcesarPod(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+          imageBuffer,
+          mime,
+        });
+        if (podPend) {
+          return respuestaWebhook({ ...podPend, received: true });
+        }
+      }
+
       // Chofer reporta incidencia (pinchazo, etc.) ANTES de ETA/destinos
       // Flota Viajes (principal) o Remitos
       const esChoferIncidencia = ev.from
@@ -866,6 +943,40 @@ export default async function webhooksRoutes(fastify) {
         });
         if (incOut) {
           return respuestaWebhook({ ...incOut, received: true });
+        }
+      }
+
+      // POD explícito ANTES de Destinos/ETA (texto o foto con caption)
+      if (
+        ev.from &&
+        esChoferDb &&
+        !pendingPodEarly &&
+        texto &&
+        parecePod(texto) &&
+        !pareceQuiereRemito(texto)
+      ) {
+        let imageBuffer = null;
+        let mime = null;
+        if (esFoto) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            if (!/audio/i.test(dl.mime || "")) {
+              imageBuffer = dl.buffer;
+              mime = dl.mime;
+            }
+          } catch (err) {
+            request.log.warn({ err: err.message }, "POD: no pude bajar foto");
+          }
+        }
+        const podOut = await tryProcesarPod(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+          imageBuffer,
+          mime,
+        });
+        if (podOut) {
+          return respuestaWebhook({ ...podOut, received: true });
         }
       }
 
@@ -1088,12 +1199,26 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        // Foto — rendición de gastos (caption) SOLO choferes registrados
+        // Foto — POD o rendición (caption) SOLO choferes registrados
         const caption = texto || ev.message?.trim() || "";
+        const esChoferMedia = await telefonoEsChoferRegistrado(ev.from);
         if (
-          pareceRendicionGasto(caption) &&
-          (await telefonoEsChoferRegistrado(ev.from))
+          esChoferMedia &&
+          parecePod(caption) &&
+          !pareceQuiereRemito(caption)
         ) {
+          const podOut = await tryProcesarPod(ev, {
+            texto: caption,
+            log: request.log,
+            imageBuffer: buffer,
+            mime,
+            forzar: true,
+          });
+          if (podOut) {
+            return respuestaWebhook({ ...podOut, received: true });
+          }
+        }
+        if (pareceRendicionGasto(caption) && esChoferMedia) {
           const gastoOut = await tryProcesarRendicion(ev, {
             texto: caption,
             log: request.log,

@@ -5,6 +5,7 @@ import {
   TriangleAlert,
   ReceiptText,
   Clock,
+  ClipboardCheck,
   MessageSquareWarning,
   ChartColumnBig,
   type LucideProps,
@@ -17,6 +18,7 @@ const MAP = {
   TriangleAlert,
   ReceiptText,
   Clock,
+  ClipboardCheck,
   MessageSquareWarning,
   ChartColumnBig,
 } as const;

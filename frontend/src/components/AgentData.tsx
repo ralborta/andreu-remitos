@@ -4,6 +4,7 @@ import { RendicionPanel } from "./RendicionPanel";
 import { ReclamosPanel } from "./ReclamosPanel";
 import { IncidenciasPanel } from "./IncidenciasPanel";
 import { EtaPanel } from "./EtaPanel";
+import { PodPanel } from "./PodPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
@@ -75,6 +76,10 @@ export function AgentData({ slug }: { slug: string }) {
 
   if (slug === "eta") {
     return <EtaPanel />;
+  }
+
+  if (slug === "pod") {
+    return <PodPanel />;
   }
 
   if (slug === "reclamos") {
