@@ -6,7 +6,6 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
-  Database,
   X,
   FileText,
   Upload,
@@ -16,6 +15,7 @@ import {
   FileSpreadsheet,
   Users,
   Activity,
+  ChartColumn,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -123,7 +123,7 @@ export function Sidebar({
             )}
           >
             <MessageCircle size={18} />
-            <span className="flex-1">Contactos WhatsApp</span>
+            <span className="flex-1">WhatsApp</span>
             <span className="rounded-full bg-[#25d366]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#25d366]">
               Nuevo
             </span>
@@ -140,8 +140,8 @@ export function Sidebar({
                   : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
               )}
             >
-              <Database size={18} />
-              Backoffice y métricas
+              <ChartColumn size={18} />
+              Métricas
             </Link>
           )}
 
