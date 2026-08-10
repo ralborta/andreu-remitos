@@ -12,6 +12,9 @@ COPY . .
 # Demo TransitOne — override con build arg si cambia el dominio
 ARG NEXT_PUBLIC_API_URL=https://transitone-transitone-remitos.wd75db.easypanel.host
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Maps JavaScript (Torre de Control). Separada de Geocoding del backend.
+ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyCo-aVtxOjow0alGxWvjJmBaT4lJDjfcVs
+ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 RUN npm run build
 
 FROM base AS runner
