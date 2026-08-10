@@ -146,7 +146,7 @@ export function Sidebar({
           )}
 
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
-            Agentes (demo)
+            Agentes
           </p>
 
           {agents.map((a) => {
