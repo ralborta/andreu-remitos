@@ -6,11 +6,13 @@ import {
   useMemo,
   useRef,
   useState,
+  Fragment,
   type CSSProperties,
 } from "react";
 import clsx from "clsx";
 import {
   Check,
+  ChevronDown,
   ExternalLink,
   Loader2,
   MapPin,
@@ -94,6 +96,7 @@ export function IncidenciasPanel() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [foto, setFoto] = useState<{ src: string; title: string } | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [consultaTel, setConsultaTel] = useState("");
   const [consultaTipo, setConsultaTipo] = useState("parada_no_prevista");
   const [consultando, setConsultando] = useState(false);
@@ -484,7 +487,7 @@ export function IncidenciasPanel() {
           <div>
             <h3 className="font-semibold text-white">Incidencias en ruta</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Principal: agente pregunta al chofer · también puede reportar solo · demoras de Destinos
+              Clic en un caso para ver el resumen · agente pregunta al chofer · demoras de Destinos
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -551,93 +554,199 @@ export function IncidenciasPanel() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((g) => (
-                  <tr
-                    key={g.id}
-                    className="border-b border-[var(--border)]/60 hover:bg-white/[0.03]"
-                  >
-                    <td className="py-3 pr-3 font-medium text-white">
-                      <div>{codigo(g)}</div>
-                      {g.viaje !== "—" && (
-                        <div className="text-[10px] font-normal text-[var(--text-faint)]">
-                          {g.viaje}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 pr-3 text-[var(--text-dim)]">
-                      <div>{g.chofer}</div>
-                      <div className="text-xs text-[var(--text-faint)]">{g.telefono || ""}</div>
-                    </td>
-                    <td className="py-3 pr-3 text-[var(--text-dim)]">{g.tipoLabel}</td>
-                    <td className="max-w-[220px] py-3 pr-3 text-[var(--text-dim)]">
-                      <div className="truncate">{g.causa || g.resumen || "—"}</div>
-                      {g.imagenUrl && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const src = browsableMediaUrl(g.imagenUrl);
-                            if (src) setFoto({ src, title: codigo(g) });
-                          }}
-                          className="mt-1 text-xs text-[var(--violet-2)] hover:underline"
-                        >
-                          Ver foto
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-3 pr-3">
-                      <Pill color="#a78bfa">{origenLabel(g.origen)}</Pill>
-                    </td>
-                    <td className="py-3 pr-3">
-                      {g.criticidadLabel !== "—" ? (
-                        <CritBadge level={g.criticidadLabel as "Alta" | "Media" | "Baja"} />
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="py-3 pr-3">
-                      <Pill color={estadoColor(g.estado)}>{g.estadoLabel}</Pill>
-                    </td>
-                    <td
-                      className={clsx(
-                        "py-3 pr-3 text-xs",
-                        g.sla === "Por vencer" ? "text-[var(--amber)]" : "text-[var(--text-dim)]",
-                      )}
-                    >
-                      {g.sla}
-                    </td>
-                    <td className="py-3">
-                      {g.estado === "resuelta" || g.estado === "esperando_causa" ? (
-                        <span className="text-xs text-[var(--text-faint)]">
-                          {g.estado === "esperando_causa" ? "Esperando WA…" : "—"}
-                        </span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {g.estado === "nueva" && (
+                {rows.map((g) => {
+                  const open = expandedId === g.id;
+                  const causaTxt = g.causa || g.resumen || "—";
+                  const lastHist = (g.historial || []).slice(-3);
+                  return (
+                    <Fragment key={g.id}>
+                      <tr
+                        onClick={() =>
+                          setExpandedId((id) => (id === g.id ? null : g.id))
+                        }
+                        className={clsx(
+                          "cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.03]",
+                          open && "bg-white/[0.04]",
+                        )}
+                      >
+                        <td className="py-3 pr-3 font-medium text-white">
+                          <div className="flex items-center gap-1.5">
+                            <ChevronDown
+                              size={14}
+                              className={clsx(
+                                "shrink-0 text-[var(--text-faint)] transition-transform",
+                                open ? "rotate-180" : "",
+                              )}
+                            />
+                            <div>
+                              <div>{codigo(g)}</div>
+                              {g.viaje !== "—" && (
+                                <div className="text-[10px] font-normal text-[var(--text-faint)]">
+                                  {g.viaje}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 pr-3 text-[var(--text-dim)]">
+                          <div>{g.chofer}</div>
+                          <div className="text-xs text-[var(--text-faint)]">
+                            {g.telefono || ""}
+                          </div>
+                        </td>
+                        <td className="py-3 pr-3 text-[var(--text-dim)]">
+                          {g.tipoLabel}
+                        </td>
+                        <td className="max-w-[220px] py-3 pr-3 text-[var(--text-dim)]">
+                          <div className="truncate">{causaTxt}</div>
+                          {g.imagenUrl && (
                             <button
                               type="button"
-                              disabled={busyId === g.id}
-                              onClick={() => void decidir(g, "en_gestion")}
-                              className={btnClass}
-                              style={BTN_TOMAR}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const src = browsableMediaUrl(g.imagenUrl);
+                                if (src) setFoto({ src, title: codigo(g) });
+                              }}
+                              className="mt-1 text-xs text-[var(--violet-2)] hover:underline"
                             >
-                              Tomar
+                              Ver foto
                             </button>
                           )}
-                          <button
-                            type="button"
-                            disabled={busyId === g.id}
-                            onClick={() => void decidir(g, "resuelta")}
-                            className={btnClass}
-                            style={BTN_OK}
-                          >
-                            <Check size={14} />
-                            OK
-                          </button>
-                        </div>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <Pill color="#a78bfa">{origenLabel(g.origen)}</Pill>
+                        </td>
+                        <td className="py-3 pr-3">
+                          {g.criticidadLabel !== "—" ? (
+                            <CritBadge
+                              level={g.criticidadLabel as "Alta" | "Media" | "Baja"}
+                            />
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="py-3 pr-3">
+                          <Pill color={estadoColor(g.estado)}>{g.estadoLabel}</Pill>
+                        </td>
+                        <td
+                          className={clsx(
+                            "py-3 pr-3 text-xs",
+                            g.sla === "Por vencer"
+                              ? "text-[var(--amber)]"
+                              : "text-[var(--text-dim)]",
+                          )}
+                        >
+                          {g.sla}
+                        </td>
+                        <td
+                          className="py-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {g.estado === "resuelta" ||
+                          g.estado === "esperando_causa" ? (
+                            <span className="text-xs text-[var(--text-faint)]">
+                              {g.estado === "esperando_causa"
+                                ? "Esperando WA…"
+                                : "—"}
+                            </span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {g.estado === "nueva" && (
+                                <button
+                                  type="button"
+                                  disabled={busyId === g.id}
+                                  onClick={() => void decidir(g, "en_gestion")}
+                                  className={btnClass}
+                                  style={BTN_TOMAR}
+                                >
+                                  Tomar
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                disabled={busyId === g.id}
+                                onClick={() => void decidir(g, "resuelta")}
+                                className={btnClass}
+                                style={BTN_OK}
+                              >
+                                <Check size={14} />
+                                OK
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                      {open && (
+                        <tr className="border-b border-[var(--border)]/60 bg-[var(--bg-2)]/80">
+                          <td colSpan={9} className="px-4 py-3">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Resumen
+                                </p>
+                                <p className="mt-0.5 text-sm text-white">
+                                  {g.resumen || causaTxt}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Causa
+                                </p>
+                                <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                                  {g.causa || "Sin causa aún"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Ubicación
+                                </p>
+                                {g.lat != null && g.lng != null ? (
+                                  <a
+                                    href={mapsOpenUrl(g.lat, g.lng)}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-0.5 inline-flex items-center gap-1 text-sm text-[var(--violet-2)] hover:underline"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <MapPin size={12} />
+                                    {g.lat.toFixed(4)}, {g.lng.toFixed(4)}
+                                  </a>
+                                ) : (
+                                  <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                                    Sin coords
+                                  </p>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Últimos eventos
+                                </p>
+                                {lastHist.length > 0 ? (
+                                  <ul className="mt-0.5 space-y-0.5 text-xs text-[var(--text-dim)]">
+                                    {lastHist.map((h, i) => (
+                                      <li key={`${g.id}-h-${i}`} className="truncate">
+                                        · {h}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                                    —
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {g.notaInterna && (
+                              <p className="mt-2 text-xs text-[var(--text-faint)]">
+                                Nota: {g.notaInterna}
+                              </p>
+                            )}
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                  </tr>
-                ))}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
