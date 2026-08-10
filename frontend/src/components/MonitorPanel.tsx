@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { fetchMonitorStatus, fetchMonitorWhatsappQr } from "@/lib/api";
+import { BRAND } from "@/lib/brand";
 import { useConfirm } from "@/lib/confirm-context";
 import type { MonitorStatus, MonitorWhatsappQr } from "@/lib/monitor-types";
 import { Card, PageHeader, Pill } from "./ui";
@@ -39,13 +40,13 @@ function fmtTime(iso: string) {
 function serviceLabel(id: string) {
   switch (id) {
     case "api":
-      return "API Andreu";
+      return `API ${BRAND.name}`;
     case "bot":
       return "Bot Baileys (HTTP)";
     case "whatsapp":
       return "WhatsApp";
     case "webhook":
-      return "Webhook remitos";
+      return "Webhook WhatsApp";
     default:
       return id;
   }
@@ -111,10 +112,10 @@ export function MonitorPanel() {
       if (prevOk.current !== null && prevOk.current !== status.ok) {
         if (!status.ok) {
           pushLog(false, "Sistema degradado o caído");
-          notify("⚠️ Andreu — alerta", "Uno o más servicios dejaron de responder.");
+          notify(`⚠️ ${BRAND.name} — alerta`, "Uno o más servicios dejaron de responder.");
         } else {
           pushLog(true, "Todos los servicios OK");
-          notify("✅ Andreu — recuperado", "Los servicios volvieron a la normalidad.");
+          notify(`✅ ${BRAND.name} — recuperado`, "Los servicios volvieron a la normalidad.");
         }
       }
 
@@ -130,16 +131,18 @@ export function MonitorPanel() {
 
       prevOk.current = status.ok;
       prevWa.current = waOk;
-      document.title = status.ok ? "Monitor · Andreu" : "⚠ Monitor · Andreu";
+      document.title = status.ok
+        ? `Monitor · ${BRAND.name}`
+        : `⚠ Monitor · ${BRAND.name}`;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error de monitoreo";
       setError(msg);
       if (prevOk.current !== false) {
         pushLog(false, msg);
-        notify("⚠️ Andreu — API inaccesible", msg);
+        notify(`⚠️ ${BRAND.name} — API inaccesible`, msg);
       }
       prevOk.current = false;
-      document.title = "⚠ Monitor · Andreu";
+      document.title = `⚠ Monitor · ${BRAND.name}`;
     } finally {
       setLoading(false);
     }
