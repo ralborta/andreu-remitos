@@ -3,16 +3,15 @@ import { ViajesGestionPanel } from "./ViajesGestionPanel";
 import { RendicionPanel } from "./RendicionPanel";
 import { ReclamosPanel } from "./ReclamosPanel";
 import { IncidenciasPanel } from "./IncidenciasPanel";
+import { EtaPanel } from "./EtaPanel";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
-import { EtaLine, ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
+import { ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
 import {
-  etas,
   viajesPorDia,
   slaPorZona,
   incidenciasPorTipo,
-  type EtaItem,
 } from "@/lib/data";
 
 function estadoPill(estado: string) {
@@ -75,44 +74,7 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "eta") {
-    const cols: Column<EtaItem>[] = [
-      { key: "viaje", header: "Viaje", render: (r) => <span className="font-medium text-white">{r.viaje}</span> },
-      { key: "cliente", header: "Cliente", className: "text-[var(--text-dim)]" },
-      { key: "destino", header: "Destino", className: "text-[var(--text-dim)]" },
-      { key: "eta", header: "ETA", className: "tabular text-white" },
-      { key: "ventana", header: "Ventana", className: "tabular text-[var(--text-dim)]" },
-      { key: "estado", header: "Estado", render: (r) => estadoPill(r.estado) },
-      {
-        key: "notificado",
-        header: "Notificado",
-        render: (r) =>
-          r.notificado ? (
-            <Pill color="#22c55e">Sí</Pill>
-          ) : (
-            <Pill color="#a79fc9">Pendiente</Pill>
-          ),
-      },
-    ];
-    return (
-      <div className="space-y-6">
-        <Card>
-          <SectionTitle>Precisión de ETA (hoy)</SectionTitle>
-          <EtaLine data={[
-            { h: "06h", precision: 88 },
-            { h: "08h", precision: 90 },
-            { h: "10h", precision: 92 },
-            { h: "12h", precision: 91 },
-            { h: "14h", precision: 93 },
-            { h: "16h", precision: 90 },
-            { h: "18h", precision: 92 },
-          ]} />
-        </Card>
-        <Card>
-          <SectionTitle>Próximas llegadas</SectionTitle>
-          <DataTable columns={cols} rows={etas} minWidth={840} />
-        </Card>
-      </div>
-    );
+    return <EtaPanel />;
   }
 
   if (slug === "reclamos") {

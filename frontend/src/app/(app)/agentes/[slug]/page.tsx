@@ -127,7 +127,8 @@ export default async function AgentPage({
       slug === "viajes" ||
       slug === "rendicion" ||
       slug === "reclamos" ||
-      slug === "incidencias" ? (
+      slug === "incidencias" ||
+      slug === "eta" ? (
         <div className="min-w-0">
           <AgentData slug={slug} />
         </div>

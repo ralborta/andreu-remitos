@@ -797,3 +797,82 @@ export function consultarChoferIncidencia(body: {
     { method: "POST", body: JSON.stringify(body) },
   );
 }
+
+export interface EtaColaItem {
+  id: string;
+  fuente: "destino" | "incidencia" | "viaje";
+  refId: string;
+  cliente: string;
+  telefonoCliente: string | null;
+  destino: string;
+  chofer: string;
+  telefonoChofer: string | null;
+  viaje: string;
+  etaTexto: string | null;
+  etaMinutos: number | null;
+  etaAt: string | null;
+  estado: string;
+  estadoLabel: string;
+  causa?: string | null;
+  codigoIncidencia?: string;
+  notificado: boolean;
+  puedeNotificar: boolean;
+  updatedAt?: string;
+}
+
+export interface ResumenEta {
+  enCola: number;
+  conEta: number;
+  esperandoChofer: number;
+  demorasAbiertas: number;
+  notificacionesHoy: number;
+  demorasNotificadasHoy: number;
+}
+
+export interface EtaNotificacion {
+  id: string;
+  fuente: string;
+  ref_id: string;
+  telefono_cliente: string;
+  cliente: string | null;
+  eta_texto: string | null;
+  tipo: string;
+  mensaje: string;
+  viaje_ref: string | null;
+  created_at: string;
+}
+
+export function listEtaCola(params?: { limit?: number }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<EtaColaItem[]>(`/api/eta${qs ? `?${qs}` : ""}`);
+}
+
+export function resumenEta() {
+  return api<ResumenEta>("/api/eta/resumen");
+}
+
+export function listEtaNotificaciones(params?: { limit?: number }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<EtaNotificacion[]>(`/api/eta/notificaciones${qs ? `?${qs}` : ""}`);
+}
+
+export function notificarEtaDestino(
+  destinoId: string,
+  body?: { demora?: boolean; etaTexto?: string },
+) {
+  return api<{ ok: boolean; mensaje: string; telefono: string }>(
+    `/api/eta/destino/${destinoId}/notificar`,
+    { method: "POST", body: JSON.stringify(body || {}) },
+  );
+}
+
+export function avisarEtaIncidencia(incidenciaId: string, body?: { etaTexto?: string }) {
+  return api<{ ok: boolean; mensaje: string; telefono: string }>(
+    `/api/eta/incidencia/${incidenciaId}/avisar`,
+    { method: "POST", body: JSON.stringify(body || {}) },
+  );
+}

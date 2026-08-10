@@ -187,7 +187,7 @@ export const agents: Agent[] = [
     name: "ETA y Notificación Proactiva",
     short: "ETA",
     subtitle: "Avisos automáticos de llegada, demoras y cambios de estado",
-    status: "beta",
+    status: "pruebas",
     icon: "Clock",
     what: "Agente independiente que estima horarios de llegada y avisa de forma proactiva. Se comunica con Gestión de Viajes (toma el viaje y el compromiso) y con Incidencias (si hay demora, recalcula y notifica). No reemplaza a esos agentes: depende de ellos y les responde con el ETA actualizado.",
     flow: [
