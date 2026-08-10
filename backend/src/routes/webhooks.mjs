@@ -27,6 +27,7 @@ import { ingestarRemito, obtenerRemito, actualizarCampos } from "../services/rem
 import { procesarRespuestaDestinoCliente } from "../services/destinos.mjs";
 import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
 import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
+import { esContactoOculto } from "../../../lib/contactos-ocultos.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 
@@ -377,6 +378,12 @@ export default async function webhooksRoutes(fastify) {
   fastify.post("/builderbot", async (request, reply) => {
     const ev = normalizeBuilderBotPayload(request.body);
     request.log.info({ event: ev.event, eventName: ev.eventName, from: ev.from, hasMedia: !!ev.media?.url }, "webhook BB");
+
+    // Contactos ocultos (ej. Turko): no persistir ni mostrar en UI
+    if (ev.from && esContactoOculto(ev.from, ev.nombre)) {
+      request.log.info({ from: ev.from, nombre: ev.nombre }, "Contacto oculto — ignorado");
+      return respuestaWebhook({ ok: true, flow: "contacto_oculto", ignored: true });
+    }
 
     const tenantCfg = resolveTenant(ev.from, ev.tenant);
 
