@@ -40,10 +40,8 @@ import {
   telefonoEsChoferIncidencia,
   resolverChoferIncidencia,
 } from "../services/incidencias-agent.mjs";
-import {
-  clasificarIntencionWhatsApp,
-  pareceQuiereRemito,
-} from "../../../lib/wa-intent-router.mjs";
+import { clasificarIntencionWhatsApp, pareceQuiereRemito } from "../../../lib/wa-intent-router.mjs";
+import { esContactoOculto } from "../../../lib/contactos-ocultos.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
 import {
   extractCodigoReclamo,
@@ -729,6 +727,12 @@ export default async function webhooksRoutes(fastify) {
   fastify.post("/builderbot", async (request, reply) => {
     const ev = normalizeBuilderBotPayload(request.body);
     request.log.info({ event: ev.event, eventName: ev.eventName, from: ev.from, hasMedia: !!ev.media?.url }, "webhook BB");
+
+    // Contactos ocultos (ej. Turko): no persistir ni mostrar en UI
+    if (ev.from && esContactoOculto(ev.from, ev.nombre)) {
+      request.log.info({ from: ev.from, nombre: ev.nombre }, "Contacto oculto — ignorado");
+      return respuestaWebhook({ ok: true, flow: "contacto_oculto", ignored: true });
+    }
 
     const tenantCfg = resolveTenant(ev.from, ev.tenant);
 

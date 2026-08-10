@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
+import { esContactoOculto } from "../../../lib/contactos-ocultos.mjs";
 import * as remitoStore from "./file-store.mjs";
 
 const DATA_DIR = process.env.DATA_DIR || "./data";
@@ -71,6 +72,7 @@ function actorFromOpts(opts) {
 
 export async function appendMensaje(telefono, msg, opts = {}) {
   if (!telefono) return null;
+  if (esContactoOculto(telefono, opts.nombre)) return null;
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, opts.tenant);
   const actor = actorFromOpts(opts);
@@ -116,12 +118,34 @@ export async function syncTenantDesdeRemito(conv) {
   return updateTenantConversacion(conv.telefono, rem.tenant);
 }
 
+/** Elimina conversación (p.ej. contactos ocultos). */
+export async function deleteConversacion(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return false;
+  const rows = readAll();
+  const next = rows.filter((c) => c.telefono !== phone);
+  if (next.length === rows.length) return false;
+  writeAll(next);
+  return true;
+}
+
+/** Limpia del store cualquier contacto marcado como oculto. */
+export async function purgeContactosOcultos() {
+  const rows = readAll();
+  const next = rows.filter((c) => !esContactoOculto(c.telefono, c.nombre));
+  const removed = rows.length - next.length;
+  if (removed > 0) writeAll(next);
+  return removed;
+}
+
 export async function listConversaciones({ tenant, limit = 80 } = {}) {
+  await purgeContactosOcultos();
   let rows = readAll();
   rows.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
   const enriched = [];
   for (const row of rows) {
+    if (esContactoOculto(row.telefono, row.nombre)) continue;
     const synced = (await syncTenantDesdeRemito(row)) ?? row;
     const tenantEfectivo = synced.tenant ?? row.tenant;
     if (tenant && tenantEfectivo !== tenant) continue;
@@ -139,8 +163,10 @@ export async function listConversaciones({ tenant, limit = 80 } = {}) {
 
 export async function getConversacion(telefono) {
   const phone = sanitizePhone(telefono);
+  if (esContactoOculto(phone)) return null;
   const conv = readAll().find((c) => c.telefono === phone) ?? null;
   if (!conv) return null;
+  if (esContactoOculto(conv.telefono, conv.nombre)) return null;
   return syncTenantDesdeRemito(conv);
 }
 
