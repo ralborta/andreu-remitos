@@ -146,40 +146,6 @@ export function Sidebar({
           )}
 
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
-            Operación
-          </p>
-          {admin && (
-            <Link
-              href="/usuarios"
-              onClick={onClose}
-              className={clsx(
-                "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive("/usuarios")
-                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <Users size={18} />
-              Usuarios
-            </Link>
-          )}
-          {parametros && (
-            <Link
-              href="/parametros"
-              onClick={onClose}
-              className={clsx(
-                "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive("/parametros")
-                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <Settings2 size={18} />
-              Parámetros maestros
-            </Link>
-          )}
-
-          <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Agentes (demo)
           </p>
 
@@ -328,6 +294,40 @@ export function Sidebar({
               </Link>
             );
           })}
+
+          <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+            Operación
+          </p>
+          {admin && (
+            <Link
+              href="/usuarios"
+              onClick={onClose}
+              className={clsx(
+                "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive("/usuarios")
+                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Users size={18} />
+              Usuarios
+            </Link>
+          )}
+          {parametros && (
+            <Link
+              href="/parametros"
+              onClick={onClose}
+              className={clsx(
+                "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive("/parametros")
+                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Settings2 size={18} />
+              Parámetros maestros
+            </Link>
+          )}
         </nav>
 
         <div className="border-t border-[var(--border)] p-4">
