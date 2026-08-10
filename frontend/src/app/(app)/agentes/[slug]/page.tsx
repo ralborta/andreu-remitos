@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { Check, Radio } from "lucide-react";
+import Link from "next/link";
+import { Check, Radio, ArrowLeftRight } from "lucide-react";
 import { agents, getAgent } from "@/lib/agents";
 import { conversationsFor } from "@/lib/data";
 import { AgentIcon } from "@/components/Icon";
@@ -22,6 +23,9 @@ export default async function AgentPage({
   if (!agent) notFound();
 
   const convos = conversationsFor(slug);
+  const peers = (agent.collaboratesWith || [])
+    .map((s) => getAgent(s))
+    .filter((a): a is NonNullable<typeof a> => !!a);
 
   return (
     <div className="space-y-6">
@@ -47,6 +51,38 @@ export default async function AgentPage({
           <KpiCard key={k.label} label={k.label} value={k.value} trend={k.trend} />
         ))}
       </div>
+
+      {peers.length > 0 && (
+        <Card>
+          <SectionTitle
+            right={
+              <span className="flex items-center gap-1.5 text-xs text-[var(--violet-2)]">
+                <ArrowLeftRight size={13} /> Dependencia entre agentes
+              </span>
+            }
+          >
+            Se comunica con
+          </SectionTitle>
+          <p className="mb-3 text-sm text-[var(--text-dim)]">
+            Sigue siendo un agente aparte en el menú; intercambia estado y eventos con estos
+            agentes.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {peers.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/agentes/${p.slug}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white transition-colors hover:border-[var(--violet)]/50 hover:bg-[var(--violet)]/10"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--violet)]/20 text-[var(--violet-2)]">
+                  <AgentIcon name={p.icon} size={14} />
+                </span>
+                {p.short}
+              </Link>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Qué hace + Beneficios */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
