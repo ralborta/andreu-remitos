@@ -52,7 +52,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         <TopbarSearch />
       </Suspense>
 
-      <div className="flex flex-1 items-center justify-end gap-3 sm:flex-none">
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-3">
         <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">
           <span className="relative flex h-2 w-2">
             <span className="dot-pulse absolute inline-flex h-2 w-2 rounded-full bg-[var(--green)]" />
