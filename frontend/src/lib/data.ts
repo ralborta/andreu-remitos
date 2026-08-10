@@ -82,36 +82,48 @@ export const CHOFERES = [
   { nombre: "Ezequiel Farias", patente: "AE 921 BT", tel: "+54 9 236 462-3199" },
 ];
 
-// Posiciones aproximadas (x,y en %) de ciudades sobre el mapa estilizado de Argentina
-export const CIUDADES: Record<string, { x: number; y: number }> = {
-  "CABA": { x: 62, y: 55 },
-  "La Plata": { x: 64, y: 58 },
-  "Rosario": { x: 58, y: 49 },
-  "Córdoba": { x: 48, y: 44 },
-  "Mendoza": { x: 30, y: 50 },
-  "Mar del Plata": { x: 68, y: 64 },
-  "Bahía Blanca": { x: 54, y: 68 },
-  "Tucumán": { x: 45, y: 26 },
-  "Salta": { x: 44, y: 16 },
-  "San Nicolás": { x: 59, y: 51 },
-  "Zárate": { x: 61, y: 53 },
-  "Santa Fe": { x: 56, y: 44 },
-  "Neuquén": { x: 35, y: 70 },
-  "Posadas": { x: 72, y: 30 },
-  "Paraná": { x: 57, y: 45 },
-  "Corrientes": { x: 66, y: 35 },
-  "Resistencia": { x: 64, y: 34 },
-  "Río Cuarto": { x: 45, y: 50 },
-  "Villa María": { x: 50, y: 47 },
-  "Rafaela": { x: 55, y: 43 },
-  "Campana": { x: 61, y: 52 },
-  "Pilar": { x: 61, y: 54 },
-  "Ezeiza": { x: 62, y: 56 },
-  "Olavarría": { x: 59, y: 63 },
-  "Tres Arroyos": { x: 59, y: 68 },
-  "San Luis": { x: 38, y: 50 },
-  "Comodoro Rivadavia": { x: 38, y: 88 },
+// Posiciones reales (lat/lng) + legacy (x,y %) para el mapa de flota
+export const CIUDADES: Record<string, { lat: number; lng: number; x: number; y: number }> = {
+  CABA: { lat: -34.6037, lng: -58.3816, x: 62, y: 55 },
+  "La Plata": { lat: -34.9214, lng: -57.9544, x: 64, y: 58 },
+  Rosario: { lat: -32.9442, lng: -60.6505, x: 58, y: 49 },
+  Córdoba: { lat: -31.4201, lng: -64.1888, x: 48, y: 44 },
+  Mendoza: { lat: -32.8895, lng: -68.8458, x: 30, y: 50 },
+  "Mar del Plata": { lat: -38.0055, lng: -57.5426, x: 68, y: 64 },
+  "Bahía Blanca": { lat: -38.7183, lng: -62.2663, x: 54, y: 68 },
+  Tucumán: { lat: -26.8083, lng: -65.2176, x: 45, y: 26 },
+  Salta: { lat: -24.7859, lng: -65.4117, x: 44, y: 16 },
+  "San Nicolás": { lat: -33.3335, lng: -60.2273, x: 59, y: 51 },
+  Zárate: { lat: -34.0981, lng: -59.0286, x: 61, y: 53 },
+  "Santa Fe": { lat: -31.6333, lng: -60.7, x: 56, y: 44 },
+  Neuquén: { lat: -38.9516, lng: -68.0591, x: 35, y: 70 },
+  Posadas: { lat: -27.3671, lng: -55.8961, x: 72, y: 30 },
+  Paraná: { lat: -31.7413, lng: -60.5115, x: 57, y: 45 },
+  Corrientes: { lat: -27.4692, lng: -58.8306, x: 66, y: 35 },
+  Resistencia: { lat: -27.4514, lng: -58.9867, x: 64, y: 34 },
+  "Río Cuarto": { lat: -33.1301, lng: -64.3499, x: 45, y: 50 },
+  "Villa María": { lat: -32.4075, lng: -63.2402, x: 50, y: 47 },
+  Rafaela: { lat: -31.2503, lng: -61.4917, x: 55, y: 43 },
+  Campana: { lat: -34.1635, lng: -58.9592, x: 61, y: 52 },
+  Pilar: { lat: -34.4587, lng: -58.9142, x: 61, y: 54 },
+  Ezeiza: { lat: -34.8531, lng: -58.5228, x: 62, y: 56 },
+  Olavarría: { lat: -36.8927, lng: -60.3225, x: 59, y: 63 },
+  "Tres Arroyos": { lat: -38.3779, lng: -60.2755, x: 59, y: 68 },
+  "San Luis": { lat: -33.3017, lng: -66.3378, x: 38, y: 50 },
+  "Comodoro Rivadavia": { lat: -45.8641, lng: -67.4966, x: 38, y: 88 },
 };
+
+/** Posición del camión entre origen y destino según progreso (0–100). */
+export function tripLatLng(t: Trip): { lat: number; lng: number } | null {
+  const o = CIUDADES[t.origen];
+  const d = CIUDADES[t.destino];
+  if (!o || !d) return null;
+  const p = Math.min(100, Math.max(0, Number(t.progreso) || 0)) / 100;
+  return {
+    lat: o.lat + (d.lat - o.lat) * p,
+    lng: o.lng + (d.lng - o.lng) * p,
+  };
+}
 
 export const trips: Trip[] = [
   {
