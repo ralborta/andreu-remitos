@@ -42,7 +42,9 @@ export function Sidebar({
     pathname === "/planillas" ||
     pathname.startsWith("/planillas/") ||
     pathname === "/subir" ||
-    pathname.startsWith("/subir/");
+    pathname.startsWith("/subir/") ||
+    pathname === "/agentes/remitos" ||
+    pathname.startsWith("/agentes/remitos/");
   const [remitosExpanded, setRemitosExpanded] = useState(remitosSectionOpen);
   const activeTenants = REMITO_TENANTS.filter((t) => t.active);
 
@@ -109,81 +111,6 @@ export function Sidebar({
             <Activity size={18} />
             Monitor
           </Link>
-
-          <div className="mb-1">
-            <button
-              type="button"
-              onClick={() => setRemitosExpanded((v) => !v)}
-              className={clsx(
-                "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                remitosSectionOpen
-                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <FileText size={18} />
-              <span className="flex-1 text-left">Remitos</span>
-              <ChevronDown
-                size={16}
-                className={clsx(
-                  "shrink-0 transition-transform",
-                  remitosExpanded ? "rotate-180" : "",
-                )}
-              />
-            </button>
-            {remitosExpanded && (
-              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border)] pl-2">
-                <Link
-                  href="/remitos"
-                  onClick={onClose}
-                  className={clsx(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                    pathname === "/remitos" || pathname.startsWith("/remitos/")
-                      ? "bg-white/10 font-medium text-white"
-                      : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-                  )}
-                >
-                  <FileText size={14} className="shrink-0 opacity-70" />
-                  Remitos
-                </Link>
-                {activeTenants.map((t) => {
-                  const href = `/planillas/${t.slug}`;
-                  const active = pathname.startsWith(href);
-                  const label =
-                    activeTenants.length === 1 ? "Planilla" : `Planilla ${t.short}`;
-                  return (
-                    <Link
-                      key={`planilla-${t.slug}`}
-                      href={href}
-                      onClick={onClose}
-                      className={clsx(
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                        active
-                          ? "bg-white/10 font-medium text-white"
-                          : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-                      )}
-                    >
-                      <FileSpreadsheet size={14} className="shrink-0 opacity-70" />
-                      {label}
-                    </Link>
-                  );
-                })}
-                <Link
-                  href="/subir"
-                  onClick={onClose}
-                  className={clsx(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/subir")
-                      ? "bg-white/10 font-medium text-white"
-                      : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-                  )}
-                >
-                  <Upload size={14} className="shrink-0 opacity-70" />
-                  Subir remito
-                </Link>
-              </div>
-            )}
-          </div>
 
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación
@@ -256,7 +183,118 @@ export function Sidebar({
 
           {agents.map((a) => {
             const href = `/agentes/${a.slug}`;
-            const active = isActive(href);
+            const isRemitosAgent = a.slug === "remitos";
+            const active = isRemitosAgent
+              ? remitosSectionOpen
+              : isActive(href);
+
+            if (isRemitosAgent) {
+              return (
+                <div key={a.slug} className="mb-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setRemitosExpanded((v) => !v)}
+                    className={clsx(
+                      "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                      active
+                        ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                        : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+                        active
+                          ? "bg-[var(--violet)]/25 text-[var(--violet-2)]"
+                          : "bg-white/5 text-[var(--text-dim)] group-hover:text-white",
+                      )}
+                    >
+                      <AgentIcon name={a.icon} size={15} />
+                    </span>
+                    <span className="flex-1 truncate text-left">{a.short}</span>
+                    <ChevronDown
+                      size={16}
+                      className={clsx(
+                        "shrink-0 transition-transform",
+                        remitosExpanded ? "rotate-180" : "",
+                      )}
+                    />
+                  </button>
+                  {remitosExpanded && (
+                    <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border)] pl-2">
+                      <Link
+                        href="/agentes/remitos"
+                        onClick={onClose}
+                        className={clsx(
+                          "block rounded-lg px-3 py-2 text-sm transition-colors",
+                          pathname === "/agentes/remitos" ||
+                            pathname.startsWith("/agentes/remitos/")
+                            ? "bg-white/10 font-medium text-white"
+                            : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                        )}
+                      >
+                        Resumen del agente
+                      </Link>
+                      <Link
+                        href="/remitos"
+                        onClick={onClose}
+                        className={clsx(
+                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          pathname === "/remitos" ||
+                            pathname.startsWith("/remitos/")
+                            ? "bg-white/10 font-medium text-white"
+                            : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                        )}
+                      >
+                        <FileText size={14} className="shrink-0 opacity-70" />
+                        Remitos
+                      </Link>
+                      {activeTenants.map((t) => {
+                        const planillaHref = `/planillas/${t.slug}`;
+                        const planillaActive = pathname.startsWith(planillaHref);
+                        const label =
+                          activeTenants.length === 1
+                            ? "Planilla"
+                            : `Planilla ${t.short}`;
+                        return (
+                          <Link
+                            key={`planilla-${t.slug}`}
+                            href={planillaHref}
+                            onClick={onClose}
+                            className={clsx(
+                              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                              planillaActive
+                                ? "bg-white/10 font-medium text-white"
+                                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                            )}
+                          >
+                            <FileSpreadsheet
+                              size={14}
+                              className="shrink-0 opacity-70"
+                            />
+                            {label}
+                          </Link>
+                        );
+                      })}
+                      <Link
+                        href="/subir"
+                        onClick={onClose}
+                        className={clsx(
+                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          isActive("/subir")
+                            ? "bg-white/10 font-medium text-white"
+                            : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                        )}
+                      >
+                        <Upload size={14} className="shrink-0 opacity-70" />
+                        Subir remito
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={a.slug}
@@ -288,7 +326,6 @@ export function Sidebar({
               </Link>
             );
           })}
-
         </nav>
 
         <div className="border-t border-[var(--border)] p-4">
