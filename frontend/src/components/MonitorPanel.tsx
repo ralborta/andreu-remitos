@@ -46,7 +46,7 @@ function serviceLabel(id: string) {
     case "whatsapp":
       return "WhatsApp";
     case "webhook":
-      return "Webhook WhatsApp";
+      return "Webhook agentes";
     default:
       return id;
   }
