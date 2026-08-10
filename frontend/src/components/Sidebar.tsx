@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Database,
@@ -36,12 +36,19 @@ export function Sidebar({
   const { user, logout } = useAuth();
   const admin = isAdmin(user);
   const parametros = canMutateParametros(user);
-  const remitosOpen =
-    pathname === "/remitos" || pathname.startsWith("/remitos/");
-  const planillasOpen =
-    pathname === "/planillas" || pathname.startsWith("/planillas/");
-  const [remitosExpanded, setRemitosExpanded] = useState(remitosOpen);
-  const [planillasExpanded, setPlanillasExpanded] = useState(planillasOpen);
+  const remitosSectionOpen =
+    pathname === "/remitos" ||
+    pathname.startsWith("/remitos/") ||
+    pathname === "/planillas" ||
+    pathname.startsWith("/planillas/") ||
+    pathname === "/subir" ||
+    pathname.startsWith("/subir/");
+  const [remitosExpanded, setRemitosExpanded] = useState(remitosSectionOpen);
+  const activeTenants = REMITO_TENANTS.filter((t) => t.active);
+
+  useEffect(() => {
+    if (remitosSectionOpen) setRemitosExpanded(true);
+  }, [remitosSectionOpen]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -109,7 +116,7 @@ export function Sidebar({
               onClick={() => setRemitosExpanded((v) => !v)}
               className={clsx(
                 "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                remitosOpen
+                remitosSectionOpen
                   ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
                   : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
               )}
@@ -130,70 +137,23 @@ export function Sidebar({
                   href="/remitos"
                   onClick={onClose}
                   className={clsx(
-                    "block rounded-lg px-3 py-2 text-sm transition-colors",
-                    pathname === "/remitos"
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                    pathname === "/remitos" || pathname.startsWith("/remitos/")
                       ? "bg-white/10 font-medium text-white"
                       : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
                   )}
                 >
-                  Todos
+                  <FileText size={14} className="shrink-0 opacity-70" />
+                  Remitos
                 </Link>
-                {REMITO_TENANTS.filter((t) => t.active).map((t) => {
-                  const href = `/remitos/${t.slug}`;
-                  const active = pathname === href || pathname.startsWith(`${href}/`);
-                  return (
-                    <Link
-                      key={t.slug}
-                      href={href}
-                      onClick={onClose}
-                      className={clsx(
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                        active
-                          ? "bg-white/10 font-medium text-white"
-                          : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-                      )}
-                    >
-                      <span
-                        className="h-1.5 w-1.5 shrink-0 rounded-full"
-                        style={{ background: t.color }}
-                      />
-                      {t.name}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="mb-1">
-            <button
-              type="button"
-              onClick={() => setPlanillasExpanded((v) => !v)}
-              className={clsx(
-                "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                planillasOpen
-                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <FileSpreadsheet size={18} />
-              <span className="flex-1 text-left">Planillas</span>
-              <ChevronDown
-                size={16}
-                className={clsx(
-                  "shrink-0 transition-transform",
-                  planillasExpanded ? "rotate-180" : "",
-                )}
-              />
-            </button>
-            {planillasExpanded && (
-              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border)] pl-2">
-                {REMITO_TENANTS.filter((t) => t.active).map((t) => {
+                {activeTenants.map((t) => {
                   const href = `/planillas/${t.slug}`;
                   const active = pathname.startsWith(href);
+                  const label =
+                    activeTenants.length === 1 ? "Planilla" : `Planilla ${t.short}`;
                   return (
                     <Link
-                      key={t.slug}
+                      key={`planilla-${t.slug}`}
                       href={href}
                       onClick={onClose}
                       className={clsx(
@@ -203,31 +163,27 @@ export function Sidebar({
                           : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
                       )}
                     >
-                      <span
-                        className="h-1.5 w-1.5 shrink-0 rounded-full"
-                        style={{ background: t.color }}
-                      />
-                      {t.name}
+                      <FileSpreadsheet size={14} className="shrink-0 opacity-70" />
+                      {label}
                     </Link>
                   );
                 })}
+                <Link
+                  href="/subir"
+                  onClick={onClose}
+                  className={clsx(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive("/subir")
+                      ? "bg-white/10 font-medium text-white"
+                      : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                  )}
+                >
+                  <Upload size={14} className="shrink-0 opacity-70" />
+                  Subir remito
+                </Link>
               </div>
             )}
           </div>
-
-          <Link
-            href="/subir"
-            onClick={onClose}
-            className={clsx(
-              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/subir")
-                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-            )}
-          >
-            <Upload size={18} />
-            Subir remito
-          </Link>
 
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación
