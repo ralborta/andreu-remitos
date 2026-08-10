@@ -89,7 +89,7 @@ export function MonitorPanel() {
       if (!alertsOn || typeof Notification === "undefined") return;
       if (Notification.permission !== "granted") return;
       try {
-        new Notification(title, { body, tag: "andreu-monitor" });
+        new Notification(title, { body, tag: "sol-monitor" });
       } catch {
         /* ignore */
       }
