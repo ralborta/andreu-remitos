@@ -112,6 +112,39 @@ export function Sidebar({
             Monitor
           </Link>
 
+          <Link
+            href="/contactos"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/contactos")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <MessageCircle size={18} />
+            <span className="flex-1">Contactos WhatsApp</span>
+            <span className="rounded-full bg-[#25d366]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#25d366]">
+              Nuevo
+            </span>
+          </Link>
+
+          {admin && (
+            <Link
+              href="/backoffice"
+              onClick={onClose}
+              className={clsx(
+                "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive("/backoffice")
+                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Database size={18} />
+              Backoffice y métricas
+            </Link>
+          )}
+
           <p className="px-3 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación
           </p>
@@ -143,37 +176,6 @@ export function Sidebar({
             >
               <Settings2 size={18} />
               Parámetros maestros
-            </Link>
-          )}
-          <Link
-            href="/contactos"
-            onClick={onClose}
-            className={clsx(
-              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/contactos")
-                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-            )}
-          >
-            <MessageCircle size={18} />
-            <span className="flex-1">Contactos WhatsApp</span>
-            <span className="rounded-full bg-[#25d366]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#25d366]">
-              Nuevo
-            </span>
-          </Link>
-          {admin && (
-            <Link
-              href="/backoffice"
-              onClick={onClose}
-              className={clsx(
-                "group mb-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive("/backoffice")
-                  ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <Database size={18} />
-              Backoffice y métricas
             </Link>
           )}
 
