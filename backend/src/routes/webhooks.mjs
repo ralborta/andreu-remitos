@@ -60,6 +60,13 @@ import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
 import * as reclamosStore from "../db/reclamos-store.mjs";
 import * as incidenciasStore from "../db/incidencias-store.mjs";
 import * as master from "../db/master-data-store.mjs";
+import {
+  decide as commanderDecide,
+  buildInboundMessage,
+  isCommanderV1Enabled,
+  isCommanderShadowEnabled,
+} from "../../../lib/commander/index.mjs";
+import { executeCommanderDecision } from "../../../lib/commander/execute.mjs";
 
 /**
  * Con Baileys self-hosted el envío confiable es POST /v1/messages.
@@ -755,6 +762,298 @@ async function tryProcesarDestinos(ev, { texto, log, tieneFoto = false } = {}) {
   }
 }
 
+async function buildCommanderActor(phone) {
+  const choferRemitos = phone ? await master.resolverChoferPorTelefono(phone) : null;
+  const choferIncidencia = phone ? await resolverChoferIncidencia(phone) : null;
+  const isChoferRemitos = Boolean(choferRemitos) || (phone ? await telefonoEsChoferRegistrado(phone) : false);
+  const isChoferFlotaViajes = choferIncidencia?.fuente === "viajes_flota";
+  const isChoferOperativo = isChoferRemitos || Boolean(choferIncidencia);
+  return {
+    isChoferRemitos,
+    isChoferFlotaViajes,
+    isChoferOperativo,
+    choferNombre: choferIncidencia?.nombre || choferRemitos?.nombre || null,
+  };
+}
+
+function inferMediaKind(ev, esFoto, mediaEsAudio) {
+  if (ev.location) return "location";
+  if (mediaEsAudio) return "audio";
+  if (esFoto) return "image";
+  if (ev.media?.url) return "document";
+  return null;
+}
+
+/**
+ * Camino SOL Commander v1: Adapter → decide() → executor.
+ * Sin decisiones conversacionales pre-Commander.
+ */
+async function handleInboundCommanderV1(request, ev, tenantCfg) {
+  const log = request.log;
+  const texto = ev.message?.trim() || "";
+  const conv = ev.from ? await convStore.getConversacion(ev.from) : null;
+  const mediaEsAudio = esEventoAudio(ev, null);
+  const esFoto = Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
+  const hasMedia = Boolean(ev.media?.url) || Boolean(ev.location);
+  const mediaKind = inferMediaKind(ev, esFoto, mediaEsAudio);
+  const actor = await buildCommanderActor(ev.from);
+
+  const message = buildInboundMessage({
+    subjectId: ev.from,
+    text: texto || null,
+    hasMedia,
+    mediaKind,
+    displayName: ev.nombre || null,
+    location: ev.location || null,
+  });
+
+  const decision = await commanderDecide({
+    message,
+    conversation: conv,
+    processes: [],
+    actor,
+    log,
+  });
+
+  const deps = {
+    ev,
+    texto,
+    tenantCfg,
+    log,
+    esFoto,
+    conv,
+    respuestaWebhook,
+    notificarChofer,
+    downloadMedia,
+    tryProcesarReclamo,
+    tryProcesarIncidencia,
+    tryProcesarPod,
+    tryProcesarRendicion,
+    tryProcesarDestinos,
+    tryProcesarViajes,
+    procesarTextoChofer,
+    mensajeIncidenciaSoloChoferes,
+    mensajeRendicionSoloChoferes,
+    mensajePodSoloChoferes,
+    convStore,
+    solViajesStore,
+    runRemitosIngest: async () => runLegacyRemitosIngest(request, ev, tenantCfg),
+    runRemitosAudio: async () => runLegacyRemitosAudio(request, ev, tenantCfg),
+  };
+
+  return executeCommanderDecision(decision, { ev, texto }, deps);
+}
+
+/** Shadow: decide() sin ejecutar — solo log de paridad. */
+async function shadowCommanderDecide(ev, tenantCfg, log) {
+  try {
+    const texto = ev.message?.trim() || "";
+    const mediaEsAudio = esEventoAudio(ev, null);
+    const esFoto = Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
+    const hasMedia = Boolean(ev.media?.url) || Boolean(ev.location);
+    const actor = await buildCommanderActor(ev.from);
+    const message = buildInboundMessage({
+      subjectId: ev.from,
+      text: texto || null,
+      hasMedia,
+      mediaKind: inferMediaKind(ev, esFoto, mediaEsAudio),
+      displayName: ev.nombre || null,
+      location: ev.location || null,
+    });
+    const decision = await commanderDecide({
+      message,
+      conversation: ev.from ? await convStore.getConversacion(ev.from) : null,
+      processes: [],
+      actor,
+      log: null,
+    });
+    log?.info?.(
+      {
+        shadow: true,
+        intent: decision.intent,
+        action: decision.action,
+        executorKey: decision.executorHints?.executorKey,
+        branch: decision.trace?.branch,
+        agentId: decision.agentId,
+      },
+      "SOL Commander SHADOW decision (legacy path ejecutará)",
+    );
+  } catch (err) {
+    log?.warn?.({ err: err.message }, "SOL Commander SHADOW falló");
+  }
+}
+
+/** Ingest foto remito — lógica legacy intacta (no cambia services/remitos). */
+async function runLegacyRemitosIngest(request, ev, tenantCfg) {
+  const { buffer, mime, filename } = await downloadMedia(ev.media.url);
+  const destinoPendiente = ev.from
+    ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
+    : null;
+  // Nota: sticky destinos-foto ya lo resolvió Commander; aquí parity ingest
+  void destinoPendiente;
+  void mime;
+
+  const telefono = ev.from || null;
+  if (ev.from) {
+    await syncBotPausa(ev.from);
+    await convStore.appendMensaje(
+      ev.from,
+      { texto: ev.message || "envía imagen", tipo: "image", imagen_url: ev.media.url },
+      { tenant: tenantCfg, nombre: ev.nombre },
+    );
+  }
+  const convFoto = ev.from ? await convStore.getConversacion(ev.from) : null;
+  const pausado = !!convFoto?.bot_pausado;
+  const tenantFoto = tenantCfg ?? convFoto?.tenant;
+
+  if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
+    const msg = mensajeCorinaFaltaCliente();
+    if (!pausado) await notificarChofer(ev.from, msg, { tenant: "corina", log: request.log });
+    return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
+  }
+
+  if (ev.from && !pausado) {
+    await notificarChofer(ev.from, mensajeProcesandoRemito(), {
+      tenant: tenantCfg,
+      log: request.log,
+    });
+  }
+
+  const resultado = await ingestarRemito(buffer, {
+    filename,
+    telefono,
+    tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
+    tenantSugerido: tenantFoto ?? tenantCfg ?? undefined,
+    corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
+  });
+
+  if (ev.from && resultado.id) {
+    await convStore.setUltimoRemito(ev.from, resultado.id, resultado.tenant);
+  }
+
+  const message = mensajeWhatsApp(resultado);
+  if (ev.from && !pausado) {
+    await notificarChofer(ev.from, message, {
+      tenant: resultado.tenant,
+      remito_id: resultado.id,
+      log: request.log,
+    });
+  } else if (ev.from && resultado.id) {
+    await convStore.appendMensaje(
+      ev.from,
+      { texto: message, tipo: "text", remito_id: resultado.id },
+      { tenant: resultado.tenant, remito_id: resultado.id, dir: "out", from: "bot" },
+    );
+  }
+
+  return respuestaWebhook({
+    message,
+    remito_id: resultado.id,
+    tenant: resultado.tenant,
+    estado: resultado.estado,
+    guia: resultado.lectura?.nro_guia ?? resultado.lectura?.nro_remito ?? null,
+    flow: resultado.estado === "bloqueado" ? "revision" : "ok",
+    bot_pausado: pausado,
+  });
+}
+
+async function runLegacyRemitosAudio(request, ev, tenantCfg) {
+  const { buffer, mime, filename } = await downloadMedia(ev.media.url);
+  const convAudio = ev.from ? await convStore.getConversacion(ev.from) : null;
+  const remitoAudio = await resolverRemitoCorreccion(ev.from, convAudio, tenantCfg);
+  const pausadoAudio = convAudio?.bot_pausado;
+
+  if (!flujoRemitoAbierto(convAudio) || !remitoAudio) {
+    const msg =
+      "Mandame una *foto del remito* para empezar.\n" +
+      "Después podés *dictar* correcciones por audio o escribirlas, y confirmar con *OK*.";
+    if (ev.from && !pausadoAudio) {
+      await notificarChofer(ev.from, msg, { tenant: tenantCfg, log: request.log });
+    }
+    return respuestaWebhook({ message: msg, flow: "audio_sin_remito" });
+  }
+
+  let transcripcion;
+  try {
+    transcripcion = await transcribirAudio(buffer, {
+      mimeType: mime,
+      filename,
+      log: request.log,
+    });
+  } catch (err) {
+    request.log.warn({ err: err.message }, "Transcripción audio falló");
+    const msg = mensajeAudioFallidoConfirmacion();
+    if (ev.from && !pausadoAudio) {
+      await notificarChofer(ev.from, msg, {
+        tenant: tenantCfg,
+        remito_id: remitoAudio.id,
+        log: request.log,
+      });
+    }
+    return respuestaWebhook({ message: msg, flow: "audio_no_entendido" });
+  }
+
+  if (ev.from) {
+    await convStore.appendMensaje(
+      ev.from,
+      { texto: transcripcion, tipo: "audio", imagen_url: ev.media.url, transcripcion },
+      { tenant: tenantCfg, nombre: ev.nombre },
+    );
+  }
+
+  if (esConfirmacionOk(transcripcion)) {
+    const out = await aplicarConfirmacionChofer({
+      phone: ev.from,
+      conv: convAudio,
+      tenantCfg,
+      pausado: pausadoAudio,
+      log: request.log,
+    });
+    if (out) {
+      return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio_ok" });
+    }
+    const msg = "✅ Ya quedó registrado. ¡Buen viaje!";
+    if (ev.from && !pausadoAudio) {
+      await notificarChofer(ev.from, msg, { tenant: tenantCfg, log: request.log });
+    }
+    return respuestaWebhook({ message: msg, transcripcion, flow: "confirmado_repetido" });
+  }
+
+  const correccionesAudio = await resolveCorreccionesChofer(transcripcion, {
+    tenant: remitoAudio?.tenant ?? tenantCfg,
+    datos: remitoAudio?.datos,
+    remitoVinculado: Boolean(remitoAudio),
+    log: request.log,
+  });
+  if (correccionesAudio.length > 0) {
+    if (ev.from) await convStore.setCorreccionesPendientes(ev.from, correccionesAudio);
+    const out = await aplicarCorreccionesChofer({
+      phone: ev.from,
+      conv: convAudio,
+      tenantCfg,
+      correcciones: correccionesAudio,
+      pausado: pausadoAudio,
+      log: request.log,
+    });
+    if (out) {
+      return respuestaWebhook({ ...out, transcripcion, flow: out.flow ?? "audio_correccion" });
+    }
+  }
+
+  const msg =
+    correccionesAudio.length === 0
+      ? mensajeAudioSinCorreccion(transcripcion)
+      : mensajeAudioSoloConfirmacion();
+  if (ev.from && !pausadoAudio) {
+    await notificarChofer(ev.from, msg, {
+      tenant: remitoAudio.tenant,
+      remito_id: remitoAudio.id,
+      log: request.log,
+    });
+  }
+  return respuestaWebhook({ message: msg, transcripcion, flow: "audio_sin_correccion" });
+}
+
 export default async function webhooksRoutes(fastify) {
   fastify.get("/builderbot/health", async () => ({
     ok: true,
@@ -772,7 +1071,10 @@ export default async function webhooksRoutes(fastify) {
       "incidencias",
       "intent-router",
       "tenant-ia",
+      "sol-commander-v1",
     ],
+    sol_commander_v1: isCommanderV1Enabled(),
+    sol_commander_shadow: isCommanderShadowEnabled(),
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -806,6 +1108,15 @@ export default async function webhooksRoutes(fastify) {
           );
         }
         return respuestaWebhook({ ok: true, event: "outgoing" });
+      }
+
+      // ——— SOL Commander v1 (único cerebro de decisión cuando flag ON) ———
+      if (isCommanderV1Enabled()) {
+        request.log.info({ from: ev.from }, "SOL Commander V1 path");
+        return handleInboundCommanderV1(request, ev, tenantCfg);
+      }
+      if (isCommanderShadowEnabled()) {
+        void shadowCommanderDecide(ev, tenantCfg, request.log);
       }
 
       const texto = ev.message?.trim() || "";
