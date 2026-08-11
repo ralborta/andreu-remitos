@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { Check, RefreshCw, X } from "lucide-react";
+import { Check, ChevronDown, RefreshCw, X } from "lucide-react";
 import {
   decidirGastoRendicion,
   listGastosRendicion,
@@ -22,6 +22,20 @@ type FotoPreview = {
   title: string;
 };
 
+function fmtFecha(iso?: string | null) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
+
 export function RendicionPanel() {
   const confirm = useConfirm();
   const [rows, setRows] = useState<GastoRendicion[]>([]);
@@ -31,6 +45,7 @@ export function RendicionPanel() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [foto, setFoto] = useState<FotoPreview | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -101,7 +116,7 @@ export function RendicionPanel() {
           <div>
             <h3 className="font-semibold text-white">Cola de aprobación</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Gastos menores (nafta, peajes, arreglos…) · siempre con verificación humana
+              Clic en un gasto para ver resumen y transcripción OCR · verificación humana
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -161,74 +176,162 @@ export function RendicionPanel() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((g) => (
-                  <tr key={g.id} className="border-b border-[var(--border)]/60">
-                    <td className="py-3 pr-3 font-medium text-white">{g.codigo}</td>
-                    <td className="py-3 pr-3 text-[var(--text-dim)]">
-                      <div>{g.choferNombre || "—"}</div>
-                      <div className="text-xs text-[var(--text-faint)]">{g.telefono || ""}</div>
-                    </td>
-                    <td className="py-3 pr-3 text-[var(--text-dim)]">{g.categoriaLabel}</td>
-                    <td className="py-3 pr-3 tabular text-white">{g.montoLabel}</td>
-                    <td className="max-w-[240px] py-3 pr-3 text-[var(--text-dim)]">
-                      <div className="truncate">{g.proveedor || g.descripcion || g.notaChofer || "—"}</div>
-                      {g.imagenUrl && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const src = browsableMediaUrl(g.imagenUrl);
-                            if (!src) return;
-                            setFoto({
-                              src,
-                              title: `${g.codigo} · ${g.categoriaLabel}${g.montoLabel ? ` · ${g.montoLabel}` : ""}`,
-                            });
-                          }}
-                          className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
-                        >
-                          Ver foto
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-3 pr-3">
-                      <span
+                {rows.map((g) => {
+                  const open = expandedId === g.id;
+                  return (
+                    <Fragment key={g.id}>
+                      <tr
+                        onClick={() =>
+                          setExpandedId((id) => (id === g.id ? null : g.id))
+                        }
                         className={clsx(
-                          "rounded-md px-2 py-0.5 text-xs font-semibold",
-                          g.estado === "pendiente_aprobacion" && "bg-amber-500/15 text-amber-400",
-                          g.estado === "aprobado" && "bg-emerald-500/15 text-emerald-400",
-                          g.estado === "rechazado" && "bg-rose-500/15 text-rose-500",
+                          "cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.03]",
+                          open && "bg-white/[0.04]",
                         )}
                       >
-                        {g.estadoLabel}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      {g.estado === "pendiente_aprobacion" ? (
-                        <div className="flex gap-1.5">
-                          <button
-                            type="button"
-                            disabled={busyId === g.id}
-                            onClick={() => void decidir(g, "aprobado")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 disabled:opacity-50"
+                        <td className="py-3 pr-3 font-medium text-white">
+                          <div className="flex items-center gap-1.5">
+                            <ChevronDown
+                              size={14}
+                              className={clsx(
+                                "shrink-0 text-[var(--text-faint)] transition-transform",
+                                open && "rotate-180",
+                              )}
+                            />
+                            {g.codigo}
+                          </div>
+                        </td>
+                        <td className="py-3 pr-3 text-[var(--text-dim)]">
+                          <div>{g.choferNombre || "—"}</div>
+                          <div className="text-xs text-[var(--text-faint)]">{g.telefono || ""}</div>
+                        </td>
+                        <td className="py-3 pr-3 text-[var(--text-dim)]">{g.categoriaLabel}</td>
+                        <td className="py-3 pr-3 tabular text-white">{g.montoLabel}</td>
+                        <td className="max-w-[240px] py-3 pr-3 text-[var(--text-dim)]">
+                          <div className="truncate">{g.proveedor || g.descripcion || g.notaChofer || "—"}</div>
+                          {g.imagenUrl && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const src = browsableMediaUrl(g.imagenUrl);
+                                if (!src) return;
+                                setFoto({
+                                  src,
+                                  title: `${g.codigo} · ${g.categoriaLabel}${g.montoLabel ? ` · ${g.montoLabel}` : ""}`,
+                                });
+                              }}
+                              className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
+                            >
+                              Ver foto
+                            </button>
+                          )}
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span
+                            className={clsx(
+                              "rounded-md px-2 py-0.5 text-xs font-semibold",
+                              g.estado === "pendiente_aprobacion" && "bg-amber-500/15 text-amber-400",
+                              g.estado === "aprobado" && "bg-emerald-500/15 text-emerald-400",
+                              g.estado === "rechazado" && "bg-rose-500/15 text-rose-500",
+                            )}
                           >
-                            <Check size={14} />
-                            OK
-                          </button>
-                          <button
-                            type="button"
-                            disabled={busyId === g.id}
-                            onClick={() => void decidir(g, "rechazado")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/30 disabled:opacity-50"
-                          >
-                            <X size={14} />
-                            No
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-[var(--text-faint)]">—</span>
+                            {g.estadoLabel}
+                          </span>
+                        </td>
+                        <td className="py-3" onClick={(e) => e.stopPropagation()}>
+                          {g.estado === "pendiente_aprobacion" ? (
+                            <div className="flex gap-1.5">
+                              <button
+                                type="button"
+                                disabled={busyId === g.id}
+                                onClick={() => void decidir(g, "aprobado")}
+                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 disabled:opacity-50"
+                              >
+                                <Check size={14} />
+                                OK
+                              </button>
+                              <button
+                                type="button"
+                                disabled={busyId === g.id}
+                                onClick={() => void decidir(g, "rechazado")}
+                                className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/30 disabled:opacity-50"
+                              >
+                                <X size={14} />
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[var(--text-faint)]">—</span>
+                          )}
+                        </td>
+                      </tr>
+                      {open && (
+                        <tr className="border-b border-[var(--border)]/60 bg-[var(--bg-2)]/80">
+                          <td colSpan={7} className="px-4 py-3">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Resumen
+                                </p>
+                                <p className="mt-0.5 text-sm text-white">
+                                  {g.descripcion || g.categoriaLabel}
+                                  {g.montoLabel !== "—" ? ` · ${g.montoLabel}` : ""}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Proveedor / fecha
+                                </p>
+                                <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                                  {g.proveedor || "—"}
+                                  {g.fechaComprobante ? ` · ${g.fechaComprobante}` : ""}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Nota chofer
+                                </p>
+                                <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                                  {g.notaChofer || "—"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Registrado
+                                </p>
+                                <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+                                  {fmtFecha(g.createdAt)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                Transcripción OCR (Document AI)
+                              </p>
+                              <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-black/25 px-3 py-2 text-xs text-[var(--text-dim)]">
+                                {g.textoOcr?.trim() ||
+                                  "Sin transcripción aún (gastos anteriores a Document AI, o OCR vacío)."}
+                              </pre>
+                            </div>
+                            {(g.historial?.length ?? 0) > 0 && (
+                              <div className="mt-3">
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Historial
+                                </p>
+                                <ul className="mt-1 space-y-0.5 text-xs text-[var(--text-faint)]">
+                                  {(g.historial || []).slice(-5).map((h) => (
+                                    <li key={h}>{h}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                  </tr>
-                ))}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

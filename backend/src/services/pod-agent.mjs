@@ -173,6 +173,7 @@ export async function procesarPodWhatsApp({
             viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
             destino: lectura?.destino || pending.destino,
             nota_chofer: notaDesdeLectura(lectura, null) || pending.nota_chofer,
+            texto_ocr: lectura?.ocr_texto || pending.texto_ocr,
             historial_push: "Foto IA; falta receptor",
           });
           const msg = mensajePedirNombreReceptor();
@@ -187,6 +188,7 @@ export async function procesarPodWhatsApp({
           destino: lectura?.destino || pending.destino,
           chofer_nombre: chofer.nombre || pending.chofer_nombre,
           nota_chofer: notaDesdeLectura(lectura, null) || pending.nota_chofer,
+            texto_ocr: lectura?.ocr_texto || pending.texto_ocr,
           historial_push: `Completado IA · receptor ${receptorFinal}`,
         });
         const msg = mensajeConfirmacionPod(closed, lectura);
@@ -275,6 +277,7 @@ export async function procesarPodWhatsApp({
           viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
           destino: lectura?.destino || pending.destino,
           nota_chofer: notaDesdeLectura(lectura, null) || pending.nota_chofer,
+            texto_ocr: lectura?.ocr_texto || pending.texto_ocr,
           historial_push: "Foto IA; falta nombre receptor",
         });
         const msg = mensajePedirNombreReceptor();
@@ -289,6 +292,7 @@ export async function procesarPodWhatsApp({
         viaje_ref: lectura?.pedido_ref || pending.viaje_ref,
         destino: lectura?.destino || pending.destino,
         nota_chofer: notaDesdeLectura(lectura, null) || pending.nota_chofer,
+            texto_ocr: lectura?.ocr_texto || pending.texto_ocr,
         historial_push: `Foto IA · receptor ${receptorFinal}`,
       });
       const msg = mensajeConfirmacionPod(closed, lectura);
@@ -318,6 +322,7 @@ export async function procesarPodWhatsApp({
         imagen_url: fotoUrl,
         estado: "pendiente",
         nota_chofer: notaDesdeLectura(lectura, null),
+        texto_ocr: lectura?.ocr_texto || null,
         viaje_ref: lectura?.pedido_ref || extra.viaje_ref || null,
         destino: lectura?.destino || extra.destino || null,
         destino_id: extra.destino_id || null,
@@ -333,6 +338,7 @@ export async function procesarPodWhatsApp({
       imagen_url: fotoUrl,
       estado: "esperando_receptor",
       nota_chofer: notaDesdeLectura(lectura, null),
+        texto_ocr: lectura?.ocr_texto || null,
       viaje_ref: lectura?.pedido_ref || extra.viaje_ref || null,
       destino: lectura?.destino || extra.destino || null,
       destino_id: extra.destino_id || null,

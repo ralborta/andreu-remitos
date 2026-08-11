@@ -82,6 +82,7 @@ export async function crearPod(body = {}) {
     destino: body.destino || null,
     destino_id: body.destino_id || null,
     nota_chofer: body.nota_chofer || null,
+    texto_ocr: body.texto_ocr ? String(body.texto_ocr).slice(0, 12000) : null,
     nota_backoffice: null,
     aprobado_por: null,
     historial: [`${now} · Creado (${estado})`],
@@ -112,11 +113,15 @@ export async function actualizarPod(id, patch = {}) {
     "destino",
     "destino_id",
     "nota_chofer",
+    "texto_ocr",
     "nota_backoffice",
     "aprobado_por",
     "chofer_nombre",
   ]) {
     if (patch[k] !== undefined) row[k] = patch[k];
+  }
+  if (patch.texto_ocr !== undefined && patch.texto_ocr != null) {
+    row.texto_ocr = String(patch.texto_ocr).slice(0, 12000);
   }
 
   if (patch.estado && POD_ESTADOS.includes(patch.estado)) {

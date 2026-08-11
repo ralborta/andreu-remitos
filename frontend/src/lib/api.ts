@@ -597,6 +597,7 @@ export interface GastoRendicion {
   choferNombre: string | null;
   imagenUrl: string | null;
   notaChofer: string | null;
+  textoOcr?: string | null;
   notaAprobacion: string | null;
   aprobadoPor: string | null;
   historial: string[];
@@ -892,6 +893,7 @@ export interface PodCaso {
   destino: string;
   destinoId?: string | null;
   notaChofer?: string | null;
+  textoOcr?: string | null;
   notaBackoffice?: string | null;
   aprobadoPor?: string | null;
   historial?: string[];

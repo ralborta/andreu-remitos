@@ -17,6 +17,7 @@ function mapPod(row) {
     destino: row.destino || "—",
     destinoId: row.destino_id || null,
     notaChofer: row.nota_chofer || null,
+    textoOcr: row.texto_ocr || null,
     notaBackoffice: row.nota_backoffice || null,
     aprobadoPor: row.aprobado_por || null,
     historial: row.historial || [],

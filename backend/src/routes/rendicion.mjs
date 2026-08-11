@@ -32,6 +32,7 @@ function mapGasto(row) {
     choferNombre: row.chofer_nombre,
     imagenUrl: row.imagen_url,
     notaChofer: row.nota_chofer,
+    textoOcr: row.texto_ocr || null,
     notaAprobacion: row.nota_aprobacion,
     aprobadoPor: row.aprobado_por,
     historial: row.historial ?? [],

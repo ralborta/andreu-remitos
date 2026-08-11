@@ -73,6 +73,7 @@ export async function crearGasto(body = {}) {
     chofer_nombre: body.chofer_nombre || body.nombre || null,
     imagen_url: body.imagen_url || null,
     nota_chofer: body.nota_chofer || null,
+    texto_ocr: body.texto_ocr ? String(body.texto_ocr).slice(0, 12000) : null,
     nota_aprobacion: null,
     aprobado_por: null,
     historial: [`${now} · Creado (${estado})`],
@@ -102,10 +103,14 @@ export async function actualizarGasto(id, patch = {}) {
     "chofer_nombre",
     "imagen_url",
     "nota_chofer",
+    "texto_ocr",
     "nota_aprobacion",
     "aprobado_por",
   ]) {
     if (patch[k] !== undefined) row[k] = patch[k];
+  }
+  if (patch.texto_ocr !== undefined && patch.texto_ocr != null) {
+    row.texto_ocr = String(patch.texto_ocr).slice(0, 12000);
   }
   if (patch.monto != null) row.monto = Number(patch.monto);
   if (patch.categoria && RENDICION_CATEGORIAS.includes(patch.categoria)) {

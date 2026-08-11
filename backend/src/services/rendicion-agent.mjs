@@ -109,10 +109,26 @@ export async function procesarGastoWhatsApp({
     return { flow: "rendicion_pedir_foto", mensaje: msg, message: msg };
   }
 
+  let ocrTexto = null;
+  if (imageBuffer?.length) {
+    try {
+      const { ocrDocumento } = await import("../../../lib/document-ai.mjs");
+      const ocr = await ocrDocumento(imageBuffer, "gasto.jpg");
+      ocrTexto = String(ocr?.texto || "").trim() || null;
+      log?.info?.(
+        { chars: ocrTexto?.length || 0, processor: ocr?.processor_id },
+        "Rendición Document AI OCR",
+      );
+    } catch (err) {
+      log?.warn?.({ err: err.message }, "Rendición Document AI falló");
+    }
+  }
+
   const interp = await interpretarGastoWhatsApp({
     texto: t,
     imageBuffer,
     mime,
+    ocrTexto,
     log,
   });
 
@@ -125,6 +141,7 @@ export async function procesarGastoWhatsApp({
     fecha_comprobante: interp.fecha_comprobante,
     descripcion: interp.descripcion,
     nota_chofer: t || null,
+    texto_ocr: ocrTexto || interp.texto_ocr || null,
     imagen_url: imagenPersistida || null,
     estado: "pendiente_aprobacion",
   });
