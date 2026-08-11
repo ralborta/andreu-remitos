@@ -19,8 +19,8 @@ export function PodAgentChat() {
       agentLabel="POD"
       tenant={BRAND.remitoTenantSlug}
       suggestions={SUGGESTIONS}
-      placeholder="Ej. ¿cuántos están pendientes?"
-      emptyHint="Consultá pendientes, rechazos, últimos POD o el viaje de un código."
+      placeholder="Escribí tu consulta…"
+      emptyHint="Hola. Soy el asistente de POD. Puedo decirte cuántos hay pendientes, rechazados, los últimos del día o el viaje de un código."
       onSend={async ({ message, conversationId, agentId, tenant }) => {
         const res = await postAgentChat({
           agentId,

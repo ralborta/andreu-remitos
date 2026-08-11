@@ -81,11 +81,11 @@ export function AgentData({ slug }: { slug: string }) {
 
   if (slug === "pod") {
     return (
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-5">
         <div className="min-w-0 xl:col-span-3">
           <PodPanel />
         </div>
-        <div className="min-w-0 xl:col-span-2">
+        <div className="min-w-0 xl:sticky xl:top-4 xl:col-span-2">
           <PodAgentChat />
         </div>
       </div>
