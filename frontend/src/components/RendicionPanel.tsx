@@ -121,16 +121,6 @@ function GastoDetalleModal({
             )}
           </div>
 
-          <div className="mt-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
-              Transcripción OCR (Document AI)
-            </p>
-            <pre className="mt-1.5 max-h-44 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 px-3 py-2.5 text-xs leading-relaxed text-[var(--text-dim)]">
-              {caso.textoOcr?.trim() ||
-                "Sin transcripción aún (gastos anteriores a Document AI, o OCR vacío)."}
-            </pre>
-          </div>
-
           {caso.imagenUrl && (
             <button
               type="button"
