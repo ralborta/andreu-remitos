@@ -243,14 +243,56 @@ try {
   });
   assert.equal(failed.ok, false);
   assert.equal(interrupt.stackDepth(sid), depth);
-  // mark failed path
+  // mark failed path — binding active se conserva
   const marked = interrupt.markActiveFailedNoPop({ subjectId: sid });
   assert.equal(marked.ok, true);
-  assert.equal(interrupt.getProcess(marked.process.processId).status, "failed");
+  assert.equal(interrupt.getProcess(marked.process.processId).status, "active");
+  assert.equal(interrupt.getProcess(marked.process.processId).lastExecutionStatus, "failed");
+  assert.equal(interrupt.getActiveProcess(sid)?.processId, marked.process.processId);
   assert.equal(interrupt.stackDepth(sid), depth);
-  ok("failed → sin pop destructivo; status=failed");
+  ok("failed → sin pop destructivo; binding active + lastExecutionStatus");
 } catch (e) {
   fail("auto/waiting/failed", e);
+}
+
+// ─── C5 repro: failed execution no bloquea nested interrupt ─────
+try {
+  reset();
+  const sid = "5491100002008";
+  interrupt.ensureActiveFromDomain({
+    subjectId: sid,
+    processType: "viaje_solicitud",
+    agentId: "viajes",
+  });
+  interrupt.pushInterrupt({
+    subjectId: sid,
+    parentProcess: interrupt.getActiveProcess(sid),
+    childSpec: interrupt.childSpecForIntent("incidencia"),
+  });
+  assert.equal(interrupt.stackDepth(sid), 1);
+  // Simula Baileys/legacy error en hijo
+  interrupt.markActiveFailedNoPop({ subjectId: sid });
+  assert.equal(interrupt.getActiveProcess(sid)?.processType, "incidencia");
+  const nested = interrupt.pushInterrupt({
+    subjectId: sid,
+    parentProcess: interrupt.getActiveProcess(sid),
+    childSpec: interrupt.childSpecForIntent("reclamo"),
+  });
+  assert.equal(nested.ok, true);
+  assert.equal(interrupt.stackDepth(sid), 2);
+  assert.equal(interrupt.getActiveProcess(sid)?.processType, "reclamo");
+  // tercer nivel bloqueado
+  const third = interrupt.pushInterrupt({
+    subjectId: sid,
+    parentProcess: interrupt.getActiveProcess(sid),
+    childSpec: interrupt.childSpecForIntent("viaje"),
+  });
+  assert.equal(third.ok, false);
+  assert.equal(third.reason, "max_depth");
+  assert.equal(interrupt.stackDepth(sid), 2);
+  ok("C5: failed child sigue active → nested ok → 3er nivel max_depth");
+} catch (e) {
+  fail("C5 nested after failed", e);
 }
 
 // ─── decide resume_until via resumeTargetProcessId ──────────────

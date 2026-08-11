@@ -565,7 +565,7 @@ async function main() {
     }),
   );
 
-  // X4 failed sin pop destructivo
+  // X4 failed sin pop destructivo (binding active conservado)
   cases.push(
     await runCase("X4", "failed sin pop destructivo", PHONES.C6, async (rec) => {
       ensureViaje(rec.subjectId);
@@ -579,10 +579,13 @@ async function main() {
       const depth = mod.stackDepth(rec.subjectId);
       const childId = mod.getActiveProcess(rec.subjectId).processId;
       const marked = mod.markActiveFailedNoPop({ subjectId: rec.subjectId });
+      const still = mod.getActiveProcess(rec.subjectId);
       rec.completionReason = "failed_no_destructive_pop";
       rec.pass =
         marked.ok &&
-        mod.getProcess(childId).status === "failed" &&
+        marked.process.lastExecutionStatus === "failed" &&
+        marked.process.status === "active" &&
+        still?.processId === childId &&
         mod.stackDepth(rec.subjectId) === depth;
     }),
   );
