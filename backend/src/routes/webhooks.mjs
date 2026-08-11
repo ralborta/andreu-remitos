@@ -876,10 +876,11 @@ async function prepareCommanderShadow(ev, log) {
     displayName: ev.nombre || null,
     location: ev.location || null,
   });
-  const activeProcesses = await detectActiveProcesses(ev.from);
+  const conversation = ev.from ? await convStore.getConversacion(ev.from) : null;
+  const activeProcesses = await detectActiveProcesses(ev.from, conversation);
   const decision = await commanderDecide({
     message,
-    conversation: ev.from ? await convStore.getConversacion(ev.from) : null,
+    conversation,
     processes: activeProcesses,
     actor,
     log: null,

@@ -125,4 +125,29 @@ ok("H2 clasificarIntencionHeuristica intacta");
   ok("buildInboundMessage contrato");
 }
 
+// 10. v1.0.1 — remito_revision sticky: intent=remito, action=run_agent, processBinding
+{
+  const message = buildInboundMessage({
+    subjectId: "5491100000010",
+    text: "ok",
+  });
+  const p = await evaluateLegacyProcessPolicy({
+    message,
+    actor: actorChofer,
+    conversation: {
+      remito_en_revision_id: "remito-test-1",
+      ultimo_remito_id: "remito-test-1",
+    },
+    log: null,
+  });
+  assert.equal(p.handled, true);
+  assert.equal(p.decision.intent, "remito");
+  assert.equal(p.decision.agentId, "remitos");
+  assert.equal(p.decision.action, "run_agent");
+  assert.equal(p.decision.processBinding, true);
+  assert.equal(p.decision.processType, "remito_revision");
+  assert.equal(p.decision.executorHints.executorKey, "remitos_texto");
+  ok("v1.0.1 remito_revision sticky → remito/run_agent/processBinding");
+}
+
 console.log(`\nOK ${passed} checks — Commander parity smoke`);
