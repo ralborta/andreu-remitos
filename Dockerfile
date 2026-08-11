@@ -8,6 +8,7 @@ RUN npm ci --prefix backend --omit=dev
 
 COPY lib ./lib
 COPY backend ./backend
+COPY scripts ./scripts
 
 # lib/ está fuera de backend/ — Node busca node_modules en /app
 RUN ln -sf /app/backend/node_modules /app/node_modules
