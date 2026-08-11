@@ -71,6 +71,7 @@ function notaDesdeLectura(lectura, textoChofer) {
   const parts = [];
   if (lectura?.resumen) parts.push(lectura.resumen);
   if (lectura?.pedido_ref) parts.push(`Ref: ${lectura.pedido_ref}`);
+  if (lectura?.fuente) parts.push(`[${lectura.fuente}]`);
   if (textoChofer?.trim()) parts.push(textoChofer.trim());
   return parts.length ? parts.join(" · ").slice(0, 400) : null;
 }
