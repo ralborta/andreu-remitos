@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import clsx from "clsx";
 import { CheckCheck, Loader2, Send, Sparkles } from "lucide-react";
 import { Card, SectionTitle } from "./ui";
@@ -15,6 +15,10 @@ export type AgentChatMessage = {
     dataSources?: string[];
     citedIds?: string[];
   };
+};
+
+export type AgentChatHandle = {
+  send: (text: string) => void;
 };
 
 type AgentChatProps = {
@@ -35,6 +39,8 @@ type AgentChatProps = {
     citedIds?: string[];
   }>;
   suggestions?: string[];
+  /** Si true, no muestra chips dentro del chat (van en la guía lateral). */
+  hideSuggestions?: boolean;
   placeholder?: string;
   className?: string;
   emptyHint?: string;
@@ -86,16 +92,20 @@ function Bubble({ m }: { m: AgentChatMessage }) {
  * Chat reutilizable operador ↔ agente especialista (web).
  * Altura fija: solo el hilo scrollea; header / chips / input no crecen.
  */
-export function AgentChat({
-  agentId,
-  agentLabel,
-  tenant,
-  onSend,
-  suggestions = [],
-  placeholder = "Escribí tu consulta…",
-  className,
-  emptyHint,
-}: AgentChatProps) {
+export const AgentChat = forwardRef<AgentChatHandle, AgentChatProps>(function AgentChat(
+  {
+    agentId,
+    agentLabel,
+    tenant,
+    onSend,
+    suggestions = [],
+    hideSuggestions = false,
+    placeholder = "Escribí tu consulta…",
+    className,
+    emptyHint,
+  },
+  ref,
+) {
   const [messages, setMessages] = useState<AgentChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -103,6 +113,16 @@ export function AgentChat({
   const [error, setError] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const busyRef = useRef(false);
+  const conversationIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
 
   useEffect(() => {
     const el = threadRef.current;
@@ -112,15 +132,22 @@ export function AgentChat({
 
   async function send(text: string) {
     const message = text.trim();
-    if (!message || busy) return;
+    if (!message || busyRef.current) return;
     setError(null);
     setDraft("");
     const at = new Date().toISOString();
     setMessages((prev) => [...prev, { role: "user", text: message, at }]);
     setBusy(true);
+    busyRef.current = true;
     try {
-      const res = await onSend({ message, conversationId, agentId, tenant });
+      const res = await onSend({
+        message,
+        conversationId: conversationIdRef.current,
+        agentId,
+        tenant,
+      });
       setConversationId(res.conversationId);
+      conversationIdRef.current = res.conversationId;
       setMessages((prev) => [
         ...prev,
         {
@@ -148,13 +175,22 @@ export function AgentChat({
       ]);
     } finally {
       setBusy(false);
+      busyRef.current = false;
     }
   }
+
+  useImperativeHandle(ref, () => ({
+    send: (text: string) => {
+      void send(text);
+    },
+  }));
+
+  const showChips = !hideSuggestions && suggestions.length > 0;
 
   return (
     <Card
       className={clsx(
-        "flex h-[min(640px,calc(100vh-11rem))] flex-col overflow-hidden p-4",
+        "flex h-[min(560px,calc(100vh-12rem))] flex-col overflow-hidden p-4",
         className,
       )}
     >
@@ -201,7 +237,7 @@ export function AgentChat({
         <div ref={bottomRef} />
       </div>
 
-      {suggestions.length > 0 && (
+      {showChips && (
         <div className="shrink-0 space-y-1.5 border-t border-[var(--border)] pt-2">
           <div className="flex flex-wrap gap-1.5">
             {suggestions.map((s) => (
@@ -246,4 +282,4 @@ export function AgentChat({
       {error && <p className="mt-2 shrink-0 text-xs text-rose-300">{error}</p>}
     </Card>
   );
-}
+});
