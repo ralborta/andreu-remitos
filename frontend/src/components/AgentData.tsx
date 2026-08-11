@@ -1,3 +1,5 @@
+"use client";
+
 import { DestinosPanel } from "./DestinosPanel";
 import { ViajesGestionPanel } from "./ViajesGestionPanel";
 import { RendicionPanel } from "./RendicionPanel";
