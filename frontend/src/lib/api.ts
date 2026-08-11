@@ -936,3 +936,52 @@ export function decidirPod(
     body: JSON.stringify(body),
   });
 }
+
+/** Chat web operador ↔ agente especialista (fase 1: pod). */
+export interface AgentChatTurnResponse {
+  conversationId: string;
+  agentId: string;
+  tenant?: string | null;
+  message: {
+    role: "assistant";
+    text: string;
+    engine?: string;
+    dataSources?: string[];
+    citedIds?: string[];
+  };
+  conversation?: {
+    id: string;
+    messages: Array<{ id?: string; role: string; text: string; at?: string }>;
+  };
+  traceId?: string | null;
+}
+
+export function postAgentChat(body: {
+  agentId: string;
+  message: string;
+  conversationId?: string;
+  tenant?: string;
+  context?: Record<string, unknown>;
+  forceEngine?: "rules" | "llm";
+}) {
+  return api<AgentChatTurnResponse>("/api/agents/chat", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function getAgentChat(conversationId: string) {
+  return api<{
+    id: string;
+    agentId: string;
+    messages: Array<{ id?: string; role: string; text: string; at?: string }>;
+  }>(`/api/agents/chat/${conversationId}`);
+}
+
+export function getAgentChatTraces(conversationId: string) {
+  return api<{
+    conversationId: string;
+    agentId: string;
+    traces: Array<Record<string, unknown>>;
+  }>(`/api/agents/chat/${conversationId}/traces`);
+}

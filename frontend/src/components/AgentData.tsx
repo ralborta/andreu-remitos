@@ -5,6 +5,7 @@ import { ReclamosPanel } from "./ReclamosPanel";
 import { IncidenciasPanel } from "./IncidenciasPanel";
 import { EtaPanel } from "./EtaPanel";
 import { PodPanel } from "./PodPanel";
+import { PodAgentChat } from "./PodAgentChat";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { DataTable, type Column } from "./DataTable";
@@ -79,7 +80,16 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "pod") {
-    return <PodPanel />;
+    return (
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+        <div className="min-w-0 xl:col-span-3">
+          <PodPanel />
+        </div>
+        <div className="min-w-0 xl:col-span-2">
+          <PodAgentChat />
+        </div>
+      </div>
+    );
   }
 
   if (slug === "reclamos") {
