@@ -408,18 +408,24 @@ export function DestinosPanel() {
               <Pill color={estadoColor(activo.estado)}>{estadoLabel(activo.estado)}</Pill>
               {activo.correccion && <Pill color="#fb923c">Corregido</Pill>}
             </div>
-            <p className="text-sm text-white">{activo.formattedAddress}</p>
-            <p className="mt-1 text-xs tabular-nums text-[var(--text-dim)]">
-              {activo.lat.toFixed(5)}, {activo.lng.toFixed(5)}
-            </p>
-            <a
-              href={mapsUrl(activo.lat, activo.lng)}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-block text-xs text-[var(--violet-2)] hover:underline"
-            >
-              Abrir en Google Maps
-            </a>
+            <p className="text-sm text-white">{activo.formattedAddress || "Sin dirección"}</p>
+            {typeof activo.lat === "number" && typeof activo.lng === "number" ? (
+              <>
+                <p className="mt-1 text-xs tabular-nums text-[var(--text-dim)]">
+                  {activo.lat.toFixed(5)}, {activo.lng.toFixed(5)}
+                </p>
+                <a
+                  href={mapsUrl(activo.lat, activo.lng)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-xs text-[var(--violet-2)] hover:underline"
+                >
+                  Abrir en Google Maps
+                </a>
+              </>
+            ) : (
+              <p className="mt-1 text-xs text-[var(--text-faint)]">Sin coordenadas</p>
+            )}
             {activo.ultimaRespuestaCliente && (
               <div className="mt-3 rounded-lg bg-[#25d366]/10 px-3 py-2 text-xs text-[#25d366]">
                 <span className="font-semibold">Última respuesta cliente:</span>{" "}
