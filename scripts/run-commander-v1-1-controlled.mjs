@@ -341,11 +341,11 @@ async function main() {
     }),
   );
 
-  // C4 reclamo manual
+  // C4 reclamo multi-turno + nested + resume_until padre original
   cases.push(
-    await runCase("C4", "reclamo largo → resume manual", PHONES.C4, async (rec) => {
+    await runCase("C4", "reclamo multi-turno nested → resume_until original", PHONES.C4, async (rec) => {
       ensureViaje(rec.subjectId);
-      await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const viaje = await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
       const r1 = await postWa({
         from: rec.subjectId,
         body: "quiero hacer un reclamo, no llegó la carga",
@@ -354,19 +354,35 @@ async function main() {
       rec.push = { detected: mid.stackDepth >= 1, resumeMode: mid.stack[0]?.resumeMode };
       rec.parent = mid.stack[0];
       rec.child = mid.active;
-      const rMid = await postWa({ from: rec.subjectId, body: "faltan 2 pallets" });
-      const still = orchSnap(rec.subjectId);
-      rec.steps.push({ op: "reclamo_turn", r: rMid, orch: still });
-      const r2 = await postWa({ from: rec.subjectId, body: "retomemos el viaje" });
+
+      // turno reclamo (puede anidar)
+      await postWa({ from: rec.subjectId, body: "faltan 2 pallets" });
+      const nested = orchSnap(rec.subjectId);
+      rec.steps.push({ op: "reclamo_turn_maybe_nested", orchDepth: nested.stackDepth });
+
+      // resume explícito al padre original vía API (sin heurística de texto)
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      const until = mod.resumeUntil({
+        subjectId: rec.subjectId,
+        processId: viaje.processId,
+        reason: "controlled_resume_until_original",
+      });
       const after = orchSnap(rec.subjectId);
-      rec.steps.push({ op: "manual_resume", r: r2, orch: after });
-      rec.completionReason = "manual_only";
-      rec.popResume = { interrupt: r2.json?.interrupt };
+      rec.steps.push({
+        op: "resume_until_original",
+        ok: until.ok,
+        pops: until.pops?.length,
+        orch: after,
+      });
+      rec.completionReason = "resume_until_original";
+      rec.popResume = { mode: until.mode, pops: until.pops, ok: until.ok };
+      rec.finalParent = after.active;
       rec.pass =
         mid.stackDepth >= 1 &&
         mid.stack[0]?.resumeMode === "manual_only" &&
-        still.stackDepth >= 1 &&
-        after.stackDepth === 0;
+        until.ok &&
+        after.stackDepth === 0 &&
+        after.active?.processId === viaje.processId;
     }),
   );
 
@@ -454,9 +470,7 @@ async function main() {
         store: "remitos",
         id: remitoId,
       });
-      // clear orch after seed — V1 shouldn't recreate interrupt stack
       clearOrch(rec.subjectId);
-      // re-set remito sticky only in conv
       const r1 = await postWa({
         from: rec.subjectId,
         body: "necesito un viaje a Neuquen 20 toneladas",
@@ -466,6 +480,152 @@ async function main() {
       rec.completionReason = "outside_allowlist";
       rec.fallback = "decideV1";
       rec.pass = snap.stackDepth === 0 && r1.json?.interrupt == null;
+    }),
+  );
+
+  // X1 nested depth2 + resume_until original (API)
+  cases.push(
+    await runCase("X1", "nested depth2 + resume_until original", PHONES.C5, async (rec) => {
+      // reuse C5 phone after clear
+      ensureViaje(rec.subjectId);
+      const viaje = await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("incidencia"),
+      });
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("reclamo"),
+      });
+      const depth2 = mod.stackDepth(rec.subjectId);
+      const until = mod.resumeUntil({ subjectId: rec.subjectId, processId: viaje.processId });
+      const after = orchSnap(rec.subjectId);
+      rec.completionReason = "resume_until_original";
+      rec.popResume = { ok: until.ok, pops: until.pops?.length, mode: until.mode };
+      rec.pass = depth2 === 2 && until.ok && after.stackDepth === 0 && after.active?.processId === viaje.processId;
+    }),
+  );
+
+  // X2 AgentExecutionResult auto
+  cases.push(
+    await runCase("X2", "child completed resumePolicy=auto", PHONES.C3, async (rec) => {
+      ensureViaje(rec.subjectId);
+      const viaje = await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      const { makeAgentExecutionResult } = await import("/app/lib/commander/agent-execution-result.mjs");
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("incidencia"),
+      });
+      const childId = mod.getActiveProcess(rec.subjectId).processId;
+      const applied = mod.applyResumeFromExecutionResult({
+        subjectId: rec.subjectId,
+        result: makeAgentExecutionResult({
+          status: "completed",
+          processId: childId,
+          agentId: "incidencias",
+          resumePolicy: "auto",
+          resumeTargetProcessId: viaje.processId,
+        }),
+      });
+      const after = orchSnap(rec.subjectId);
+      rec.completionReason = "contract_auto_resume";
+      rec.pass = applied.ok && after.active?.processId === viaje.processId && after.stackDepth === 0;
+    }),
+  );
+
+  // X3 waiting_user sin pop
+  cases.push(
+    await runCase("X3", "waiting_user sin pop", PHONES.C8, async (rec) => {
+      ensureViaje(rec.subjectId);
+      await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      const { makeAgentExecutionResult } = await import("/app/lib/commander/agent-execution-result.mjs");
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("reclamo"),
+      });
+      const depth = mod.stackDepth(rec.subjectId);
+      const applied = mod.applyResumeFromExecutionResult({
+        subjectId: rec.subjectId,
+        result: makeAgentExecutionResult({
+          status: "waiting_user",
+          processId: mod.getActiveProcess(rec.subjectId).processId,
+          agentId: "reclamos",
+          resumePolicy: "none",
+        }),
+      });
+      rec.completionReason = "waiting_no_pop";
+      rec.pass = !applied.ok && mod.stackDepth(rec.subjectId) === depth;
+    }),
+  );
+
+  // X4 failed sin pop destructivo
+  cases.push(
+    await runCase("X4", "failed sin pop destructivo", PHONES.C6, async (rec) => {
+      ensureViaje(rec.subjectId);
+      await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("incidencia"),
+      });
+      const depth = mod.stackDepth(rec.subjectId);
+      const childId = mod.getActiveProcess(rec.subjectId).processId;
+      const marked = mod.markActiveFailedNoPop({ subjectId: rec.subjectId });
+      rec.completionReason = "failed_no_destructive_pop";
+      rec.pass =
+        marked.ok &&
+        mod.getProcess(childId).status === "failed" &&
+        mod.stackDepth(rec.subjectId) === depth;
+    }),
+  );
+
+  // X5 resumeTarget inexistente
+  cases.push(
+    await runCase("X5", "resumeTarget inexistente", PHONES.C7, async (rec) => {
+      ensureViaje(rec.subjectId);
+      await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("reclamo"),
+      });
+      const depth = mod.stackDepth(rec.subjectId);
+      const bad = mod.resumeUntil({ subjectId: rec.subjectId, processId: "missing-id-xyz" });
+      rec.completionReason = "target_not_found";
+      rec.pass = !bad.ok && bad.reason === "process_not_found" && mod.stackDepth(rec.subjectId) === depth;
+    }),
+  );
+
+  // X6 restart stack anidado
+  cases.push(
+    await runCase("X6", "restart stack anidado persistido", PHONES.C1, async (rec) => {
+      ensureViaje(rec.subjectId);
+      await seedActive(rec.subjectId, "viaje_solicitud", "viajes");
+      const mod = await import("/app/lib/commander/interrupt/index.mjs");
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("incidencia"),
+      });
+      mod.pushInterrupt({
+        subjectId: rec.subjectId,
+        parentProcess: mod.getActiveProcess(rec.subjectId),
+        childSpec: mod.childSpecForIntent("reclamo"),
+      });
+      const paths = mod.getOrchestrationPaths();
+      const raw = JSON.parse(fs.readFileSync(paths.ORCH_FILE, "utf8"));
+      const again = mod.getOrchestration(rec.subjectId);
+      rec.completionReason = "persist_nested_stack";
+      rec.pass = raw[rec.subjectId]?.interruptStack?.length === 2 && again.interruptStack.length === 2;
     }),
   );
 
