@@ -60,7 +60,7 @@ function Bubble({ m }: { m: AgentChatMessage }) {
         className={clsx(
           "max-w-[88%] rounded-2xl px-3 py-2 text-sm shadow-sm",
           mine
-            ? "rounded-br-md bg-[#1a6b55] text-white"
+            ? "rounded-br-md bg-[#d8f3ee] text-[#1f2937]"
             : "rounded-bl-md bg-white/[0.07] text-[var(--text)] ring-1 ring-white/10",
         )}
       >
@@ -68,7 +68,7 @@ function Bubble({ m }: { m: AgentChatMessage }) {
         <div
           className={clsx(
             "mt-1 flex flex-wrap items-center gap-1.5 text-[10px]",
-            mine ? "justify-end text-white/55" : "text-[var(--text-faint)]",
+            mine ? "justify-end text-[#4b5563]" : "text-[var(--text-faint)]",
           )}
         >
           {formatTime(m.at)}
