@@ -451,7 +451,7 @@ export function DestinosPanel() {
                   </button>
                   {verHistorialTecnico && (
                     <ul className="mt-2 space-y-1 text-[11px] text-[var(--text-faint)]">
-                      {activo.historial.map((h, i) => (
+                      {(activo.historial || []).map((h, i) => (
                         <li key={`${h}-${i}`}>{h}</li>
                       ))}
                     </ul>
