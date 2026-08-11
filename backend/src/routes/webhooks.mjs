@@ -65,6 +65,7 @@ import {
   buildInboundMessage,
   isCommanderV1Enabled,
   isCommanderShadowEnabled,
+  isCommanderV11InterruptEnabled,
 } from "../../../lib/commander/index.mjs";
 import { executeCommanderDecision } from "../../../lib/commander/execute.mjs";
 import {
@@ -1166,6 +1167,7 @@ export default async function webhooksRoutes(fastify) {
     ],
     sol_commander_v1: isCommanderV1Enabled(),
     sol_commander_shadow: isCommanderShadowEnabled(),
+    sol_commander_v1_1_interrupt: isCommanderV11InterruptEnabled(),
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
