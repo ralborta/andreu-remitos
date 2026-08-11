@@ -7,15 +7,19 @@ import * as destinosStore from "../db/destinos-store.mjs";
 
 function mapDestino(row) {
   if (!row) return null;
+  const latRaw = row.lat;
+  const lngRaw = row.lng;
+  const lat = typeof latRaw === "number" ? latRaw : Number(latRaw);
+  const lng = typeof lngRaw === "number" ? lngRaw : Number(lngRaw);
   return {
     id: row.id,
     estado: row.estado,
     cliente: row.cliente,
     telefonoCliente: row.telefono_cliente,
     telefonoChofer: row.telefono_chofer,
-    formattedAddress: row.formatted_address,
-    lat: row.lat,
-    lng: row.lng,
+    formattedAddress: row.formatted_address || row.direccion || "",
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null,
     partial: row.partial,
     correccion: row.correccion,
     ultimaRespuestaCliente: row.ultima_respuesta_cliente ?? null,

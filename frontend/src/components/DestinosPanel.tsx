@@ -409,13 +409,13 @@ export function DestinosPanel() {
               {activo.correccion && <Pill color="#fb923c">Corregido</Pill>}
             </div>
             <p className="text-sm text-white">{activo.formattedAddress || "Sin dirección"}</p>
-            {typeof activo.lat === "number" && typeof activo.lng === "number" ? (
+            {Number.isFinite(Number(activo.lat)) && Number.isFinite(Number(activo.lng)) ? (
               <>
                 <p className="mt-1 text-xs tabular-nums text-[var(--text-dim)]">
-                  {activo.lat.toFixed(5)}, {activo.lng.toFixed(5)}
+                  {Number(activo.lat).toFixed(5)}, {Number(activo.lng).toFixed(5)}
                 </p>
                 <a
-                  href={mapsUrl(activo.lat, activo.lng)}
+                  href={mapsUrl(Number(activo.lat), Number(activo.lng))}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-2 inline-block text-xs text-[var(--violet-2)] hover:underline"
