@@ -116,7 +116,7 @@ export function RendicionPanel() {
           <div>
             <h3 className="font-semibold text-white">Cola de aprobación</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Clic en un gasto para ver resumen y transcripción OCR · verificación humana
+              Clic en un registro para ver el detalle y la transcripción
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -202,30 +202,12 @@ export function RendicionPanel() {
                           </div>
                         </td>
                         <td className="py-3 pr-3 text-[var(--text-dim)]">
-                          <div>{g.choferNombre || "—"}</div>
-                          <div className="text-xs text-[var(--text-faint)]">{g.telefono || ""}</div>
+                          {g.choferNombre || "—"}
                         </td>
                         <td className="py-3 pr-3 text-[var(--text-dim)]">{g.categoriaLabel}</td>
                         <td className="py-3 pr-3 tabular text-white">{g.montoLabel}</td>
-                        <td className="max-w-[240px] py-3 pr-3 text-[var(--text-dim)]">
-                          <div className="truncate">{g.proveedor || g.descripcion || g.notaChofer || "—"}</div>
-                          {g.imagenUrl && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const src = browsableMediaUrl(g.imagenUrl);
-                                if (!src) return;
-                                setFoto({
-                                  src,
-                                  title: `${g.codigo} · ${g.categoriaLabel}${g.montoLabel ? ` · ${g.montoLabel}` : ""}`,
-                                });
-                              }}
-                              className="mt-1 inline-block text-xs text-[var(--violet-2)] hover:underline"
-                            >
-                              Ver foto
-                            </button>
-                          )}
+                        <td className="max-w-[200px] truncate py-3 pr-3 text-[var(--text-dim)]">
+                          {g.proveedor || g.descripcion || "—"}
                         </td>
                         <td className="py-3 pr-3">
                           <span
@@ -269,7 +251,7 @@ export function RendicionPanel() {
                       {open && (
                         <tr className="border-b border-[var(--border)]/60 bg-[var(--bg-2)]/80">
                           <td colSpan={7} className="px-4 py-3">
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                               <div>
                                 <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
                                   Resumen
@@ -278,6 +260,13 @@ export function RendicionPanel() {
                                   {g.descripcion || g.categoriaLabel}
                                   {g.montoLabel !== "—" ? ` · ${g.montoLabel}` : ""}
                                 </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Chofer
+                                </p>
+                                <p className="mt-0.5 text-sm text-white">{g.choferNombre || "—"}</p>
+                                <p className="text-xs text-[var(--text-faint)]">{g.telefono || ""}</p>
                               </div>
                               <div>
                                 <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
@@ -304,6 +293,28 @@ export function RendicionPanel() {
                                   {fmtFecha(g.createdAt)}
                                 </p>
                               </div>
+                              {g.imagenUrl && (
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                    Comprobante
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const src = browsableMediaUrl(g.imagenUrl);
+                                      if (!src) return;
+                                      setFoto({
+                                        src,
+                                        title: `${g.codigo} · ${g.categoriaLabel}`,
+                                      });
+                                    }}
+                                    className="mt-0.5 text-sm text-[var(--violet-2)] hover:underline"
+                                  >
+                                    Ver foto
+                                  </button>
+                                </div>
+                              )}
                             </div>
                             <div className="mt-3">
                               <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">

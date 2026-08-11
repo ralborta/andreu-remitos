@@ -111,7 +111,7 @@ export function PodPanel() {
           <div>
             <h3 className="font-semibold text-white">Constancias de entrega (POD)</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Clic en un caso para ver resumen y transcripción OCR · confirmación en mesa
+              Clic en un registro para ver el detalle y la transcripción
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -196,23 +196,15 @@ export function PodPanel() {
                                 open && "rotate-180",
                               )}
                             />
-                            <div>
-                              <div>{g.codigo}</div>
-                              {g.viaje !== "—" && (
-                                <div className="text-[10px] font-normal text-[var(--text-faint)]">
-                                  {g.viaje}
-                                </div>
-                              )}
-                            </div>
+                            {g.codigo}
                           </div>
                         </td>
-                        <td className="py-3 pr-3 text-white">{g.receptor}</td>
-                        <td className="py-3 pr-3 text-[var(--text-dim)]">
-                          <div>{g.chofer}</div>
-                          <div className="text-xs text-[var(--text-faint)]">{g.telefono}</div>
+                        <td className="max-w-[160px] truncate py-3 pr-3 text-white">{g.receptor}</td>
+                        <td className="max-w-[140px] truncate py-3 pr-3 text-[var(--text-dim)]">
+                          {g.chofer}
                         </td>
                         <td className="max-w-[200px] truncate py-3 pr-3 text-[var(--text-dim)]">
-                          {g.destino}
+                          {g.destino === "—" ? "—" : g.destino}
                         </td>
                         <td className="py-3 pr-3" onClick={(e) => e.stopPropagation()}>
                           {g.imagenUrl ? (
@@ -222,9 +214,9 @@ export function PodPanel() {
                                 const src = browsableMediaUrl(g.imagenUrl);
                                 if (src) setFoto({ src, title: g.codigo });
                               }}
-                              className="text-xs text-[var(--violet-2)] hover:underline"
+                              className="text-sm text-[var(--violet-2)] hover:underline"
                             >
-                              Ver foto
+                              Ver
                             </button>
                           ) : (
                             "—"
@@ -273,7 +265,7 @@ export function PodPanel() {
                       {open && (
                         <tr className="border-b border-[var(--border)]/60 bg-[var(--bg-2)]/80">
                           <td colSpan={7} className="px-4 py-3">
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                               <div>
                                 <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
                                   Receptor
@@ -282,11 +274,18 @@ export function PodPanel() {
                               </div>
                               <div>
                                 <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                  Chofer
+                                </p>
+                                <p className="mt-0.5 text-sm text-white">{g.chofer}</p>
+                                <p className="text-xs text-[var(--text-faint)]">{g.telefono}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
                                   Pedido / viaje
                                 </p>
                                 <p className="mt-0.5 text-sm text-[var(--text-dim)]">{g.viaje}</p>
                               </div>
-                              <div>
+                              <div className="sm:col-span-2">
                                 <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
                                   Destino
                                 </p>
@@ -300,6 +299,24 @@ export function PodPanel() {
                                   {fmtFecha(g.createdAt)}
                                 </p>
                               </div>
+                              {g.imagenUrl && (
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                                    Evidencia
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const src = browsableMediaUrl(g.imagenUrl);
+                                      if (src) setFoto({ src, title: g.codigo });
+                                    }}
+                                    className="mt-0.5 text-sm text-[var(--violet-2)] hover:underline"
+                                  >
+                                    Ver foto
+                                  </button>
+                                </div>
+                              )}
                             </div>
                             {g.notaChofer && (
                               <div className="mt-3">
