@@ -804,9 +804,11 @@ function inferMediaKind(ev, esFoto, mediaEsAudio) {
 /**
  * Camino SOL Commander v1: Adapter → decide() → executor.
  * Sin decisiones conversacionales pre-Commander.
+ * Con SHADOW=true: observa (traces + parity vs flow del executor) sin re-ejecutar legacy.
  */
 async function handleInboundCommanderV1(request, ev, tenantCfg) {
   const log = request.log;
+  const t0 = Date.now();
   const texto = ev.message?.trim() || "";
   const conv = ev.from ? await convStore.getConversacion(ev.from) : null;
   const mediaEsAudio = esEventoAudio(ev, null);
@@ -824,13 +826,63 @@ async function handleInboundCommanderV1(request, ev, tenantCfg) {
     location: ev.location || null,
   });
 
+  const activeProcesses = await detectActiveProcesses(ev.from, conv);
   const decision = await commanderDecide({
     message,
     conversation: conv,
-    processes: [],
+    processes: activeProcesses,
     actor,
     log,
   });
+  const decideMs = Date.now() - t0;
+
+  if (isCommanderShadowEnabled()) {
+    enterShadowStore({
+      messageId: message.messageId,
+      subjectIdHash: hashSubject(ev.from),
+      textPreview: sanitizeText(texto),
+      activeProcesses,
+      commanderDecision: decision,
+      log,
+      recorded: false,
+      v1Active: true,
+      decideMs,
+    });
+    log.info(
+      {
+        shadow: true,
+        v1: true,
+        decideMs,
+        messageId: message.messageId,
+        decisionId: decision.decisionId,
+        intent: decision.intent,
+        agentId: decision.agentId,
+        action: decision.action,
+        processBinding: Boolean(decision.processBinding),
+        processType: decision.processType ?? null,
+        branch: decision.trace?.branch,
+        sticky: decision.trace?.notes?.[0] ?? null,
+        activeProcesses: activeProcesses.map((p) => p.processType),
+        executorKey: decision.executorHints?.executorKey ?? null,
+      },
+      "SOL Commander V1+SHADOW observation armed",
+    );
+  } else {
+    log.info(
+      {
+        v1: true,
+        decideMs,
+        decisionId: decision.decisionId,
+        intent: decision.intent,
+        agentId: decision.agentId,
+        action: decision.action,
+        processBinding: Boolean(decision.processBinding),
+        sticky: decision.trace?.notes?.[0] ?? null,
+        executorKey: decision.executorHints?.executorKey ?? null,
+      },
+      "SOL Commander V1 decision",
+    );
+  }
 
   const deps = {
     ev,
@@ -858,7 +910,20 @@ async function handleInboundCommanderV1(request, ev, tenantCfg) {
     runRemitosAudio: async () => runLegacyRemitosAudio(request, ev, tenantCfg),
   };
 
-  return executeCommanderDecision(decision, { ev, texto }, deps);
+  const out = await executeCommanderDecision(decision, { ev, texto }, deps);
+  log.info(
+    {
+      v1: true,
+      decideMs,
+      totalMs: Date.now() - t0,
+      decisionId: decision.decisionId,
+      flow: out?.flow ?? null,
+      agentId: decision.agentId,
+      action: decision.action,
+    },
+    "SOL Commander V1 executor done",
+  );
+  return out;
 }
 
 /** Shadow: decide() + store ALS; legacy sigue ejecutando. */
@@ -1138,11 +1203,24 @@ export default async function webhooksRoutes(fastify) {
 
       // ——— SOL Commander v1 (único cerebro de decisión cuando flag ON) ———
       if (isCommanderV1Enabled()) {
-        request.log.info({ from: ev.from }, "SOL Commander V1 path");
-        return handleInboundCommanderV1(request, ev, tenantCfg);
+        try {
+          request.log.info({ from: ev.from }, "SOL Commander V1 path");
+          return await handleInboundCommanderV1(request, ev, tenantCfg);
+        } catch (err) {
+          request.log.error(
+            {
+              err: err?.message || String(err),
+              stack: err?.stack,
+              from: ev.from,
+              fallback: "legacy",
+            },
+            "SOL Commander V1 ERROR → fallback legacy",
+          );
+          // cae al path legacy debajo (rollback por request)
+        }
       }
-      // Shadow: decide + traces; legacy es el único que ejecuta
-      if (isCommanderShadowEnabled()) {
+      // Shadow: decide + traces; legacy es el único que ejecuta (solo si V1 off o tras fallback)
+      if (isCommanderShadowEnabled() && !isCommanderV1Enabled()) {
         const shadowStore = await prepareCommanderShadow(ev, request.log);
         if (shadowStore) {
           enterShadowStore(shadowStore);
