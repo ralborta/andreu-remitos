@@ -51,22 +51,29 @@ function sleep(ms) {
 }
 
 async function postWa({ from, name, body }) {
-  const res = await fetch(`${API}/api/webhooks/builderbot`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      eventName: "message.incoming",
-      data: { from, name: name || "V1.1 Controlled", body: body || "" },
-    }),
-  });
-  const text = await res.text();
-  let json = {};
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 45000);
   try {
-    json = text ? JSON.parse(text) : {};
-  } catch {
-    json = { raw: text.slice(0, 300) };
+    const res = await fetch(`${API}/api/webhooks/builderbot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventName: "message.incoming",
+        data: { from, name: name || "V1.1 Controlled", body: body || "" },
+      }),
+      signal: ac.signal,
+    });
+    const text = await res.text();
+    let json = {};
+    try {
+      json = text ? JSON.parse(text) : {};
+    } catch {
+      json = { raw: text.slice(0, 300) };
+    }
+    return { status: res.status, json };
+  } finally {
+    clearTimeout(timer);
   }
-  return { status: res.status, json };
 }
 
 function readJson(file, fallback) {
