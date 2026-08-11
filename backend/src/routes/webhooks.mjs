@@ -67,6 +67,14 @@ import {
   isCommanderShadowEnabled,
 } from "../../../lib/commander/index.mjs";
 import { executeCommanderDecision } from "../../../lib/commander/execute.mjs";
+import {
+  detectActiveProcesses,
+  sanitizeText,
+  hashSubject,
+  noteLegacyResponse,
+  enterShadowStore,
+  getShadowStore,
+} from "../../../lib/commander/shadow-trace.mjs";
 
 /**
  * Con Baileys self-hosted el envío confiable es POST /v1/messages.
@@ -79,6 +87,15 @@ const webhookSilent =
   Boolean(baileysBotUrl) || process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
 
 function respuestaWebhook({ message = "", ...rest } = {}) {
+  // Shadow: comparar decisión Commander vs outcome legacy (sin alterar respuesta).
+  try {
+    const store = getShadowStore();
+    if (store?.commanderDecision) {
+      noteLegacyResponse({ message, ...rest }, store.log);
+    }
+  } catch {
+    /* ignore shadow errors */
+  }
   if (webhookSilent) return { received: true, ...rest };
   return { message, ...rest };
 }
@@ -844,42 +861,50 @@ async function handleInboundCommanderV1(request, ev, tenantCfg) {
   return executeCommanderDecision(decision, { ev, texto }, deps);
 }
 
-/** Shadow: decide() sin ejecutar — solo log de paridad. */
+/** Shadow: decide() + store ALS; legacy sigue ejecutando. */
+async function prepareCommanderShadow(ev, log) {
+  const texto = ev.message?.trim() || "";
+  const mediaEsAudio = esEventoAudio(ev, null);
+  const esFoto = Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
+  const hasMedia = Boolean(ev.media?.url) || Boolean(ev.location);
+  const actor = await buildCommanderActor(ev.from);
+  const message = buildInboundMessage({
+    subjectId: ev.from,
+    text: texto || null,
+    hasMedia,
+    mediaKind: inferMediaKind(ev, esFoto, mediaEsAudio),
+    displayName: ev.nombre || null,
+    location: ev.location || null,
+  });
+  const activeProcesses = await detectActiveProcesses(ev.from);
+  const decision = await commanderDecide({
+    message,
+    conversation: ev.from ? await convStore.getConversacion(ev.from) : null,
+    processes: activeProcesses,
+    actor,
+    log: null,
+  });
+  return {
+    messageId: message.messageId,
+    subjectIdHash: hashSubject(ev.from),
+    textPreview: sanitizeText(texto),
+    activeProcesses,
+    commanderDecision: decision,
+    log,
+    recorded: false,
+  };
+}
+
+/** @deprecated use prepareCommanderShadow + enterWith / runWithShadowStore */
 async function shadowCommanderDecide(ev, tenantCfg, log) {
+  void tenantCfg;
   try {
-    const texto = ev.message?.trim() || "";
-    const mediaEsAudio = esEventoAudio(ev, null);
-    const esFoto = Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
-    const hasMedia = Boolean(ev.media?.url) || Boolean(ev.location);
-    const actor = await buildCommanderActor(ev.from);
-    const message = buildInboundMessage({
-      subjectId: ev.from,
-      text: texto || null,
-      hasMedia,
-      mediaKind: inferMediaKind(ev, esFoto, mediaEsAudio),
-      displayName: ev.nombre || null,
-      location: ev.location || null,
-    });
-    const decision = await commanderDecide({
-      message,
-      conversation: ev.from ? await convStore.getConversacion(ev.from) : null,
-      processes: [],
-      actor,
-      log: null,
-    });
-    log?.info?.(
-      {
-        shadow: true,
-        intent: decision.intent,
-        action: decision.action,
-        executorKey: decision.executorHints?.executorKey,
-        branch: decision.trace?.branch,
-        agentId: decision.agentId,
-      },
-      "SOL Commander SHADOW decision (legacy path ejecutará)",
-    );
+    const store = await prepareCommanderShadow(ev, log);
+    // Deja el store listo; el caller debe runWithShadowStore.
+    return store;
   } catch (err) {
     log?.warn?.({ err: err.message }, "SOL Commander SHADOW falló");
+    return null;
   }
 }
 
@@ -1115,8 +1140,25 @@ export default async function webhooksRoutes(fastify) {
         request.log.info({ from: ev.from }, "SOL Commander V1 path");
         return handleInboundCommanderV1(request, ev, tenantCfg);
       }
+      // Shadow: decide + traces; legacy es el único que ejecuta
       if (isCommanderShadowEnabled()) {
-        void shadowCommanderDecide(ev, tenantCfg, request.log);
+        const shadowStore = await prepareCommanderShadow(ev, request.log);
+        if (shadowStore) {
+          enterShadowStore(shadowStore);
+          request.log.info(
+            {
+              shadow: true,
+              messageId: shadowStore.messageId,
+              decisionId: shadowStore.commanderDecision?.decisionId,
+              intent: shadowStore.commanderDecision?.intent,
+              agentId: shadowStore.commanderDecision?.agentId,
+              action: shadowStore.commanderDecision?.action,
+              branch: shadowStore.commanderDecision?.trace?.branch,
+              activeProcesses: shadowStore.activeProcesses?.map((p) => p.processType),
+            },
+            "SOL Commander SHADOW armed (legacy ejecutará)",
+          );
+        }
       }
 
       const texto = ev.message?.trim() || "";
