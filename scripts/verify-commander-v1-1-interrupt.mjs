@@ -17,6 +17,7 @@ process.env.SOL_COMMANDER_V1 = "true";
 process.env.SOL_COMMANDER_SHADOW = "true";
 process.env.SOL_COMMANDER_V1_1_INTERRUPT = "true";
 process.env.SOL_COMMANDER_V1_1_MAX_DEPTH = "2";
+process.env.SOL_COMMANDER_V1_1_ALLOWLIST = "5491100001001,5491100001002,5491100001003,5491100001004,5491100001005,5491100001505,5491100001006,5491100001606,5491100001007,5491100001008,5491100001009,5491100001010,5491100001011,5491100001012,5491100001013";
 // TTL corto para C8 / expire (override por tipo)
 process.env.SOL_COMMANDER_V1_1_PAUSED_TTL_MS = String(60 * 60 * 1000); // 1h default test
 process.env.SOL_COMMANDER_V1_1_TTL_REMITO_REVISION_MS = "50"; // 50ms para expire rápido
@@ -27,6 +28,8 @@ const {
   buildInboundMessage,
   bootstrapAgentRegistry,
   isCommanderV11InterruptEnabled,
+  isCommanderV11InterruptEnabledForSubject,
+  getCommanderV11Allowlist,
   interrupt,
 } = await import("../lib/commander/index.mjs");
 
@@ -86,7 +89,40 @@ function seedActive(subjectId, processType, agentId, domainRef = null) {
   assert.equal(interrupt.getInterruptMaxDepth(), 2);
   assert.ok(interrupt.getPausedTtlMsForProcessType("remito_revision") <= 50);
   assert.ok(interrupt.getPausedTtlMsForProcessType("viaje_solicitud") >= 1000);
-  ok("config: maxDepth=2 configurable; TTL por ProcessType");
+  assert.equal(getCommanderV11Allowlist().mode, "list");
+  assert.equal(isCommanderV11InterruptEnabledForSubject("5491100001001"), true);
+  assert.equal(isCommanderV11InterruptEnabledForSubject("5491999999999"), false);
+  ok("config: maxDepth=2 configurable; TTL por ProcessType; allowlist gating");
+}
+
+// Allowlist: sujeto fuera → decideV1 (sin push)
+try {
+  reset();
+  process.env.SOL_COMMANDER_V1_1_ALLOWLIST = "5491100001001";
+  const sid = "5491999888777";
+  interrupt.ensureActiveFromDomain({
+    subjectId: sid,
+    processType: "remito_revision",
+    agentId: "remitos",
+  });
+  // Re-import no; flags leen env en cada call
+  const d = await decide({
+    message: msg(sid, "necesito un viaje"),
+    actor: actorChofer,
+    processes: [],
+    conversation: { remito_en_revision_id: "x" },
+    log: null,
+    intentOverride: { intent: "viaje", confidence: 0.95, fuente: "heuristica" },
+  });
+  assert.notEqual(d.interrupt?.op, "push");
+  assert.equal(interrupt.stackDepth(sid), 0);
+  process.env.SOL_COMMANDER_V1_1_ALLOWLIST =
+    "5491100001001,5491100001002,5491100001003,5491100001004,5491100001005,5491100001505,5491100001006,5491100001606,5491100001007,5491100001008,5491100001009,5491100001010,5491100001011,5491100001012,5491100001013";
+  ok("allowlist: sujeto fuera → V1 sin interrupt");
+} catch (e) {
+  process.env.SOL_COMMANDER_V1_1_ALLOWLIST =
+    "5491100001001,5491100001002,5491100001003,5491100001004,5491100001005,5491100001505,5491100001006,5491100001606,5491100001007,5491100001008,5491100001009,5491100001010,5491100001011,5491100001012,5491100001013";
+  fail("allowlist off-subject", e);
 }
 
 // ─── C1 remito → lateral chat → resume ──────────────────────────
