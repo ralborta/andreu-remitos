@@ -454,7 +454,10 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
 async function tryProcesarPod(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
   if (!ev.from) return null;
   const t = String(texto ?? "").trim();
-  if (!forzar && !imageBuffer && !parecePod(t)) return null;
+  if (!forzar && !imageBuffer) {
+    const quiere = await parecePod(t, { log });
+    if (!quiere) return null;
+  }
 
   try {
     const out = await procesarPodWhatsApp({
@@ -947,37 +950,33 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
-      // POD explícito ANTES de Destinos/ETA (texto o foto con caption)
-      if (
-        ev.from &&
-        esChoferDb &&
-        !pendingPodEarly &&
-        texto &&
-        parecePod(texto) &&
-        !pareceQuiereRemito(texto)
-      ) {
-        let imageBuffer = null;
-        let mime = null;
-        if (esFoto) {
-          try {
-            const dl = await downloadMedia(ev.media.url);
-            if (!/audio/i.test(dl.mime || "")) {
-              imageBuffer = dl.buffer;
-              mime = dl.mime;
+      // POD (IA) ANTES de Destinos/ETA — texto o foto con caption
+      if (ev.from && esChoferDb && !pendingPodEarly && texto && !pareceQuiereRemito(texto)) {
+        const quierePod = await parecePod(texto, { log: request.log });
+        if (quierePod) {
+          let imageBuffer = null;
+          let mime = null;
+          if (esFoto) {
+            try {
+              const dl = await downloadMedia(ev.media.url);
+              if (!/audio/i.test(dl.mime || "")) {
+                imageBuffer = dl.buffer;
+                mime = dl.mime;
+              }
+            } catch (err) {
+              request.log.warn({ err: err.message }, "POD: no pude bajar foto");
             }
-          } catch (err) {
-            request.log.warn({ err: err.message }, "POD: no pude bajar foto");
           }
-        }
-        const podOut = await tryProcesarPod(ev, {
-          texto,
-          log: request.log,
-          forzar: true,
-          imageBuffer,
-          mime,
-        });
-        if (podOut) {
-          return respuestaWebhook({ ...podOut, received: true });
+          const podOut = await tryProcesarPod(ev, {
+            texto,
+            log: request.log,
+            forzar: true,
+            imageBuffer,
+            mime,
+          });
+          if (podOut) {
+            return respuestaWebhook({ ...podOut, received: true });
+          }
         }
       }
 
@@ -1200,23 +1199,22 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        // Foto — POD o rendición (caption) SOLO choferes registrados
+        // Foto — POD (IA) o rendición (caption) SOLO choferes registrados
         const caption = texto || ev.message?.trim() || "";
         const esChoferMedia = await telefonoEsChoferRegistrado(ev.from);
-        if (
-          esChoferMedia &&
-          parecePod(caption) &&
-          !pareceQuiereRemito(caption)
-        ) {
-          const podOut = await tryProcesarPod(ev, {
-            texto: caption,
-            log: request.log,
-            imageBuffer: buffer,
-            mime,
-            forzar: true,
-          });
-          if (podOut) {
-            return respuestaWebhook({ ...podOut, received: true });
+        if (esChoferMedia && caption && !pareceQuiereRemito(caption)) {
+          const quierePod = await parecePod(caption, { log: request.log });
+          if (quierePod) {
+            const podOut = await tryProcesarPod(ev, {
+              texto: caption,
+              log: request.log,
+              imageBuffer: buffer,
+              mime,
+              forzar: true,
+            });
+            if (podOut) {
+              return respuestaWebhook({ ...podOut, received: true });
+            }
           }
         }
         if (pareceRendicionGasto(caption) && esChoferMedia) {
