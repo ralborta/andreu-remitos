@@ -361,8 +361,8 @@ export interface DestinoValidacion {
   telefonoCliente: string;
   telefonoChofer: string | null;
   formattedAddress: string;
-  lat: number;
-  lng: number;
+  lat?: number | null;
+  lng?: number | null;
   partial?: boolean;
   correccion?: string;
   ultimaRespuestaCliente?: string | null;
