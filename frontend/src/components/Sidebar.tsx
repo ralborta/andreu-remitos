@@ -16,6 +16,7 @@ import {
   Users,
   Activity,
   ChartColumn,
+  Radio,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -99,6 +100,20 @@ export function Sidebar({
           </Link>
 
           <Link
+            href="/agentes/commander"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/agentes/commander")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <Radio size={18} />
+            Chat Central
+          </Link>
+
+          <Link
             href="/monitor"
             onClick={onClose}
             className={clsx(
@@ -149,7 +164,7 @@ export function Sidebar({
             Agentes
           </p>
 
-          {agents.map((a) => {
+          {agents.filter((a) => a.slug !== "commander").map((a) => {
             const href = `/agentes/${a.slug}`;
             const isRemitosAgent = a.slug === "remitos";
             const active = isRemitosAgent

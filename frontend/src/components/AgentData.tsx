@@ -14,6 +14,48 @@ import { ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
 import { viajesPorDia, slaPorZona, incidenciasPorTipo } from "@/lib/data";
 
 export function AgentData({ slug }: { slug: string }) {
+  if (slug === "commander") {
+    return (
+      <ModuleWithChat
+        agentId="commander"
+        agentLabel="Chat Central"
+        suggestions={[
+          "¿cuántos viajes activos hay?",
+          "¿cuántas incidencias abiertas?",
+          "resumen operativo: viajes + demoras",
+          "¿cuántos POD pendientes hoy?",
+        ]}
+        guideSections={[
+          {
+            title: "Transversal",
+            items: [
+              "Combiná dominios en una pregunta (viajes + incidencias)",
+              "Demoras → ETA / Incidencias (no “demorado” en Viajes)",
+              "Follow-ups: ¿cuáles? ¿y de esos…?",
+            ],
+          },
+          {
+            title: "Dominios",
+            items: ["Viajes", "Incidencias", "Rendición", "ETA", "POD", "Remitos (solo persistidos)"],
+          },
+          {
+            title: "Límites",
+            items: ["Solo lectura", "Sin WhatsApp outbound", "Sin OCR / ingest / aprobaciones"],
+          },
+        ]}
+        emptyHint="Soy el Chat Central. Consulto Viajes, Incidencias, Rendición, ETA, POD y Remitos con datos reales."
+      >
+        <Card className="p-4">
+          <SectionTitle>Chat Central Commander</SectionTitle>
+          <p className="mt-2 text-sm text-[var(--text-dim)]">
+            Orquesta consultas read-only entre los especialistas ya habilitados. Misma arquitectura
+            LLM → capabilities → LLM; si la IA falla, error controlado (sin atajos por keywords).
+          </p>
+        </Card>
+      </ModuleWithChat>
+    );
+  }
+
   if (slug === "remitos") {
     return (
       <ModuleWithChat

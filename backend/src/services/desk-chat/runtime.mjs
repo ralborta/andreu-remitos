@@ -26,7 +26,18 @@ function compactHistory(history, n = 10) {
 }
 
 function buildPlanSystem(agentId, catalog) {
-  return `Sos el planificador del desk chat del agente especialista "${agentId}" (SOL / TransitOne).
+  const isCommander = agentId === "commander";
+  const role = isCommander
+    ? `Sos el planificador del Chat Central Commander de mesa (SOL / TransitOne). Orquestás consultas read-only entre especialistas (pod, viajes, incidencias, rendicion, eta, remitos) eligiendo capabilities del catálogo.`
+    : `Sos el planificador del desk chat del agente especialista "${agentId}" (SOL / TransitOne).`;
+
+  const domainRules = isCommander
+    ? `- Podés combinar varias capabilities de distintos dominios en un mismo plan (p.ej. viajes.resumen + incidencias.resumen).
+- Elegí el dominio correcto: demoras → eta/incidencias (no inventes estado "demorado" en viajes); POD → pod.*; remitos solo datos persistidos.
+- type=out_of_domain solo si la pregunta pide mutaciones, WhatsApp outbound, OCR/ingest o algo fuera de los packs de lectura.`
+    : `- type=out_of_domain si la pregunta no es de este agente.`;
+
+  return `${role}
 Respondé SOLO JSON con este shape:
 {
   "type": "query"|"clarify"|"out_of_domain"|"chitchat",
@@ -43,7 +54,7 @@ Reglas:
 - workingSetOnly=true SOLO para follow-ups explícitos sobre el conjunto anterior ("de esos", "cuáles", "y de…").
 - Para listados nuevos o "últimos N": NO uses workingSetOnly; usá limit.
 - Un conteo 0 es un dato válido.
-- type=out_of_domain si la pregunta no es de este agente.
+${domainRules}
 - type=chitchat si no requiere datos.
 - type=clarify si falta un dato imprescindible (ej. código).
 - No apruebes, rechaces ni mutes nada (solo lectura).
@@ -53,7 +64,11 @@ ${JSON.stringify(catalog)}`;
 }
 
 function buildAnswerSystem(agentId) {
-  return `Sos el agente especialista "${agentId}" de mesa (SOL).
+  const isCommander = agentId === "commander";
+  const role = isCommander
+    ? `Sos el Chat Central Commander de mesa (SOL). Sintetizás respuestas operativas a partir de resultados de varios especialistas.`
+    : `Sos el agente especialista "${agentId}" de mesa (SOL).`;
+  return `${role}
 Respondé SOLO JSON: {"reply":"texto en español","entityIds":["..."],"citedIds":["..."],"label":"opcional"}.
 Reglas:
 - Usá únicamente capabilityResults. Si ok=false o el campo no existe en el resultado: "Actualmente no tengo ese dato disponible."
@@ -61,7 +76,30 @@ Reglas:
 - Si una lista viene vacía (count=0), decí que no hay coincidencias con esos filtros.
 - No inventes cantidades, estados, ids, destinos ni motivos.
 - entityIds/citedIds solo ids presentes en los resultados.
-- Sé conciso y operativo. No ejecutes acciones.`;
+- Sé conciso y operativo. No ejecutes acciones.${
+    isCommander
+      ? "\n- Si hay resultados de varios dominios, aclará brevemente de qué módulo viene cada dato."
+      : ""
+  }`;
+}
+
+function entityTypeFromResults(results, agentId, plan) {
+  const types = [];
+  for (const r of results || []) {
+    if (!r?.ok || !r.result) continue;
+    if (r.result.entityType) types.push(String(r.result.entityType));
+    else if (r.capability?.includes(".")) types.push(String(r.capability).split(".")[0]);
+  }
+  const unique = [...new Set(types)];
+  if (unique.length === 1) return unique[0];
+  if (unique.length > 1) {
+    const lastCap = plan?.queries?.[plan.queries.length - 1]?.capability;
+    if (lastCap?.includes(".")) return String(lastCap).split(".")[0];
+    return unique[unique.length - 1];
+  }
+  const firstCap = plan?.queries?.[0]?.capability;
+  if (firstCap?.includes(".")) return String(firstCap).split(".")[0];
+  return agentId;
 }
 
 function deriveWorkingSet({ plan, results, answer, prevWs, agentId }) {
@@ -102,11 +140,11 @@ function deriveWorkingSet({ plan, results, answer, prevWs, agentId }) {
   entityIds = entityIds.filter((id) => (seen.has(id) ? false : (seen.add(id), true)));
 
   return {
-    entityType: agentId,
+    entityType: entityTypeFromResults(results, agentId, plan),
     entityIds,
     filters: plan?.queries?.[0]?.args || base.filters || {},
     lastGoal: plan?.goal || null,
-    lastCapability: plan?.queries?.[0]?.capability || null,
+    lastCapability: plan?.queries?.[plan.queries?.length - 1]?.capability || plan?.queries?.[0]?.capability || null,
     label: answer?.label || plan?.goal || base.label,
   };
 }
@@ -249,8 +287,12 @@ export async function runDeskChatTurn(opts = {}) {
       plan.type === "clarify"
         ? plan.clarifyQuestion || "Necesito un dato más para consultar (por ejemplo un código POD)."
         : plan.type === "out_of_domain"
-          ? `Esa consulta está fuera del dominio del agente ${agentId}. Probá en el módulo correspondiente o en el Chat Central.`
-          : "¡Hola! Puedo consultar datos reales de este módulo. ¿Qué necesitás saber?";
+          ? agentId === "commander"
+            ? "Esa consulta está fuera del alcance del Chat Central (solo lectura operativa entre Viajes, Incidencias, Rendición, ETA, POD y Remitos). Reformulá o usá el módulo operativo correspondiente."
+            : `Esa consulta está fuera del dominio del agente ${agentId}. Probá en el módulo correspondiente o en el Chat Central.`
+          : agentId === "commander"
+            ? "¡Hola! Soy el Chat Central. Puedo consultar Viajes, Incidencias, Rendición, ETA, POD y Remitos (solo lectura). ¿Qué necesitás?"
+            : "¡Hola! Puedo consultar datos reales de este módulo. ¿Qué necesitás saber?";
 
     // Pass 2 opcional para chitchat/clarify con LLM; si falla, usamos static (no es comprensión por keywords de negocio)
     let reply = staticReply;

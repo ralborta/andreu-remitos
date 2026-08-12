@@ -6,7 +6,15 @@ import * as chatStore from "../db/agent-chat-store.mjs";
 import { runDeskChatTurn } from "../services/desk-chat/runtime.mjs";
 import { resolvePodDeskAnswer } from "../services/pod-desk-chat.mjs";
 
-const SUPPORTED = new Set(["pod", "viajes", "incidencias", "rendicion", "eta", "remitos"]);
+const SUPPORTED = new Set([
+  "pod",
+  "viajes",
+  "incidencias",
+  "rendicion",
+  "eta",
+  "remitos",
+  "commander",
+]);
 
 export default async function agentChatRoutes(fastify) {
   fastify.post("/", async (request, reply) => {

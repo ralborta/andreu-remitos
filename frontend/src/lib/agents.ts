@@ -31,6 +31,35 @@ export const STATUS_COLOR: Record<AgentStatus, string> = {
 
 export const agents: Agent[] = [
   {
+    id: 0,
+    slug: "commander",
+    name: "Chat Central Commander",
+    short: "Chat Central",
+    subtitle: "Consulta transversal read-only entre especialistas de mesa",
+    status: "pruebas",
+    icon: "Radio",
+    what: "Chat único de mesa que interpreta en lenguaje natural y consulta los packs read-only de Viajes, Incidencias, Rendición, ETA, POD y Remitos. No envía WhatsApp, no OCR ni mutaciones: solo lectura grounded con el mismo Desk Chat Runtime.",
+    flow: [
+      "Operador pregunta en lenguaje natural",
+      "LLM arma un plan de capabilities",
+      "Se ejecutan consultas read-only de los especialistas",
+      "LLM sintetiza la respuesta con datos reales",
+      "Working set referencial para follow-ups",
+    ],
+    benefits: [
+      "Una sola puerta de consulta",
+      "Misma trazabilidad que los especialistas",
+      "Sin heurísticas ni keywords",
+    ],
+    channels: ["Mesa web", "Desk Chat Runtime"],
+    kpis: [
+      { label: "Dominios", value: "6", trend: "" },
+      { label: "Modo", value: "Solo lectura", trend: "" },
+      { label: "Motor", value: "LLM-first", trend: "" },
+    ],
+    collaboratesWith: ["viajes", "incidencias", "rendicion", "eta", "pod", "remitos"],
+  },
+  {
     id: 1,
     slug: "remitos",
     name: "Agente de Remitos",

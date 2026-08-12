@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   MessageSquareWarning,
   ChartColumnBig,
+  Radio,
   type LucideProps,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ const MAP = {
   ClipboardCheck,
   MessageSquareWarning,
   ChartColumnBig,
+  Radio,
 } as const;
 
 export type IconName = keyof typeof MAP;

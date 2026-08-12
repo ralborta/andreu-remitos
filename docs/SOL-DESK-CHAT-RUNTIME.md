@@ -71,4 +71,6 @@ node scripts/verify-pod-desk-chat.mjs   # legacy forceEngine=rules
 
 ## No incluido (siguiente etapa)
 
-Viajes / Incidencias / … / Chat Central Commander.
+_(ninguno — especialistas + Chat Central Commander en mesa web)_
+
+WhatsApp Commander (`lib/commander`) es un camino distinto; el Chat Central desk **no** lo reemplaza ni lo enciende.
