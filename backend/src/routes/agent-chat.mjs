@@ -52,11 +52,19 @@ export default async function agentChatRoutes(fastify) {
     let answer;
     try {
       if (agentId === "pod") {
+        // forceEngine=rules SOLO si el cliente lo pide explícito (scripts).
+        // La UI nunca debe enviarlo; el runtime no hace fallback heurístico.
         answer = await resolvePodDeskAnswer({
           message,
           workingSet: conv.workingSet,
           history: (conv.messages || []).map((m) => ({ role: m.role, text: m.text })),
           forceEngine: body.forceEngine === "rules" ? "rules" : undefined,
+          tenant,
+          user: {
+            id: user.id || "desk",
+            username: user.username || null,
+            permissions: ["desk:read"],
+          },
           log: request.log,
         });
       }
@@ -83,6 +91,10 @@ export default async function agentChatRoutes(fastify) {
         citedIds: answer.citedIds || [],
         dataSources: answer.dataSources || ["real"],
         factsMeta: answer.factsMeta || null,
+        plan: answer.plan || null,
+        capabilities: answer.trace?.capabilities || [],
+        latencies: answer.trace?.latencies || null,
+        errors: answer.trace?.errors || [],
         userId: user.id || null,
         username: user.username || null,
         tenant,

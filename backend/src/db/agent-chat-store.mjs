@@ -56,7 +56,7 @@ export async function createConversation({
     userId: userId ? String(userId) : null,
     username: username ? String(username) : null,
     channel: String(channel || "web"),
-    workingSet: { podIds: [], label: null },
+    workingSet: emptyWorkingSetPlaceholder(),
     messages: [],
     traces: [],
     meta: meta && typeof meta === "object" ? meta : {},
@@ -67,6 +67,18 @@ export async function createConversation({
   rows.unshift(row);
   writeAll(rows);
   return row;
+}
+
+function emptyWorkingSetPlaceholder() {
+  return {
+    entityType: null,
+    entityIds: [],
+    filters: {},
+    lastGoal: null,
+    lastCapability: null,
+    label: null,
+    podIds: [],
+  };
 }
 
 export async function appendTurn(conversationId, { userMessage, assistantMessage, trace, workingSet } = {}) {
@@ -102,9 +114,23 @@ export async function appendTurn(conversationId, { userMessage, assistantMessage
     });
   }
   if (workingSet && typeof workingSet === "object") {
+    const entityIds = Array.isArray(workingSet.entityIds)
+      ? workingSet.entityIds.map(String)
+      : Array.isArray(workingSet.podIds)
+        ? workingSet.podIds.map(String)
+        : [];
     row.workingSet = {
-      podIds: Array.isArray(workingSet.podIds) ? workingSet.podIds.map(String) : [],
+      entityType: workingSet.entityType ?? row.workingSet?.entityType ?? null,
+      entityIds,
+      filters:
+        workingSet.filters && typeof workingSet.filters === "object"
+          ? workingSet.filters
+          : row.workingSet?.filters || {},
+      lastGoal: workingSet.lastGoal ?? row.workingSet?.lastGoal ?? null,
+      lastCapability: workingSet.lastCapability ?? row.workingSet?.lastCapability ?? null,
       label: workingSet.label ?? row.workingSet?.label ?? null,
+      // compat UI antigua
+      podIds: entityIds,
     };
   }
   row.updatedAt = now;
@@ -122,7 +148,15 @@ export function publicConversation(row) {
     userId: row.userId,
     username: row.username,
     channel: row.channel,
-    workingSet: row.workingSet || { podIds: [], label: null },
+    workingSet: row.workingSet || {
+      entityType: null,
+      entityIds: [],
+      filters: {},
+      lastGoal: null,
+      lastCapability: null,
+      label: null,
+      podIds: [],
+    },
     messages: (row.messages || []).map((m) => ({
       id: m.id,
       role: m.role,

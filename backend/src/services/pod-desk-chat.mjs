@@ -1,10 +1,12 @@
 /**
- * Chat de mesa POD — respuestas grounded en pod-store (datos reales).
- * No muta Remitos. No Tool Registry / Event Bus.
- * Canal web operador ↔ agente especialista `pod` (no flujo chofer WhatsApp).
+ * Chat de mesa POD.
+ * Path productivo: Desk Chat Runtime (LLM → capabilities → LLM).
+ * answerPodFromFactsRules / forceEngine=rules: SOLO scripts de regresión legacy.
  */
 import * as podStore from "../db/pod-store.mjs";
 import { labelEstadoPod, POD_ESTADOS_DIALOG } from "../../../lib/pod.mjs";
+import { runDeskChatTurn } from "./desk-chat/runtime.mjs";
+import { normalizeWorkingSet } from "./desk-chat/schemas.mjs";
 
 const TZ = "America/Argentina/Buenos_Aires";
 
@@ -15,9 +17,7 @@ function startOfTodayIso() {
     month: "2-digit",
     day: "2-digit",
   });
-  const day = fmt.format(new Date()); // YYYY-MM-DD
-  // Medianoche Argentina ≈ UTC-3; usamos comparación por día local del ISO.
-  return day;
+  return fmt.format(new Date());
 }
 
 function dayKey(iso) {
@@ -52,12 +52,11 @@ function mapFact(row) {
     historial: Array.isArray(row.historial) ? row.historial.slice(-8) : [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    /** Origen del dato: store operativo real (nunca mezclar con mocks de UI). */
     dataSource: "real",
   };
 }
 
-/** Snapshot factual para el agente POD (solo mesa: sin esperando_*). */
+/** Snapshot factual (legacy / debug). Preferir capabilities pod.* en runtime. */
 export async function buildPodDeskFacts({ limit = 80 } = {}) {
   const today = startOfTodayIso();
   const all = (await podStore.listPods({ limit: 200 })).filter(
@@ -116,18 +115,21 @@ function formatList(pods, n = 10) {
 }
 
 /**
- * Fallback sin LLM: cubre los casos mínimos documentados + follow-up por destino
- * sobre workingSet. No inventa datos.
+ * LEGACY — solo `forceEngine=rules` / scripts de regresión.
+ * NO usar en path productivo UI.
  */
 export function answerPodFromFactsRules({ message, facts, workingSet }) {
   const q = norm(message);
   const pods = facts.pods || [];
   const byId = Object.fromEntries(pods.map((p) => [p.id, p]));
-  const wsIds = workingSet?.podIds?.length ? workingSet.podIds : null;
+  const wsIds = workingSet?.entityIds?.length
+    ? workingSet.entityIds
+    : workingSet?.podIds?.length
+      ? workingSet.podIds
+      : null;
 
   const resolveSet = (ids) => ids.map((id) => byId[id]).filter(Boolean);
 
-  // Follow-up: filtrar working set por destino/localidad en texto
   if (
     wsIds &&
     (q.includes("de esos") ||
@@ -160,7 +162,6 @@ export function answerPodFromFactsRules({ message, facts, workingSet }) {
   }
 
   if (/cuantos?\s+pod\s+recib|recibimos\s+hoy|pod\s+hoy/.test(q) || /cuantos?\s+recibimos\s+hoy/.test(q)) {
-    const set = resolveSet(facts.idsHoy);
     return {
       reply: `Hoy (${facts.today}, ${facts.timezone}) recibimos ${facts.resumen.recibidosHoy} POD.`,
       workingSet: { podIds: facts.idsHoy, label: "recibidos_hoy" },
@@ -205,7 +206,6 @@ export function answerPodFromFactsRules({ message, facts, workingSet }) {
     };
   }
 
-  // ¿por qué se rechazó este POD? — busca código/id en mensaje o working set
   if (/por\s*que\s+se\s+rechaz|porque\s+se\s+rechaz|motivo\s+de\s+rechazo/.test(q)) {
     const codeMatch = String(message).match(/\b(POD-[A-Z0-9]+)\b/i);
     let target = codeMatch
@@ -280,7 +280,6 @@ export function answerPodFromFactsRules({ message, facts, workingSet }) {
     };
   }
 
-  // Resumen genérico
   return {
     reply:
       `Puedo consultar el store real de POD. Ahora: ${facts.resumen.recibidosHoy} hoy, ` +
@@ -293,121 +292,40 @@ export function answerPodFromFactsRules({ message, facts, workingSet }) {
   };
 }
 
-async function callOpenAiPodDesk({ system, userContent, log }) {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) return null;
-  const model =
-    process.env.OPENAI_POD_DESK_MODEL?.trim() ||
-    process.env.OPENAI_POD_MODEL?.trim() ||
-    process.env.OPENAI_VIAJES_MODEL?.trim() ||
-    "gpt-4o-mini";
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.1,
-        max_tokens: 900,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: userContent },
-        ],
-      }),
-      signal: AbortSignal.timeout(Number(process.env.POD_DESK_IA_TIMEOUT_MS) || 28000),
-    });
-    if (!res.ok) throw new Error(`OpenAI ${res.status}`);
-    const data = await res.json();
-    const raw = data.choices?.[0]?.message?.content ?? "";
-    const m = String(raw).match(/\{[\s\S]*\}/);
-    return m ? JSON.parse(m[0]) : null;
-  } catch (err) {
-    log?.warn?.({ err: err.message }, "pod-desk-chat LLM falló");
-    return null;
-  }
-}
-
-async function answerPodFromFactsLlm({ message, facts, workingSet, history, log }) {
-  const compact = {
-    today: facts.today,
-    timezone: facts.timezone,
-    resumen: facts.resumen,
-    workingSet,
-    pods: (facts.pods || []).map((p) => ({
-      id: p.id,
-      codigo: p.codigo,
-      estado: p.estado,
-      destino: p.destino,
-      viaje: p.viaje,
-      receptor: p.receptor,
-      chofer: p.chofer,
-      notaBackoffice: p.notaBackoffice,
-      historial: p.historial,
-      createdAt: p.createdAt,
-      dataSource: p.dataSource,
-    })),
-  };
-
-  const ia = await callOpenAiPodDesk({
-    log,
-    system: `Sos el agente especialista POD de mesa (SOL / TransitOne).
-Respondé SOLO con JSON: {"reply":"texto en español","workingPodIds":["id",...],"label":"opcional"}.
-Reglas:
-- Usá únicamente los hechos del JSON de hechos. dataSource "real" = store operativo.
-- Si falta un dato, decilo; no inventes. No mezcles datos demo.
-- Para follow-ups ("de esos", "y de Córdoba"), filtrá sobre workingSet.podIds.
-- workingPodIds = IDs del conjunto relevante tras la respuesta (para el próximo follow-up).
-- No ejecutes acciones (no aprobar/rechazar). Solo consulta.`,
-    userContent: `Hechos:\n${JSON.stringify(compact)}\n\nHistorial reciente:\n${JSON.stringify(
-      (history || []).slice(-8),
-    )}\n\nPregunta del operador:\n${message}`,
-  });
-
-  if (!ia?.reply) return null;
-  const allowed = new Set((facts.pods || []).map((p) => p.id));
-  const workingPodIds = Array.isArray(ia.workingPodIds)
-    ? ia.workingPodIds.map(String).filter((id) => allowed.has(id))
-    : [];
-  return {
-    reply: String(ia.reply).trim(),
-    workingSet: {
-      podIds: workingPodIds,
-      label: ia.label ? String(ia.label) : workingSet?.label || null,
-    },
-    engine: "llm",
-    citedIds: workingPodIds,
-    dataSources: ["real"],
-  };
+/** Usado por runtime cuando forceEngine=rules. */
+export async function resolvePodDeskAnswerLegacyRules(opts = {}) {
+  const message = String(opts.message || "").trim();
+  if (!message) throw Object.assign(new Error("message requerido"), { statusCode: 400 });
+  const facts = await buildPodDeskFacts();
+  const workingSet = normalizeWorkingSet(opts.workingSet || { podIds: [], label: null }, "pod");
+  const rules = answerPodFromFactsRules({ message, facts, workingSet });
+  return { ...rules, factsMeta: { today: facts.today, resumen: facts.resumen } };
 }
 
 /**
- * Resuelve una pregunta de mesa contra el store POD.
- * @param {{ message: string, workingSet?: object, history?: array, forceEngine?: "rules"|"llm", log?: object }}
+ * Path productivo: Desk Chat Runtime (LLM → capabilities → LLM).
+ * forceEngine=rules → legacy explícito (scripts). Nunca auto-fallback ante fallo LLM.
  */
 export async function resolvePodDeskAnswer(opts = {}) {
   const message = String(opts.message || "").trim();
   if (!message) {
     throw Object.assign(new Error("message requerido"), { statusCode: 400 });
   }
-  const facts = await buildPodDeskFacts();
-  const workingSet = opts.workingSet || { podIds: [], label: null };
-  const history = opts.history || [];
 
-  if (opts.forceEngine !== "rules") {
-    const llm = await answerPodFromFactsLlm({
-      message,
-      facts,
-      workingSet,
-      history,
-      log: opts.log,
-    });
-    if (llm) return { ...llm, factsMeta: { today: facts.today, resumen: facts.resumen } };
+  if (opts.forceEngine === "rules") {
+    return resolvePodDeskAnswerLegacyRules(opts);
   }
 
-  const rules = answerPodFromFactsRules({ message, facts, workingSet });
-  return { ...rules, factsMeta: { today: facts.today, resumen: facts.resumen } };
+  return runDeskChatTurn({
+    agentId: "pod",
+    message,
+    workingSet: opts.workingSet,
+    history: opts.history || [],
+    tenant: opts.tenant,
+    user: opts.user || { id: "desk", permissions: ["desk:read"] },
+    log: opts.log,
+    planOverride: opts.planOverride,
+    answerOverride: opts.answerOverride,
+    llmCaller: opts.llmCaller,
+  });
 }
