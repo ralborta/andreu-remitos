@@ -194,6 +194,84 @@ console.log("✓ especialista_no_cruza_dominio");
   console.log("✓ no_heuristic_fallback");
 }
 
+// Resumen operativo multiagente en paralelo
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿Cómo viene la operación hoy?",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "resumen operativo",
+      queries: [
+        { capability: "viajes.resumen", args: {} },
+        { capability: "eta.resumen", args: {} },
+        { capability: "incidencias.resumen", args: {} },
+        { capability: "pod.resumen", args: {} },
+        { capability: "remitos.resumen", args: {} },
+      ],
+      workingSetOp: "replace",
+    },
+    answerOverride: {
+      reply: "Viajes: 2. Incidencias abiertas: 1. Remitos: 0. POD/ETA según stores.",
+      entityIds: [],
+    },
+  });
+  assert.equal(turn.engine, "llm");
+  assert.equal(turn.capabilityResults.length, 5);
+  assert.ok(turn.capabilityResults.every((r) => r.ok));
+  console.log("✓ operacion_hoy_multi_resumen");
+}
+
+// Resultados parciales: una capability falla, las otras responden
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "resumen viajes e incidencias",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "parcial",
+      queries: [
+        { capability: "viajes.resumen", args: {} },
+        { capability: "incidencias.list", args: { abiertas: true, demorado: true } },
+      ],
+      workingSetOp: "replace",
+    },
+    answerOverride: {
+      reply: "Viajes OK (2). Incidencias no disponible (args inválidos).",
+      entityIds: [],
+    },
+  });
+  assert.equal(turn.engine, "llm");
+  assert.equal(turn.capabilityResults[0].ok, true);
+  assert.equal(turn.capabilityResults[1].ok, false);
+  assert.match(turn.reply, /Viajes|Incidencias/i);
+  console.log("✓ resultados_parciales");
+}
+
+// workingSetOnly sin entityIds se sanitiza (no vacía el listado por error)
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿cuáles están activos?",
+    user,
+    workingSet: { entityType: "viajes", entityIds: [], label: "vacio" },
+    planOverride: {
+      type: "query",
+      goal: "activos",
+      queries: [{ capability: "viajes.list", args: { activos: true, workingSetOnly: true } }],
+      workingSetOp: "replace",
+    },
+    answerOverride: { reply: "1 activo: VJ-100.", entityIds: ["vj1"] },
+  });
+  assert.equal(turn.engine, "llm");
+  assert.equal(turn.plan.queries[0].args.workingSetOnly, undefined);
+  assert.equal(turn.capabilityResults[0].ok, true);
+  assert.equal(turn.capabilityResults[0].result.count, 1);
+  console.log("✓ sanitize_workingSetOnly_vacio");
+}
+
 console.log("\nverify-desk-chat-commander: OK");
 console.log(
   JSON.stringify(

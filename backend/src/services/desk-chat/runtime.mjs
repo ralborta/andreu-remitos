@@ -32,7 +32,8 @@ function buildPlanSystem(agentId, catalog) {
     : `Sos el planificador del desk chat del agente especialista "${agentId}" (SOL / TransitOne).`;
 
   const domainRules = isCommander
-    ? `- Podés combinar varias capabilities de distintos dominios en un mismo plan (p.ej. viajes.resumen + incidencias.resumen).
+    ? `- Podés combinar varias capabilities de distintos dominios en un mismo plan (ejecución paralela).
+- Resumen operativo / “cómo viene la operación”: preferí en paralelo viajes.resumen + eta.resumen + incidencias.resumen + pod.resumen + remitos.resumen (y rendicion.resumen si aporta).
 - Elegí el dominio correcto: demoras → eta/incidencias (no inventes estado "demorado" en viajes); POD → pod.*; remitos solo datos persistidos.
 - type=out_of_domain solo si la pregunta pide mutaciones, WhatsApp outbound, OCR/ingest o algo fuera de los packs de lectura.`
     : `- type=out_of_domain si la pregunta no es de este agente.`;
@@ -49,9 +50,10 @@ Respondé SOLO JSON con este shape:
 }
 
 Reglas:
-- Interpretá la pregunta del operador en lenguaje natural (incl. follow-ups y pronombres).
+- Interpretá la pregunta del operador en lenguaje natural (incl. follow-ups y pronombres). El backend NO interpreta semántica: vos decidís capabilities y args.
 - Solo podés usar capabilities del catálogo. No inventes nombres ni campos de args.
-- workingSetOnly=true SOLO para follow-ups explícitos sobre el conjunto anterior ("de esos", "cuáles", "y de…").
+- workingSetOnly=true SOLO si el workingSet trae entityIds no vacíos Y el follow-up es explícito sobre ese conjunto ("de esos", "cuáles", "y de…").
+- Si entityIds está vacío: NUNCA uses workingSetOnly; consultá de nuevo con filtros/limit.
 - Para listados nuevos o "últimos N": NO uses workingSetOnly; usá limit.
 - Un conteo 0 es un dato válido.
 ${domainRules}
@@ -66,7 +68,7 @@ ${JSON.stringify(catalog)}`;
 function buildAnswerSystem(agentId) {
   const isCommander = agentId === "commander";
   const role = isCommander
-    ? `Sos el Chat Central Commander de mesa (SOL). Sintetizás respuestas operativas a partir de resultados de varios especialistas.`
+    ? `Sos el Chat Central Commander de mesa (SOL). Sintetizás respuestas operativas a partir de resultados de uno o varios especialistas.`
     : `Sos el agente especialista "${agentId}" de mesa (SOL).`;
   return `${role}
 Respondé SOLO JSON: {"reply":"texto en español","entityIds":["..."],"citedIds":["..."],"label":"opcional"}.
@@ -78,9 +80,22 @@ Reglas:
 - entityIds/citedIds solo ids presentes en los resultados.
 - Sé conciso y operativo. No ejecutes acciones.${
     isCommander
-      ? "\n- Si hay resultados de varios dominios, aclará brevemente de qué módulo viene cada dato."
+      ? `\n- Si hay resultados de varios dominios, aclará brevemente de qué módulo viene cada dato.
+- Resultados parciales: si algunas capabilities ok=true y otras ok=false (error/timeout), respondé con lo disponible y mencioná qué módulo no respondió; no inventes el faltante.`
       : ""
   }`;
+}
+
+/** Validación de contexto: workingSetOnly sin entityIds no filtra nada útil. */
+function sanitizeQueriesAgainstWorkingSet(queries, workingSet) {
+  const ids = workingSet?.entityIds || [];
+  if (ids.length) return queries;
+  return (queries || []).map((q) => {
+    if (!q?.args || q.args.workingSetOnly !== true) return q;
+    const args = { ...q.args };
+    delete args.workingSetOnly;
+    return { ...q, args };
+  });
 }
 
 function entityTypeFromResults(results, agentId, plan) {
@@ -280,6 +295,9 @@ export async function runDeskChatTurn(opts = {}) {
   }
 
   const plan = normalized.plan;
+  if (plan.type === "query" && Array.isArray(plan.queries)) {
+    plan.queries = sanitizeQueriesAgainstWorkingSet(plan.queries, workingSet);
+  }
   trace.plan = plan;
 
   if (plan.type === "chitchat" || plan.type === "out_of_domain" || plan.type === "clarify") {
