@@ -62,9 +62,14 @@ export default async function remitosRoutes(fastify) {
   });
 
   fastify.patch("/:id/campos", async (request, reply) => {
-    const row = await actualizarCampos(request.params.id, request.body);
-    if (!row) return reply.code(404).send({ error: "Remito no encontrado" });
-    return row;
+    try {
+      const row = await actualizarCampos(request.params.id, request.body);
+      if (!row) return reply.code(404).send({ error: "Remito no encontrado" });
+      return row;
+    } catch (err) {
+      const code = err.statusCode || 500;
+      return reply.code(code).send({ error: err.message || "Error al guardar" });
+    }
   });
 
   fastify.post("/:id/reprocesar", async (request, reply) => {

@@ -18,6 +18,7 @@ import {
   estadoLabel,
   esTenantCorina,
   fechaBaseHorarios,
+  fechaOperativaOk,
   horasFromRow,
   numeroRemito,
   remitoProcesable,
@@ -146,12 +147,26 @@ function EditorBody({
     setMsg(null);
     setError(null);
     try {
+      const fechaForm = (form.fecha_guia ?? form.fecha_remito ?? "").trim();
+      const fechaPrev = fechaBaseHorarios(row);
+      if (fechaForm && !fechaOperativaOk(fechaForm)) {
+        setError("Fecha inválida. Elegí una fecha entre 2000 y el año próximo.");
+        return null;
+      }
+      if (!fechaForm && fechaPrev && !fechaOperativaOk(String(fechaPrev))) {
+        setError("La fecha actual es inválida (ej. año OCR). Corregila antes de guardar.");
+        return null;
+      }
+
       const body: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(form)) {
+        // No mandar fecha vacía: pisaba fecha_guia y resucitaba el alias OCR viejo.
+        if ((k === "fecha_guia" || k === "fecha_remito" || k === "fecha") && !v) continue;
         body[k] = NUMERIC_CAMPOS.has(k) ? (v ? Number(v) : null) : v || null;
       }
       if (!esTenantCorina(row.tenant)) {
-        Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
+        const fechaParaHorarios = fechaForm || (fechaOperativaOk(String(fechaPrev ?? "")) ? String(fechaPrev) : null);
+        Object.assign(body, buildHorariosBody(horas, fechaParaHorarios));
       }
       const updated = await patchRemitoCampos(row.id, body);
       onSaved?.(updated);

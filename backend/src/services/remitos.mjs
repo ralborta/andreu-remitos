@@ -89,13 +89,16 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
     }
   }
   if ((row.tenant === "beraldi" || row.tenant === "tsb" || row.tenant === "mye") && datosNorm.horarios?.horarios) {
+    // Preferir fecha_guia (TSB/MyE) sobre fecha_remito OCR viejo; siempre normalizar.
     const fechaBase =
-      normalizarFecha(datosNorm.fecha_remito ?? datosNorm.fecha_guia) ??
-      datosNorm.horarios.fecha_remito ??
+      normalizarFecha(datosNorm.fecha_guia) ??
+      normalizarFecha(datosNorm.fecha_remito) ??
+      normalizarFecha(datosNorm.horarios.fecha_remito) ??
       null;
     const valH = validarOrdenHorarios(datosNorm.horarios.horarios, { fechaRemito: fechaBase });
     datosNorm.horarios = {
       ...datosNorm.horarios,
+      fecha_remito: fechaBase,
       horarios: valH.horarios ?? datosNorm.horarios.horarios,
       validacion: valH,
     };
@@ -350,6 +353,28 @@ export async function actualizarCampos(id, datosParciales) {
   if (!row) return null;
 
   const { horarios: horariosIncoming, ...resto } = datosParciales;
+
+  // Vacío no pisa: si no, se borraba fecha_guia y resucitaba el alias OCR (fecha_remito=8126).
+  for (const k of ["fecha_guia", "fecha_remito", "fecha"]) {
+    if (k in resto && (resto[k] == null || resto[k] === "")) delete resto[k];
+  }
+
+  /** Fecha que el operador acaba de editar en el form (si mandó alguna). */
+  let fechaEditada = null;
+  for (const k of ["fecha_guia", "fecha_remito", "fecha"]) {
+    if (!(k in resto)) continue;
+    const norm = normalizarFecha(resto[k]);
+    if (!norm) {
+      const yMax = new Date().getFullYear() + 1;
+      throw Object.assign(
+        new Error(`Fecha inválida "${resto[k]}". Usá una fecha entre 2000 y ${yMax}.`),
+        { statusCode: 400 },
+      );
+    }
+    resto[k] = norm;
+    fechaEditada = norm;
+  }
+
   let datos = { ...row.datos, ...resto, _editado_manual: true };
   // Evitar que aliases OCR viejos pisen lo que el operador acaba de editar.
   if (row.tenant === "beraldi") {
@@ -360,6 +385,12 @@ export async function actualizarCampos(id, datosParciales) {
     if ("patente_chasis" in resto) datos.tractor = resto.patente_chasis;
     if ("patente_acoplado" in resto) datos.semi = resto.patente_acoplado;
   }
+
+  // Si corrigió la fecha, sincronizar TODOS los aliases + slots (planilla lee fecha_guia).
+  if (fechaEditada) {
+    datos = aplicarFechaCanonica(datos, row.tenant, fechaEditada);
+  }
+
   datos = normalizarDatosRemito(datos, row.tenant);
 
   if ("peso_kg" in resto && resto.peso_kg != null && resto.peso_kg !== "") {
@@ -374,18 +405,23 @@ export async function actualizarCampos(id, datosParciales) {
   }
 
   if (horariosIncoming?.horarios) {
+    // Priorizar fecha editada / fecha_guia del form; NUNCA la fecha vieja de horarios.
     const fechaBase =
-      normalizarFecha(horariosIncoming.fecha_remito) ??
+      fechaEditada ??
       normalizarFecha(datos.fecha_guia) ??
       normalizarFecha(datos.fecha_remito) ??
-      datos.horarios?.fecha_remito ??
+      normalizarFecha(horariosIncoming.fecha_remito) ??
+      normalizarFecha(datos.horarios?.fecha_remito) ??
       null;
 
     /** @type {Record<string, { fecha?: string|null, hora?: string|null }>} */
     const horariosRaw = { ...(datos.horarios?.horarios ?? {}) };
     for (const [campo, slot] of Object.entries(horariosIncoming.horarios)) {
+      const slotFecha = fechaEditada
+        ? fechaBase
+        : normalizarFecha(slot?.fecha) ?? fechaBase;
       horariosRaw[campo] = {
-        fecha: normalizarFecha(slot?.fecha) ?? fechaBase,
+        fecha: slotFecha,
         hora: normalizarHora(slot?.hora),
       };
     }
@@ -403,6 +439,11 @@ export async function actualizarCampos(id, datosParciales) {
       horarios: horariosRaw,
       validacion,
     };
+
+    // Reafirmar fecha canónica tras horarios (por si validación movió slots un día).
+    if (fechaBase) {
+      datos = aplicarFechaCanonica(datos, row.tenant, fechaBase, { preservarSlots: true });
+    }
   }
 
   const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant);
@@ -418,6 +459,35 @@ export async function actualizarCampos(id, datosParciales) {
     validacion,
     estado,
   });
+}
+
+/**
+ * Deja fecha_guia / fecha_remito / fecha / horarios.fecha_remito alineados.
+ * @param {boolean} [opts.preservarSlots] si true, no pisa fechas de cada slot (viaje nocturno).
+ */
+function aplicarFechaCanonica(datos, tenant, fechaCanon, opts = {}) {
+  if (!fechaCanon || !datos) return datos;
+  const d = { ...datos };
+  if (tenant === "tsb" || tenant === "mye") {
+    d.fecha_guia = fechaCanon;
+    d.fecha_remito = fechaCanon;
+    d.fecha = fechaCanon;
+  } else {
+    d.fecha_remito = fechaCanon;
+    if (d.fecha != null) d.fecha = fechaCanon;
+  }
+  if (d.horarios && typeof d.horarios === "object") {
+    const hor = { ...d.horarios, fecha_remito: fechaCanon };
+    if (!opts.preservarSlots && hor.horarios && typeof hor.horarios === "object") {
+      const slots = {};
+      for (const [campo, slot] of Object.entries(hor.horarios)) {
+        slots[campo] = { ...(slot ?? {}), fecha: fechaCanon };
+      }
+      hor.horarios = slots;
+    }
+    d.horarios = hor;
+  }
+  return d;
 }
 
 function numeroRemitoRow(row) {

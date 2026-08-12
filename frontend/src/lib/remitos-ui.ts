@@ -382,6 +382,16 @@ export function fechaBaseHorarios(row: RemitoRow) {
   return (d.fecha_guia ?? d.fecha_remito ?? h ?? null) as string | null;
 }
 
+/** ISO yyyy-mm-dd con año operativo (2000 … año+1). */
+export function fechaOperativaOk(raw: string | null | undefined): boolean {
+  if (!raw) return false;
+  const m = String(raw).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return false;
+  const y = Number(m[1]);
+  const yMax = new Date().getFullYear() + 1;
+  return y >= 2000 && y <= yMax;
+}
+
 export function horasFromRow(row: RemitoRow): Record<string, string> {
   const slots = (datos(row).horarios as HorariosBlock | undefined)?.horarios ?? {};
   const out: Record<string, string> = {};

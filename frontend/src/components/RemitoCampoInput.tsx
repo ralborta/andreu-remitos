@@ -77,6 +77,25 @@ export const RemitoCampoInput = memo(function RemitoCampoInput({
   );
 
   if (!tipo) {
+    const esFecha = campo === "fecha_guia" || campo === "fecha_remito" || campo === "fecha";
+    if (esFecha) {
+      const yMax = new Date().getFullYear() + 1;
+      // Solo mostrar en type=date si ya es ISO válida en rango; si no, forzar vacío
+      // para que el operador elija una fecha real (evita aceptar años OCR tipo 8126).
+      const isoOk = /^\d{4}-\d{2}-\d{2}$/.test(value);
+      const y = isoOk ? Number(value.slice(0, 4)) : NaN;
+      const valueSafe = isoOk && y >= 2000 && y <= yMax ? value : "";
+      return (
+        <input
+          type="date"
+          className={clsx(inputCls, className)}
+          value={valueSafe}
+          min="2000-01-01"
+          max={`${yMax}-12-31`}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    }
     return (
       <input
         className={clsx(inputCls, className)}

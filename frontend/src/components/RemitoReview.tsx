@@ -22,6 +22,7 @@ import {
   esTenantCorina,
   fechaBaseHorarios,
   fechaHoraRemito,
+  fechaOperativaOk,
   horasFromRow,
   numeroRemito,
   origenNombre,
@@ -101,12 +102,25 @@ export function RemitoReview({ id, tenantSlug }: { id: string; tenantSlug?: stri
     setMsg(null);
     setError(null);
     try {
+      const fechaForm = (form.fecha_guia ?? form.fecha_remito ?? "").trim();
+      const fechaPrev = fechaBaseHorarios(row);
+      if (fechaForm && !fechaOperativaOk(fechaForm)) {
+        setError("Fecha inválida. Elegí una fecha entre 2000 y el año próximo.");
+        return;
+      }
+      if (!fechaForm && fechaPrev && !fechaOperativaOk(String(fechaPrev))) {
+        setError("La fecha actual es inválida (ej. año OCR). Corregila antes de guardar.");
+        return;
+      }
+
       const body: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(form)) {
+        if ((k === "fecha_guia" || k === "fecha_remito" || k === "fecha") && !v) continue;
         body[k] = NUMERIC_CAMPOS.has(k) ? (v ? Number(v) : null) : v || null;
       }
       if (!esTenantCorina(row.tenant)) {
-        Object.assign(body, buildHorariosBody(horas, fechaBaseHorarios(row)));
+        const fechaParaHorarios = fechaForm || (fechaOperativaOk(String(fechaPrev ?? "")) ? String(fechaPrev) : null);
+        Object.assign(body, buildHorariosBody(horas, fechaParaHorarios));
       }
       const updated = await patchRemitoCampos(id, body);
       setRow(updated);
