@@ -1,11 +1,12 @@
 /**
- * Chat web → agente especialista.
- * Fase 1: solo agentId=pod (mesa POD grounded en pod-store).
+ * Chat web → agentes especialistas (desk-chat runtime).
+ * Read-only. Sin fallback heurístico automático.
  */
 import * as chatStore from "../db/agent-chat-store.mjs";
+import { runDeskChatTurn } from "../services/desk-chat/runtime.mjs";
 import { resolvePodDeskAnswer } from "../services/pod-desk-chat.mjs";
 
-const SUPPORTED = new Set(["pod"]);
+const SUPPORTED = new Set(["pod", "viajes", "incidencias", "rendicion", "eta", "remitos"]);
 
 export default async function agentChatRoutes(fastify) {
   fastify.post("/", async (request, reply) => {
@@ -21,7 +22,7 @@ export default async function agentChatRoutes(fastify) {
     if (!SUPPORTED.has(agentId)) {
       return reply.code(501).send({
         error: "agente_no_habilitado",
-        message: `Chat web aún no habilitado para agentId=${agentId}. Fase 1: solo pod.`,
+        message: `Chat web no habilitado para agentId=${agentId}.`,
         supported: [...SUPPORTED],
       });
     }
@@ -49,22 +50,33 @@ export default async function agentChatRoutes(fastify) {
       conversationId = conv.id;
     }
 
+    const userCtx = {
+      id: user.id || "desk",
+      username: user.username || null,
+      permissions: ["desk:read"],
+    };
+
     let answer;
     try {
-      if (agentId === "pod") {
-        // forceEngine=rules SOLO si el cliente lo pide explícito (scripts).
-        // La UI nunca debe enviarlo; el runtime no hace fallback heurístico.
+      // forceEngine=rules SOLO pod legacy (scripts). UI nunca lo envía.
+      if (agentId === "pod" && body.forceEngine === "rules") {
         answer = await resolvePodDeskAnswer({
           message,
           workingSet: conv.workingSet,
           history: (conv.messages || []).map((m) => ({ role: m.role, text: m.text })),
-          forceEngine: body.forceEngine === "rules" ? "rules" : undefined,
+          forceEngine: "rules",
           tenant,
-          user: {
-            id: user.id || "desk",
-            username: user.username || null,
-            permissions: ["desk:read"],
-          },
+          user: userCtx,
+          log: request.log,
+        });
+      } else {
+        answer = await runDeskChatTurn({
+          agentId,
+          message,
+          workingSet: conv.workingSet,
+          history: (conv.messages || []).map((m) => ({ role: m.role, text: m.text })),
+          tenant,
+          user: userCtx,
           log: request.log,
         });
       }

@@ -7,61 +7,75 @@ import { ReclamosPanel } from "./ReclamosPanel";
 import { IncidenciasPanel } from "./IncidenciasPanel";
 import { EtaPanel } from "./EtaPanel";
 import { PodModuleWithChat } from "./PodModuleWithChat";
-import { Card, SectionTitle, Pill, CritBadge } from "./ui";
+import { ModuleWithChat } from "./ModuleWithChat";
+import { Card, SectionTitle } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
-import { DataTable, type Column } from "./DataTable";
 import { ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
-import {
-  viajesPorDia,
-  slaPorZona,
-  incidenciasPorTipo,
-} from "@/lib/data";
-
-function estadoPill(estado: string) {
-  const map: Record<string, string> = {
-    Validado: "#22c55e",
-    Leído: "#38bdf8",
-    "En revisión": "#f59e0b",
-    Pendiente: "#a79fc9",
-    Aprobada: "#22c55e",
-    Liquidada: "#a78bfa",
-    "En aprobación": "#f59e0b",
-    Borrador: "#a79fc9",
-    Resuelto: "#22c55e",
-    Resuelta: "#22c55e",
-    "En proceso": "#38bdf8",
-    "En gestión": "#38bdf8",
-    Escalado: "#f59e0b",
-    Nuevo: "#d946ef",
-    Abierta: "#ef4444",
-    "En horario": "#22c55e",
-    "Demora leve": "#f59e0b",
-    Demora: "#ef4444",
-    Adelantado: "#38bdf8",
-  };
-  return <Pill color={map[estado] ?? "#a79fc9"}>{estado}</Pill>;
-}
-
-function ConfBar({ v }: { v: number }) {
-  if (v === 0) return <span className="text-xs text-[var(--text-faint)]">—</span>;
-  const color = v >= 90 ? "#22c55e" : v >= 80 ? "#f59e0b" : "#ef4444";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full rounded-full" style={{ width: `${v}%`, background: color }} />
-      </div>
-      <span className="tabular text-xs text-[var(--text-dim)]">{v}%</span>
-    </div>
-  );
-}
+import { viajesPorDia, slaPorZona, incidenciasPorTipo } from "@/lib/data";
 
 export function AgentData({ slug }: { slug: string }) {
   if (slug === "remitos") {
-    return <RemitosPanel />;
+    return (
+      <ModuleWithChat
+        agentId="remitos"
+        agentLabel="Remitos"
+        suggestions={[
+          "¿cuántos remitos tenemos?",
+          "¿cuántos están confirmados?",
+          "mostrame los últimos 10",
+          "¿cuántos se cargaron hoy?",
+        ]}
+        guideSections={[
+          {
+            title: "Conteos",
+            items: ["¿Cuántos remitos hay?", "¿Cuántos confirmados / pendientes?", "¿Cuántos hoy?"],
+          },
+          {
+            title: "Listados",
+            items: ["Mostrame los últimos 10", "Filtrá por tenant o destino"],
+          },
+          {
+            title: "Detalle",
+            items: ["¿Qué datos tiene este remito? (pasá el id)"],
+          },
+        ]}
+        emptyHint="Consulto remitos ya persistidos (solo lectura, sin OCR)."
+      >
+        <RemitosPanel />
+      </ModuleWithChat>
+    );
   }
 
   if (slug === "viajes") {
-    return <ViajesGestionPanel />;
+    return (
+      <ModuleWithChat
+        agentId="viajes"
+        agentLabel="Viajes"
+        suggestions={[
+          "¿cuántos viajes tenemos?",
+          "¿cuántos están activos?",
+          "¿cuáles van a Córdoba?",
+          "mostrame los últimos 10",
+        ]}
+        guideSections={[
+          {
+            title: "Conteos",
+            items: ["¿Cuántos viajes hay?", "¿Cuántos activos?", "¿Cuántos creados hoy?"],
+          },
+          {
+            title: "Listados",
+            items: ["¿Cuáles son?", "¿Qué viajes van a Córdoba?", "Últimos N"],
+          },
+          {
+            title: "Detalle",
+            items: ["¿Qué chofer / tractor tiene este viaje?", "Seguimiento: ¿y de esos…?"],
+          },
+        ]}
+        emptyHint="Consulto viajes reales. Demoras se ven en ETA/Incidencias (no hay estado demorado aquí)."
+      >
+        <ViajesGestionPanel />
+      </ModuleWithChat>
+    );
   }
 
   if (slug === "destinos") {
@@ -69,15 +83,89 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "incidencias") {
-    return <IncidenciasPanel />;
+    return (
+      <ModuleWithChat
+        agentId="incidencias"
+        agentLabel="Incidencias"
+        suggestions={[
+          "¿cuántas incidencias abiertas hay?",
+          "¿cuáles son demoras?",
+          "mostrame las recientes",
+          "¿cuántas se crearon hoy?",
+        ]}
+        guideSections={[
+          {
+            title: "Conteos",
+            items: ["Abiertas / resueltas", "Demoras abiertas", "Creadas hoy"],
+          },
+          {
+            title: "Listados",
+            items: ["Por tipo", "Por viaje", "Por chofer"],
+          },
+          {
+            title: "Detalle",
+            items: ["Causa / estado de una incidencia", "Follow-ups sobre el set anterior"],
+          },
+        ]}
+      >
+        <IncidenciasPanel />
+      </ModuleWithChat>
+    );
   }
 
   if (slug === "rendicion") {
-    return <RendicionPanel />;
+    return (
+      <ModuleWithChat
+        agentId="rendicion"
+        agentLabel="Rendición"
+        suggestions={[
+          "¿cuántos gastos pendientes hay?",
+          "¿cuál es el monto pendiente?",
+          "mostrame los últimos gastos",
+          "¿cuántos se cargaron hoy?",
+        ]}
+        guideSections={[
+          {
+            title: "Conteos y montos",
+            items: ["Pendientes / aprobados / rechazados", "Montos del resumen"],
+          },
+          {
+            title: "Listados",
+            items: ["Por chofer", "Por viaje", "Últimos registros"],
+          },
+        ]}
+      >
+        <RendicionPanel />
+      </ModuleWithChat>
+    );
   }
 
   if (slug === "eta") {
-    return <EtaPanel />;
+    return (
+      <ModuleWithChat
+        agentId="eta"
+        agentLabel="ETA"
+        suggestions={[
+          "¿cómo está la cola ETA?",
+          "¿cuántas demoras abiertas hay?",
+          "mostrame la cola",
+          "¿cuántos esperan ETA del chofer?",
+        ]}
+        guideSections={[
+          {
+            title: "Resumen",
+            items: ["Cola ETA", "Demoras abiertas", "Notificaciones hoy"],
+          },
+          {
+            title: "Cola",
+            items: ["Ítems en ruta", "Solo demoras", "Por destino / viaje"],
+          },
+        ]}
+        emptyHint="Consulto cola ETA y demoras reales (ETA/Incidencias)."
+      >
+        <EtaPanel />
+      </ModuleWithChat>
+    );
   }
 
   if (slug === "pod") {
