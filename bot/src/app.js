@@ -3,7 +3,7 @@ import { JsonFileDB as Database } from "@builderbot/database-json";
 import { BaileysProvider as Provider } from "@builderbot/provider-baileys";
 import { fetchLatestBaileysVersion } from "baileys";
 import { forwardToAndreu, mountFileRoutes } from "./andreu-api.js";
-import { getSessionSnapshot, markSendError, markSendOk, readQrPng } from "./whatsapp-session.js";
+import { getSessionSnapshot, markSendError, markSendOk, readQrPng, clearWhatsappSession } from "./whatsapp-session.js";
 
 const PORT = Number(process.env.PORT ?? 3008);
 const SESSION_NAME = process.env.BOT_SESSION_NAME?.trim() || "andreu";
@@ -179,6 +179,29 @@ const main = async () => {
       "Cache-Control": "no-store",
     });
     res.end(buf);
+  });
+
+  /**
+   * Reinicia sesión WA: borra creds + QR y sale del proceso
+   * (Easypanel/Docker lo levanta de nuevo → QR fresco).
+   */
+  adapterProvider.server.post("/v1/whatsapp/reset", async (_req, res) => {
+    try {
+      const result = await clearWhatsappSession(adapterProvider);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          ok: true,
+          message: "Sesión borrada. El bot se reinicia para generar un QR nuevo.",
+          ...result,
+          restarting: true,
+        }),
+      );
+      setTimeout(() => process.exit(0), 400);
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: err?.message || "reset_failed" }));
+    }
   });
 
   /** Raíz — misma imagen QR (compat Easypanel / navegador directo) */

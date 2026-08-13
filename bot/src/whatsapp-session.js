@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
 const BOT_NAME = process.env.BOT_SESSION_NAME || "andreu";
@@ -19,6 +19,10 @@ export function markSendError(message) {
 
 function qrPath() {
   return join(process.cwd(), `${BOT_NAME}.qr.png`);
+}
+
+function sessionsDir() {
+  return join(process.cwd(), `${BOT_NAME}_sessions`);
 }
 
 /** ¿La conexión Baileys permite enviar mensajes? */
@@ -73,4 +77,43 @@ export function readQrPng() {
   const path = qrPath();
   if (!existsSync(path)) return null;
   return readFileSync(path);
+}
+
+/**
+ * Borra credenciales + QR viejo para forzar un QR nuevo al reiniciar el proceso.
+ */
+export async function clearWhatsappSession(provider) {
+  const notes = [];
+  try {
+    if (provider?.vendor?.logout) {
+      await provider.vendor.logout();
+      notes.push("vendor.logout");
+    }
+  } catch (err) {
+    notes.push(`logout_err:${err?.message || err}`);
+  }
+
+  try {
+    const qp = qrPath();
+    if (existsSync(qp)) {
+      unlinkSync(qp);
+      notes.push("qr_deleted");
+    }
+  } catch (err) {
+    notes.push(`qr_err:${err?.message || err}`);
+  }
+
+  try {
+    const dir = sessionsDir();
+    if (existsSync(dir)) {
+      rmSync(dir, { recursive: true, force: true });
+      notes.push("sessions_deleted");
+    }
+  } catch (err) {
+    notes.push(`sessions_err:${err?.message || err}`);
+  }
+
+  lastSendError = null;
+  lastSendOkAt = null;
+  return { ok: true, notes };
 }
