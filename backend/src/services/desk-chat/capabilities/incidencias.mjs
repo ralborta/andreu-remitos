@@ -11,7 +11,7 @@ import {
   INCIDENCIA_TIPO_LABEL,
 } from "../../../../../lib/incidencias.mjs";
 import { registerCapability } from "../capability-registry.mjs";
-import { TZ, todayKey, dayKey, norm, workingIds } from "./_shared.mjs";
+import { TZ, todayKey, dayKey, norm, workingIds, compactEntityRefs } from "./_shared.mjs";
 
 const ABIERTAS = new Set(["esperando_causa", "nueva", "en_gestion"]);
 
@@ -53,6 +53,13 @@ export function registerIncidenciasCapabilities() {
       const rows = (await incidenciasStore.listIncidencias({ limit: 300 })).map(mapInc);
       const demorasAbiertas = rows.filter((r) => r.tipo === "demora" && ABIERTAS.has(r.estado)).length;
       const creadasHoy = rows.filter((r) => dayKey(r.createdAt) === today).length;
+      const abiertas = rows.filter((r) => ABIERTAS.has(r.estado));
+      const refsAbiertas = compactEntityRefs(abiertas, (r) => ({
+        id: r.id,
+        codigo: r.codigo,
+        viaje: r.viaje,
+        tipo: r.tipo,
+      }));
       return {
         today,
         timezone: TZ,
@@ -60,6 +67,9 @@ export function registerIncidenciasCapabilities() {
         ...base,
         demorasAbiertas,
         creadasHoy,
+        entityType: "incidencias",
+        entityIds: refsAbiertas.map((r) => r.id),
+        refs: refsAbiertas,
         dataSource: "real",
       };
     },

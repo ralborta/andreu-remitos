@@ -6,7 +6,7 @@
 import * as viajesStore from "../../../db/viajes-store.mjs";
 import { VIAJE_ESTADOS, VIAJE_ESTADO_LABEL } from "../../../../../lib/viajes.mjs";
 import { registerCapability } from "../capability-registry.mjs";
-import { TZ, todayKey, dayKey, norm, workingIds } from "./_shared.mjs";
+import { TZ, todayKey, dayKey, norm, workingIds, compactEntityRefs } from "./_shared.mjs";
 
 const ACTIVOS = new Set(["solicitado", "confirmado", "asignado", "en_curso"]);
 
@@ -52,6 +52,7 @@ export function registerViajesCapabilities() {
       for (const r of rows) if (byEstado[r.estado] != null) byEstado[r.estado] += 1;
       const activos = rows.filter((r) => ACTIVOS.has(r.estado));
       const creadosHoy = rows.filter((r) => dayKey(r.createdAt) === today);
+      const refsActivos = compactEntityRefs(activos, (r) => ({ id: r.id, codigo: r.codigo }));
       return {
         today,
         timezone: TZ,
@@ -60,6 +61,9 @@ export function registerViajesCapabilities() {
         activos: activos.length,
         creadosHoy: creadosHoy.length,
         porEstado: byEstado,
+        entityType: "viajes",
+        entityIds: refsActivos.map((r) => r.id),
+        refs: refsActivos,
         dataSource: "real",
       };
     },

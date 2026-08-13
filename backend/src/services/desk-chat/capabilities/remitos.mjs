@@ -3,7 +3,7 @@
  */
 import * as fileStore from "../../../db/file-store.mjs";
 import { registerCapability } from "../capability-registry.mjs";
-import { TZ, todayKey, dayKey, norm, workingIds } from "./_shared.mjs";
+import { TZ, todayKey, dayKey, norm, workingIds, compactEntityRefs } from "./_shared.mjs";
 
 const ESTADOS = [
   "pendiente_revision",
@@ -74,6 +74,8 @@ export function registerRemitosCapabilities() {
         porTenant[t] = (porTenant[t] || 0) + 1;
         if (dayKey(r.created_at) === today) creadosHoy += 1;
       }
+      const mapped = rows.map(mapRemito);
+      const refs = compactEntityRefs(mapped, (r) => ({ id: r.id, estado: r.estado, tenant: r.tenant }));
       return {
         today,
         timezone: TZ,
@@ -83,6 +85,9 @@ export function registerRemitosCapabilities() {
         porEstado,
         porTenant,
         tenantFiltro: args.tenant ?? null,
+        entityType: "remitos",
+        entityIds: refs.map((r) => r.id),
+        refs,
         dataSource: "real",
       };
     },

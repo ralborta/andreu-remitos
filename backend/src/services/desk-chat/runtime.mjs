@@ -33,8 +33,11 @@ function buildPlanSystem(agentId, catalog) {
 
   const domainRules = isCommander
     ? `- Podés combinar varias capabilities de distintos dominios en un mismo plan (ejecución paralela).
-- Resumen operativo / “cómo viene la operación”: preferí en paralelo viajes.resumen + eta.resumen + incidencias.resumen + pod.resumen + remitos.resumen (y rendicion.resumen si aporta).
-- Elegí el dominio correcto: demoras → eta/incidencias (no inventes estado "demorado" en viajes); POD → pod.*; remitos solo datos persistidos.
+- Resumen operativo / “cómo viene la operación”: preferí en paralelo viajes.resumen + eta.resumen + incidencias.resumen + pod.resumen + remitos.resumen.
+- Preguntas de RELACIÓN cross-domain (qué viajes tienen incidencias/demora/POD, cuántas por viaje, “de esos” entre dominios): DEBÉS usar commander.relacionar_viajes (join por refs reales). NO armes la relación llamando list/resumen de dos dominios y dejando que Pass2 “cruce” mentalmente.
+- remitos↔viaje: si preguntan el vínculo, igual usá commander.relacionar_viajes con con=remitos (puede devolver relationAvailable=false).
+- Para resumen operativo y joins: workingSetOp=replace (no clear) para conservar domains/refs en follow-ups.
+- Elegí el dominio correcto: demoras → eta/incidencias o commander.relacionar_viajes con incidenciaTipo=demora / soloDemorasEta; POD pendiente → podPendiente=true.
 - type=out_of_domain solo si la pregunta pide mutaciones, WhatsApp outbound, OCR/ingest o algo fuera de los packs de lectura.`
     : `- type=out_of_domain si la pregunta no es de este agente.`;
 
@@ -52,7 +55,7 @@ Respondé SOLO JSON con este shape:
 Reglas:
 - Interpretá la pregunta del operador en lenguaje natural (incl. follow-ups y pronombres). El backend NO interpreta semántica: vos decidís capabilities y args.
 - Solo podés usar capabilities del catálogo. No inventes nombres ni campos de args.
-- workingSetOnly=true SOLO si el workingSet trae entityIds no vacíos Y el follow-up es explícito sobre ese conjunto ("de esos", "cuáles", "y de…").
+- workingSetOnly=true SOLO si el workingSet trae entityIds (o domains.*.entityIds) no vacíos Y el follow-up es explícito sobre ese conjunto ("de esos", "cuáles", "y de…").
 - Si entityIds está vacío: NUNCA uses workingSetOnly; consultá de nuevo con filtros/limit.
 - Para listados nuevos o "últimos N": NO uses workingSetOnly; usá limit.
 - Un conteo 0 es un dato válido.
@@ -81,7 +84,8 @@ Reglas:
 - Sé conciso y operativo. No ejecutes acciones.${
     isCommander
       ? `\n- Si hay resultados de varios dominios, aclará brevemente de qué módulo viene cada dato.
-- Resultados parciales: si algunas capabilities ok=true y otras ok=false (error/timeout), respondé con lo disponible y mencioná qué módulo no respondió; no inventes el faltante.`
+- Resultados parciales: si algunas capabilities ok=true y otras ok=false (error/timeout), respondé con lo disponible y mencioná qué módulo no respondió; no inventes el faltante.
+- RELACIONES cross-domain: SOLO si algún result trae relationAvailable=true y pairs/relations con verified=true (p.ej. commander.relacionar_viajes). Si relationAvailable=false o no hay pairs verificados, decí explícitamente que los datos no permiten establecer esa relación. NUNCA asumas que un viaje “tiene” una incidencia/ETA/POD/remito solo porque ambos conjuntos aparecieron en el mismo turno.`
       : ""
   }`;
 }
@@ -89,7 +93,10 @@ Reglas:
 /** Validación de contexto: workingSetOnly sin entityIds no filtra nada útil. */
 function sanitizeQueriesAgainstWorkingSet(queries, workingSet) {
   const ids = workingSet?.entityIds || [];
-  if (ids.length) return queries;
+  const domainIds = Object.values(workingSet?.domains || {}).some(
+    (d) => Array.isArray(d?.entityIds) && d.entityIds.length,
+  );
+  if (ids.length || domainIds) return queries;
   return (queries || []).map((q) => {
     if (!q?.args || q.args.workingSetOnly !== true) return q;
     const args = { ...q.args };
@@ -108,6 +115,7 @@ function entityTypeFromResults(results, agentId, plan) {
   const unique = [...new Set(types)];
   if (unique.length === 1) return unique[0];
   if (unique.length > 1) {
+    if (agentId === "commander") return "commander";
     const lastCap = plan?.queries?.[plan.queries.length - 1]?.capability;
     if (lastCap?.includes(".")) return String(lastCap).split(".")[0];
     return unique[unique.length - 1];
@@ -115,6 +123,50 @@ function entityTypeFromResults(results, agentId, plan) {
   const firstCap = plan?.queries?.[0]?.capability;
   if (firstCap?.includes(".")) return String(firstCap).split(".")[0];
   return agentId;
+}
+
+function buildDomainsFromResults(results, plan, prevDomains, op) {
+  const domains = op === "replace" ? {} : { ...(prevDomains || {}) };
+  for (const r of results || []) {
+    if (!r?.ok || !r.result) continue;
+    const domain =
+      r.result.entityType ||
+      (r.capability?.includes(".") ? String(r.capability).split(".")[0] : null) ||
+      r.agentId;
+    if (!domain) continue;
+    let entityIds = [];
+    if (Array.isArray(r.result.entityIds)) entityIds = r.result.entityIds.map(String);
+    else if (Array.isArray(r.result.refs)) entityIds = r.result.refs.map((x) => String(x.id));
+    else if (r.result.item?.id) entityIds = [String(r.result.item.id)];
+    entityIds = [...new Set(entityIds)].slice(0, 40);
+
+    if (op === "filter" && domains[domain]?.entityIds?.length) {
+      const allowed = new Set(domains[domain].entityIds);
+      entityIds = entityIds.filter((id) => allowed.has(id));
+    }
+
+    const qArgs = (plan?.queries || []).find((q) => q.capability === r.capability)?.args || {};
+    domains[domain] = {
+      agentId: r.agentId || domain,
+      capability: r.capability,
+      entityType: domain,
+      entityIds,
+      filters: r.result.filters || qArgs || {},
+      goal: plan?.goal || null,
+    };
+  }
+  return domains;
+}
+
+function buildRelationsFromResults(results, prevRelations, op) {
+  const collected = [];
+  for (const r of results || []) {
+    if (!r?.ok || !r.result) continue;
+    if (Array.isArray(r.result.relations)) collected.push(...r.result.relations);
+  }
+  if (collected.length) return collected.slice(0, 80);
+  if (op === "keep" || op === "filter") return prevRelations || [];
+  return [];
 }
 
 function deriveWorkingSet({ plan, results, answer, prevWs, agentId }) {
@@ -125,6 +177,7 @@ function deriveWorkingSet({ plan, results, answer, prevWs, agentId }) {
   if (op === "keep") {
     return {
       ...base,
+      agentId,
       lastGoal: plan?.goal || base.lastGoal,
       lastCapability: plan?.queries?.[0]?.capability || base.lastCapability,
     };
@@ -150,17 +203,28 @@ function deriveWorkingSet({ plan, results, answer, prevWs, agentId }) {
     }
   }
 
-  // Dedup preserve order
   const seen = new Set();
-  entityIds = entityIds.filter((id) => (seen.has(id) ? false : (seen.add(id), true)));
+  entityIds = entityIds.filter((id) => (seen.has(id) ? false : (seen.add(id), true))).slice(0, 80);
+
+  const domains = buildDomainsFromResults(results, plan, base.domains, op);
+  const relations = buildRelationsFromResults(results, base.relations, op);
+
+  // Primary entityIds: prefer viajes if present in join/domains
+  if (!entityIds.length && domains.viajes?.entityIds?.length) {
+    entityIds = [...domains.viajes.entityIds];
+  }
 
   return {
     entityType: entityTypeFromResults(results, agentId, plan),
     entityIds,
     filters: plan?.queries?.[0]?.args || base.filters || {},
     lastGoal: plan?.goal || null,
-    lastCapability: plan?.queries?.[plan.queries?.length - 1]?.capability || plan?.queries?.[0]?.capability || null,
+    lastCapability:
+      plan?.queries?.[plan.queries?.length - 1]?.capability || plan?.queries?.[0]?.capability || null,
     label: answer?.label || plan?.goal || base.label,
+    agentId,
+    domains,
+    relations,
   };
 }
 

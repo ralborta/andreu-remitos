@@ -38,3 +38,22 @@ export function workingIds(ctx) {
   if (Array.isArray(ws.podIds) && ws.podIds.length) return ws.podIds.map(String);
   return [];
 }
+
+/** IDs referenciales de un dominio en workingSet multi-dominio (sin dumps). */
+export function workingDomainIds(ctx, domain) {
+  const ws = ctx?.workingSet;
+  if (!ws) return [];
+  const slice = ws.domains && domain ? ws.domains[domain] : null;
+  if (slice && Array.isArray(slice.entityIds) && slice.entityIds.length) {
+    return slice.entityIds.map(String);
+  }
+  if (ws.entityType === domain) return workingIds(ctx);
+  if (!domain) return workingIds(ctx);
+  return [];
+}
+
+export const REFS_CAP = 40;
+
+export function compactEntityRefs(rows, pick) {
+  return (rows || []).slice(0, REFS_CAP).map(pick);
+}

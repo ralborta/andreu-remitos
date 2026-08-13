@@ -6,7 +6,7 @@
 import * as etaStore from "../../../db/eta-store.mjs";
 import { listarColaEta, resumenEta } from "../../eta-agent.mjs";
 import { registerCapability } from "../capability-registry.mjs";
-import { TZ, todayKey, norm, workingIds } from "./_shared.mjs";
+import { TZ, todayKey, norm, workingIds, compactEntityRefs } from "./_shared.mjs";
 
 export function registerEtaCapabilities() {
   registerCapability({
@@ -22,13 +22,26 @@ export function registerEtaCapabilities() {
     readOnly: true,
     async execute() {
       const today = todayKey();
-      const [resumen, notif] = await Promise.all([resumenEta(), etaStore.resumenNotificaciones()]);
+      const [resumen, notif, cola] = await Promise.all([
+        resumenEta(),
+        etaStore.resumenNotificaciones(),
+        listarColaEta({ limit: 40 }),
+      ]);
+      const refs = compactEntityRefs(cola, (r) => ({
+        id: r.id,
+        refId: r.refId,
+        viaje: r.viaje && r.viaje !== "—" ? r.viaje : null,
+        fuente: r.fuente,
+      }));
       return {
         today,
         timezone: TZ,
         asOf: new Date().toISOString(),
         ...resumen,
         notificaciones: notif,
+        entityType: "eta",
+        entityIds: refs.map((r) => r.id),
+        refs,
         dataSource: "real",
       };
     },

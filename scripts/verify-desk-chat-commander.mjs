@@ -68,11 +68,30 @@ writeJson("incidencias.json", [
   },
 ]);
 
-writeJson("rendicion-gastos.json", []);
+writeJson("pod-casos.json", [
+  {
+    id: "pod1",
+    codigo: "POD-0001",
+    estado: "pendiente",
+    viaje_ref: "VJ-100",
+    chofer_nombre: "Perez",
+    created_at: now,
+    updated_at: now,
+  },
+  {
+    id: "pod2",
+    codigo: "POD-0002",
+    estado: "ok",
+    viaje_ref: "VJ-200",
+    created_at: now,
+    updated_at: now,
+  },
+]);
+writeJson("remitos.json", []);
 writeJson("eta-notificaciones.json", []);
 writeJson("destinos.json", []);
-writeJson("pod-casos.json", []);
-writeJson("remitos.json", []);
+writeJson("destinos-pendientes.json", []);
+writeJson("rendicion-gastos.json", []);
 
 // Commander ve todas las capabilities
 const cmdCaps = allowedCapabilityNames("commander");
@@ -270,6 +289,172 @@ console.log("✓ especialista_no_cruza_dominio");
   assert.equal(turn.capabilityResults[0].ok, true);
   assert.equal(turn.capabilityResults[0].result.count, 1);
   console.log("✓ sanitize_workingSetOnly_vacio");
+}
+
+// WorkingSet multi-dominio tras resumen
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿Cómo viene la operación hoy?",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "resumen operativo",
+      queries: [
+        { capability: "viajes.resumen", args: {} },
+        { capability: "incidencias.resumen", args: {} },
+        { capability: "pod.resumen", args: {} },
+      ],
+      workingSetOp: "replace",
+    },
+    answerOverride: { reply: "Resumen OK.", entityIds: [] },
+  });
+  assert.ok(turn.workingSet.domains.viajes?.entityIds?.includes("vj1"));
+  assert.ok(turn.workingSet.domains.incidencias?.entityIds?.length >= 1);
+  assert.equal(turn.workingSet.domains.viajes.capability, "viajes.resumen");
+  assert.equal(turn.workingSet.agentId, "commander");
+  console.log("✓ workingSet_multi_dominio_tras_resumen");
+}
+
+// Join determinístico viaje↔incidencias
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿Qué viajes tienen incidencias?",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "viajes con incidencias",
+      queries: [
+        {
+          capability: "commander.relacionar_viajes",
+          args: { con: "incidencias", soloConRelacion: true, incidenciaAbiertas: true },
+        },
+      ],
+      workingSetOp: "replace",
+    },
+    answerOverride: {
+      reply: "VJ-100 tiene 1 incidencia abierta (INC-0001).",
+      entityIds: ["vj1"],
+    },
+  });
+  const r = turn.capabilityResults[0];
+  assert.equal(r.ok, true);
+  assert.equal(r.result.relationAvailable, true);
+  assert.equal(r.result.relationField, "viaje_ref");
+  assert.ok(r.result.pairs.some((p) => p.viaje.codigo === "VJ-100" && p.relatedCount === 1));
+  assert.ok(turn.workingSet.relations.some((x) => x.verified && x.fromCodigo === "VJ-100"));
+  console.log("✓ join_viajes_incidencias");
+}
+
+// Conteos por viaje (misma cap)
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿Cuántas incidencias tiene cada viaje?",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "conteo por viaje",
+      queries: [
+        {
+          capability: "commander.relacionar_viajes",
+          args: { con: "incidencias", incidenciaAbiertas: true },
+        },
+      ],
+      workingSetOp: "replace",
+    },
+    answerOverride: {
+      reply: "VJ-100: 1. VJ-200: 0 (sin referencia verificable).",
+      entityIds: ["vj1", "vj2"],
+    },
+  });
+  const pairs = turn.capabilityResults[0].result.pairs;
+  const vj1 = pairs.find((p) => p.viaje.codigo === "VJ-100");
+  const vj2 = pairs.find((p) => p.viaje.codigo === "VJ-200");
+  assert.equal(vj1.relatedCount, 1);
+  assert.equal(vj2.hasRelation, false);
+  console.log("✓ conteo_incidencias_por_viaje");
+}
+
+// Demora verificada
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿Cuáles de esos tienen demora?",
+    user,
+    workingSet: {
+      entityType: "viajes",
+      entityIds: ["vj1"],
+      domains: { viajes: { entityIds: ["vj1"], agentId: "viajes", capability: "viajes.list" } },
+    },
+    planOverride: {
+      type: "query",
+      goal: "demoras",
+      queries: [
+        {
+          capability: "commander.relacionar_viajes",
+          args: {
+            con: "incidencias",
+            workingSetOnly: true,
+            soloConRelacion: true,
+            incidenciaTipo: "demora",
+            incidenciaAbiertas: true,
+          },
+        },
+      ],
+      workingSetOp: "filter",
+    },
+    answerOverride: { reply: "VJ-100 tiene demora INC-0001.", entityIds: ["vj1"] },
+  });
+  assert.equal(turn.capabilityResults[0].result.pairs[0].relatedCount, 1);
+  console.log("✓ demora_verificada_por_ref");
+}
+
+// POD pendiente verificado
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿Y cuáles tienen POD pendiente?",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "pod pendiente",
+      queries: [
+        {
+          capability: "commander.relacionar_viajes",
+          args: { con: "pod", soloConRelacion: true, podPendiente: true },
+        },
+      ],
+      workingSetOp: "replace",
+    },
+    answerOverride: { reply: "VJ-100 tiene POD-0001 pendiente.", entityIds: ["vj1"] },
+  });
+  assert.ok(turn.capabilityResults[0].result.pairs.some((p) => p.viaje.codigo === "VJ-100"));
+  console.log("✓ pod_pendiente_verificado");
+}
+
+// Relación no verificable (remitos)
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "¿qué viajes tienen remitos?",
+    user,
+    planOverride: {
+      type: "query",
+      goal: "remitos por viaje",
+      queries: [{ capability: "commander.relacionar_viajes", args: { con: "remitos" } }],
+      workingSetOp: "replace",
+    },
+    answerOverride: {
+      reply:
+        "Los datos no permiten establecer la relación viaje↔remito: no hay viaje_ref en remitos persistidos.",
+      entityIds: [],
+    },
+  });
+  assert.equal(turn.capabilityResults[0].result.relationAvailable, false);
+  assert.match(turn.reply, /no permiten|no hay|no se puede/i);
+  console.log("✓ relacion_no_verificable_remitos");
 }
 
 console.log("\nverify-desk-chat-commander: OK");

@@ -20,11 +20,41 @@ export function emptyWorkingSet(entityType = null) {
     lastGoal: null,
     lastCapability: null,
     label: null,
+    agentId: null,
+    domains: {},
+    relations: [],
   };
 }
 
+function normalizeDomainSlice(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const entityIds = Array.isArray(raw.entityIds) ? raw.entityIds.map(String).slice(0, 40) : [];
+  return {
+    agentId: raw.agentId != null ? String(raw.agentId) : null,
+    capability: raw.capability != null ? String(raw.capability) : null,
+    entityType: raw.entityType != null ? String(raw.entityType) : null,
+    entityIds,
+    filters: raw.filters && typeof raw.filters === "object" ? { ...raw.filters } : {},
+    goal: raw.goal != null ? String(raw.goal) : null,
+  };
+}
+
+function normalizeRelations(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, 80).map((r) => ({
+    fromDomain: r?.fromDomain != null ? String(r.fromDomain) : null,
+    toDomain: r?.toDomain != null ? String(r.toDomain) : null,
+    field: r?.field != null ? String(r.field) : null,
+    fromId: r?.fromId != null ? String(r.fromId) : null,
+    fromCodigo: r?.fromCodigo != null ? String(r.fromCodigo) : null,
+    toIds: Array.isArray(r?.toIds) ? r.toIds.map(String).slice(0, 40) : [],
+    relatedCount: Number.isFinite(Number(r?.relatedCount)) ? Number(r.relatedCount) : (r?.toIds?.length || 0),
+    verified: r?.verified === true,
+  }));
+}
+
 /**
- * Normaliza workingSet legacy `{ podIds }` → forma referencial.
+ * Normaliza workingSet legacy `{ podIds }` → forma referencial multi-dominio.
  */
 export function normalizeWorkingSet(raw, fallbackEntityType = null) {
   if (!raw || typeof raw !== "object") return emptyWorkingSet(fallbackEntityType);
@@ -39,6 +69,13 @@ export function normalizeWorkingSet(raw, fallbackEntityType = null) {
     : Array.isArray(raw.podIds)
       ? raw.podIds.map(String)
       : [];
+  const domains = {};
+  if (raw.domains && typeof raw.domains === "object") {
+    for (const [k, v] of Object.entries(raw.domains)) {
+      const slice = normalizeDomainSlice(v);
+      if (slice) domains[String(k)] = slice;
+    }
+  }
   return {
     entityType: entityType || null,
     entityIds,
@@ -46,6 +83,9 @@ export function normalizeWorkingSet(raw, fallbackEntityType = null) {
     lastGoal: raw.lastGoal != null ? String(raw.lastGoal) : null,
     lastCapability: raw.lastCapability != null ? String(raw.lastCapability) : null,
     label: raw.label != null ? String(raw.label) : null,
+    agentId: raw.agentId != null ? String(raw.agentId) : fallbackEntityType,
+    domains,
+    relations: normalizeRelations(raw.relations),
   };
 }
 

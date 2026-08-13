@@ -95,6 +95,12 @@ export function registerPodCapabilities() {
       const pods = await loadMesaPods(200);
       const resumen = await podStore.resumenPods();
       const recibidosHoy = pods.filter((p) => dayKey(p.createdAt) === today).length;
+      const pendientes = pods.filter((p) => p.estado === "pendiente");
+      const refsPendientes = pendientes.slice(0, 40).map((p) => ({
+        id: p.id,
+        codigo: p.codigo,
+        viaje: p.viaje,
+      }));
       return {
         today,
         timezone: TZ,
@@ -104,6 +110,9 @@ export function registerPodCapabilities() {
         ok: resumen.ok,
         rechazados: resumen.rechazados,
         recibidosHoy,
+        entityType: "pod",
+        entityIds: refsPendientes.map((r) => r.id),
+        refs: refsPendientes,
         dataSource: "real",
       };
     },

@@ -7,6 +7,7 @@ import { registerIncidenciasCapabilities } from "./capabilities/incidencias.mjs"
 import { registerRendicionCapabilities } from "./capabilities/rendicion.mjs";
 import { registerEtaCapabilities } from "./capabilities/eta.mjs";
 import { registerRemitosCapabilities } from "./capabilities/remitos.mjs";
+import { registerCommanderCapabilities } from "./capabilities/commander.mjs";
 import { listCapabilities } from "./capability-registry.mjs";
 
 let booted = false;
@@ -19,6 +20,7 @@ export function ensureDeskChatCapabilities() {
   registerRendicionCapabilities();
   registerEtaCapabilities();
   registerRemitosCapabilities();
+  registerCommanderCapabilities();
   booted = true;
 }
 
