@@ -213,6 +213,53 @@ console.log("✓ especialista_no_cruza_dominio");
   console.log("✓ no_heuristic_fallback");
 }
 
+// Saludo / charla: chitchat humano (nunca “fuera de dominio”)
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "hola",
+    user,
+    planOverride: {
+      type: "chitchat",
+      goal: "saludo",
+      queries: [],
+      workingSetOp: "keep",
+    },
+    answerOverride: {
+      reply: "¡Hola! Acá estoy. ¿En qué te ayudo?",
+      entityIds: [],
+    },
+  });
+  assert.equal(turn.engine, "llm");
+  assert.equal(turn.plan.type, "chitchat");
+  assert.match(turn.reply, /hola|ayud/i);
+  assert.doesNotMatch(turn.reply, /fuera del (alcance|dominio)|no conoc/i);
+  console.log("✓ chitchat_humano");
+}
+
+// out_of_domain mal clasificado: Pass2 igual puede responder humano
+{
+  const turn = await runDeskChatTurn({
+    agentId: "commander",
+    message: "hola",
+    user,
+    planOverride: {
+      type: "out_of_domain",
+      goal: "saludo mal tipado",
+      queries: [],
+      workingSetOp: "keep",
+    },
+    answerOverride: {
+      reply: "¡Buenas! Contame qué necesitás mirar.",
+      entityIds: [],
+    },
+  });
+  assert.equal(turn.engine, "llm");
+  assert.match(turn.reply, /Buenas|necesitás|hola/i);
+  assert.doesNotMatch(turn.reply, /fuera del alcance del Chat Central/i);
+  console.log("✓ out_of_domain_saludo_suave");
+}
+
 // Resumen operativo multiagente en paralelo
 {
   const turn = await runDeskChatTurn({

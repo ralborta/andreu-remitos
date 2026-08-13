@@ -28,18 +28,20 @@ function compactHistory(history, n = 10) {
 function buildPlanSystem(agentId, catalog) {
   const isCommander = agentId === "commander";
   const role = isCommander
-    ? `Sos el planificador del Chat Central Commander de mesa (SOL / TransitOne). Orquestás consultas read-only entre especialistas (pod, viajes, incidencias, rendicion, eta, remitos) eligiendo capabilities del catálogo.`
-    : `Sos el planificador del desk chat del agente especialista "${agentId}" (SOL / TransitOne).`;
+    ? `Sos el planificador del Chat Central Commander de mesa (SOL / TransitOne). Sos un compañero de operaciones: conversás, ayudás a pensar y, cuando hace falta, orquestás consultas read-only entre especialistas (pod, viajes, incidencias, rendicion, eta, remitos).`
+    : `Sos el planificador del desk chat del agente especialista "${agentId}" (SOL / TransitOne). También atendés charla humana y ayuda; no sos solo un buscador de datos.`;
 
   const domainRules = isCommander
     ? `- Podés combinar varias capabilities de distintos dominios en un mismo plan (ejecución paralela).
-- Resumen operativo / “cómo viene la operación”: preferí en paralelo viajes.resumen + eta.resumen + incidencias.resumen + pod.resumen + remitos.resumen.
+- Resumen operativo / “cómo viene la operación” / “analizá la operación”: preferí en paralelo viajes.resumen + eta.resumen + incidencias.resumen + pod.resumen + remitos.resumen.
 - Preguntas de RELACIÓN cross-domain (qué viajes tienen incidencias/demora/POD, cuántas por viaje, “de esos” entre dominios): DEBÉS usar commander.relacionar_viajes (join por refs reales). NO armes la relación llamando list/resumen de dos dominios y dejando que Pass2 “cruce” mentalmente.
 - remitos↔viaje: si preguntan el vínculo, igual usá commander.relacionar_viajes con con=remitos (puede devolver relationAvailable=false).
 - Para resumen operativo y joins: workingSetOp=replace (no clear) para conservar domains/refs en follow-ups.
 - Elegí el dominio correcto: demoras → eta/incidencias o commander.relacionar_viajes con incidenciaTipo=demora / soloDemorasEta; POD pendiente → podPendiente=true.
-- type=out_of_domain solo si la pregunta pide mutaciones, WhatsApp outbound, OCR/ingest o algo fuera de los packs de lectura.`
-    : `- type=out_of_domain si la pregunta no es de este agente.`;
+- type=chitchat SIEMPRE para saludos, cortesías, “cómo estás”, “quién sos”, “qué podés hacer”, bromas, charla general, pedidos de ayuda sin dato concreto todavía, o cualquier turno conversacional que no necesite consultar el store.
+- type=out_of_domain SOLO si pide mutaciones (aprobar/rechazar/editar), WhatsApp outbound, OCR/ingest, o algo que claramente no se pueda ni conversar ni consultar en lectura. NUNCA uses out_of_domain para “hola”, “buenas”, “gracias”, “ok”, “dale”, “qué tal”, “ayudame”, etc.`
+    : `- type=chitchat para saludos, cortesías y charla que no requiere datos de este módulo.
+- type=out_of_domain SOLO si la pregunta es claramente de OTRO módulo operativo (y no es chitchat). NUNCA out_of_domain para “hola” / charla humana.`;
 
   return `${role}
 Respondé SOLO JSON con este shape:
@@ -60,7 +62,7 @@ Reglas:
 - Para listados nuevos o "últimos N": NO uses workingSetOnly; usá limit.
 - Un conteo 0 es un dato válido.
 ${domainRules}
-- type=chitchat si no requiere datos.
+- type=query cuando hace falta mirar datos (listados, resúmenes, joins, análisis con hechos).
 - type=clarify si falta un dato imprescindible (ej. código).
 - No apruebes, rechaces ni mutes nada (solo lectura).
 
@@ -68,21 +70,34 @@ Catálogo:
 ${JSON.stringify(catalog)}`;
 }
 
-function buildAnswerSystem(agentId) {
+function buildAnswerSystem(agentId, { mode = "query" } = {}) {
   const isCommander = agentId === "commander";
   const role = isCommander
-    ? `Sos el Chat Central Commander de mesa (SOL). Sintetizás respuestas operativas a partir de resultados de uno o varios especialistas.`
-    : `Sos el agente especialista "${agentId}" de mesa (SOL).`;
+    ? `Sos el Chat Central de mesa (SOL): una persona de operaciones rioplatense, cercana y clara. Conversás, ayudás a pensar y, cuando hay datos, los interpretás. No sos un robot de menú ni un “brindador de información” seco.`
+    : `Sos el especialista "${agentId}" de mesa (SOL): persona de operaciones rioplatense, cercana y clara. Ayudás a conversar y a entender los datos de tu módulo.`;
+
+  const chitchatExtra =
+    mode === "chitchat" || mode === "clarify"
+      ? `
+- Este turno es conversacional (sin datos del store o con poca info). Respondé como persona: saludá si te saludan, explicá con naturalidad qué podés hacer, invitá a preguntar.
+- Podés ofrecer ayuda concreta (viajes, incidencias, ETA, POD, remitos, rendición) sin sonar a menú numerado.
+- Si el plan vino marcado out_of_domain pero el mensaje es saludo/charla/ayuda (“hola”, “buenas”, “qué tal”, “ayudame”), igual respondé humano y útil: NUNCA digas que no conocés el dominio ni que está fuera de alcance.
+- Solo si pide de verdad mutar datos, mandar WhatsApp o OCR: redirigí con tono amable (sin sermón técnico).
+- No digas que sos una IA / un bot / un modelo.`
+      : `
+- Con los hechos disponibles: resumí, analizá y ayudá (qué se ve, qué conviene mirar). No te limites a listar campos crudos.
+- Tono humano y coloquial (voseo rioplatense), breve pero con criterio.`;
+
   return `${role}
 Respondé SOLO JSON: {"reply":"texto en español","entityIds":["..."],"citedIds":["..."],"label":"opcional"}.
 Reglas:
-- Usá únicamente capabilityResults. Si ok=false o el campo no existe en el resultado: "Actualmente no tengo ese dato disponible."
+- Usá únicamente capabilityResults cuando hay resultados. Si ok=false o el campo no existe: decí con naturalidad que ahora no tenés ese dato.
 - Si un conteo es 0, decí explícitamente 0 (cero es un dato válido, no es “dato no disponible”).
 - Si una lista viene vacía (count=0), decí que no hay coincidencias con esos filtros.
 - No inventes cantidades, estados, ids, destinos ni motivos.
 - entityIds/citedIds solo ids presentes en los resultados.
-- Sé conciso y operativo. No ejecutes acciones.${
-    isCommander
+- No ejecutes acciones (solo lectura / orientación).${chitchatExtra}${
+    isCommander && mode === "query"
       ? `\n- Si hay resultados de varios dominios, aclará brevemente de qué módulo viene cada dato.
 - Resultados parciales: si algunas capabilities ok=true y otras ok=false (error/timeout), respondé con lo disponible y mencioná qué módulo no respondió; no inventes el faltante.
 - RELACIONES cross-domain: SOLO si algún result trae relationAvailable=true y pairs/relations con verified=true (p.ej. commander.relacionar_viajes). Si relationAvailable=false o no hay pairs verificados, decí explícitamente que los datos no permiten establecer esa relación. NUNCA asumas que un viaje “tiene” una incidencia/ETA/POD/remito solo porque ambos conjuntos aparecieron en el mismo turno.`
@@ -256,6 +271,7 @@ async function answerWithLlm({
   log,
   answerOverride,
   llmCaller,
+  mode = "query",
 }) {
   if (answerOverride) {
     return { ok: true, parsed: answerOverride, error: null, latencyMs: 0, source: "override" };
@@ -264,10 +280,11 @@ async function answerWithLlm({
   const caller = llmCaller || callDeskChatLlmJson;
   const out = await caller({
     log,
-    system: buildAnswerSystem(agentId),
+    system: buildAnswerSystem(agentId, { mode }),
     userContent: JSON.stringify({
       message,
       goal: plan?.goal,
+      planType: plan?.type,
       workingSet: normalizeWorkingSet(workingSet, agentId),
       history: compactHistory(history, 6),
       capabilityResults: results,
@@ -370,33 +387,32 @@ export async function runDeskChatTurn(opts = {}) {
         ? plan.clarifyQuestion || "Necesito un dato más para consultar (por ejemplo un código POD)."
         : plan.type === "out_of_domain"
           ? agentId === "commander"
-            ? "Esa consulta está fuera del alcance del Chat Central (solo lectura operativa entre Viajes, Incidencias, Rendición, ETA, POD y Remitos). Reformulá o usá el módulo operativo correspondiente."
-            : `Esa consulta está fuera del dominio del agente ${agentId}. Probá en el módulo correspondiente o en el Chat Central.`
+            ? "Eso ya se me escapa un poco (mutaciones, WhatsApp o cargas OCR las manejan otros flujos). Igual hablame: te ayudo a mirar Viajes, Incidencias, Rendición, ETA, POD y Remitos."
+            : `Eso no lo manejo desde este módulo. Si querés, te oriento o lo vemos en el Chat Central / el agente que corresponda.`
           : agentId === "commander"
-            ? "¡Hola! Soy el Chat Central. Puedo consultar Viajes, Incidencias, Rendición, ETA, POD y Remitos (solo lectura). ¿Qué necesitás?"
-            : "¡Hola! Puedo consultar datos reales de este módulo. ¿Qué necesitás saber?";
+            ? "¡Hola! Acá estoy. Puedo charlar y ayudarte a mirar Viajes, Incidencias, Rendición, ETA, POD y Remitos. ¿Qué necesitás?"
+            : "¡Hola! Acá estoy para este módulo. Decime qué necesitás y lo vemos.";
 
-    // Pass 2 opcional para chitchat/clarify con LLM; si falla, usamos static (no es comprensión por keywords de negocio)
+    // Pass 2 LLM para conversar (chitchat/clarify) y también para suavizar out_of_domain mal clasificado.
     let reply = staticReply;
     let entityIds = [];
-    if (plan.type === "clarify" || plan.type === "chitchat") {
-      const ansLlm = await answerWithLlm({
-        agentId,
-        message,
-        history,
-        workingSet,
-        plan,
-        results: [],
-        log: opts.log,
-        answerOverride: opts.answerOverride,
-        llmCaller: opts.llmCaller,
-      });
-      trace.latencies.answerMs = ansLlm.latencyMs;
-      const ans = ansLlm.ok ? normalizeAnswer(ansLlm.parsed) : null;
-      if (ans?.reply) {
-        reply = ans.reply;
-        entityIds = ans.entityIds;
-      }
+    const ansLlm = await answerWithLlm({
+      agentId,
+      message,
+      history,
+      workingSet,
+      plan,
+      results: [],
+      log: opts.log,
+      answerOverride: opts.answerOverride,
+      llmCaller: opts.llmCaller,
+      mode: plan.type === "out_of_domain" ? "chitchat" : plan.type,
+    });
+    trace.latencies.answerMs = ansLlm.latencyMs;
+    const ans = ansLlm.ok ? normalizeAnswer(ansLlm.parsed) : null;
+    if (ans?.reply) {
+      reply = ans.reply;
+      entityIds = ans.entityIds;
     }
 
     const ws =
@@ -445,6 +461,7 @@ export async function runDeskChatTurn(opts = {}) {
     log: opts.log,
     answerOverride: opts.answerOverride,
     llmCaller: opts.llmCaller,
+    mode: "query",
   });
   trace.latencies.answerMs = ansLlm.latencyMs;
 
