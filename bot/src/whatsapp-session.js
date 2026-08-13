@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync, rmSync, unlinkSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
 const BOT_NAME = process.env.BOT_SESSION_NAME || "andreu";
@@ -106,8 +106,11 @@ export async function clearWhatsappSession(provider) {
   try {
     const dir = sessionsDir();
     if (existsSync(dir)) {
-      rmSync(dir, { recursive: true, force: true });
-      notes.push("sessions_deleted");
+      // No borrar el mount point del volumen Docker (EBUSY); vaciar contenido.
+      for (const name of readdirSync(dir)) {
+        rmSync(join(dir, name), { recursive: true, force: true });
+      }
+      notes.push("sessions_cleared");
     }
   } catch (err) {
     notes.push(`sessions_err:${err?.message || err}`);
