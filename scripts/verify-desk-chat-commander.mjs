@@ -504,6 +504,19 @@ console.log("✓ especialista_no_cruza_dominio");
   console.log("✓ relacion_no_verificable_remitos");
 }
 
+// Contrato de tono: análisis + sugerencia (no solo listado)
+{
+  const src = fs.readFileSync(
+    path.join(process.cwd(), "backend/src/services/desk-chat/runtime.mjs"),
+    "utf8",
+  );
+  assert.match(src, /Sugerencias de decisión orientativas/);
+  assert.match(src, /qué priorizar/);
+  assert.match(src, /ayudame a decidir/);
+  assert.doesNotMatch(src, /Sé conciso y operativo/);
+  console.log("✓ prompt_analisis_y_sugerencias");
+}
+
 console.log("\nverify-desk-chat-commander: OK");
 console.log(
   JSON.stringify(
