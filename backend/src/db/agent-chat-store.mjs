@@ -119,6 +119,9 @@ export async function appendTurn(conversationId, { userMessage, assistantMessage
       : Array.isArray(workingSet.podIds)
         ? workingSet.podIds.map(String)
         : [];
+    const domains =
+      workingSet.domains && typeof workingSet.domains === "object" ? workingSet.domains : {};
+    const relations = Array.isArray(workingSet.relations) ? workingSet.relations : [];
     row.workingSet = {
       entityType: workingSet.entityType ?? row.workingSet?.entityType ?? null,
       entityIds,
@@ -129,8 +132,11 @@ export async function appendTurn(conversationId, { userMessage, assistantMessage
       lastGoal: workingSet.lastGoal ?? row.workingSet?.lastGoal ?? null,
       lastCapability: workingSet.lastCapability ?? row.workingSet?.lastCapability ?? null,
       label: workingSet.label ?? row.workingSet?.label ?? null,
+      agentId: workingSet.agentId ?? row.workingSet?.agentId ?? row.agentId ?? null,
+      domains,
+      relations,
       // compat UI antigua
-      podIds: entityIds,
+      podIds: workingSet.entityType === "pod" ? entityIds : workingSet.podIds || [],
     };
   }
   row.updatedAt = now;

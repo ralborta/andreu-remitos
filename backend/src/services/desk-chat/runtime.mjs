@@ -450,18 +450,30 @@ export async function runDeskChatTurn(opts = {}) {
 
   if (!ansLlm.ok || !ansLlm.parsed) {
     trace.errors.push(ansLlm.error || "answer_llm_failed");
-    // Sin fallback heurístico: respuesta honesta grounded en results crudos mínimos
     const okResults = results.filter((r) => r.ok);
-    const reply =
+    const ws = deriveWorkingSet({
+      plan,
+      results,
+      answer: { entityIds: [], label: null },
+      prevWs: workingSet,
+      agentId,
+    });
+    const unavailable = okResults.filter((r) => r.result?.relationAvailable === false);
+    let reply =
       okResults.length === 0
         ? "Consulté el store pero no pude redactar la respuesta (IA no disponible). Los datos no se inventaron."
         : "Obtuve datos del store pero no pude sintetizar la respuesta con IA. Reintentá en unos segundos.";
+    if (unavailable.length === okResults.length && unavailable.length > 0) {
+      reply =
+        unavailable[0].result.groundedNote ||
+        "Los datos persistidos no permiten establecer esa relación entre entidades.";
+    }
     return {
       reply,
       engine: "llm_error",
       dataSources: ["real"],
       citedIds: [],
-      workingSet: workingSetForStore(workingSet),
+      workingSet: workingSetForStore(ws),
       plan,
       capabilityResults: results,
       factsMeta: null,
@@ -472,16 +484,49 @@ export async function runDeskChatTurn(opts = {}) {
   const answer = normalizeAnswer(ansLlm.parsed);
   if (!answer) {
     trace.errors.push("answer_shape_invalid");
+    const ws = deriveWorkingSet({
+      plan,
+      results,
+      answer: { entityIds: [], label: null },
+      prevWs: workingSet,
+      agentId,
+    });
     return {
       reply: "La IA devolvió una respuesta inválida. Reintentá, por favor.",
       engine: "llm_error",
       dataSources: ["real"],
       citedIds: [],
-      workingSet: workingSetForStore(workingSet),
+      workingSet: workingSetForStore(ws),
       plan,
       capabilityResults: results,
       factsMeta: null,
       trace: { ...trace, engine: "llm_error", latencies: { ...trace.latencies, totalMs: Date.now() - t0 } },
+    };
+  }
+
+  // Relación no verificable: no dejar que Pass2 invente un “no hay” como si hubiera join
+  const relBlocked = results.filter((r) => r.ok && r.result?.relationAvailable === false);
+  if (relBlocked.length && results.every((r) => !r.ok || r.result?.relationAvailable === false)) {
+    const note =
+      relBlocked[0].result.groundedNote ||
+      "Los datos persistidos no permiten establecer esa relación entre entidades.";
+    const ws = deriveWorkingSet({
+      plan,
+      results,
+      answer: { entityIds: [], label: null },
+      prevWs: workingSet,
+      agentId,
+    });
+    return {
+      reply: note,
+      engine: "llm",
+      dataSources: ["real"],
+      citedIds: [],
+      workingSet: workingSetForStore(ws),
+      plan,
+      capabilityResults: results,
+      factsMeta: null,
+      trace: { ...trace, engine: "llm", latencies: { ...trace.latencies, totalMs: Date.now() - t0 } },
     };
   }
 

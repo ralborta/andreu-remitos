@@ -145,8 +145,13 @@ export function validateArgsAgainstSchema(args, schema) {
 }
 
 function coerceProp(v, propSchema, key, errors) {
+  // null/undefined en campos opcionales = omitir (el LLM a menudo manda null)
+  if (v === null || v === undefined) {
+    if (propSchema.nullable) return null;
+    return undefined;
+  }
+
   const t = propSchema?.type;
-  if (v === null && propSchema.nullable) return null;
 
   if (t === "string") {
     if (typeof v !== "string" && typeof v !== "number") {
