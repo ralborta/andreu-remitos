@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ClipboardCheck,
   Clock,
+  Copy,
   FileText,
   History,
   Loader2,
@@ -27,6 +28,8 @@ import {
   Route,
   Send,
   Sparkles,
+  ThumbsDown,
+  ThumbsUp,
   TriangleAlert,
   Truck,
 } from "lucide-react";
@@ -121,28 +124,79 @@ function formatTime(iso?: string) {
   }
 }
 
-function Bubble({ m }: { m: AgentChatMessage }) {
+function Bubble({
+  m,
+  agentLabel,
+  agentIcon,
+}: {
+  m: AgentChatMessage;
+  agentLabel: string;
+  agentIcon?: string;
+}) {
   const mine = m.role === "user";
-  return (
-    <div className={clsx("flex", mine ? "justify-end" : "justify-start")}>
-      <div
-        className={clsx(
-          "max-w-[min(100%,42rem)] rounded-2xl px-4 py-3 text-sm shadow-sm",
-          mine
-            ? "rounded-br-md bg-[var(--violet)] text-white"
-            : "rounded-bl-md border border-[var(--border)] bg-[var(--panel)] text-[var(--text)]",
-        )}
-      >
-        <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
-        <div
-          className={clsx(
-            "mt-1.5 flex items-center gap-1.5 text-[10px]",
-            mine ? "justify-end text-white/70" : "text-[var(--text-faint)]",
-          )}
-        >
-          {formatTime(m.at)}
-          {mine && <CheckCheck size={12} className="opacity-80" />}
+
+  if (mine) {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[min(100%,36rem)]">
+          <div className="rounded-2xl rounded-br-md bg-[#ece8f5] px-4 py-2.5 text-sm text-[#1f2937] shadow-sm dark:bg-[var(--panel-2)] dark:text-[var(--text)]">
+            <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
+          </div>
+          <div className="mt-1 flex items-center justify-end gap-1.5 text-[11px] text-[var(--text-faint)]">
+            {formatTime(m.at)}
+            <CheckCheck size={13} className="text-[var(--violet)]" />
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex justify-start gap-3">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--violet)]/15 text-[var(--violet)]">
+        {agentIcon ? <AgentIcon name={agentIcon} size={16} /> : <MessageCircle size={16} />}
+      </span>
+      <div className="min-w-0 max-w-[min(100%,40rem)] flex-1">
+        <p className="mb-1 text-sm font-semibold text-[var(--text)]">{agentLabel}</p>
+        <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[var(--text)]">
+          {m.text}
+        </p>
+        <div className="mt-2.5 flex flex-wrap items-center gap-3 text-[var(--text-faint)]">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className="rounded-md p-1 hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+              title="Copiar"
+              aria-label="Copiar"
+              onClick={() => {
+                void navigator.clipboard?.writeText(m.text).catch(() => {});
+              }}
+            >
+              <Copy size={14} />
+            </button>
+            <button
+              type="button"
+              className="rounded-md p-1 hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+              title="Me gusta"
+              aria-label="Me gusta"
+            >
+              <ThumbsUp size={14} />
+            </button>
+            <button
+              type="button"
+              className="rounded-md p-1 hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+              title="No me gusta"
+              aria-label="No me gusta"
+            >
+              <ThumbsDown size={14} />
+            </button>
+          </div>
+          <span className="text-[11px]">{formatTime(m.at)}</span>
+        </div>
+        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--text-faint)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
+          Datos operativos conectados
+        </p>
       </div>
     </div>
   );
@@ -391,14 +445,28 @@ export const AssistantChatPanel = forwardRef<AgentChatHandle, AssistantChatPanel
               )}
             </div>
           ) : (
-            <div className="mx-auto flex max-w-3xl flex-col gap-3 pb-2">
+            <div className="mx-auto flex max-w-3xl flex-col gap-5 pb-2 pt-1">
               {messages.map((m, i) => (
-                <Bubble key={m.id || `${m.role}-${i}-${m.at}`} m={m} />
+                <Bubble
+                  key={m.id || `${m.role}-${i}-${m.at}`}
+                  m={m}
+                  agentLabel={agentLabel}
+                  agentIcon={catalog?.icon}
+                />
               ))}
               {busy && (
-                <div className="flex items-center gap-2 px-1 text-xs text-[var(--text-faint)]">
-                  <Loader2 size={14} className="animate-spin" />
-                  Pensando…
+                <div className="flex items-center gap-3 px-1">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--violet)]/15 text-[var(--violet)]">
+                    {catalog?.icon ? (
+                      <AgentIcon name={catalog.icon} size={16} />
+                    ) : (
+                      <MessageCircle size={16} />
+                    )}
+                  </span>
+                  <div className="flex items-center gap-2 text-xs text-[var(--text-faint)]">
+                    <Loader2 size={14} className="animate-spin" />
+                    Pensando…
+                  </div>
                 </div>
               )}
             </div>
