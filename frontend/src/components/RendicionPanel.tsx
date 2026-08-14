@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { Check, ImageIcon, RefreshCw, Search, X } from "lucide-react";
+import { Check, Download, ImageIcon, RefreshCw, Search, X } from "lucide-react";
 import {
   decidirGastoRendicion,
   listGastosRendicion,
+  rendicionExportUrl,
   resumenRendicion,
   type GastoRendicion,
   type ResumenRendicion,
@@ -337,6 +338,17 @@ export function RendicionPanel() {
     void load();
   }, [load]);
 
+  const exportParams = useMemo(
+    () => ({
+      estado: filtro === "todos" ? undefined : filtro,
+      q: q || undefined,
+      desde: desde || undefined,
+      hasta: hasta || undefined,
+      limit: 5000,
+    }),
+    [filtro, q, desde, hasta],
+  );
+
   const kpis = useMemo(
     () => [
       { label: "Pendientes", value: String(resumen?.pendientes ?? "—"), hint: "esperan OK humano" },
@@ -418,7 +430,8 @@ export function RendicionPanel() {
           <div>
             <h3 className="font-semibold text-white">Cola de aprobación</h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Clic en un registro para abrir el detalle
+              Clic en un registro para abrir el detalle · Excel / Excel ERP exportan el filtro
+              (ERP usa aprobados si estás en Pendientes)
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -452,6 +465,30 @@ export function RendicionPanel() {
               <RefreshCw size={14} />
               Actualizar
             </button>
+            <a
+              href={rendicionExportUrl({ ...exportParams, formato: "mesa" })}
+              className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
+              title="Descarga el filtro actual en Excel (mesa)"
+            >
+              <Download size={14} />
+              Excel
+            </a>
+            <a
+              href={rendicionExportUrl({
+                ...exportParams,
+                formato: "erp",
+                // ERP: por defecto aprobados si estás en pendientes (sin sentido liquidar pendientes)
+                estado:
+                  exportParams.estado === "pendiente_aprobacion"
+                    ? "aprobado"
+                    : exportParams.estado,
+              })}
+              className="inline-flex items-center gap-1 rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
+              title="Planilla lista para liquidar / importar al ERP (aprobados si el filtro es pendientes)"
+            >
+              <Download size={14} />
+              Excel ERP
+            </a>
           </div>
         </div>
 

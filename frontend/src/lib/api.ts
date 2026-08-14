@@ -633,6 +633,26 @@ export function listGastosRendicion(params?: {
   return api<GastoRendicion[]>(`/api/rendicion${qs ? `?${qs}` : ""}`);
 }
 
+/** Descarga Excel de rendiciones (mesa u ERP). Respeta filtros actuales. */
+export function rendicionExportUrl(params?: {
+  formato?: "mesa" | "erp";
+  estado?: string;
+  q?: string;
+  desde?: string;
+  hasta?: string;
+  limit?: number;
+}) {
+  const q = new URLSearchParams();
+  if (params?.formato) q.set("formato", params.formato);
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.q) q.set("q", params.q);
+  if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return `${apiBase()}/api/rendicion/export${qs ? `?${qs}` : ""}`;
+}
+
 export function resumenRendicion() {
   return api<ResumenRendicion>("/api/rendicion/resumen");
 }

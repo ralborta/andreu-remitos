@@ -1,3 +1,4 @@
+import * as XLSX from "xlsx";
 import * as rendicionStore from "../db/rendicion-store.mjs";
 import {
   GASTO_ESTADO_LABEL,
@@ -8,6 +9,10 @@ import {
   RENDICION_CATEGORIA_LABEL,
   RENDICION_CATEGORIAS,
 } from "../../../lib/rendicion.mjs";
+import {
+  buildPlanillaRendicion,
+  filasAoaRendicion,
+} from "../../../lib/rendicion-export.mjs";
 import { mensajeDecisionGasto } from "../../../lib/rendicion-wa.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
@@ -64,6 +69,36 @@ export default async function rendicionRoutes(fastify) {
       hasta: hasta || undefined,
     });
     return rows.map(mapGasto);
+  });
+
+  /** Export Excel — registrar antes de /:id */
+  fastify.get("/export", async (request, reply) => {
+    const q = request.query ?? {};
+    const formato = q.formato === "erp" ? "erp" : "mesa";
+    const rows = await rendicionStore.listGastos({
+      limit: q.limit ? parseInt(q.limit, 10) : 5000,
+      estado: q.estado || undefined,
+      telefono: q.telefono || undefined,
+      q: q.q || undefined,
+      desde: q.desde || undefined,
+      hasta: q.hasta || undefined,
+    });
+    const data = buildPlanillaRendicion(rows, { formato });
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(filasAoaRendicion(data.filas, data.columnas));
+    const sheetName = formato === "erp" ? "Rendicion_ERP" : "Rendiciones";
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const day = new Date().toISOString().slice(0, 10);
+    const tag = q.estado ? `_${q.estado}` : "_todos";
+    const fname = `Rendiciones_${formato}${tag}_${day}.xlsx`;
+    return reply
+      .header(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      )
+      .header("Content-Disposition", `attachment; filename="${fname}"`)
+      .send(buf);
   });
 
   fastify.get("/:id", async (request, reply) => {
