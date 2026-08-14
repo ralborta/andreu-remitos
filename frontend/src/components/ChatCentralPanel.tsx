@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Chat Central / asistentes — solo presentación visual (lógica intacta).
+ * Referencia: captura ChatGPT-like SOL (mensajes abiertos + compositor pill).
+ */
 import {
   forwardRef,
   useEffect,
@@ -39,19 +43,36 @@ import { getAgent } from "@/lib/agents";
 import { AgentIcon } from "./Icon";
 import type { AgentChatHandle, AgentChatMessage } from "./AgentChat";
 
+const C = {
+  white: "#FFFFFF",
+  exterior: "#F7F5FC",
+  text: "#17172F",
+  textSec: "#77728F",
+  violet: "#6D35F2",
+  violetHover: "#5B27D8",
+  violetLight: "#F3EEFF",
+  userBg: "#F6F3FC",
+  border: "#E4DCF7",
+  borderSoft: "#EEEAF6",
+  green: "#12B76A",
+  greenBg: "#ECFDF3",
+  placeholder: "#918AA8",
+  liveText: "#3D3951",
+  sendDisabled: "#D8C8FA",
+} as const;
+
 export const ASSISTANT_CHAT_PANEL_HEIGHT: CSSProperties = {
   height: "min(640px, calc(100vh - 10rem))",
   maxHeight: "min(640px, calc(100vh - 10rem))",
 };
 
-/** @deprecated alias — misma altura que el chat asistente unificado */
 export const CHAT_CENTRAL_PANEL_HEIGHT = ASSISTANT_CHAT_PANEL_HEIGHT;
 
-const CARD_TONES = [
-  "bg-[#7c3aed]/12 text-[#7c3aed]",
-  "bg-sky-500/15 text-sky-600",
-  "bg-amber-500/15 text-amber-600",
-  "bg-emerald-500/15 text-emerald-600",
+const CARD_TONES: CSSProperties[] = [
+  { background: C.violetLight, color: C.violet },
+  { background: "#E8F4FF", color: "#0284C7" },
+  { background: "#FFF8E8", color: "#D97706" },
+  { background: C.greenBg, color: C.green },
 ];
 
 const AGENT_CARD_ICONS: Record<string, ReactNode[]> = {
@@ -118,86 +139,236 @@ function formatTime(iso?: string) {
     return new Date(iso).toLocaleString("es-AR", {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: true,
     });
   } catch {
     return "";
   }
 }
 
-function Bubble({
+/** Avatar Chat Central: burbuja violeta (referencia), no Radio/OpenAI. */
+function ChatAvatar({
+  agentId,
+  agentIcon,
+  size = 38,
+}: {
+  agentId: string;
+  agentIcon?: string;
+  size?: number;
+}) {
+  const iconSize = Math.round(size * 0.42);
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-full"
+      style={{
+        width: size,
+        height: size,
+        background: C.violetLight,
+        color: C.violet,
+      }}
+      aria-hidden
+    >
+      {agentId === "commander" || !agentIcon ? (
+        <MessageCircle size={iconSize} strokeWidth={2} />
+      ) : (
+        <AgentIcon name={agentIcon} size={iconSize} />
+      )}
+    </span>
+  );
+}
+
+function MessageActions({ text, at }: { text: string; at?: string }) {
+  const btn =
+    "inline-flex h-[30px] w-[30px] items-center justify-center text-[#77728F] transition-colors hover:text-[#6D35F2]";
+  return (
+    <div className="mt-3.5 flex flex-wrap items-center" style={{ gap: 14 }}>
+      <button
+        type="button"
+        title="Copiar"
+        aria-label="Copiar"
+        className={btn}
+        onClick={() => {
+          void navigator.clipboard?.writeText(text).catch(() => {});
+        }}
+      >
+        <Copy size={17} strokeWidth={1.75} />
+      </button>
+      <button type="button" title="Útil" aria-label="Útil" className={btn}>
+        <ThumbsUp size={17} strokeWidth={1.75} />
+      </button>
+      <button type="button" title="No útil" aria-label="No útil" className={btn}>
+        <ThumbsDown size={17} strokeWidth={1.75} />
+      </button>
+      <span className="text-[11px] leading-none" style={{ color: C.placeholder }}>
+        {formatTime(at)}
+      </span>
+    </div>
+  );
+}
+
+function LiveDataIndicator() {
+  return (
+    <p
+      className="flex items-center gap-2 leading-none"
+      style={{ marginTop: 14, fontSize: 12, color: C.textSec }}
+    >
+      <span
+        className="inline-block shrink-0 rounded-full"
+        style={{ width: 7, height: 7, background: C.green }}
+      />
+      Datos operativos conectados
+    </p>
+  );
+}
+
+function UserMessage({ m }: { m: AgentChatMessage }) {
+  return (
+    <div className="flex w-full justify-end">
+      <div className="sol-user-msg max-w-[70%]">
+        <div
+          className="inline-block max-w-full"
+          style={{
+            background: C.userBg,
+            color: C.text,
+            borderRadius: 18,
+            padding: "11px 16px",
+            fontSize: 15,
+            fontWeight: 400,
+            lineHeight: 1.45,
+          }}
+        >
+          <p className="whitespace-pre-wrap">{m.text}</p>
+        </div>
+        <div
+          className="mt-1.5 flex items-center justify-end gap-1.5"
+          style={{ fontSize: 11, color: C.placeholder }}
+        >
+          {formatTime(m.at)}
+          <CheckCheck size={12} style={{ color: C.violet }} strokeWidth={2.25} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AssistantMessage({
   m,
+  agentId,
   agentLabel,
   agentIcon,
 }: {
   m: AgentChatMessage;
+  agentId: string;
   agentLabel: string;
   agentIcon?: string;
 }) {
-  const mine = m.role === "user";
-
-  if (mine) {
-    return (
-      <div className="flex justify-end">
-        <div className="max-w-[min(100%,36rem)]">
-          <div className="rounded-2xl rounded-br-md bg-[#ece8f5] px-4 py-2.5 text-sm text-[#1f2937] shadow-sm dark:bg-[var(--panel-2)] dark:text-[var(--text)]">
-            <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
-          </div>
-          <div className="mt-1 flex items-center justify-end gap-1.5 text-[11px] text-[var(--text-faint)]">
-            {formatTime(m.at)}
-            <CheckCheck size={13} className="text-[var(--violet)]" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  const paragraphs = m.text.split(/\n\n+/).filter(Boolean);
   return (
-    <div className="flex justify-start gap-3">
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--violet)]/15 text-[var(--violet)]">
-        {agentIcon ? <AgentIcon name={agentIcon} size={16} /> : <MessageCircle size={16} />}
-      </span>
-      <div className="min-w-0 max-w-[min(100%,40rem)] flex-1">
-        <p className="mb-1 text-sm font-semibold text-[var(--text)]">{agentLabel}</p>
-        <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[var(--text)]">
-          {m.text}
+    <div className="flex w-full max-w-[720px] items-start" style={{ gap: 14 }}>
+      <ChatAvatar agentId={agentId} agentIcon={agentIcon} size={38} />
+      <div className="min-w-0 max-w-[660px] flex-1">
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: C.text,
+            marginBottom: 8,
+            lineHeight: 1.3,
+          }}
+        >
+          {agentLabel}
         </p>
-        <div className="mt-2.5 flex flex-wrap items-center gap-3 text-[var(--text-faint)]">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="rounded-md p-1 hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
-              title="Copiar"
-              aria-label="Copiar"
-              onClick={() => {
-                void navigator.clipboard?.writeText(m.text).catch(() => {});
-              }}
-            >
-              <Copy size={14} />
-            </button>
-            <button
-              type="button"
-              className="rounded-md p-1 hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
-              title="Me gusta"
-              aria-label="Me gusta"
-            >
-              <ThumbsUp size={14} />
-            </button>
-            <button
-              type="button"
-              className="rounded-md p-1 hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
-              title="No me gusta"
-              aria-label="No me gusta"
-            >
-              <ThumbsDown size={14} />
-            </button>
-          </div>
-          <span className="text-[11px]">{formatTime(m.at)}</span>
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 400,
+            lineHeight: 1.65,
+            color: C.text,
+          }}
+        >
+          {paragraphs.map((para, i) => (
+            <p key={i} className={i > 0 ? "mt-3 whitespace-pre-wrap" : "whitespace-pre-wrap"}>
+              {para}
+            </p>
+          ))}
         </div>
-        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--text-faint)]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
-          Datos operativos conectados
-        </p>
+        <MessageActions text={m.text} at={m.at} />
+        <LiveDataIndicator />
       </div>
+    </div>
+  );
+}
+
+function ChatComposer({
+  draft,
+  setDraft,
+  busy,
+  onSubmit,
+  placeholder,
+  liveLabel,
+  error,
+  footer,
+}: {
+  draft: string;
+  setDraft: (v: string) => void;
+  busy: boolean;
+  onSubmit: () => void;
+  placeholder: string;
+  liveLabel: string;
+  error: string | null;
+  footer: string;
+}) {
+  const canSend = !busy && Boolean(draft.trim());
+  return (
+    <div className="sol-chat-composer shrink-0">
+      <form
+        className="sol-composer-form mx-auto flex w-full max-w-[720px] items-center"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
+        <button
+          type="button"
+          title="Adjuntar"
+          aria-label="Adjuntar"
+          className="sol-composer-plus flex shrink-0 items-center justify-center rounded-full"
+        >
+          <Plus size={20} strokeWidth={1.75} />
+        </button>
+
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={placeholder}
+          disabled={busy}
+          className="sol-composer-input min-w-0 flex-1 border-0 bg-transparent outline-none ring-0"
+        />
+
+        <button type="button" className="sol-live-chip shrink-0 items-center gap-1.5">
+          <span className="sol-live-dot" />
+          <span className="sol-live-text">{liveLabel}</span>
+          <ChevronDown size={12} style={{ color: C.textSec }} />
+        </button>
+
+        <button
+          type="submit"
+          disabled={!canSend}
+          aria-label="Enviar"
+          className={clsx("sol-send-btn flex shrink-0 items-center justify-center rounded-full text-white", !canSend && "is-disabled")}
+        >
+          <Send size={16} strokeWidth={2} />
+        </button>
+      </form>
+
+      {error ? (
+        <p className="mx-auto mt-2 max-w-[720px] text-center text-xs text-rose-500">{error}</p>
+      ) : (
+        <p className="sol-chat-footer-safe mx-auto flex max-w-[720px] items-center justify-center gap-1.5 text-center">
+          <Lock size={13} strokeWidth={1.75} />
+          {footer}
+        </p>
+      )}
     </div>
   );
 }
@@ -209,7 +380,7 @@ function heroForAgent(agentId: string, agentLabel: string) {
       subtitle:
         "Consultá viajes, incidencias, ETA, POD, remitos y rendiciones con datos en tiempo real.",
       live: "Operación en vivo",
-      placeholder: "Preguntá algo sobre la operación...",
+      placeholder: "Preguntá algo sobre la operación…",
       footer: "Las respuestas se generan con datos reales de tus módulos activos.",
     };
   }
@@ -233,10 +404,6 @@ export type AssistantChatPanelProps = {
   placeholder?: string;
 };
 
-/**
- * Diseño unificado de chat asistente (SOL) — mismo look para Chat Central y especialistas.
- * Altura fija; el hilo scrollea adentro. Cards de sugerencia con tamaño fijo.
- */
 export const AssistantChatPanel = forwardRef<AgentChatHandle, AssistantChatPanelProps>(
   function AssistantChatPanel(
     {
@@ -359,85 +526,230 @@ export const AssistantChatPanel = forwardRef<AgentChatHandle, AssistantChatPanel
 
     return (
       <div
-        className={clsx(
-          "flex flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel)] shadow-[0_12px_40px_rgba(15,10,40,0.06)]",
-          className,
-        )}
-        style={ASSISTANT_CHAT_PANEL_HEIGHT}
+        className={clsx("sol-chat-root relative flex w-full flex-col overflow-hidden", className)}
+        style={{
+          ...ASSISTANT_CHAT_PANEL_HEIGHT,
+          background: C.white,
+          borderRadius: 16,
+          border: `1px solid ${C.border}`,
+        }}
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 sm:px-5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--violet)] text-white shadow-sm">
-              {catalog?.icon ? <AgentIcon name={catalog.icon} size={16} /> : <Sparkles size={16} />}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[var(--text)]">{agentLabel}</p>
-              <p className="flex items-center gap-1.5 text-[11px] text-[var(--text-dim)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
-                En línea
-              </p>
+        <style>{`
+          .sol-chat-root {
+            --sol-violet: ${C.violet};
+            --sol-violet-hover: ${C.violetHover};
+            --sol-border: ${C.border};
+            --sol-text: ${C.text};
+            --sol-sec: ${C.textSec};
+            --sol-ph: ${C.placeholder};
+          }
+          .sol-chat-thread {
+            display: flex;
+            flex-direction: column;
+            padding: 32px 40px 24px;
+            gap: 30px;
+            background: ${C.white};
+            overflow-y: auto;
+            overscroll-behavior: contain;
+          }
+          @media (max-width: 900px) {
+            .sol-chat-thread { padding: 24px 20px 20px; }
+            .sol-user-msg { max-width: 85% !important; }
+            .sol-live-text { display: none; }
+          }
+          @media (max-width: 640px) {
+            .sol-chat-thread { padding: 20px 14px 16px; }
+            .sol-composer-form { border-radius: 24px !important; }
+            .sol-chat-footer-safe { display: none; }
+            .sol-chat-composer { padding: 0 14px 12px !important; }
+          }
+          .sol-chat-composer {
+            padding: 0 20px 16px;
+            background: ${C.white};
+          }
+          .sol-composer-form {
+            min-height: 58px;
+            background: ${C.white};
+            border: 1px solid ${C.border};
+            border-radius: 30px;
+            padding: 7px 9px 7px 12px;
+            box-shadow: 0 6px 20px rgba(46, 32, 91, 0.10);
+            gap: 10px;
+          }
+          .sol-composer-plus {
+            width: 40px;
+            height: 40px;
+            color: ${C.textSec};
+            background: transparent;
+          }
+          .sol-composer-plus:hover {
+            background: ${C.violetLight};
+            color: ${C.violet};
+          }
+          .sol-composer-input {
+            font-size: 14px;
+            color: ${C.text};
+          }
+          .sol-composer-input::placeholder {
+            color: ${C.placeholder};
+            opacity: 1;
+          }
+          .sol-live-chip {
+            display: none;
+            height: 34px;
+            background: ${C.white};
+            border: 1px solid ${C.border};
+            border-radius: 17px;
+            padding: 0 12px;
+            font-size: 12px;
+            color: ${C.liveText};
+          }
+          @media (min-width: 640px) {
+            .sol-live-chip { display: inline-flex; }
+          }
+          .sol-live-chip:hover { background: ${C.exterior}; }
+          .sol-live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: ${C.green};
+            display: inline-block;
+          }
+          .sol-send-btn {
+            width: 44px;
+            height: 44px;
+            background: ${C.violet};
+            border: none;
+            box-shadow: 0 4px 10px rgba(109, 53, 242, 0.22);
+            cursor: pointer;
+          }
+          .sol-send-btn:hover:not(.is-disabled) {
+            background: ${C.violetHover};
+          }
+          .sol-send-btn.is-disabled {
+            background: ${C.sendDisabled};
+            box-shadow: none;
+            cursor: not-allowed;
+          }
+          .sol-chat-footer-safe {
+            margin-top: 8px;
+            font-size: 11px;
+            color: ${C.placeholder};
+          }
+        `}</style>
+
+        {/* Header solo en empty state (como mock empty). En conversación: superficie limpia. */}
+        {empty && (
+          <div
+            className="flex shrink-0 items-center justify-between gap-3 px-5 py-3 max-md:px-3.5"
+            style={{ borderBottom: `1px solid ${C.borderSoft}` }}
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className="flex shrink-0 items-center justify-center rounded-full text-white"
+                style={{ width: 36, height: 36, background: C.violet }}
+              >
+                {catalog?.icon ? <AgentIcon name={catalog.icon} size={16} /> : <Sparkles size={16} />}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold" style={{ color: C.text }}>
+                  {agentLabel}
+                </p>
+                <p className="flex items-center gap-1.5 text-[11px]" style={{ color: C.textSec }}>
+                  <span
+                    className="inline-block rounded-full"
+                    style={{ width: 6, height: 6, background: C.green }}
+                  />
+                  En línea
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium"
+                style={{ color: C.textSec }}
+                title="Historial (próximamente)"
+              >
+                <History size={14} />
+                <span className="hidden sm:inline">Historial</span>
+              </button>
+              <span className="mx-1 hidden h-4 w-px sm:block" style={{ background: C.borderSoft }} />
+              <button
+                type="button"
+                onClick={resetConversation}
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium"
+                style={{ color: C.text }}
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">Nueva conversación</span>
+              </button>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
-              title="Historial (próximamente)"
-            >
-              <History size={14} />
-              <span className="hidden sm:inline">Historial</span>
-            </button>
+        )}
+
+        {!empty && (
+          <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
             <button
               type="button"
               onClick={resetConversation}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs font-medium text-[var(--text)] hover:border-[var(--violet)]/40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors"
+              style={{ color: C.textSec, background: C.white, border: `1px solid ${C.borderSoft}` }}
+              title="Nueva conversación"
+              aria-label="Nueva conversación"
             >
-              <Plus size={14} />
-              <span className="hidden sm:inline">Nueva conversación</span>
+              <Plus size={16} />
             </button>
           </div>
-        </div>
+        )}
 
-        <div
-          ref={threadRef}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 [scrollbar-gutter:stable]"
-        >
+        <div ref={threadRef} className="sol-chat-thread relative min-h-0 flex-1">
           {empty ? (
-            <div className="mx-auto flex h-full max-w-3xl flex-col justify-center">
+            <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center">
               <div className="mb-6 text-center">
-                <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--violet)]/12 text-[var(--violet)]">
-                  <MessageCircle size={18} />
+                <span
+                  className="mx-auto mb-3 flex items-center justify-center rounded-full"
+                  style={{ width: 48, height: 48, background: C.violetLight, color: C.violet }}
+                >
+                  <MessageCircle size={22} />
                 </span>
-                <h2 className="text-xl font-semibold tracking-tight text-[var(--text)] sm:text-2xl">
+                <h2
+                  className="text-xl font-semibold tracking-tight sm:text-2xl"
+                  style={{ color: C.text }}
+                >
                   {title}
                 </h2>
-                <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--text-dim)]">{subtitle}</p>
+                <p className="mx-auto mt-2 max-w-xl text-sm" style={{ color: C.textSec }}>
+                  {subtitle}
+                </p>
               </div>
-
               {cards.length > 0 && (
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
                   {cards.map((c) => (
                     <button
                       key={c.text}
                       type="button"
                       disabled={busy}
                       onClick={() => void send(c.text)}
-                      className="group flex h-[4.5rem] items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--panel)] px-3.5 text-left shadow-sm transition hover:border-[var(--violet)]/35 hover:shadow-md disabled:opacity-50"
+                      className="group flex min-h-[4.5rem] items-center gap-3 rounded-[16px] px-3.5 text-left transition disabled:opacity-50"
+                      style={{ background: C.white, border: `1px solid ${C.border}` }}
                     >
                       <span
-                        className={clsx(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                          c.tone,
-                        )}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                        style={c.tone}
                       >
                         {c.icon}
                       </span>
-                      <span className="min-w-0 flex-1 text-sm font-medium leading-snug text-[var(--text)]">
+                      <span
+                        className="min-w-0 flex-1 text-sm font-medium leading-snug"
+                        style={{ color: C.text }}
+                      >
                         {c.text}
                       </span>
                       <ArrowRight
                         size={16}
-                        className="shrink-0 text-[var(--text-faint)] transition group-hover:translate-x-0.5 group-hover:text-[var(--violet)]"
+                        className="shrink-0 transition group-hover:translate-x-0.5"
+                        style={{ color: C.textSec }}
                       />
                     </button>
                   ))}
@@ -445,25 +757,27 @@ export const AssistantChatPanel = forwardRef<AgentChatHandle, AssistantChatPanel
               )}
             </div>
           ) : (
-            <div className="mx-auto flex max-w-3xl flex-col gap-5 pb-2 pt-1">
-              {messages.map((m, i) => (
-                <Bubble
-                  key={m.id || `${m.role}-${i}-${m.at}`}
-                  m={m}
-                  agentLabel={agentLabel}
-                  agentIcon={catalog?.icon}
-                />
-              ))}
+            <div className="mx-auto flex w-full max-w-[720px] flex-col" style={{ gap: 30 }}>
+              {messages.map((m, i) =>
+                m.role === "user" ? (
+                  <UserMessage key={m.id || `u-${i}-${m.at}`} m={m} />
+                ) : (
+                  <AssistantMessage
+                    key={m.id || `a-${i}-${m.at}`}
+                    m={m}
+                    agentId={agentId}
+                    agentLabel={agentLabel}
+                    agentIcon={catalog?.icon}
+                  />
+                ),
+              )}
               {busy && (
-                <div className="flex items-center gap-3 px-1">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--violet)]/15 text-[var(--violet)]">
-                    {catalog?.icon ? (
-                      <AgentIcon name={catalog.icon} size={16} />
-                    ) : (
-                      <MessageCircle size={16} />
-                    )}
-                  </span>
-                  <div className="flex items-center gap-2 text-xs text-[var(--text-faint)]">
+                <div className="flex max-w-[720px] items-start" style={{ gap: 14 }}>
+                  <ChatAvatar agentId={agentId} agentIcon={catalog?.icon} size={38} />
+                  <div
+                    className="flex items-center gap-2 pt-2"
+                    style={{ fontSize: 12, color: C.textSec }}
+                  >
                     <Loader2 size={14} className="animate-spin" />
                     Pensando…
                   </div>
@@ -473,58 +787,21 @@ export const AssistantChatPanel = forwardRef<AgentChatHandle, AssistantChatPanel
           )}
         </div>
 
-        <div className="shrink-0 border-t border-[var(--border)] px-4 pb-3 pt-3 sm:px-5">
-          <form
-            className="mx-auto flex max-w-3xl items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1.5 shadow-sm focus-within:border-[var(--violet)]/45 focus-within:ring-2 focus-within:ring-[var(--violet)]/15"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void send(draft);
-            }}
-          >
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--text-dim)] hover:bg-[var(--panel)]"
-              title="Adjuntar (próximamente)"
-              aria-label="Adjuntar"
-            >
-              <Plus size={18} />
-            </button>
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={inputPlaceholder}
-              disabled={busy}
-              className="min-w-0 flex-1 bg-transparent py-2 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-faint)]"
-            />
-            <span className="hidden items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--panel)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-dim)] sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
-              {meta.live}
-              <ChevronDown size={12} className="opacity-60" />
-            </span>
-            <button
-              type="submit"
-              disabled={busy || !draft.trim()}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--violet)] text-white disabled:opacity-40"
-              aria-label="Enviar"
-            >
-              <Send size={15} />
-            </button>
-          </form>
-          {error ? (
-            <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-rose-500">{error}</p>
-          ) : (
-            <p className="mx-auto mt-2 flex max-w-3xl items-center justify-center gap-1.5 text-center text-[11px] text-[var(--text-faint)]">
-              <Lock size={11} />
-              {meta.footer}
-            </p>
-          )}
-        </div>
+        <ChatComposer
+          draft={draft}
+          setDraft={setDraft}
+          busy={busy}
+          onSubmit={() => void send(draft)}
+          placeholder={inputPlaceholder}
+          liveLabel={meta.live}
+          error={error}
+          footer={meta.footer}
+        />
       </div>
     );
   },
 );
 
-/** Chat Central = mismo diseño, agentId commander. */
 export const ChatCentralPanel = forwardRef<
   AgentChatHandle,
   { className?: string; tenant?: string | null; suggestions?: string[] }
