@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { Check, Download, ImageIcon, RefreshCw, Search, X } from "lucide-react";
+import { Check, Download, ImageIcon, RefreshCw, Search, Send, X } from "lucide-react";
 import {
   decidirGastoRendicion,
+  enviarRendicionErp,
   listGastosRendicion,
   rendicionExportUrl,
   resumenRendicion,
@@ -297,6 +298,7 @@ export function RendicionPanel() {
   const [hasta, setHasta] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [erpBusy, setErpBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [foto, setFoto] = useState<FotoPreview | null>(null);
   const [detalle, setDetalle] = useState<GastoRendicion | null>(null);
@@ -417,6 +419,51 @@ export function RendicionPanel() {
     }
   }
 
+  async function enviarAlErp() {
+    const estadoErp =
+      exportParams.estado === "pendiente_aprobacion" || !exportParams.estado
+        ? "aprobado"
+        : exportParams.estado;
+
+    const ok = await confirm({
+      title: "Enviar al ERP (demo)",
+      message:
+        estadoErp === "aprobado"
+          ? "Va a simular el envío de gastos aprobados al ERP.\nNo conecta con un sistema real todavía."
+          : `Va a simular el envío de gastos en estado “${estadoErp}” al ERP.\nNo conecta con un sistema real todavía.`,
+      confirmLabel: "Simular envío",
+    });
+    if (!ok) return;
+
+    setErpBusy(true);
+    setError(null);
+    try {
+      const res = await enviarRendicionErp({
+        estado: estadoErp,
+        q: exportParams.q,
+        desde: exportParams.desde,
+        hasta: exportParams.hasta,
+        limit: 5000,
+      });
+      const preview =
+        res.preview?.length > 0
+          ? `\n\nPreview:\n${res.preview
+              .map((p) => `· ${p.codigo} · ${p.chofer || "—"} · $${p.monto}`)
+              .join("\n")}`
+          : "";
+      await confirm({
+        title: res.enviados > 0 ? "Envío simulado OK" : "Sin gastos para enviar",
+        message: `${res.mensaje}\n\nJob: ${res.jobId}\nEndpoint: ${res.endpointSimulado}${preview}`,
+        alert: true,
+        confirmLabel: "Entendido",
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pude simular el envío al ERP");
+    } finally {
+      setErpBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -489,6 +536,16 @@ export function RendicionPanel() {
               <Download size={14} />
               Excel ERP
             </a>
+            <button
+              type="button"
+              disabled={erpBusy}
+              onClick={() => void enviarAlErp()}
+              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-50"
+              title="Simula el envío de gastos aprobados al ERP (demo, no es integración real)"
+            >
+              <Send size={14} className={erpBusy ? "animate-pulse" : undefined} />
+              {erpBusy ? "Enviando…" : "Enviar al ERP"}
+            </button>
           </div>
         </div>
 

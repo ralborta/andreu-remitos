@@ -653,6 +653,37 @@ export function rendicionExportUrl(params?: {
   return `${apiBase()}/api/rendicion/export${qs ? `?${qs}` : ""}`;
 }
 
+/** Envío semi-fake al ERP (demo). */
+export function enviarRendicionErp(body?: {
+  estado?: string;
+  q?: string;
+  desde?: string;
+  hasta?: string;
+  limit?: number;
+}) {
+  return api<{
+    ok: boolean;
+    modo: string;
+    mensaje: string;
+    jobId: string;
+    enviados: number;
+    montoTotal: number;
+    endpointSimulado: string;
+    preview: Array<{
+      codigo: string;
+      fecha: string;
+      chofer: string;
+      categoria: string;
+      monto: number | string;
+      estado: string;
+    }>;
+    generadoEn: string;
+  }>("/api/rendicion/enviar-erp", {
+    method: "POST",
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
 export function resumenRendicion() {
   return api<ResumenRendicion>("/api/rendicion/resumen");
 }

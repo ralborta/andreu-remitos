@@ -101,6 +101,48 @@ export default async function rendicionRoutes(fastify) {
       .send(buf);
   });
 
+  /**
+   * Envío semi-fake al ERP (demo).
+   * No llama a un ERP real: arma el payload, simula latencia y responde OK con job id.
+   */
+  fastify.post("/enviar-erp", async (request) => {
+    const body = request.body ?? {};
+    const estado = body.estado || "aprobado";
+    const rows = await rendicionStore.listGastos({
+      limit: body.limit ? parseInt(body.limit, 10) : 5000,
+      estado,
+      q: body.q || undefined,
+      desde: body.desde || undefined,
+      hasta: body.hasta || undefined,
+    });
+    const data = buildPlanillaRendicion(rows, { formato: "erp" });
+    const jobId = `ERP-RND-${Date.now().toString(36).toUpperCase()}`;
+    const montoTotal = rows.reduce((a, r) => a + (Number(r.monto) || 0), 0);
+    // Simula “handshake” con el ERP
+    await new Promise((r) => setTimeout(r, 650));
+    return {
+      ok: true,
+      modo: "demo",
+      mensaje:
+        rows.length === 0
+          ? "No hay gastos para enviar con ese filtro."
+          : `Simulación OK: ${rows.length} gasto(s) listos para el ERP (no se envió a un sistema real).`,
+      jobId,
+      enviados: rows.length,
+      montoTotal,
+      endpointSimulado: "https://erp.demo.local/api/v1/gastos/import",
+      preview: data.filas.slice(0, 5).map((f) => ({
+        codigo: f.codigo,
+        fecha: f.fecha_iso,
+        chofer: f.chofer,
+        categoria: f.categoria_id,
+        monto: f.monto_num,
+        estado: f.estado_id,
+      })),
+      generadoEn: new Date().toISOString(),
+    };
+  });
+
   fastify.get("/:id", async (request, reply) => {
     const row = await rendicionStore.getGasto(request.params.id);
     if (!row) return reply.code(404).send({ error: "Gasto no encontrado" });
