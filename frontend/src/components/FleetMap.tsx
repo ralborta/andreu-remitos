@@ -92,13 +92,14 @@ export function FleetMap() {
         const map = L.map(mapRef.current, {
           zoomControl: true,
           attributionControl: true,
-        }).setView([-34.6, -64.0], 5);
+        }).setView([-34.6, -64.0], 8);
 
         L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
           attribution: "&copy; OpenStreetMap &copy; CARTO",
           maxZoom: 18,
         }).addTo(map);
 
+        // Solo la flota define el encuadre (no todas las ciudades, que forzaban zoom muy lejos).
         const bounds: [number, number][] = [];
 
         for (const [name, p] of Object.entries(CIUDADES)) {
@@ -111,7 +112,6 @@ export function FleetMap() {
           })
             .bindTooltip(name, { direction: "top", opacity: 0.9 })
             .addTo(map);
-          bounds.push([p.lat, p.lng]);
         }
 
         for (const t of trips.filter((x) => x.estado === "en_curso" || x.estado === "detenido")) {
@@ -144,7 +144,9 @@ export function FleetMap() {
         }
 
         if (bounds.length) {
-          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 7 });
+          map.fitBounds(bounds, { padding: [48, 48], maxZoom: 9 });
+        } else {
+          map.setView([-34.6, -64.0], 8);
         }
 
         // Leaflet a veces necesita invalidateSize tras el layout
