@@ -1,8 +1,8 @@
 "use client";
 
 import { forwardRef } from "react";
-import { AgentChat, type AgentChatHandle } from "./AgentChat";
-import { postAgentChat } from "@/lib/api";
+import { AssistantChatPanel } from "./ChatCentralPanel";
+import type { AgentChatHandle } from "./AgentChat";
 import { BRAND } from "@/lib/brand";
 
 type SpecialistAgentChatProps = {
@@ -16,7 +16,7 @@ type SpecialistAgentChatProps = {
   tenant?: string | null;
 };
 
-/** Binding genérico al desk-chat runtime (mismo AgentChat reutilizable). */
+/** Binding genérico al desk-chat — mismo diseño visual que Chat Central. */
 export const SpecialistAgentChat = forwardRef<AgentChatHandle, SpecialistAgentChatProps>(
   function SpecialistAgentChat(
     {
@@ -24,39 +24,22 @@ export const SpecialistAgentChat = forwardRef<AgentChatHandle, SpecialistAgentCh
       agentLabel,
       suggestions = [],
       emptyHint,
-      placeholder = "Escribí tu consulta…",
-      hideSuggestions = false,
+      placeholder,
       className,
       tenant,
     },
     ref,
   ) {
     return (
-      <AgentChat
+      <AssistantChatPanel
         ref={ref}
         agentId={agentId}
         agentLabel={agentLabel}
-        tenant={tenant ?? BRAND.remitoTenantSlug}
         suggestions={suggestions}
-        hideSuggestions={hideSuggestions}
-        className={className}
+        heroSubtitle={emptyHint}
         placeholder={placeholder}
-        emptyHint={emptyHint ?? `Hola. Soy el asistente de ${agentLabel}. Consultá datos reales del módulo.`}
-        onSend={async ({ message, conversationId, agentId: id, tenant: t }) => {
-          const res = await postAgentChat({
-            agentId: id,
-            message,
-            conversationId: conversationId || undefined,
-            tenant: t || undefined,
-          });
-          return {
-            conversationId: res.conversationId,
-            text: res.message.text,
-            engine: res.message.engine,
-            dataSources: res.message.dataSources,
-            citedIds: res.message.citedIds,
-          };
-        }}
+        className={className}
+        tenant={tenant ?? BRAND.remitoTenantSlug}
       />
     );
   },

@@ -4,12 +4,11 @@ import { useRef } from "react";
 import { BookOpen, ListChecks, MessageSquareText, Shield } from "lucide-react";
 import { PodPanel } from "./PodPanel";
 import { PodAgentChat, POD_CHAT_SUGGESTIONS } from "./PodAgentChat";
-import {
-  AGENT_CHAT_PANEL_CLASS,
-  AGENT_CHAT_PANEL_HEIGHT,
-  type AgentChatHandle,
-} from "./AgentChat";
+import { ASSISTANT_CHAT_PANEL_HEIGHT } from "./ChatCentralPanel";
+import type { AgentChatHandle } from "./AgentChat";
 import { Card, SectionTitle } from "./ui";
+
+const GUIDE_PANEL_CLASS = "flex shrink-0 flex-col overflow-hidden p-4";
 
 const GUIDE_SECTIONS = [
   {
@@ -44,7 +43,7 @@ const GUIDE_SECTIONS = [
 
 function PodChatGuide({ onAsk }: { onAsk: (q: string) => void }) {
   return (
-    <Card className={AGENT_CHAT_PANEL_CLASS} style={AGENT_CHAT_PANEL_HEIGHT}>
+    <Card className={GUIDE_PANEL_CLASS} style={ASSISTANT_CHAT_PANEL_HEIGHT}>
       <div className="shrink-0 border-b border-[var(--border)] pb-3">
         <SectionTitle
           right={

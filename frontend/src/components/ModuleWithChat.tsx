@@ -3,11 +3,8 @@
 import { useRef, type ReactNode } from "react";
 import { BookOpen, ListChecks, MessageSquareText, Shield } from "lucide-react";
 import { SpecialistAgentChat } from "./SpecialistAgentChat";
-import {
-  AGENT_CHAT_PANEL_CLASS,
-  AGENT_CHAT_PANEL_HEIGHT,
-  type AgentChatHandle,
-} from "./AgentChat";
+import { ASSISTANT_CHAT_PANEL_HEIGHT } from "./ChatCentralPanel";
+import type { AgentChatHandle } from "./AgentChat";
 import { Card, SectionTitle } from "./ui";
 
 type GuideSection = { title: string; items: string[] };
@@ -21,6 +18,8 @@ type ModuleWithChatProps = {
   children: ReactNode;
 };
 
+const GUIDE_PANEL_CLASS = "flex shrink-0 flex-col overflow-hidden p-4";
+
 function ChatGuide({
   agentLabel,
   sections,
@@ -33,7 +32,7 @@ function ChatGuide({
   onAsk: (q: string) => void;
 }) {
   return (
-    <Card className={AGENT_CHAT_PANEL_CLASS} style={AGENT_CHAT_PANEL_HEIGHT}>
+    <Card className={GUIDE_PANEL_CLASS} style={ASSISTANT_CHAT_PANEL_HEIGHT}>
       <div className="shrink-0 border-b border-[var(--border)] pb-3">
         <SectionTitle
           right={
@@ -98,7 +97,7 @@ function ChatGuide({
   );
 }
 
-/** Panel operativo → chat → guía (prioridad a operación y conversación). */
+/** Panel operativo → chat (diseño unificado) → guía. */
 export function ModuleWithChat({
   agentId,
   agentLabel,
