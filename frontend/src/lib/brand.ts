@@ -5,9 +5,9 @@ export const BRAND = {
   shortName: "SOL",
   tagline: "Logística",
   logoPath: "/brand/sol-logistica.png",
-  /** Producto (sidebar). */
-  productName: "TransitOne",
-  productLogoPath: "/brand/transitone-logo.png",
+  /** Producto (sidebar / login bajo SOL). */
+  productName: "Empliados",
+  productLogoPath: "/brand/empliados-logo.png",
   /** Un solo cliente de remitos; pipeline Document AI = TSB. */
   remitoTenantSlug: "tsb" as const,
   remitoTenantLabel: "TransitOne",

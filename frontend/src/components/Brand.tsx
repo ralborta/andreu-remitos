@@ -5,13 +5,14 @@ import { BRAND } from "@/lib/brand";
 type BrandSize = "sm" | "md" | "lg";
 type BrandVariant = "product" | "company" | "stack";
 
-const PRODUCT_ASPECT = 540 / 147;
+/** Empliados wordmark (1200×334). */
+const PRODUCT_ASPECT = 1200 / 334;
 const COMPANY_ASPECT = 1024 / 682;
 
 const PRODUCT_CFG: Record<BrandSize, { h: number; maxW: number }> = {
-  sm: { h: 26, maxW: 140 },
-  md: { h: 32, maxW: 160 },
-  lg: { h: 40, maxW: 200 },
+  sm: { h: 22, maxW: 150 },
+  md: { h: 28, maxW: 180 },
+  lg: { h: 36, maxW: 220 },
 };
 
 const COMPANY_CFG: Record<BrandSize, { h: number; maxW: number }> = {
@@ -50,9 +51,9 @@ function LogoImg({
 }
 
 /**
- * product → TransitOne (sidebar)
+ * product → Empliados (sidebar)
  * company → SOL (header derecha)
- * stack → SOL + TransitOne (login)
+ * stack → SOL + Empliados (login)
  */
 export function Brand({
   className,
