@@ -5,21 +5,45 @@ import { BRAND } from "@/lib/brand";
 type BrandSize = "sm" | "md" | "lg";
 type BrandVariant = "product" | "company" | "stack";
 
-/** Empliados wordmark (1200×334). */
-const PRODUCT_ASPECT = 1200 / 334;
 const COMPANY_ASPECT = 1024 / 682;
-
-const PRODUCT_CFG: Record<BrandSize, { h: number; maxW: number }> = {
-  sm: { h: 22, maxW: 150 },
-  md: { h: 28, maxW: 180 },
-  lg: { h: 36, maxW: 220 },
-};
 
 const COMPANY_CFG: Record<BrandSize, { h: number; maxW: number }> = {
   sm: { h: 28, maxW: 110 },
   md: { h: 36, maxW: 140 },
   lg: { h: 52, maxW: 190 },
 };
+
+/** Wordmark Empliados (sin fondo): Emplia + dos violeta. */
+const EMPLIADOS_SIZES: Record<BrandSize, string> = {
+  sm: "text-[17px] leading-none",
+  md: "text-[22px] leading-none",
+  lg: "text-[28px] leading-none",
+};
+
+function EmpliadosMark({
+  size = "md",
+  className,
+  /** En fondos claros usar texto oscuro; en UI oscura, blanco. */
+  onLight = false,
+}: {
+  size?: BrandSize;
+  className?: string;
+  onLight?: boolean;
+}) {
+  return (
+    <span
+      className={clsx(
+        "inline-flex select-none font-[var(--font-display)] font-bold tracking-tight",
+        EMPLIADOS_SIZES[size],
+        className,
+      )}
+      aria-label={BRAND.productName}
+    >
+      <span style={{ color: onLight ? "#1C142D" : "#FFFFFF" }}>Emplia</span>
+      <span style={{ color: "#D43DED" }}>dos</span>
+    </span>
+  );
+}
 
 function LogoImg({
   src,
@@ -81,11 +105,10 @@ export function Brand({
 
   if (variant === "stack") {
     const company = COMPANY_CFG[size];
-    const product = PRODUCT_CFG.sm;
     return (
       <span
         className={clsx(
-          "inline-flex flex-col items-center gap-2 select-none",
+          "inline-flex flex-col items-center gap-2.5 select-none",
           className,
         )}
       >
@@ -96,27 +119,14 @@ export function Brand({
           maxW={company.maxW}
           aspect={COMPANY_ASPECT}
         />
-        <LogoImg
-          src={BRAND.productLogoPath}
-          alt={BRAND.productName}
-          h={product.h}
-          maxW={product.maxW}
-          aspect={PRODUCT_ASPECT}
-        />
+        <EmpliadosMark size={size === "lg" ? "md" : "sm"} />
       </span>
     );
   }
 
-  const cfg = PRODUCT_CFG[size];
   return (
-    <span className={clsx("inline-flex min-w-0 select-none", className)}>
-      <LogoImg
-        src={BRAND.productLogoPath}
-        alt={BRAND.productName}
-        h={cfg.h}
-        maxW={cfg.maxW}
-        aspect={PRODUCT_ASPECT}
-      />
+    <span className={clsx("inline-flex min-w-0 items-center select-none", className)}>
+      <EmpliadosMark size={size} />
     </span>
   );
 }
