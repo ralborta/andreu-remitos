@@ -36,6 +36,26 @@ function fmtFecha(iso?: string | null) {
   }
 }
 
+/** Fecha corta para la cola (comprobante o alta). */
+function fmtFechaCola(g: GastoRendicion) {
+  const raw = g.fechaComprobante || g.createdAt || null;
+  if (!raw) return "—";
+  // YYYY-MM-DD o ISO
+  try {
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? new Date(`${raw}T12:00:00`)
+      : new Date(raw);
+    if (Number.isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return raw;
+  }
+}
+
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -59,6 +79,10 @@ function RechazoMotivoModal({
   onConfirm: (nota: string) => void;
 }) {
   const [nota, setNota] = useState("");
+  const [touched, setTouched] = useState(false);
+  const motivo = nota.trim();
+  const invalid = !motivo;
+
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
@@ -80,15 +104,22 @@ function RechazoMotivoModal({
           {caso.choferNombre ? ` · ${caso.choferNombre}` : ""}
         </p>
         <label className="mt-4 block text-xs font-medium text-[var(--text-faint)]">
-          Motivo (opcional)
+          Comentario de rechazo <span className="text-rose-400">*</span>
           <textarea
             value={nota}
             onChange={(e) => setNota(e.target.value)}
+            onBlur={() => setTouched(true)}
             rows={3}
+            required
             placeholder="Ej. comprobante ilegible, monto incorrecto…"
             className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-2 focus:ring-[var(--violet)]/40"
           />
         </label>
+        {touched && invalid && (
+          <p className="mt-1.5 text-xs text-rose-400">
+            Tenés que indicar un comentario para rechazar.
+          </p>
+        )}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
@@ -100,8 +131,12 @@ function RechazoMotivoModal({
           </button>
           <button
             type="button"
-            disabled={busy}
-            onClick={() => onConfirm(nota.trim())}
+            disabled={busy || invalid}
+            onClick={() => {
+              setTouched(true);
+              if (invalid) return;
+              onConfirm(motivo);
+            }}
             className="rounded-lg bg-rose-500/20 px-3 py-2 text-sm font-semibold text-rose-400 hover:bg-rose-500/30 disabled:opacity-50"
           >
             Confirmar rechazo
@@ -186,7 +221,13 @@ function GastoDetalleModal({
             )}
             {caso.notaAprobacion && (
               <div className="sm:col-span-2">
-                <Campo label="Nota aprobación">{caso.notaAprobacion}</Campo>
+                <Campo
+                  label={
+                    caso.estado === "rechazado" ? "Comentario de rechazo" : "Nota aprobación"
+                  }
+                >
+                  {caso.notaAprobacion}
+                </Campo>
               </div>
             )}
           </div>
@@ -332,9 +373,12 @@ export function RendicionPanel() {
     estado: "aprobado" | "rechazado",
     nota?: string,
   ) {
-    if (estado === "rechazado" && nota === undefined) {
-      setRechazoTarget(g);
-      return;
+    if (estado === "rechazado") {
+      const motivo = typeof nota === "string" ? nota.trim() : "";
+      if (!motivo) {
+        setRechazoTarget(g);
+        return;
+      }
     }
     if (estado === "aprobado") {
       const ok = await confirm({
@@ -348,7 +392,8 @@ export function RendicionPanel() {
     try {
       await decidirGastoRendicion(g.id, {
         estado,
-        ...(nota ? { nota } : {}),
+        ...(estado === "rechazado" && nota ? { nota: nota.trim() } : {}),
+        ...(estado === "aprobado" && nota ? { nota } : {}),
       });
       setDetalle(null);
       setRechazoTarget(null);
@@ -457,10 +502,11 @@ export function RendicionPanel() {
           <p className="text-sm text-[var(--text-dim)]">No hay gastos en este filtro.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] text-left text-sm">
+            <table className="w-full min-w-[880px] text-left text-sm">
               <thead className="text-xs uppercase text-[var(--text-faint)]">
                 <tr className="border-b border-[var(--border)]">
                   <th className="py-2 pr-3 font-medium">Código</th>
+                  <th className="py-2 pr-3 font-medium">Fecha</th>
                   <th className="py-2 pr-3 font-medium">Chofer</th>
                   <th className="py-2 pr-3 font-medium">Categoría</th>
                   <th className="py-2 pr-3 font-medium">Monto</th>
@@ -477,6 +523,9 @@ export function RendicionPanel() {
                     className="cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.04]"
                   >
                     <td className="py-3 pr-3 font-medium text-white">{g.codigo}</td>
+                    <td className="whitespace-nowrap py-3 pr-3 tabular text-[var(--text-dim)]">
+                      {fmtFechaCola(g)}
+                    </td>
                     <td className="max-w-[140px] truncate py-3 pr-3 text-[var(--text-dim)]">
                       {g.choferNombre || "—"}
                     </td>

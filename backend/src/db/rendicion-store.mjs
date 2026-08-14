@@ -188,11 +188,15 @@ export async function decidirGasto(id, { estado, nota, aprobado_por } = {}) {
   if (!["aprobado", "rechazado"].includes(estado)) {
     throw Object.assign(new Error("Estado inválido (aprobado|rechazado)"), { statusCode: 400 });
   }
+  const notaNorm = typeof nota === "string" ? nota.trim() : "";
+  if (estado === "rechazado" && !notaNorm) {
+    throw Object.assign(new Error("El rechazo requiere un comentario"), { statusCode: 400 });
+  }
   return actualizarGasto(id, {
     estado,
-    nota_aprobacion: nota || null,
+    nota_aprobacion: notaNorm || null,
     aprobado_por: aprobado_por || "backoffice",
-    historial_push: `${new Date().toISOString()} · ${estado}${nota ? `: ${nota}` : ""}`,
+    historial_push: `${new Date().toISOString()} · ${estado}${notaNorm ? `: ${notaNorm}` : ""}`,
   });
 }
 
