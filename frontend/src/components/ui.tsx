@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { STATUS_COLOR, STATUS_LABEL, type AgentStatus } from "@/lib/agents";
 
@@ -150,11 +151,17 @@ export function SectionTitle({
 export function Card({
   children,
   className,
+  style,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }) {
-  return <div className={clsx("panel p-5", className)}>{children}</div>;
+  return (
+    <div className={clsx("panel p-5", className)} style={style}>
+      {children}
+    </div>
+  );
 }
 
 const CRIT_COLOR: Record<string, string> = {

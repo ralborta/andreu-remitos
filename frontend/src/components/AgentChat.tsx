@@ -1,9 +1,25 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import clsx from "clsx";
 import { CheckCheck, Loader2, Send, Sparkles } from "lucide-react";
 import { Card, SectionTitle } from "./ui";
+
+/** Altura fija del panel de chat / guía: no crece con los mensajes. */
+export const AGENT_CHAT_PANEL_HEIGHT: CSSProperties = {
+  height: "min(560px, calc(100vh - 12rem))",
+  maxHeight: "min(560px, calc(100vh - 12rem))",
+};
+
+export const AGENT_CHAT_PANEL_CLASS =
+  "flex shrink-0 flex-col overflow-hidden p-4";
 
 export type AgentChatMessage = {
   id?: string;
@@ -189,10 +205,8 @@ export const AgentChat = forwardRef<AgentChatHandle, AgentChatProps>(function Ag
 
   return (
     <Card
-      className={clsx(
-        "flex h-[min(560px,calc(100vh-12rem))] flex-col overflow-hidden p-4",
-        className,
-      )}
+      className={clsx(AGENT_CHAT_PANEL_CLASS, className)}
+      style={AGENT_CHAT_PANEL_HEIGHT}
     >
       <div className="shrink-0 border-b border-[var(--border)] pb-3">
         <SectionTitle

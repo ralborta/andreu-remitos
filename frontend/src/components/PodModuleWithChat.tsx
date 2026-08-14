@@ -4,7 +4,11 @@ import { useRef } from "react";
 import { BookOpen, ListChecks, MessageSquareText, Shield } from "lucide-react";
 import { PodPanel } from "./PodPanel";
 import { PodAgentChat, POD_CHAT_SUGGESTIONS } from "./PodAgentChat";
-import type { AgentChatHandle } from "./AgentChat";
+import {
+  AGENT_CHAT_PANEL_CLASS,
+  AGENT_CHAT_PANEL_HEIGHT,
+  type AgentChatHandle,
+} from "./AgentChat";
 import { Card, SectionTitle } from "./ui";
 
 const GUIDE_SECTIONS = [
@@ -40,7 +44,7 @@ const GUIDE_SECTIONS = [
 
 function PodChatGuide({ onAsk }: { onAsk: (q: string) => void }) {
   return (
-    <Card className="flex h-[min(560px,calc(100vh-12rem))] flex-col overflow-hidden p-4">
+    <Card className={AGENT_CHAT_PANEL_CLASS} style={AGENT_CHAT_PANEL_HEIGHT}>
       <div className="shrink-0 border-b border-[var(--border)] pb-3">
         <SectionTitle
           right={
@@ -113,12 +117,12 @@ export function PodModuleWithChat() {
   return (
     <div className="space-y-6">
       <PodPanel />
-      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
         <div className="min-w-0 lg:col-span-2">
           <PodChatGuide onAsk={(q) => chatRef.current?.send(q)} />
         </div>
         <div className="min-w-0 lg:col-span-3">
-          <PodAgentChat ref={chatRef} hideSuggestions className="h-full" />
+          <PodAgentChat ref={chatRef} hideSuggestions />
         </div>
       </div>
     </div>
