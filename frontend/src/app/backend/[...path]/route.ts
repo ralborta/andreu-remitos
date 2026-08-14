@@ -23,6 +23,11 @@ async function proxy(req: NextRequest, path: string[]) {
   req.headers.forEach((value, key) => {
     if (!HOP_HEADERS.has(key.toLowerCase())) headers.set(key, value);
   });
+  // Undici a veces no reenvía Cookie; forzar desde el request de Next.
+  const cookie = req.headers.get("cookie");
+  if (cookie) headers.set("cookie", cookie);
+  const auth = req.headers.get("authorization");
+  if (auth) headers.set("authorization", auth);
 
   const init: RequestInit = {
     method: req.method,
@@ -40,6 +45,10 @@ async function proxy(req: NextRequest, path: string[]) {
     res.headers.forEach((value, key) => {
       if (!HOP_HEADERS.has(key.toLowerCase())) outHeaders.set(key, value);
     });
+    // Asegurar que el browser pueda leer el nombre del archivo en fetch+blob
+    const cd = res.headers.get("content-disposition");
+    if (cd) outHeaders.set("content-disposition", cd);
+    outHeaders.set("access-control-expose-headers", "Content-Disposition");
     return new NextResponse(res.body, { status: res.status, headers: outHeaders });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "proxy error";

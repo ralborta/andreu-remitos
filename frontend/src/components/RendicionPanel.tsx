@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { Check, Download, ImageIcon, RefreshCw, Search, Send, X } from "lucide-react";
 import {
   decidirGastoRendicion,
+  downloadAuthenticatedFile,
   enviarRendicionErp,
   listGastosRendicion,
   rendicionExportUrl,
@@ -299,6 +300,7 @@ export function RendicionPanel() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [erpBusy, setErpBusy] = useState(false);
+  const [excelBusy, setExcelBusy] = useState<"mesa" | "erp" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [foto, setFoto] = useState<FotoPreview | null>(null);
   const [detalle, setDetalle] = useState<GastoRendicion | null>(null);
@@ -419,6 +421,24 @@ export function RendicionPanel() {
     }
   }
 
+  async function descargarExcel(formato: "mesa" | "erp") {
+    setExcelBusy(formato);
+    setError(null);
+    try {
+      const estado =
+        formato === "erp" && exportParams.estado === "pendiente_aprobacion"
+          ? "aprobado"
+          : exportParams.estado;
+      const url = rendicionExportUrl({ ...exportParams, formato, estado });
+      const day = new Date().toISOString().slice(0, 10);
+      await downloadAuthenticatedFile(url, `Rendiciones_${formato}_${day}.xlsx`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo descargar el Excel");
+    } finally {
+      setExcelBusy(null);
+    }
+  }
+
   async function enviarAlErp() {
     const estadoErp =
       exportParams.estado === "pendiente_aprobacion" || !exportParams.estado
@@ -512,30 +532,26 @@ export function RendicionPanel() {
               <RefreshCw size={14} />
               Actualizar
             </button>
-            <a
-              href={rendicionExportUrl({ ...exportParams, formato: "mesa" })}
-              className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
+            <button
+              type="button"
+              disabled={!!excelBusy}
+              onClick={() => void descargarExcel("mesa")}
+              className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15 disabled:opacity-50"
               title="Descarga el filtro actual en Excel (mesa)"
             >
               <Download size={14} />
-              Excel
-            </a>
-            <a
-              href={rendicionExportUrl({
-                ...exportParams,
-                formato: "erp",
-                // ERP: por defecto aprobados si estás en pendientes (sin sentido liquidar pendientes)
-                estado:
-                  exportParams.estado === "pendiente_aprobacion"
-                    ? "aprobado"
-                    : exportParams.estado,
-              })}
-              className="inline-flex items-center gap-1 rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35"
+              {excelBusy === "mesa" ? "Bajando…" : "Excel"}
+            </button>
+            <button
+              type="button"
+              disabled={!!excelBusy}
+              onClick={() => void descargarExcel("erp")}
+              className="inline-flex items-center gap-1 rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35 disabled:opacity-50"
               title="Planilla lista para liquidar / importar al ERP (aprobados si el filtro es pendientes)"
             >
               <Download size={14} />
-              Excel ERP
-            </a>
+              {excelBusy === "erp" ? "Bajando…" : "Excel ERP"}
+            </button>
             <button
               type="button"
               disabled={erpBusy}

@@ -311,7 +311,9 @@ export function planillaExportUrl(
   if (params?.hasta) q.set("hasta", params.hasta);
   if (params?.formato) q.set("formato", params.formato);
   const qs = q.toString();
-  return `${apiBase()}/api/planillas/${tenant}/export${qs ? `?${qs}` : ""}`;
+  // Siempre same-origin: si SSR usa la URL absoluta de la API, el navegador
+  // abre el host del API sin cookie → {"error":"No autenticado"}.
+  return `/backend/api/planillas/${tenant}/export${qs ? `?${qs}` : ""}`;
 }
 
 /** @deprecated use planillaExportUrl('tsb', ...) */
@@ -650,7 +652,35 @@ export function rendicionExportUrl(params?: {
   if (params?.hasta) q.set("hasta", params.hasta);
   if (params?.limit) q.set("limit", String(params.limit));
   const qs = q.toString();
-  return `${apiBase()}/api/rendicion/export${qs ? `?${qs}` : ""}`;
+  // Same-origin obligatorio (cookie de sesión del front).
+  return `/backend/api/rendicion/export${qs ? `?${qs}` : ""}`;
+}
+
+/** Descarga autenticada de un export (evita navegación directa al API sin cookie). */
+export async function downloadAuthenticatedFile(url: string, fallbackName: string) {
+  const res = await fetch(url, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    let msg = `Error al descargar (${res.status})`;
+    try {
+      const data = (await res.json()) as { error?: string; message?: string };
+      msg = data.error || data.message || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition") || "";
+  const match = cd.match(/filename\*?=(?:UTF-8''|")?([^\";]+)"?/i);
+  const name = match?.[1] ? decodeURIComponent(match[1]) : fallbackName;
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
 }
 
 /** Envío semi-fake al ERP (demo). */
