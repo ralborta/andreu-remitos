@@ -35,12 +35,69 @@ function nextCodigo(rows) {
   return `RG-${String(n).padStart(4, "0")}`;
 }
 
-export async function listGastos({ limit = 100, estado, telefono } = {}) {
+function parseBound(iso, endOfDay = false) {
+  if (!iso) return null;
+  const s = String(iso).trim();
+  if (!s) return null;
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(s)
+    ? new Date(`${s}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}`)
+    : new Date(s);
+  const t = d.getTime();
+  return Number.isFinite(t) ? t : null;
+}
+
+function matchesQuery(row, q) {
+  const needle = String(q || "")
+    .toLowerCase()
+    .trim();
+  if (!needle) return true;
+  const hay = [
+    row.codigo,
+    row.chofer_nombre,
+    row.telefono,
+    row.viaje_ref,
+    row.proveedor,
+    row.descripcion,
+    row.nota_chofer,
+    row.texto_ocr,
+    row.patente,
+    row.remito,
+    row.nro_remito,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(needle);
+}
+
+export async function listGastos({
+  limit = 100,
+  estado,
+  telefono,
+  q,
+  desde,
+  hasta,
+} = {}) {
   let rows = readAll();
   if (estado) rows = rows.filter((r) => r.estado === estado);
   if (telefono) {
     const p = sanitizePhone(telefono);
     rows = rows.filter((r) => r.telefono === p);
+  }
+  if (q) rows = rows.filter((r) => matchesQuery(r, q));
+  const fromTs = parseBound(desde, false);
+  const toTs = parseBound(hasta, true);
+  if (fromTs != null) {
+    rows = rows.filter((r) => {
+      const t = new Date(r.created_at).getTime();
+      return Number.isFinite(t) && t >= fromTs;
+    });
+  }
+  if (toTs != null) {
+    rows = rows.filter((r) => {
+      const t = new Date(r.created_at).getTime();
+      return Number.isFinite(t) && t <= toTs;
+    });
   }
   return rows.slice(0, limit);
 }

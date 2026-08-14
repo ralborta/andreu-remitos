@@ -98,7 +98,7 @@ function ChatGuide({
   );
 }
 
-/** Panel de módulo arriba + guía + chat contextual (mismo patrón POD). */
+/** Panel operativo → chat → guía (prioridad a operación y conversación). */
 export function ModuleWithChat({
   agentId,
   agentLabel,
@@ -113,14 +113,6 @@ export function ModuleWithChat({
     <div className="space-y-6">
       {children}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
-        <div className="min-w-0 lg:col-span-2">
-          <ChatGuide
-            agentLabel={agentLabel}
-            sections={guideSections}
-            suggestions={suggestions}
-            onAsk={(q) => chatRef.current?.send(q)}
-          />
-        </div>
         <div className="min-w-0 lg:col-span-3">
           <SpecialistAgentChat
             ref={chatRef}
@@ -129,6 +121,14 @@ export function ModuleWithChat({
             suggestions={suggestions}
             emptyHint={emptyHint}
             hideSuggestions
+          />
+        </div>
+        <div className="min-w-0 lg:col-span-2">
+          <ChatGuide
+            agentLabel={agentLabel}
+            sections={guideSections}
+            suggestions={suggestions}
+            onAsk={(q) => chatRef.current?.send(q)}
           />
         </div>
       </div>

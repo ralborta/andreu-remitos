@@ -121,7 +121,31 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "destinos") {
-    return <DestinosPanel />;
+    return (
+      <ModuleWithChat
+        agentId="destinos"
+        agentLabel="Destinos"
+        suggestions={[
+          "¿cuántos destinos hay?",
+          "¿cuántos están pendientes?",
+          "mostrame los últimos",
+          "resumen por estado",
+        ]}
+        guideSections={[
+          {
+            title: "Conteos",
+            items: ["Totales", "Por estado", "Pendientes de confirmación"],
+          },
+          {
+            title: "Listados",
+            items: ["Últimos destinos", "Buscar por cliente o dirección"],
+          },
+        ]}
+        emptyHint="Consulto destinos reales (confirmación / validación de entrega)."
+      >
+        <DestinosPanel />
+      </ModuleWithChat>
+    );
   }
 
   if (slug === "incidencias") {

@@ -54,11 +54,14 @@ export default async function rendicionRoutes(fastify) {
   fastify.get("/resumen", async () => rendicionStore.resumenGastos());
 
   fastify.get("/", async (request) => {
-    const { limit, estado, telefono } = request.query ?? {};
+    const { limit, estado, telefono, q, desde, hasta } = request.query ?? {};
     const rows = await rendicionStore.listGastos({
       limit: limit ? parseInt(limit, 10) : 100,
       estado: estado || undefined,
       telefono: telefono || undefined,
+      q: q || undefined,
+      desde: desde || undefined,
+      hasta: hasta || undefined,
     });
     return rows.map(mapGasto);
   });

@@ -1,18 +1,19 @@
 import * as viajesStore from "../db/viajes-store.mjs";
 import {
-  actualizarCamionViajes,
-  actualizarChoferViajes,
-  crearCamionViajes,
-  crearChoferViajes,
   DIAS_LABEL,
   eliminarCamionViajes,
   eliminarChoferViajes,
-  listCamionesViajes,
-  listChoferesViajes,
 } from "../db/viajes-flota-store.mjs";
+import {
+  actualizarCamionFlotaConSync,
+  actualizarChoferFlotaConSync,
+  crearCamionFlotaConSync,
+  crearChoferFlotaConSync,
+  listCamionesFlotaEnriquecidos,
+  listChoferesFlotaEnriquecidos,
+} from "../db/flota-unificada.mjs";
 import { VIAJE_ESTADO_LABEL, VIAJE_ESTADOS, VIAJE_TRANSICIONES } from "../../../lib/viajes.mjs";
 import { procesarSolicitudViaje } from "../services/viajes-agent.mjs";
-import { cargarFlota } from "../services/viajes-flota.mjs";
 
 function mapViaje(row) {
   if (!row) return null;
@@ -69,35 +70,43 @@ export default async function viajesRoutes(fastify) {
   });
 
   fastify.get("/flota", async () => {
-    const flota = cargarFlota();
+    const [choferes, camiones] = await Promise.all([
+      listChoferesFlotaEnriquecidos(),
+      listCamionesFlotaEnriquecidos(),
+    ]);
     return {
-      fuente: flota.fuente,
-      choferes: flota.choferes,
-      camiones: flota.camiones,
+      fuente: "viajes-flota+master",
+      choferes,
+      camiones,
       resumen: {
-        choferes: flota.choferes.length,
-        camiones: flota.camiones.length,
-        choferesActivos: flota.choferes.filter((c) => c.activo !== false && c.disponible !== false).length,
-        camionesActivos: flota.camiones.filter((c) => c.activo !== false && c.disponible !== false).length,
+        choferes: choferes.length,
+        camiones: camiones.length,
+        choferesActivos: choferes.filter((c) => c.activo !== false).length,
+        camionesActivos: camiones.filter((c) => c.activo !== false).length,
       },
       diasLabel: DIAS_LABEL,
-      nota: "Maestros de Gestión de Viajes (independientes de Parámetros/Remitos)",
+      nota:
+        "Flota Viajes: horarios/días locales; identidad (teléfono/patente) unificada con Parámetros",
     };
   });
 
-  fastify.get("/flota/choferes", async () => listChoferesViajes());
+  fastify.get("/flota/choferes", async () => listChoferesFlotaEnriquecidos());
   fastify.post("/flota/choferes", async (request, reply) => {
     try {
-      const row = crearChoferViajes(request.body ?? {});
+      const row = await crearChoferFlotaConSync(request.body ?? {});
       return reply.code(201).send(row);
     } catch (err) {
       return reply.code(err.statusCode || 500).send({ error: err.message });
     }
   });
   fastify.patch("/flota/choferes/:id", async (request, reply) => {
-    const row = actualizarChoferViajes(request.params.id, request.body ?? {});
-    if (!row) return reply.code(404).send({ error: "Chofer no encontrado" });
-    return row;
+    try {
+      const row = await actualizarChoferFlotaConSync(request.params.id, request.body ?? {});
+      if (!row) return reply.code(404).send({ error: "Chofer no encontrado" });
+      return row;
+    } catch (err) {
+      return reply.code(err.statusCode || 500).send({ error: err.message });
+    }
   });
   fastify.delete("/flota/choferes/:id", async (request, reply) => {
     const ok = eliminarChoferViajes(request.params.id);
@@ -105,19 +114,23 @@ export default async function viajesRoutes(fastify) {
     return { ok: true };
   });
 
-  fastify.get("/flota/camiones", async () => listCamionesViajes());
+  fastify.get("/flota/camiones", async () => listCamionesFlotaEnriquecidos());
   fastify.post("/flota/camiones", async (request, reply) => {
     try {
-      const row = crearCamionViajes(request.body ?? {});
+      const row = await crearCamionFlotaConSync(request.body ?? {});
       return reply.code(201).send(row);
     } catch (err) {
       return reply.code(err.statusCode || 500).send({ error: err.message });
     }
   });
   fastify.patch("/flota/camiones/:id", async (request, reply) => {
-    const row = actualizarCamionViajes(request.params.id, request.body ?? {});
-    if (!row) return reply.code(404).send({ error: "Camión no encontrado" });
-    return row;
+    try {
+      const row = await actualizarCamionFlotaConSync(request.params.id, request.body ?? {});
+      if (!row) return reply.code(404).send({ error: "Camión no encontrado" });
+      return row;
+    } catch (err) {
+      return reply.code(err.statusCode || 500).send({ error: err.message });
+    }
   });
   fastify.delete("/flota/camiones/:id", async (request, reply) => {
     const ok = eliminarCamionViajes(request.params.id);

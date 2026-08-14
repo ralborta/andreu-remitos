@@ -19,13 +19,13 @@ export interface Agent {
 
 export const STATUS_LABEL: Record<AgentStatus, string> = {
   operativo: "Operativo",
-  pruebas: "En pruebas",
+  pruebas: "Operativo",
   beta: "Beta",
 };
 
 export const STATUS_COLOR: Record<AgentStatus, string> = {
   operativo: "#22c55e",
-  pruebas: "#f59e0b",
+  pruebas: "#22c55e",
   beta: "#38bdf8",
 };
 
@@ -36,7 +36,7 @@ export const agents: Agent[] = [
     name: "Chat Central Commander",
     short: "Chat Central",
     subtitle: "Consulta transversal read-only entre especialistas de mesa",
-    status: "pruebas",
+    status: "operativo",
     icon: "Radio",
     what: "Chat único de mesa que interpreta en lenguaje natural y consulta los packs read-only de Viajes, Incidencias, Rendición, ETA, POD y Remitos. No envía WhatsApp, no OCR ni mutaciones: solo lectura grounded con el mismo Desk Chat Runtime.",
     flow: [
@@ -57,39 +57,10 @@ export const agents: Agent[] = [
       { label: "Modo", value: "Solo lectura", trend: "" },
       { label: "Motor", value: "LLM-first", trend: "" },
     ],
-    collaboratesWith: ["viajes", "incidencias", "rendicion", "eta", "pod", "remitos"],
+    collaboratesWith: ["viajes", "incidencias", "rendicion", "eta", "pod", "remitos", "destinos"],
   },
   {
     id: 1,
-    slug: "remitos",
-    name: "Agente de Remitos",
-    short: "Remitos",
-    subtitle: "Captura, lectura y trazabilidad documental del viaje",
-    status: "operativo",
-    icon: "FileText",
-    what: "Se comunica con los choferes por WhatsApp para recibir remitos en dos momentos: al salir del recinto y al llegar a destino. Lee remitos impresos o manuscritos, estructura la información y la muestra en backoffice antes de enviarla al TMS del cliente.",
-    flow: [
-      "Chofer sale del recinto",
-      "Envía remito por WhatsApp",
-      "IA lee y estructura datos",
-      "Backoffice muestra estados y validaciones",
-      "Chofer llega y envía segundo remito",
-      "Consolidación y envío al TMS",
-    ],
-    benefits: [
-      "Menos carga manual",
-      "Remitos manuscritos digitalizados",
-      "Trazabilidad documental completa",
-    ],
-    channels: ["WhatsApp", "OCR / Visión IA", "TMS"],
-    kpis: [
-      { label: "Remitos procesados hoy", value: "412", trend: "+18%" },
-      { label: "Lectura automática", value: "97,1%", trend: "+2,1%" },
-      { label: "Tiempo medio de carga", value: "16 s", trend: "-76%" },
-    ],
-  },
-  {
-    id: 2,
     slug: "viajes",
     name: "Agente de Gestión de Viajes",
     short: "Gestión de Viajes",
@@ -122,12 +93,42 @@ export const agents: Agent[] = [
     collaboratesWith: ["eta", "incidencias", "pod"],
   },
   {
+    id: 2,
+    slug: "remitos",
+    name: "Agente de Remitos",
+    short: "Remitos",
+    subtitle: "Captura, lectura y trazabilidad documental del viaje",
+    status: "operativo",
+    icon: "FileText",
+    what: "Se comunica con los choferes por WhatsApp para recibir remitos en dos momentos: al salir del recinto y al llegar a destino. Lee remitos impresos o manuscritos, estructura la información y la muestra en backoffice antes de enviarla al TMS del cliente.",
+    flow: [
+      "Chofer sale del recinto",
+      "Envía remito por WhatsApp",
+      "IA lee y estructura datos",
+      "Backoffice muestra estados y validaciones",
+      "Chofer llega y envía segundo remito",
+      "Consolidación y envío al TMS",
+    ],
+    benefits: [
+      "Menos carga manual",
+      "Remitos manuscritos digitalizados",
+      "Trazabilidad documental completa",
+    ],
+    channels: ["WhatsApp", "OCR / Visión IA", "TMS"],
+    kpis: [
+      { label: "Remitos procesados hoy", value: "412", trend: "+18%" },
+      { label: "Lectura automática", value: "97,1%", trend: "+2,1%" },
+      { label: "Tiempo medio de carga", value: "16 s", trend: "-76%" },
+    ],
+    collaboratesWith: [],
+  },
+  {
     id: 3,
     slug: "destinos",
     name: "Confirmación de Destinos",
     short: "Destinos",
     subtitle: "Validación de direcciones y coordinación para entregas cortas",
-    status: "pruebas",
+    status: "operativo",
     icon: "MapPin",
     what: "Para viajes cortos o entregas tipo delivery, recibe una dirección o coordenadas, valida la ubicación con Google Maps, confirma el destino con el cliente y luego envía la ubicación final al chofer.",
     flow: [
@@ -149,6 +150,7 @@ export const agents: Agent[] = [
       { label: "Direcciones corregidas", value: "24", trend: "" },
       { label: "Precisión de geocodeo", value: "98,6%", trend: "+0,9%" },
     ],
+    collaboratesWith: [],
   },
   {
     id: 4,
@@ -188,7 +190,7 @@ export const agents: Agent[] = [
     name: "Rendición de Viajes",
     short: "Rendición",
     subtitle: "Gastos, comprobantes y liquidación de viajes",
-    status: "pruebas",
+    status: "operativo",
     icon: "ReceiptText",
     what: "El chofer envía gastos menores del viaje (nafta, peajes, llantas, aceite, remolque, auxilio, arreglos). El agente los lee, los clasifica y los deja pendientes de aprobación humana — casi en línea, como la aprobación de destinos.",
     flow: [
@@ -209,6 +211,7 @@ export const agents: Agent[] = [
       { label: "Comprobantes leídos", value: "3.124", trend: "+17%" },
       { label: "Tiempo de liquidación", value: "0,9 días", trend: "-52%" },
     ],
+    collaboratesWith: [],
   },
   {
     id: 6,
@@ -216,7 +219,7 @@ export const agents: Agent[] = [
     name: "ETA y Notificación Proactiva",
     short: "ETA",
     subtitle: "Avisos automáticos de llegada, demoras y cambios de estado",
-    status: "pruebas",
+    status: "operativo",
     icon: "Clock",
     what: "Agente independiente que estima horarios de llegada y avisa de forma proactiva. Se comunica con Gestión de Viajes (toma el viaje y el compromiso) y con Incidencias (si hay demora, recalcula y notifica). No reemplaza a esos agentes: depende de ellos y les responde con el ETA actualizado.",
     flow: [
@@ -247,7 +250,7 @@ export const agents: Agent[] = [
     name: "Constancia de Entrega (POD)",
     short: "POD",
     subtitle: "Receptor + foto de prueba por WhatsApp, confirmación en mesa",
-    status: "pruebas",
+    status: "operativo",
     icon: "ClipboardCheck",
     what: "Proof of Delivery: el chofer manda la foto del formulario/producto por WhatsApp. Google Document AI hace el OCR; la IA estructura receptor, pedido y destino y conversa si falta algo. Mesa de control confirma o rechaza.",
     flow: [
@@ -299,6 +302,7 @@ export const agents: Agent[] = [
       { label: "Resueltos en SLA", value: "89%", trend: "+10 pts" },
       { label: "Tiempo de resolución", value: "5,8 h", trend: "-42%" },
     ],
+    collaboratesWith: [],
   },
   {
     id: 9,
@@ -328,6 +332,7 @@ export const agents: Agent[] = [
       { label: "SLA de entrega", value: "95,1%", trend: "+2,9%" },
       { label: "Alertas generadas", value: "64", trend: "" },
     ],
+    collaboratesWith: [],
   },
 ];
 

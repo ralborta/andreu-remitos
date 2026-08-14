@@ -1,9 +1,12 @@
 /**
- * Maestros de flota para Gestión de Viajes (NO son los de Remitos/Parámetros).
+ * Maestros de flota para Gestión de Viajes.
  * Archivo: DATA_DIR/viajes-flota-maestros.json
  *
- * - choferes: nombre, teléfono WA, días de la semana, horarios, excepciones por fecha
- * - camiones: patente, tipo, tipos de carga, capacidad, días, horarios, excepciones
+ * - choferes: nombre, teléfono WA, días, horarios, excepciones (identidad sync → parametros vía flota-unificada)
+ * - camiones: patente/tractor, tipo, tipos de carga, capacidad, días, horarios, excepciones
+ *
+ * Identidad (nombre/teléfono/patente) se unifica con master-data (parametros.json);
+ * este store conserva disponibilidad operativa. Ver flota-unificada.mjs.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -145,6 +148,7 @@ function seedChofer(c) {
 export function ensureViajesFlotaSeeded() {
   const db = readRaw();
   if (db.choferes.length || db.camiones.length) return db;
+  if (String(process.env.VIAJES_FLOTA_SKIP_SEED || "").toLowerCase() === "true") return db;
   const seeded = {
     choferes: (DEMO_FLOTA.choferes || []).map(seedChofer),
     camiones: (DEMO_FLOTA.camiones || []).map(seedCamion),

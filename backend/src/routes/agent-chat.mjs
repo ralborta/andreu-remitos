@@ -13,6 +13,7 @@ const SUPPORTED = new Set([
   "rendicion",
   "eta",
   "remitos",
+  "destinos",
   "commander",
 ]);
 

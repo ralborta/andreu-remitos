@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { Check, RefreshCw, X } from "lucide-react";
+import { Check, ImageIcon, RefreshCw, Search, X } from "lucide-react";
 import {
   decidirGastoRendicion,
   listGastosRendicion,
@@ -43,6 +43,71 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </p>
       <div className="mt-1 text-sm text-white">{children}</div>
+    </div>
+  );
+}
+
+function RechazoMotivoModal({
+  caso,
+  busy,
+  onClose,
+  onConfirm,
+}: {
+  caso: GastoRendicion;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: (nota: string) => void;
+}) {
+  const [nota, setNota] = useState("");
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rechazo-motivo-title"
+      >
+        <h3 id="rechazo-motivo-title" className="text-lg font-semibold text-white">
+          Rechazar gasto
+        </h3>
+        <p className="mt-1 text-sm text-[var(--text-dim)]">
+          {caso.codigo} · {caso.categoriaLabel} · {caso.montoLabel}
+          {caso.choferNombre ? ` · ${caso.choferNombre}` : ""}
+        </p>
+        <label className="mt-4 block text-xs font-medium text-[var(--text-faint)]">
+          Motivo (opcional)
+          <textarea
+            value={nota}
+            onChange={(e) => setNota(e.target.value)}
+            rows={3}
+            placeholder="Ej. comprobante ilegible, monto incorrecto…"
+            className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-2 focus:ring-[var(--violet)]/40"
+          />
+        </label>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onClose}
+            className="rounded-lg bg-white/5 px-3 py-2 text-sm text-[var(--text-dim)] hover:bg-white/10 disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onConfirm(nota.trim())}
+            className="rounded-lg bg-rose-500/20 px-3 py-2 text-sm font-semibold text-rose-400 hover:bg-rose-500/30 disabled:opacity-50"
+          >
+            Confirmar rechazo
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -119,9 +184,14 @@ function GastoDetalleModal({
                 <Campo label="Nota chofer">{caso.notaChofer}</Campo>
               </div>
             )}
+            {caso.notaAprobacion && (
+              <div className="sm:col-span-2">
+                <Campo label="Nota aprobación">{caso.notaAprobacion}</Campo>
+              </div>
+            )}
           </div>
 
-          {caso.imagenUrl && (
+          {caso.imagenUrl ? (
             <button
               type="button"
               onClick={onVerFoto}
@@ -129,6 +199,8 @@ function GastoDetalleModal({
             >
               Ver foto del comprobante
             </button>
+          ) : (
+            <p className="mt-4 text-sm text-[var(--text-faint)]">Sin comprobante</p>
           )}
 
           {(caso.historial?.length ?? 0) > 0 && (
@@ -177,11 +249,21 @@ export function RendicionPanel() {
   const [rows, setRows] = useState<GastoRendicion[]>([]);
   const [resumen, setResumen] = useState<ResumenRendicion | null>(null);
   const [filtro, setFiltro] = useState<Filtro>("pendiente_aprobacion");
+  const [qInput, setQInput] = useState("");
+  const [q, setQ] = useState("");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [foto, setFoto] = useState<FotoPreview | null>(null);
   const [detalle, setDetalle] = useState<GastoRendicion | null>(null);
+  const [rechazoTarget, setRechazoTarget] = useState<GastoRendicion | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setQ(qInput.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [qInput]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -191,6 +273,9 @@ export function RendicionPanel() {
         listGastosRendicion({
           limit: 100,
           estado: filtro === "todos" ? undefined : filtro,
+          q: q || undefined,
+          desde: desde || undefined,
+          hasta: hasta || undefined,
         }),
         resumenRendicion(),
       ]);
@@ -205,7 +290,7 @@ export function RendicionPanel() {
     } finally {
       setLoading(false);
     }
-  }, [filtro]);
+  }, [filtro, q, desde, hasta]);
 
   useEffect(() => {
     void load();
@@ -225,17 +310,48 @@ export function RendicionPanel() {
     [resumen],
   );
 
-  async function decidir(g: GastoRendicion, estado: "aprobado" | "rechazado") {
-    const ok = await confirm({
-      title: estado === "aprobado" ? "Aprobar gasto" : "Rechazar gasto",
-      message: `${g.codigo} · ${g.categoriaLabel} · ${g.montoLabel}\n${g.choferNombre || g.telefono || ""}`,
-      confirmLabel: estado === "aprobado" ? "Aprobar" : "Rechazar",
+  function abrirComprobante(g: GastoRendicion) {
+    const src = browsableMediaUrl(g.imagenUrl);
+    if (!src) {
+      void confirm({
+        title: "Comprobante",
+        message: "Sin comprobante",
+        alert: true,
+        confirmLabel: "Entendido",
+      });
+      return;
+    }
+    setFoto({
+      src,
+      title: `${g.codigo} · ${g.categoriaLabel}`,
     });
-    if (!ok) return;
+  }
+
+  async function decidir(
+    g: GastoRendicion,
+    estado: "aprobado" | "rechazado",
+    nota?: string,
+  ) {
+    if (estado === "rechazado" && nota === undefined) {
+      setRechazoTarget(g);
+      return;
+    }
+    if (estado === "aprobado") {
+      const ok = await confirm({
+        title: "Aprobar gasto",
+        message: `${g.codigo} · ${g.categoriaLabel} · ${g.montoLabel}\n${g.choferNombre || g.telefono || ""}`,
+        confirmLabel: "Aprobar",
+      });
+      if (!ok) return;
+    }
     setBusyId(g.id);
     try {
-      await decidirGastoRendicion(g.id, { estado });
+      await decidirGastoRendicion(g.id, {
+        estado,
+        ...(nota ? { nota } : {}),
+      });
       setDetalle(null);
+      setRechazoTarget(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pude decidir");
@@ -294,6 +410,43 @@ export function RendicionPanel() {
           </div>
         </div>
 
+        <div className="mb-4 flex flex-wrap items-end gap-3">
+          <label className="relative min-w-[200px] flex-1 text-xs text-[var(--text-dim)]">
+            Buscar
+            <span className="relative mt-1.5 block">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
+              />
+              <input
+                type="search"
+                value={qInput}
+                onChange={(e) => setQInput(e.target.value)}
+                placeholder="Remito, chofer o patente…"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-2)] py-2 pl-8 pr-3 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-2 focus:ring-[var(--violet)]/40"
+              />
+            </span>
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs text-[var(--text-dim)]">
+            Desde
+            <input
+              type="date"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs text-[var(--text-dim)]">
+            Hasta
+            <input
+              type="date"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
+            />
+          </label>
+        </div>
+
         {error && (
           <p className="mb-3 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{error}</p>
         )}
@@ -328,7 +481,19 @@ export function RendicionPanel() {
                       {g.choferNombre || "—"}
                     </td>
                     <td className="py-3 pr-3 text-[var(--text-dim)]">{g.categoriaLabel}</td>
-                    <td className="py-3 pr-3 tabular text-white">{g.montoLabel}</td>
+                    <td className="py-3 pr-3" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => abrirComprobante(g)}
+                        className="inline-flex items-center gap-1.5 tabular text-white hover:text-[var(--violet-2)]"
+                        title={g.imagenUrl ? "Ver comprobante" : "Sin comprobante"}
+                      >
+                        {g.montoLabel}
+                        {g.imagenUrl ? (
+                          <ImageIcon size={14} className="text-[var(--text-faint)]" />
+                        ) : null}
+                      </button>
+                    </td>
                     <td className="max-w-[200px] truncate py-3 pr-3 text-[var(--text-dim)]">
                       {g.proveedor || g.descripcion || "—"}
                     </td>
@@ -383,15 +548,17 @@ export function RendicionPanel() {
           caso={detalle}
           busyId={busyId}
           onClose={() => setDetalle(null)}
-          onVerFoto={() => {
-            const src = browsableMediaUrl(detalle.imagenUrl);
-            if (!src) return;
-            setFoto({
-              src,
-              title: `${detalle.codigo} · ${detalle.categoriaLabel}`,
-            });
-          }}
+          onVerFoto={() => abrirComprobante(detalle)}
           onDecidir={(estado) => void decidir(detalle, estado)}
+        />
+      )}
+
+      {rechazoTarget && (
+        <RechazoMotivoModal
+          caso={rechazoTarget}
+          busy={busyId === rechazoTarget.id}
+          onClose={() => setRechazoTarget(null)}
+          onConfirm={(nota) => void decidir(rechazoTarget, "rechazado", nota)}
         />
       )}
 

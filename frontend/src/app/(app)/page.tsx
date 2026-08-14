@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   Activity,
   Truck,
@@ -14,6 +15,8 @@ import { ActivityFeed } from "@/components/ActivityFeed";
 import { ViajesArea, IncidenciasDonut, SlaBars } from "@/components/Charts";
 import { LiveCounter } from "@/components/LiveCounter";
 import { AgentIcon } from "@/components/Icon";
+import { TorreSearch } from "@/components/TorreSearch";
+import { TorreChat } from "@/components/TorreChat";
 import {
   trips,
   incidencias,
@@ -50,6 +53,10 @@ export default function DashboardPage() {
           </div>
         }
       />
+
+      <Suspense fallback={<div className="panel h-24 animate-pulse" />}>
+        <TorreSearch />
+      </Suspense>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -111,14 +118,20 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Mapa + Actividad */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      {/* Chat Central + Mapa */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+        <div className="min-w-0 xl:col-span-3">
+          <TorreChat />
+        </div>
         <Card className="xl:col-span-2">
           <SectionTitle>Flota en tiempo real</SectionTitle>
           <FleetMap />
         </Card>
+      </div>
 
-        <Card>
+      {/* Actividad */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
           <SectionTitle
             right={
               <span className="flex items-center gap-1.5 text-xs text-[var(--text-faint)]">
@@ -136,14 +149,14 @@ export default function DashboardPage() {
             <ActivityFeed />
           </div>
         </Card>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
           <SectionTitle>Viajes por día</SectionTitle>
           <ViajesArea data={viajesPorDia} />
         </Card>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <SectionTitle>Incidencias por tipo</SectionTitle>
           <IncidenciasDonut data={incidenciasPorTipo} />

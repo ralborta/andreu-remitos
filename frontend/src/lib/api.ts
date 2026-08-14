@@ -614,11 +614,21 @@ export interface ResumenRendicion {
   monto_aprobado: number;
 }
 
-export function listGastosRendicion(params?: { limit?: number; estado?: string; telefono?: string }) {
+export function listGastosRendicion(params?: {
+  limit?: number;
+  estado?: string;
+  telefono?: string;
+  q?: string;
+  desde?: string;
+  hasta?: string;
+}) {
   const q = new URLSearchParams();
   if (params?.limit) q.set("limit", String(params.limit));
   if (params?.estado) q.set("estado", params.estado);
   if (params?.telefono) q.set("telefono", params.telefono);
+  if (params?.q) q.set("q", params.q);
+  if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
   const qs = q.toString();
   return api<GastoRendicion[]>(`/api/rendicion${qs ? `?${qs}` : ""}`);
 }

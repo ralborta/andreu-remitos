@@ -1,9 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
 import { Menu, Bell, Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 import { LiveClock } from "./LiveClock";
-import { TopbarSearch } from "./TopbarSearch";
 import { Brand } from "./Brand";
 
 const THEME_KEY = "andreu-theme";
@@ -44,13 +43,11 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         <Menu size={20} />
       </button>
 
-      <Suspense
-        fallback={
-          <div className="h-9 min-w-0 flex-1 max-w-md rounded-lg border border-[var(--border)] bg-[var(--panel)]" />
-        }
-      >
-        <TopbarSearch />
-      </Suspense>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm text-[var(--text-dim)]">
+          Torre y agentes · consultas en Chat Central
+        </p>
+      </div>
 
       <div className="ml-auto flex shrink-0 items-center justify-end gap-3">
         <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">

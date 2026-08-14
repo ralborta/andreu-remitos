@@ -8,6 +8,10 @@ import {
   normalizePhone,
   updateItem,
 } from "../db/master-data-store.mjs";
+import {
+  createChoferParametrosSinDuplicar,
+  createUnidadParametrosSinDuplicar,
+} from "../db/flota-unificada.mjs";
 import { parametrosMutateOnly } from "../plugins/auth-guard.mjs";
 
 const parametrosWrite = { preHandler: parametrosMutateOnly };
@@ -118,7 +122,21 @@ async function validateDistancia(body, partial) {
 export default async function parametrosRoutes(fastify) {
   // Choferes
   fastify.get("/choferes", listRoute("choferes"));
-  fastify.post("/choferes", { ...parametrosWrite, handler: createRoute("choferes", validateChofer) });
+  fastify.post("/choferes", {
+    ...parametrosWrite,
+    handler: async (request, reply) => {
+      const body = request.body ?? {};
+      const err = validateChofer(body);
+      if (err) return reply.code(400).send({ error: err });
+      // Upsert por teléfono: no duplicar identidad ni romper flota Viajes
+      if (body.telefono) {
+        const row = await createChoferParametrosSinDuplicar(body);
+        return reply.code(201).send(row);
+      }
+      const row = await createItem("choferes", body);
+      return reply.code(201).send(row);
+    },
+  });
   fastify.patch("/choferes/:id", { ...parametrosWrite, handler: patchRoute("choferes", validateChofer) });
   fastify.delete("/choferes/:id", { ...parametrosWrite, handler: deleteRoute("choferes") });
   fastify.post("/choferes/import", {
@@ -135,7 +153,17 @@ export default async function parametrosRoutes(fastify) {
 
   // Unidades (tractores + acoplados)
   fastify.get("/unidades", listRoute("unidades"));
-  fastify.post("/unidades", { ...parametrosWrite, handler: createRoute("unidades", validateUnidad) });
+  fastify.post("/unidades", {
+    ...parametrosWrite,
+    handler: async (request, reply) => {
+      const body = request.body ?? {};
+      const err = validateUnidad(body);
+      if (err) return reply.code(400).send({ error: err });
+      // Upsert por patente: no duplicar identidad ni romper flota Viajes
+      const row = await createUnidadParametrosSinDuplicar(body);
+      return reply.code(201).send(row);
+    },
+  });
   fastify.patch("/unidades/:id", { ...parametrosWrite, handler: patchRoute("unidades", validateUnidad) });
   fastify.delete("/unidades/:id", { ...parametrosWrite, handler: deleteRoute("unidades") });
 

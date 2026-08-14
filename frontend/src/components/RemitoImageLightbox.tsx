@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Maximize2, Minus, Plus, RotateCcw, X, ZoomIn } from "lucide-react";
+import { Download, Maximize2, Minus, Plus, RotateCcw, X, ZoomIn } from "lucide-react";
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
@@ -116,6 +116,23 @@ export function RemitoImageLightbox({
     setScale((s) => clampScale(Number((s + delta).toFixed(2))));
   }
 
+  async function descargar() {
+    if (!src) return;
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const base = (alt || "comprobante").replace(/[^\w.-]+/g, "_").slice(0, 80);
+      a.download = `${base || "comprobante"}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(src, "_blank", "noopener,noreferrer");
+    }
+  }
+
   function onWheel(e: React.WheelEvent) {
     e.preventDefault();
     const delta = e.deltaY < 0 ? 0.2 : -0.2;
@@ -174,6 +191,15 @@ export function RemitoImageLightbox({
             aria-label="Restablecer zoom"
           >
             <RotateCcw size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => void descargar()}
+            className="rounded-lg p-2 text-white/80 hover:bg-white/10"
+            aria-label="Descargar"
+            title="Descargar"
+          >
+            <Download size={18} />
           </button>
           <button
             type="button"

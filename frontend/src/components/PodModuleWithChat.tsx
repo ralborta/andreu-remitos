@@ -118,11 +118,11 @@ export function PodModuleWithChat() {
     <div className="space-y-6">
       <PodPanel />
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
-        <div className="min-w-0 lg:col-span-2">
-          <PodChatGuide onAsk={(q) => chatRef.current?.send(q)} />
-        </div>
         <div className="min-w-0 lg:col-span-3">
           <PodAgentChat ref={chatRef} hideSuggestions />
+        </div>
+        <div className="min-w-0 lg:col-span-2">
+          <PodChatGuide onAsk={(q) => chatRef.current?.send(q)} />
         </div>
       </div>
     </div>
