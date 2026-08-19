@@ -70,6 +70,8 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
       ? tenant === "beraldi"
         ? "Excel 2 hojas: Planilla Diaria (horarios + OT) + Proforma Torre"
         : "Excel con 2 hojas: Planilla Diaria + Proforma (TN)"
+      : vista === "qm"
+        ? "TMS QM — 2 filas/remito (Carga+Descarga), 22 cols, sin retorno"
       : tenant === "beraldi"
       ? "Proforma importación Delfos: headers exactos, OT en NroDocumento, tramos ida/vuelta, km"
       : "toneladas en Cantidad (Orden 1)";
@@ -126,6 +128,17 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                 }
               >
                 Proforma (2 hojas)
+              </button>
+              <button
+                type="button"
+                onClick={() => setVista("qm")}
+                className={
+                  vista === "qm"
+                    ? "rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-[var(--violet)]/50"
+                    : "rounded-lg bg-white/5 px-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-white/10"
+                }
+              >
+                Torre de Control / QM
               </button>
             </>
           )}
@@ -210,6 +223,13 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                   <Download size={16} />
                   Excel Proforma (2 hojas)
                 </a>
+                <a
+                  href={planillaExportUrl(tenant, { tipoViaje, desde, hasta, formato: "qm" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15"
+                >
+                  <Download size={16} />
+                  Excel Torre de Control / QM
+                </a>
               </>
             )}
           </div>
@@ -247,7 +267,9 @@ export function PlanillasPanel({ tenant }: { tenant: TenantSlug }) {
                   : "Planilla Local — control operativo de viajes cortos"
                 : vista === "delfos"
                   ? `Vista Delfos — headers iguales al Excel ${cfg.short}`
-                  : "Proforma — Planilla Diaria (certificación) + Proforma (ida y vuelta para Torre de Control)"}
+                  : vista === "qm"
+                    ? "Torre de Control / QM — importación nuevo TMS (Carga + Descarga por remito)"
+                    : "Proforma — Planilla Diaria (certificación) + Proforma (ida y vuelta para Torre de Control)"}
             </span>
             <span className="text-xs text-[var(--violet-2)]">← deslizá horizontal para ver todas las columnas</span>
           </div>

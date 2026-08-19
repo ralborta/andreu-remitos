@@ -23,7 +23,7 @@ function parseOpts(tenant, q = {}) {
     };
   }
   return {
-    formato: q.formato === "proforma" ? "proforma" : "delfos",
+    formato: q.formato === "proforma" ? "proforma" : q.formato === "qm" ? "qm" : "delfos",
     tipoViaje: q.tipoViaje || "ARENA",
     producto: q.producto || "Sin definir",
     estados: q.estados || "confirmado,pendiente_revision",
@@ -81,6 +81,17 @@ async function sendExcel(reply, tenant, data, opts) {
     const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
     const prefix = opts.formato === "importacion" ? "Proforma" : "Planilla";
     const fname = `${prefix}_Corina_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    return reply
+      .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      .header("Content-Disposition", `attachment; filename="${fname}"`)
+      .send(buf);
+  }
+
+  if (opts.formato === "qm") {
+    const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
+    XLSX.utils.book_append_sheet(wb, ws, "TorreControl");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const fname = `TorreControl_QM_${label}_${data.tipo_viaje || "ARENA"}_${new Date().toISOString().slice(0, 10)}.xlsx`;
     return reply
       .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       .header("Content-Disposition", `attachment; filename="${fname}"`)

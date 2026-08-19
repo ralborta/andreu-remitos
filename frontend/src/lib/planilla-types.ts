@@ -1,4 +1,4 @@
-export type PlanillaFormato = "delfos" | "proforma" | "local" | "importacion";
+export type PlanillaFormato = "delfos" | "proforma" | "qm" | "local" | "importacion";
 
 export interface PlanillaColumn {
   key: string;

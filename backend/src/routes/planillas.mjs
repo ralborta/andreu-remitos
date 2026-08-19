@@ -4,8 +4,10 @@ import { buildPlanillaBeraldi } from "../../../lib/planilla-beraldi.mjs";
 import { buildPlanillaCorina, columnasCorina } from "../../../lib/planilla-corina.mjs";
 
 function parseQuery(q) {
+  const raw = String(q.formato ?? "delfos").toLowerCase();
+  const formato = raw === "proforma" ? "proforma" : raw === "qm" ? "qm" : "delfos";
   return {
-    formato: q.formato === "proforma" ? "proforma" : "delfos",
+    formato,
     tipoViaje: q.tipoViaje || "ARENA",
     producto: q.producto || "Sin definir",
     estados: q.estados || "confirmado,pendiente_revision",
@@ -17,6 +19,17 @@ function parseQuery(q) {
 
 async function exportPlanilla(reply, data, { formato, label }) {
   const wb = XLSX.utils.book_new();
+
+  if (formato === "qm") {
+    const ws = XLSX.utils.aoa_to_sheet(filasAoa(data.filas, data.columnas));
+    XLSX.utils.book_append_sheet(wb, ws, "TorreControl");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const fname = `TorreControl_QM_${label}_${data.tipo_viaje}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    return reply
+      .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      .header("Content-Disposition", `attachment; filename="${fname}"`)
+      .send(buf);
+  }
 
   if (formato === "proforma" && data.hojas) {
     const wsDiaria = XLSX.utils.aoa_to_sheet(
