@@ -18,6 +18,7 @@ import {
   MapPin,
   MessageCircle,
   RefreshCw,
+  Settings2,
   TriangleAlert,
 } from "lucide-react";
 import {
@@ -36,10 +37,16 @@ import {
   type ResumenIncidencias,
   type ViajesChoferFlota,
 } from "@/lib/api";
+import {
+  DEFAULT_INCIDENCIAS_CONFIG,
+  loadIncidenciasConfig,
+  type IncidenciasModuloConfig,
+} from "@/lib/incidencias-config";
 import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, CritBadge, KpiCard, Pill } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
 import { RemitoImageLightbox } from "./RemitoImageLightbox";
+import { IncidenciasConfigModal } from "./IncidenciasConfigModal";
 
 type Filtro = "abiertas" | "nueva" | "en_gestion" | "esperando_causa" | "resuelta" | "todos";
 
@@ -107,8 +114,14 @@ export function IncidenciasPanel() {
   const [ubic, setUbic] = useState<GeocodeResult | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [pinActivo, setPinActivo] = useState<string | null>(null);
+  const [configOpen, setConfigOpen] = useState(false);
+  const [cfg, setCfg] = useState<IncidenciasModuloConfig>(DEFAULT_INCIDENCIAS_CONFIG);
   const inputWrapRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setCfg(loadIncidenciasConfig());
+  }, []);
 
   const choferOpts = useMemo(() => {
     const map = new Map<string, ChoferOpt>();
@@ -318,10 +331,19 @@ export function IncidenciasPanel() {
               Flujo principal: parada en mapa → preguntar al chofer
             </h3>
             <p className="mt-0.5 text-xs text-[var(--text-faint)]">
-              Elegí punto + chofer de Viajes → WhatsApp “¿por qué estás parado?”. Si no responde: a los
-              5 min repregunta y a los 10 min cierra sola
+              Elegí punto + chofer de Viajes → WhatsApp “¿por qué estás parado?”. Si no responde: a los{" "}
+              {cfg.recordatorioMin} min repregunta y a los {cfg.cierreMin} min cierra sola
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setConfigOpen(true)}
+            title="Configuración de fechas y WhatsApp"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white/5 px-2.5 py-1.5 text-xs font-medium text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
+          >
+            <Settings2 size={14} />
+            Config
+          </button>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
@@ -522,6 +544,14 @@ export function IncidenciasPanel() {
             >
               <RefreshCw size={14} />
               Actualizar
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfigOpen(true)}
+              title="Configuración"
+              className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
+            >
+              <Settings2 size={14} />
             </button>
           </div>
         </div>
@@ -758,6 +788,12 @@ export function IncidenciasPanel() {
         alt={foto?.title ?? "Foto incidencia"}
         open={!!foto}
         onClose={() => setFoto(null)}
+      />
+
+      <IncidenciasConfigModal
+        open={configOpen}
+        onClose={() => setConfigOpen(false)}
+        onSaved={(next) => setCfg(next)}
       />
     </div>
   );

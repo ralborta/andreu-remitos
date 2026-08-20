@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, FileText } from "lucide-react";
 import { PageHeader, Pill } from "@/components/ui";
+import { RemitosTenantWithChat } from "@/components/RemitosTenantWithChat";
 import { getTenant, isTenantSlug } from "@/lib/tenants";
-import { RemitosPanel } from "@/components/RemitosPanel";
 
 export function generateStaticParams() {
   return [{ tenant: "tsb" }];
@@ -32,7 +32,7 @@ export default async function RemitosTenantPage({
         icon={<FileText size={24} />}
         badge={<Pill color={tenant.color}>{tenant.short}</Pill>}
       />
-      <RemitosPanel tenant={slug} />
+      <RemitosTenantWithChat tenant={slug} />
     </div>
   );
 }
