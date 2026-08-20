@@ -20,6 +20,9 @@ type Props = {
   onSaved?: (cfg: IncidenciasModuloConfig) => void;
 };
 
+const fieldCls =
+  "rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--violet)]";
+
 export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
   const [draft, setDraft] = useState<IncidenciasModuloConfig>(DEFAULT_INCIDENCIAS_CONFIG);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -62,25 +65,25 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
       <button type="button" className="absolute inset-0 cursor-default" aria-label="Cerrar" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="incidencias-config-title"
-        className="relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-2)] shadow-2xl"
+        className="relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel)] text-[var(--text)] shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
           <div className="flex items-center gap-2">
-            <Settings2 size={18} className="text-[var(--violet-2)]" />
-            <h2 id="incidencias-config-title" className="font-semibold text-white">
+            <Settings2 size={18} className="text-[var(--violet)]" />
+            <h2 id="incidencias-config-title" className="font-semibold text-[var(--text)]">
               Configuración · Incidencias
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-1.5 text-[var(--text-dim)] hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
           >
             <X size={18} />
           </button>
@@ -88,11 +91,11 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
 
         <div className="space-y-5 overflow-y-auto scroll-thin px-4 py-4 text-sm">
           <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-dim)]">
               Fechas y tiempos
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+              <label className="flex flex-col gap-1 text-xs font-medium text-[var(--text-dim)]">
                 Recordatorio WA (min)
                 <input
                   type="number"
@@ -102,10 +105,10 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                   onChange={(e) =>
                     setDraft((d) => ({ ...d, recordatorioMin: Number(e.target.value) }))
                   }
-                  className="rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                  className={fieldCls}
                 />
               </label>
-              <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+              <label className="flex flex-col gap-1 text-xs font-medium text-[var(--text-dim)]">
                 Cierre automático (min)
                 <input
                   type="number"
@@ -113,12 +116,12 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                   max={120}
                   value={draft.cierreMin}
                   onChange={(e) => setDraft((d) => ({ ...d, cierreMin: Number(e.target.value) }))}
-                  className="rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                  className={fieldCls}
                 />
               </label>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+              <label className="flex flex-col gap-1 text-xs font-medium text-[var(--text-dim)]">
                 Formato de fecha
                 <select
                   value={draft.formatoFecha}
@@ -128,18 +131,18 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                       formatoFecha: e.target.value as IncidenciasModuloConfig["formatoFecha"],
                     }))
                   }
-                  className="rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                  className={fieldCls}
                 >
                   <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                   <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+              <label className="flex flex-col gap-1 text-xs font-medium text-[var(--text-dim)]">
                 Zona horaria
                 <select
                   value={draft.zonaHoraria}
                   onChange={(e) => setDraft((d) => ({ ...d, zonaHoraria: e.target.value }))}
-                  className="rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                  className={fieldCls}
                 >
                   <option value="America/Argentina/Buenos_Aires">Argentina (ART)</option>
                   <option value="America/Santiago">Chile</option>
@@ -155,7 +158,7 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
           </section>
 
           <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-dim)]">
               WhatsApp · saludo
             </h3>
             <p className="text-[11px] text-[var(--text-faint)]">
@@ -170,7 +173,7 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                   className={
                     draft.tonoWhatsapp === opt.key
                       ? "rounded-lg bg-[var(--violet)] px-3 py-1.5 text-xs font-medium text-white"
-                      : "rounded-lg bg-white/5 px-3 py-1.5 text-xs text-[var(--text-dim)] hover:bg-white/10"
+                      : "rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-1.5 text-xs font-medium text-[var(--text)] hover:border-[var(--violet)]/40"
                   }
                   title={opt.hint}
                 >
@@ -178,27 +181,27 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                 </button>
               ))}
             </div>
-            <label className="flex flex-col gap-1 text-xs text-[var(--text-dim)]">
+            <label className="flex flex-col gap-1 text-xs font-medium text-[var(--text-dim)]">
               Texto de saludo
               <input
                 value={draft.saludoWhatsapp}
                 onChange={(e) => setDraft((d) => ({ ...d, saludoWhatsapp: e.target.value }))}
                 placeholder="Hola, ¿cómo estás?"
-                className="rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                className={fieldCls}
               />
             </label>
-            <div className="rounded-xl border border-[var(--border)] bg-black/20 px-3 py-2">
-              <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-dim)]">
                 Vista previa
               </p>
-              <pre className="whitespace-pre-wrap font-sans text-xs text-white/90">
+              <pre className="whitespace-pre-wrap font-sans text-xs text-[var(--text)]">
                 {previewSaludoWhatsapp(draft)}
               </pre>
             </div>
           </section>
 
           <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-dim)]">
               Tipos de servicio / incidencia
             </h3>
             <p className="text-[11px] text-[var(--text-faint)]">
@@ -210,7 +213,7 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                 return (
                   <label
                     key={t.key}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5"
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-2.5 py-2 hover:border-[var(--violet)]/35"
                   >
                     <input
                       type="checkbox"
@@ -218,7 +221,7 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
                       onChange={() => toggleTipo(t.key)}
                       className="accent-[var(--violet)]"
                     />
-                    <span className="text-xs text-white/90">{t.label}</span>
+                    <span className="text-xs font-medium text-[var(--text)]">{t.label}</span>
                   </label>
                 );
               })}
@@ -234,7 +237,7 @@ export function IncidenciasConfigModal({ open, onClose, onSaved }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg bg-white/5 px-3 py-2 text-xs font-medium text-[var(--text-dim)] hover:bg-white/10"
+              className="rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-xs font-medium text-[var(--text)] hover:bg-[var(--bg-2)]"
             >
               Cerrar
             </button>
