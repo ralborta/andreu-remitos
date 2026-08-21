@@ -1,8 +1,11 @@
 import {
   camposFaltantes,
   esConfirmacionChofer,
+  esConfirmacionCliente,
   esRechazoChofer,
+  indiceOpcion,
   mensajeConsultandoDisponibilidad,
+  parseSeleccionOpcion,
   redactarMensajeChofer,
   redactarPropuestaDisponibilidad,
   redactarReservaConfirmada,
@@ -101,14 +104,29 @@ export async function procesarMensajeViajeWhatsApp({
   if (fase === "propuesta") {
     const opciones = pending.propuesta?.opciones ?? [];
     if (turno.accion === "reservar") {
-      let elegida = pending.propuesta?.elegida || opciones[0];
-      if (turno.seleccion != null && opciones[turno.seleccion - 1]) {
-        elegida = opciones[turno.seleccion - 1];
-      } else if (turno.seleccion != null && opciones[turno.seleccion]) {
-        // por si vino 0-based
-        elegida = opciones[turno.seleccion];
+      // 1) Número del mensaje (heurística)  2) seleccion del turno (1-based)  3) "sí" → 1ª
+      const selMensaje = parseSeleccionOpcion(t);
+      const sel =
+        selMensaje ??
+        (turno.seleccion != null ? Number(turno.seleccion) : null);
+      const idx = indiceOpcion(sel, opciones.length);
+      let elegida = idx != null ? opciones[idx] : null;
+
+      if (!elegida && esConfirmacionCliente(t) && opciones.length) {
+        elegida = pending.propuesta?.elegida || opciones[0];
       }
+
       if (elegida) {
+        log?.info?.(
+          {
+            seleccion: sel,
+            idx,
+            hora: elegida.hora,
+            fecha: elegida.fecha,
+            total_opciones: opciones.length,
+          },
+          "Viajes: cliente eligió opción de propuesta",
+        );
         return finalizarAsignacion(pending, {
           telefonoCliente: phone,
           slot: elegida,
@@ -252,7 +270,8 @@ async function consultarYProponer(
         fuente: consulta.fuente,
         match_flexible: consulta.match_flexible,
       },
-      elegida: consulta.propuesta,
+      // Con varias opciones NO pre-elegir la 1: el cliente debe indicar el número.
+      elegida: opciones.length === 1 ? consulta.propuesta : null,
       opciones,
     },
     historial_push: `${new Date().toISOString()} · Propuesta DB ${consulta.propuesta.fecha} ${consulta.propuesta.hora} · ${consulta.fuente}`,
