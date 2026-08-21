@@ -1,14 +1,13 @@
 import {
   camposFaltantes,
   esConfirmacionChofer,
-  esConfirmacionCliente,
   esRechazoChofer,
-  indiceOpcion,
   mensajeConsultandoDisponibilidad,
-  parseSeleccionOpcion,
+  mensajePedirNumeroOpcion,
   redactarMensajeChofer,
   redactarPropuestaDisponibilidad,
   redactarReservaConfirmada,
+  resolverSlotPropuesta,
   turnoAgenteViajes,
 } from "../../../lib/viajes-agente.mjs";
 import {
@@ -103,33 +102,34 @@ export async function procesarMensajeViajeWhatsApp({
   // Confirmación / selección sobre propuesta activa
   if (fase === "propuesta") {
     const opciones = pending.propuesta?.opciones ?? [];
-    if (turno.accion === "reservar") {
-      // 1) Número del mensaje (heurística)  2) seleccion del turno (1-based)  3) "sí" → 1ª
-      const selMensaje = parseSeleccionOpcion(t);
-      const sel =
-        selMensaje ??
-        (turno.seleccion != null ? Number(turno.seleccion) : null);
-      const idx = indiceOpcion(sel, opciones.length);
-      let elegida = idx != null ? opciones[idx] : null;
+    if (turno.accion === "reservar" || turno.intent === "seleccion" || turno.intent === "confirmar") {
+      const resolved = resolverSlotPropuesta({
+        opciones,
+        seleccion: turno.seleccion,
+        texto: t,
+        elegidaPendiente: pending.propuesta?.elegida,
+      });
 
-      if (!elegida && esConfirmacionCliente(t) && opciones.length) {
-        elegida = pending.propuesta?.elegida || opciones[0];
+      if (resolved.motivo === "pedir_numero") {
+        const msg = mensajePedirNumeroOpcion(opciones);
+        await enviar(phone, msg, { nombre });
+        return { flow: "viajes_pedir_numero_opcion", mensaje: msg };
       }
 
-      if (elegida) {
+      if (resolved.slot) {
         log?.info?.(
           {
-            seleccion: sel,
-            idx,
-            hora: elegida.hora,
-            fecha: elegida.fecha,
+            seleccion: resolved.seleccion,
+            motivo: resolved.motivo,
+            hora: resolved.slot.hora,
+            fecha: resolved.slot.fecha,
             total_opciones: opciones.length,
           },
           "Viajes: cliente eligió opción de propuesta",
         );
         return finalizarAsignacion(pending, {
           telefonoCliente: phone,
-          slot: elegida,
+          slot: resolved.slot,
           nombre,
           log,
         });
