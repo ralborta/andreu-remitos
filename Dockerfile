@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-24 pop-heuristica-import
+# cache-bust 2026-08-24 pop-commander-v1
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
