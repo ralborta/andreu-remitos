@@ -368,7 +368,12 @@ export function EvidencePanel() {
       )}
 
       {foto && (
-        <RemitoImageLightbox src={foto.src} title={foto.title} onClose={() => setFoto(null)} />
+        <RemitoImageLightbox
+          src={foto.src}
+          alt={foto.title}
+          open={!!foto}
+          onClose={() => setFoto(null)}
+        />
       )}
     </div>
   );

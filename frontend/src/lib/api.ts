@@ -1089,6 +1089,11 @@ export interface TripEvidenceSummary {
   pod: EvidenceCaso | null;
   remitoQuantities?: Record<string, unknown> | null;
   remitoVsPop?: { diffs: Array<{ field: string; expected: number; reported: number; delta: number }>; hasDifference: boolean };
+  comparison?: {
+    diffs: Array<{ field: string; expected: number; reported: number; delta: number }>;
+    hasDifference: boolean;
+    summary?: string | null;
+  };
 }
 
 export function listEvidence(params?: {
