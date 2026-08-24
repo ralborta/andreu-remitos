@@ -105,8 +105,14 @@ function respuestaWebhook({ message = "", ...rest } = {}) {
   } catch {
     /* ignore shadow errors */
   }
-  if (webhookSilent) return { received: true, ...rest };
-  return { message, ...rest };
+  // Nunca devolver el texto del usuario al bot (evita eco por fallBack).
+  const { mensaje: _mensajeIn, ...safeRest } = rest;
+  const outbound =
+    (typeof message === "string" && message.trim()) ||
+    (typeof _mensajeIn === "string" && _mensajeIn.trim()) ||
+    "";
+  if (webhookSilent) return { received: true, ...safeRest };
+  return outbound ? { message: outbound, ...safeRest } : { ...safeRest };
 }
 
 /** Tras OCR: avisa al chofer por WhatsApp y guarda en /contactos. */
