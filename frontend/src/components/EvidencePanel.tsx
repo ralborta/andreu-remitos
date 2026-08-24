@@ -64,7 +64,7 @@ function EvidenceDetalleModal({
   busyId: string | null;
   onClose: () => void;
   onVerFoto: (url: string, title: string) => void;
-  onDecidir: (estado: "ok" | "rechazado" | "observado") => void;
+  onDecidir: (estado: "ok" | "rechazado") => void;
 }) {
   const imgs = caso.attachments?.length
     ? caso.attachments
