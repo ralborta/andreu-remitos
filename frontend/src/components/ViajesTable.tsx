@@ -27,6 +27,7 @@ import {
 } from "@/lib/api";
 import { TRIP_STATUS_COLOR, TRIP_STATUS_LABEL, type TripStatus } from "@/lib/data";
 import { Card, SectionTitle } from "./ui";
+import { TripEvidenceSection } from "./TripEvidenceSection";
 import { DataTable, type Column } from "./DataTable";
 
 const RC = {
@@ -544,6 +545,8 @@ function ViajeDetalleModal({
               )}
             </section>
           )}
+
+          <TripEvidenceSection tripId={viaje.id} />
 
           {error && (
             <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>

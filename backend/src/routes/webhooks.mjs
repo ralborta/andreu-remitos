@@ -45,7 +45,12 @@ import {
   mensajePodSoloChoferes,
   parecePod,
 } from "../services/pod-agent.mjs";
+import {
+  procesarPopWhatsApp,
+  parecePop,
+} from "../services/pop-agent.mjs";
 import * as podStore from "../db/pod-store.mjs";
+import * as evidenceStore from "../db/evidence-store.mjs";
 import { clasificarIntencionWhatsApp, pareceQuiereRemito } from "../../../lib/wa-intent-router.mjs";
 import { esContactoOculto } from "../../../lib/contactos-ocultos.mjs";
 import { procesarReclamoWhatsApp } from "../../../lib/reclamos-wa.mjs";
@@ -474,6 +479,35 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
     const msg = `Recibí tu gasto pero tuve un problema: ${err.message}. Probá de nuevo.`;
     if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     return { flow: "rendicion_error", error: err.message, message: msg };
+  }
+}
+
+async function tryProcesarPop(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
+  if (!ev.from) return null;
+  const t = String(texto ?? "").trim();
+  if (!forzar && !imageBuffer) {
+    const quiere = await parecePop(t, { log });
+    if (!quiere) return null;
+  }
+
+  try {
+    const out = await procesarPopWhatsApp({
+      telefono: ev.from,
+      texto: t,
+      nombre: ev.nombre,
+      imageBuffer,
+      mime,
+      imagenUrl: null,
+      log,
+      forzar: Boolean(forzar || imageBuffer),
+    });
+    if (!out) return null;
+    return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "pop webhook error");
+    const msg = `Recibí tu POP pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "pop_error", error: err.message, message: msg };
   }
 }
 
@@ -1330,6 +1364,36 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
+      // POP pendiente (foto / cantidades) — antes de POD
+      const pendingPopEarly = ev.from
+        ? evidenceStore.getEvidenceDialogByTelefono(ev.from, { type: "POP" })
+        : null;
+      if (pendingPopEarly && (texto || esFoto)) {
+        let imageBuffer = null;
+        let mime = null;
+        if (esFoto) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            if (!/audio/i.test(dl.mime || "")) {
+              imageBuffer = dl.buffer;
+              mime = dl.mime;
+            }
+          } catch (err) {
+            request.log.warn({ err: err.message }, "POP: no pude bajar foto");
+          }
+        }
+        const popPend = await tryProcesarPop(ev, {
+          texto,
+          log: request.log,
+          forzar: true,
+          imageBuffer,
+          mime,
+        });
+        if (popPend) {
+          return respuestaWebhook({ ...popPend, received: true });
+        }
+      }
+
       // POD pendiente (receptor / foto) — ANTES de destinos/rendición
       const pendingPodEarly = ev.from
         ? await podStore.getPodPendientePorTelefono(ev.from)
@@ -1383,6 +1447,36 @@ export default async function webhooksRoutes(fastify) {
         });
         if (incOut) {
           return respuestaWebhook({ ...incOut, received: true });
+        }
+      }
+
+      // POP (IA) — retiro en origen, antes de POD
+      if (ev.from && esChoferDb && !pendingPopEarly && !pendingPodEarly && (texto || esFoto)) {
+        const quierePop = texto ? await parecePop(texto, { log: request.log }) : esFoto;
+        if (quierePop) {
+          let imageBuffer = null;
+          let mime = null;
+          if (esFoto) {
+            try {
+              const dl = await downloadMedia(ev.media.url);
+              if (!/audio/i.test(dl.mime || "")) {
+                imageBuffer = dl.buffer;
+                mime = dl.mime;
+              }
+            } catch (err) {
+              request.log.warn({ err: err.message }, "POP: no pude bajar foto");
+            }
+          }
+          const popOut = await tryProcesarPop(ev, {
+            texto,
+            log: request.log,
+            forzar: true,
+            imageBuffer,
+            mime,
+          });
+          if (popOut) {
+            return respuestaWebhook({ ...popOut, received: true });
+          }
         }
       }
 

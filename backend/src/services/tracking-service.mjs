@@ -18,6 +18,8 @@ import { isInsideGeofence } from "../../../lib/tracking/geofence.mjs";
 import { validatePositionsBatch } from "../../../lib/tracking/validation.mjs";
 import { cambiarEstadoViaje } from "../db/viajes-store.mjs";
 import * as podStore from "../db/pod-store.mjs";
+import * as evidenceStore from "../db/evidence-store.mjs";
+import { syncMilestonesForTrip } from "./evidence-service.mjs";
 import * as incidenciasStore from "../db/incidencias-store.mjs";
 import { mapTrackingIncidentType } from "../../../lib/tracking/incidents.mjs";
 import { persistTrackingMedia } from "./tracking-media.mjs";
@@ -121,8 +123,25 @@ function mapPublicTrip(viaje, link, session, state) {
 }
 
 function refreshTripState({ tripId, tenantId, session, lastPosition }) {
-  const lastAt = lastPosition?.recorded_at || session?.last_position_at;
-  const accuracy = lastPosition?.accuracy ?? null;
+  // Heartbeat / stop / stale no deben borrar la última posición conocida:
+  // si no viene un fix nuevo, se conserva el last_position previo.
+  const prev = trackingStore.getTripTrackingState(tripId);
+  const resolvedPos = lastPosition
+    ? {
+        latitude: lastPosition.latitude,
+        longitude: lastPosition.longitude,
+        accuracy: lastPosition.accuracy,
+        recordedAt: lastPosition.recorded_at,
+      }
+    : prev?.last_position || null;
+  const lastAt =
+    lastPosition?.recorded_at ||
+    session?.last_position_at ||
+    prev?.last_position_at ||
+    resolvedPos?.recordedAt ||
+    null;
+  const accuracy =
+    lastPosition?.accuracy ?? resolvedPos?.accuracy ?? prev?.accuracy ?? null;
   const status = computeTrackingStatus({
     sessionStatus: session?.status,
     lastPositionAt: lastAt,
@@ -135,14 +154,7 @@ function refreshTripState({ tripId, tenantId, session, lastPosition }) {
     tenant_id: tenantId,
     session_id: session?.id || null,
     status,
-    last_position: lastPosition
-      ? {
-          latitude: lastPosition.latitude,
-          longitude: lastPosition.longitude,
-          accuracy: lastPosition.accuracy,
-          recordedAt: lastPosition.recorded_at,
-        }
-      : null,
+    last_position: resolvedPos,
     last_position_at: lastAt || null,
     position_age_seconds: positionAgeSeconds(lastAt),
     accuracy,
@@ -453,12 +465,20 @@ export async function startTracking(token, request, body = {}) {
   });
 
   if (viaje.estado === "asignado") {
-    try {
-      await cambiarEstadoViaje(viaje.id, "en_curso");
-    } catch {
-      /* no bloquear tracking si transición no aplica */
+    const { requiresPop } = await import("./evidence-service.mjs");
+    const popApproved = evidenceStore.getEvidenceByTrip(viaje.id, "POP");
+    const needPop = requiresPop(viaje.tenant);
+    const popOk = popApproved?.estado === "ok";
+    if (!needPop || popOk) {
+      try {
+        await cambiarEstadoViaje(viaje.id, "en_curso");
+      } catch {
+        /* no bloquear tracking si transición no aplica */
+      }
     }
   }
+
+  await syncMilestonesForTrip(link.trip_id);
 
   trackingStore.appendEventRecord({
     tenantId: link.tenant_id,
@@ -695,12 +715,23 @@ export async function submitPod(token, request, body = {}) {
       telefono: phone,
       chofer_nombre: viaje?.chofer || null,
       viaje_ref: viaje?.codigo || viaje?.id || link.trip_id,
+      trip_id: link.trip_id,
+      tenant_id: link.tenant_id || viaje?.tenant || null,
       destino: viaje?.destino || null,
       receptor_nombre: receiverName,
       imagen_url: imageUrl,
       nota_chofer: body.observations || null,
+      reported_quantities: body.quantities || null,
+      condition: body.condition || outcome,
+      source: "tracking_express",
       estado: "pendiente",
     });
+    if (imageUrl) {
+      evidenceStore.updateEvidence(podRow.id, {
+        attachment: { url: imageUrl, mimeType: "image/jpeg", kind: "photo" },
+      });
+    }
+    await syncMilestonesForTrip(link.trip_id);
   }
 
   const now = new Date().toISOString();
@@ -709,13 +740,7 @@ export async function submitPod(token, request, body = {}) {
     completed_at: now,
   });
 
-  if (viaje && viaje.estado === "en_curso") {
-    try {
-      await cambiarEstadoViaje(viaje.id, "entregado");
-    } catch {
-      /* no bloquear POD */
-    }
-  }
+  // Entrega del viaje se confirma al aprobar POD en mesa (decideEvidenceWithSideEffects).
 
   trackingStore.appendEventRecord({
     tenantId: link.tenant_id,

@@ -20,6 +20,10 @@ import { persistChatMedia } from "./chat-media.mjs";
 
 export { parecePod, mensajePodSoloChoferes };
 
+export async function resolverChoferFromPhone(telefono) {
+  return resolverChofer(telefono);
+}
+
 async function resolverChofer(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return null;

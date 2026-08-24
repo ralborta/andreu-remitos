@@ -180,7 +180,11 @@ export function TrackingDriverApp({ token }: { token: string }) {
         goStep("done");
       } else if (sessStatus === "ACTIVE" || sessStatus === "ARRIVED") {
         goStep(persisted === "pod" || persisted === "arrival" ? persisted : "active");
-      } else if (persisted && persisted !== "loading" && persisted !== "invalid") {
+      } else if (sessStatus === "AWAITING_PERMISSION") {
+        // Nunca restaurar "active"/POD si el servidor aún no recibió /start.
+        const allowed = new Set(["detail", "consent", "gps", "ready"]);
+        goStep(persisted && allowed.has(persisted) ? persisted : "gps");
+      } else if (persisted && ["detail", "consent", "gps", "ready"].includes(persisted)) {
         goStep(persisted);
       } else {
         goStep("detail");
@@ -478,7 +482,7 @@ export function TrackingDriverApp({ token }: { token: string }) {
         </TrackingCard>
         {error && <p className="mb-3 text-sm text-[var(--red)]">{error}</p>}
         <TrackingButton disabled={busy} onClick={() => void handleConsent()}>
-          Permitir ubicación
+          Acepto y continúo
         </TrackingButton>
       </TrackingShell>
     );

@@ -567,6 +567,16 @@ export function TrackingTowerPanel() {
             </div>
           </div>
 
+          {!selected.state?.last_position &&
+            ["NOT_STARTED", "AWAITING_PERMISSION"].includes(
+              live?.tracking?.status || selected.state?.status || "NOT_STARTED",
+            ) && (
+              <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-sm text-[var(--text-dim)]">
+                Sin posiciones en el mapa: el chofer aceptó consentimiento pero aún no tocó
+                «Iniciar seguimiento» (o el inicio no llegó al servidor).
+              </p>
+            )}
+
           {(selected.alerts.length > 0 || (live?.tracking?.status && buildAlerts(live.tracking as TrackingTripState, ageFromIso(live.tracking.last_position_at)).length > 0)) && (
             <div className="mt-4 rounded-xl border border-[var(--amber)]/30 bg-[var(--amber)]/10 px-3 py-2">
               <p className="text-xs font-semibold text-[var(--amber)]">Alertas</p>

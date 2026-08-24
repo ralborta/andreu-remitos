@@ -2,6 +2,7 @@
  * Bootstrap desk-chat capabilities (idempotente).
  */
 import { registerPodCapabilities } from "./capabilities/pod.mjs";
+import { registerEvidenceCapabilities } from "./capabilities/evidence.mjs";
 import { registerViajesCapabilities } from "./capabilities/viajes.mjs";
 import { registerIncidenciasCapabilities } from "./capabilities/incidencias.mjs";
 import { registerRendicionCapabilities } from "./capabilities/rendicion.mjs";
@@ -16,6 +17,7 @@ let booted = false;
 export function ensureDeskChatCapabilities() {
   if (booted && listCapabilities().some((c) => c.name.startsWith("pod."))) return;
   registerPodCapabilities();
+  registerEvidenceCapabilities();
   registerViajesCapabilities();
   registerIncidenciasCapabilities();
   registerRendicionCapabilities();

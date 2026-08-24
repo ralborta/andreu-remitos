@@ -1028,6 +1028,110 @@ export function decidirPod(
   });
 }
 
+// ─── Evidencias de Transporte (POP/POD) ─────────────────────────────────────
+
+export type EvidenceType = "POP" | "POD";
+
+export interface EvidenceAttachment {
+  id: string;
+  url: string;
+  mimeType?: string | null;
+  kind?: string;
+  createdAt?: string;
+}
+
+export interface EvidenceCaso {
+  id: string;
+  type: EvidenceType;
+  typeLabel: string;
+  codigo: string;
+  estado: string;
+  estadoLabel: string;
+  chofer: string;
+  telefono: string;
+  receptor: string;
+  responsable?: string;
+  imagenUrl: string | null;
+  attachments?: EvidenceAttachment[];
+  viaje: string;
+  tripId?: string | null;
+  origen?: string;
+  destino: string;
+  reportedQuantities?: Record<string, unknown> | null;
+  expectedQuantities?: Record<string, unknown> | null;
+  condition?: string | null;
+  observed?: boolean;
+  differenceNotes?: string | null;
+  notaChofer?: string | null;
+  textoOcr?: string | null;
+  notaBackoffice?: string | null;
+  historial?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ResumenEvidence {
+  total: number;
+  pendientes: number;
+  observados: number;
+  ok: number;
+  rechazados: number;
+  en_dialogo: number;
+}
+
+export interface TripEvidenceSummary {
+  tripId: string;
+  milestones: {
+    pop?: { status: string; evidence_id?: string; codigo?: string };
+    pod?: { status: string; evidence_id?: string; codigo?: string };
+  };
+  pop: EvidenceCaso | null;
+  pod: EvidenceCaso | null;
+  comparison: { diffs: Array<{ field: string; expected: number; reported: number; delta: number }>; hasDifference: boolean; summary?: string | null };
+  popVsPlan?: { diffs: unknown[]; hasDifference: boolean };
+}
+
+export function listEvidence(params?: {
+  limit?: number;
+  estado?: string;
+  telefono?: string;
+  type?: EvidenceType;
+  tripId?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.telefono) q.set("telefono", params.telefono);
+  if (params?.type) q.set("type", params.type);
+  if (params?.tripId) q.set("tripId", params.tripId);
+  const qs = q.toString();
+  return api<EvidenceCaso[]>(`/api/evidence${qs ? `?${qs}` : ""}`);
+}
+
+export function resumenEvidence(type?: EvidenceType) {
+  const q = type ? `?type=${type}` : "";
+  return api<ResumenEvidence>(`/api/evidence/resumen${q}`);
+}
+
+export function getTripEvidenceSummary(tripId: string) {
+  return api<TripEvidenceSummary>(`/api/evidence/trip/${encodeURIComponent(tripId)}`);
+}
+
+export function decidirEvidence(
+  id: string,
+  body: {
+    estado: "ok" | "rechazado" | "observado";
+    nota?: string;
+    aprobado_por?: string;
+    notificar?: boolean;
+  },
+) {
+  return api<EvidenceCaso>(`/api/evidence/${id}/decidir`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
 /** Chat web operador ↔ agente especialista (fase 1: pod). */
 export interface AgentChatTurnResponse {
   conversationId: string;

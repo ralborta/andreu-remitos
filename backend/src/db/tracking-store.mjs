@@ -438,7 +438,26 @@ export function listEventsByTrip(tripId, { limit = 500 } = {}) {
 
 export function getTripTrackingState(tripId) {
   const map = readTripStates();
-  return map[tripId] ?? null;
+  const st = map[tripId] ?? null;
+  if (!st) return null;
+  // Hidratar last_position desde el log si la proyección quedó vacía (p.ej. heartbeat previo).
+  if (!st.last_position) {
+    const last = listPositionsByTrip(tripId).at(-1);
+    if (last) {
+      return {
+        ...st,
+        last_position: {
+          latitude: last.latitude,
+          longitude: last.longitude,
+          accuracy: last.accuracy,
+          recordedAt: last.recorded_at,
+        },
+        accuracy: st.accuracy ?? last.accuracy ?? null,
+        last_position_at: st.last_position_at || last.recorded_at,
+      };
+    }
+  }
+  return st;
 }
 
 export function upsertTripTrackingState(tripId, patch) {
@@ -457,10 +476,12 @@ export function upsertTripTrackingState(tripId, patch) {
 
 export function listActiveTripStates({ tenantId } = {}) {
   const terminal = new Set(["COMPLETED", "CANCELLED", "NOT_STARTED"]);
-  return Object.values(readTripStates()).filter((s) => {
-    if (tenantId && s.tenant_id !== tenantId) return false;
-    return s.status && !terminal.has(s.status);
-  });
+  return Object.values(readTripStates())
+    .filter((s) => {
+      if (tenantId && s.tenant_id !== tenantId) return false;
+      return s.status && !terminal.has(s.status);
+    })
+    .map((s) => getTripTrackingState(s.trip_id) || s);
 }
 
 function readNotifications() {

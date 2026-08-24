@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { BookOpen, ListChecks, MessageSquareText, Shield } from "lucide-react";
-import { PodPanel } from "./PodPanel";
+import { EvidencePanel } from "./EvidencePanel";
 import { PodAgentChat, POD_CHAT_SUGGESTIONS } from "./PodAgentChat";
 import { ASSISTANT_CHAT_PANEL_HEIGHT } from "./ChatCentralPanel";
 import type { AgentChatHandle } from "./AgentChat";
@@ -109,13 +109,13 @@ function PodChatGuide({ onAsk }: { onAsk: (q: string) => void }) {
   );
 }
 
-/** Módulo POD: registros arriba; guía + chat lado a lado. */
+/** Módulo Evidencias de Transporte: POP/POD + chat. */
 export function PodModuleWithChat() {
   const chatRef = useRef<AgentChatHandle>(null);
 
   return (
     <div className="space-y-6">
-      <PodPanel />
+      <EvidencePanel />
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
         <div className="min-w-0 lg:col-span-3">
           <PodAgentChat ref={chatRef} hideSuggestions />

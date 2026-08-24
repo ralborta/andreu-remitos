@@ -111,7 +111,14 @@ const user = { id: "test", permissions: ["desk:read"] };
 
 // ——— Capabilities registradas ———
 const caps = listCapabilities({ agentId: "pod" }).map((c) => c.name).sort();
-assert.deepEqual(caps, ["pod.get", "pod.list", "pod.resumen"]);
+assert.deepEqual(caps, [
+  "evidence.list",
+  "evidence.resumen",
+  "evidence.trip",
+  "pod.get",
+  "pod.list",
+  "pod.resumen",
+]);
 
 // ========== 1. pregunta simple (resumen hoy) ==========
 {
