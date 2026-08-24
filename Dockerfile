@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 incidencias-seguimiento-5-10min
+# cache-bust 2026-08-24 pop-heuristica-import
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
