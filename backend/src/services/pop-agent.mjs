@@ -130,11 +130,12 @@ export async function procesarPopWhatsApp({
         const interp = t ? await interpretarTextoPop({ texto: t, estado: pending.estado, log }) : null;
         if (interp?.accion === "cancelar") {
           evidenceStore.updateEvidence(pending.id, { estado: "rechazado", historial_push: "Cancelado" });
-          const msg = interp.mensaje || "Listo, cancelé el POP.";
+          const msg = "Listo, cancelé el POP.";
           await enviar(phone, msg, { evidence_id: pending.id, nombre });
           return { flow: "pop_cancelado", mensaje: msg, message: msg };
         }
-        const msg = interp?.mensaje || mensajePedirFotoPop(viajeRef);
+        // No reenviar el texto del chofer (la IA a veces lo copia en "mensaje").
+        const msg = mensajePedirFotoPop(viajeRef);
         await enviar(phone, msg, { evidence_id: pending.id, nombre });
         return { flow: "pop_pedir_foto", mensaje: msg, message: msg, evidence: pending };
       }
