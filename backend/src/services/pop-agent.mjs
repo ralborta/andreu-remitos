@@ -8,6 +8,7 @@ import {
   mensajePopSoloChoferes,
   mensajeProcesandoPop,
   parecePop,
+  parecePopHeuristica,
 } from "../../../lib/pop-wa.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
