@@ -97,6 +97,23 @@ export async function postIncident(
   );
 }
 
+export async function postPop(
+  token: string,
+  body: {
+    imageUrl?: string;
+    quantities?: { pallets?: number; cajas?: number; bultos?: number };
+    condition?: string;
+    observations?: string;
+    photoRequired?: boolean;
+  },
+) {
+  return trackingFetch<{ ok: boolean; popId: string | null; popCodigo?: string | null; duplicate?: boolean }>(
+    token,
+    "/pop",
+    { method: "POST", body: JSON.stringify(body) },
+  );
+}
+
 export async function postPod(
   token: string,
   body: {

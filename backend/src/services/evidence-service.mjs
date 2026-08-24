@@ -3,6 +3,8 @@
  */
 import * as evidenceStore from "../db/evidence-store.mjs";
 import * as viajesStore from "../db/viajes-store.mjs";
+import * as incidenciasStore from "../db/incidencias-store.mjs";
+import * as fileStore from "../db/file-store.mjs";
 import {
   milestoneFromEvidence,
   normalizeQuantities,
@@ -83,6 +85,20 @@ export async function getTripEvidenceSummary(tripId) {
   const popVsPlan = pop
     ? compareQuantities(parsePlannedQuantities(viaje), pop.reported_quantities)
     : { diffs: [], hasDifference: false };
+  const remitoQty = await loadRemitoQuantities(viaje);
+  const remitoVsPop =
+    remitoQty && pop?.reported_quantities
+      ? compareQuantities(remitoQty, pop.reported_quantities)
+      : { diffs: [], hasDifference: false };
+
+  if (comparison.hasDifference && pop && pod) {
+    await createDifferenceIncidencia({
+      evidence: pod,
+      viaje,
+      diffSummary: comparison.summary || "diferencia POP vs POD",
+      compareKind: "pop_vs_pod",
+    }).catch(() => null);
+  }
 
   return {
     tripId,
@@ -95,7 +111,50 @@ export async function getTripEvidenceSummary(tripId) {
     pod,
     comparison,
     popVsPlan,
+    remitoQuantities: remitoQty,
+    remitoVsPop,
   };
+}
+
+async function loadRemitoQuantities(viaje) {
+  const ids = viaje?.remito_ids || [];
+  if (!ids.length) return null;
+  const q = {};
+  for (const id of ids.slice(0, 5)) {
+    try {
+      const r = await fileStore.getRemito(id);
+      if (!r) continue;
+      const text = JSON.stringify(r.datos || r);
+      const pal = text.match(/(\d+)\s*pallet/i);
+      const caj = text.match(/(\d+)\s*caja/i);
+      const bul = text.match(/(\d+)\s*bulto/i);
+      if (pal) q.pallets = (q.pallets || 0) + Number(pal[1]);
+      if (caj) q.cajas = (q.cajas || 0) + Number(caj[1]);
+      if (bul) q.bultos = (q.bultos || 0) + Number(bul[1]);
+    } catch {
+      /* skip */
+    }
+  }
+  return Object.keys(q).length ? q : null;
+}
+
+export async function createDifferenceIncidencia({ evidence, viaje, diffSummary, compareKind }) {
+  if (!evidence?.telefono || !diffSummary) return null;
+  const rows = await incidenciasStore.listIncidencias({ telefono: evidence.telefono, limit: 30 });
+  const tag = `evidence:${evidence.id}`;
+  if (rows.some((r) => (r.resumen || "").includes(tag))) return null;
+
+  return incidenciasStore.crearIncidencia({
+    telefono: evidence.telefono,
+    chofer_nombre: evidence.chofer_nombre,
+    origen: "agente",
+    estado: "nueva",
+    tipo: "anomalia",
+    criticidad: "media",
+    resumen: `${tag} · Diferencia ${evidence.type} (${compareKind}): ${diffSummary}`,
+    viaje_ref: viaje?.codigo || evidence.viaje_ref || evidence.trip_id,
+    imagen_url: evidence.imagen_url || null,
+  });
 }
 
 function parsePlannedQuantities(viaje) {
@@ -175,16 +234,27 @@ export function inferEvidenceTypeFromContext({ viaje, texto, hasImage }) {
   return "POD";
 }
 
-export async function markObservedIfDifference(evidenceId, { expected, reported, notes }) {
+export async function markObservedIfDifference(evidenceId, { expected, reported, notes, viaje }) {
   const cmp = compareQuantities(expected, reported);
   if (!cmp.hasDifference) return null;
-  const note = notes || cmp.diffs.map((d) => `${d.field}: ${d.expected}→${d.reported}`).join("; ");
-  return evidenceStore.updateEvidence(evidenceId, {
+  const note =
+    notes || cmp.diffs.map((d) => `${d.field}: ${d.expected}→${d.reported} (${d.delta})`).join("; ");
+  const prev = evidenceStore.getEvidence(evidenceId);
+  const updated = evidenceStore.updateEvidence(evidenceId, {
     estado: "observado",
     observed: true,
     difference_notes: note,
     historial_push: `Diferencia detectada: ${note}`,
   });
+  if (prev) {
+    await createDifferenceIncidencia({
+      evidence: updated,
+      viaje,
+      diffSummary: note,
+      compareKind: "planificado",
+    }).catch(() => null);
+  }
+  return updated;
 }
 
 export { requiresPop, requiresPod, getEvidenceConfig, normalizeQuantities };

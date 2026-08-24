@@ -19,7 +19,7 @@ import { validatePositionsBatch } from "../../../lib/tracking/validation.mjs";
 import { cambiarEstadoViaje } from "../db/viajes-store.mjs";
 import * as podStore from "../db/pod-store.mjs";
 import * as evidenceStore from "../db/evidence-store.mjs";
-import { syncMilestonesForTrip } from "./evidence-service.mjs";
+import { syncMilestonesForTrip, getEvidenceConfig } from "./evidence-service.mjs";
 import * as incidenciasStore from "../db/incidencias-store.mjs";
 import { mapTrackingIncidentType } from "../../../lib/tracking/incidents.mjs";
 import { persistTrackingMedia } from "./tracking-media.mjs";
@@ -72,6 +72,8 @@ function mapPublicTrip(viaje, link, session, state) {
   if (!viaje) return null;
   const status = state?.status || session?.status || "NOT_STARTED";
   const lastAt = state?.last_position_at || session?.last_position_at;
+  const milestones = evidenceStore.getTripMilestones(viaje.id);
+  const cfg = getEvidenceConfig(viaje.tenant);
   return {
     empresa: viaje.tenant || null,
     viaje: {
@@ -117,6 +119,12 @@ function mapPublicTrip(viaje, link, session, state) {
         }
       : null,
     consentVersion: trackingConsentVersion(),
+    evidence: {
+      requirePop: cfg.require_pop,
+      requirePod: cfg.require_pod,
+      popStatus: milestones.pop?.status || (cfg.require_pop ? "pending" : "not_required"),
+      podStatus: milestones.pod?.status || (cfg.require_pod ? "pending" : "not_required"),
+    },
     disclaimer:
       "El seguimiento funciona mientras esta pantalla permanece activa. No cierres el navegador durante el viaje.",
   };
@@ -680,6 +688,90 @@ export async function confirmArrival(token, request) {
     lastPosition: null,
   });
   return { ok: true, status: "ARRIVED" };
+}
+
+export async function submitPop(token, request, body = {}) {
+  const { link, viaje, session } = await resolveContext(token, request);
+  if (!session) {
+    throw Object.assign(new Error("Sesión no iniciada"), { statusCode: 400, code: "no_session" });
+  }
+
+  const imageUrl = body.imageUrl ? String(body.imageUrl).trim() : null;
+  if (!imageUrl && body.photoRequired !== false) {
+    throw Object.assign(new Error("Fotografía requerida"), { statusCode: 400, code: "photo_required" });
+  }
+
+  const phone = sanitizePhone(viaje?.telefono_chofer || link.driver_id || "");
+  if (!phone) {
+    throw Object.assign(new Error("Teléfono chofer requerido"), { statusCode: 400 });
+  }
+
+  const existing = evidenceStore.getEvidenceByTrip(link.trip_id, "POP");
+  if (existing && ["pendiente", "observado", "ok"].includes(existing.estado)) {
+    return { ok: true, duplicate: true, popId: existing.id, popCodigo: existing.codigo };
+  }
+
+  const { markObservedIfDifference } = await import("./evidence-service.mjs");
+  const expected = body.expectedQuantities || null;
+  const reported = body.quantities || body.reportedQuantities || null;
+
+  const popRow = evidenceStore.createEvidence({
+    telefono: phone,
+    type: "POP",
+    chofer_nombre: viaje?.chofer || null,
+    viaje_ref: viaje?.codigo || link.trip_id,
+    trip_id: link.trip_id,
+    tenant_id: link.tenant_id || viaje?.tenant || null,
+    origen: viaje?.origen || null,
+    destino: viaje?.destino || null,
+    imagen_url: imageUrl,
+    reported_quantities: reported,
+    expected_quantities: expected,
+    condition: body.condition || "ok",
+    nota_chofer: body.observations || null,
+    source: "tracking_express",
+    estado: "pendiente",
+  });
+
+  if (imageUrl) {
+    evidenceStore.updateEvidence(popRow.id, {
+      attachment: { url: imageUrl, mimeType: "image/jpeg", kind: "photo" },
+    });
+  }
+
+  const plan = expected || (viaje ? parsePlannedQuantitiesInline(viaje) : null);
+  if (plan && popRow.reported_quantities) {
+    await markObservedIfDifference(popRow.id, {
+      expected: plan,
+      reported: popRow.reported_quantities,
+      viaje,
+    }).catch(() => null);
+  }
+
+  trackingStore.appendEventRecord({
+    tenantId: link.tenant_id,
+    tripId: link.trip_id,
+    sessionId: session.id,
+    type: "POP_REQUESTED",
+    payload: { popId: popRow.id },
+  });
+
+  await syncMilestonesForTrip(link.trip_id);
+
+  return { ok: true, popId: popRow.id, popCodigo: popRow.codigo || null };
+}
+
+function parsePlannedQuantitiesInline(viaje) {
+  if (!viaje?.carga) return null;
+  const raw = String(viaje.carga);
+  const q = {};
+  const pal = raw.match(/(\d+)\s*pallet/i);
+  const caj = raw.match(/(\d+)\s*caja/i);
+  const bul = raw.match(/(\d+)\s*bulto/i);
+  if (pal) q.pallets = Number(pal[1]);
+  if (caj) q.cajas = Number(caj[1]);
+  if (bul) q.bultos = Number(bul[1]);
+  return Object.keys(q).length ? q : null;
 }
 
 export async function submitPod(token, request, body = {}) {

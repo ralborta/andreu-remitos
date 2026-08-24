@@ -363,7 +363,7 @@ export function EvidencePanel() {
           onVerFoto={(url, title) =>
             setFoto({ src: browsableMediaUrl(url) || url, title })
           }
-          onDecidir={decidir}
+          onDecidir={(estado) => void decidir(detalle, estado)}
         />
       )}
 

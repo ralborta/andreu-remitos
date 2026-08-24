@@ -53,6 +53,15 @@ export function TripEvidenceSection({ tripId }: { tripId: string }) {
         </li>
       </ul>
 
+      {data.remitoVsPop?.hasDifference && (
+        <p className="mt-2 rounded-lg border border-sky-200 bg-sky-50 px-2 py-1.5 text-xs text-sky-900">
+          Remito vs POP:{" "}
+          {data.remitoVsPop.diffs
+            ?.map((d: { delta: number; field: string }) => `${d.delta} ${d.field}`)
+            .join(", ")}
+        </p>
+      )}
+
       {data.comparison?.hasDifference && (
         <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
           ⚠ Diferencia POP vs POD: {data.comparison.summary}

@@ -1,0 +1,15 @@
+[mcp_servers.easypanel]
+command = "/Users/ralborta/Andreu/.cursor/run-easypanel-mcp.sh"
+
+[mcp_servers.easypanel.env]
+PATH = "/Users/ralborta/.nvm/versions/node/v20.19.2/bin:/usr/local/bin:/usr/bin:/bin"
+
+[mcp_servers.gcloud]
+command = "/Users/ralborta/.nvm/versions/node/v20.19.2/bin/npx"
+args = [
+    "-y",
+    "@google-cloud/gcloud-mcp",
+]
+
+[mcp_servers.gcloud.env]
+PATH = "/usr/local/bin:/usr/local/share/google-cloud-sdk/bin:/Users/ralborta/.nvm/versions/node/v20.19.2/bin:/usr/bin:/bin"

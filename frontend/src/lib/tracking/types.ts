@@ -13,6 +13,7 @@ export type TrackingStep =
   | "consent"
   | "gps"
   | "ready"
+  | "pop"
   | "active"
   | "incident"
   | "arrival"
@@ -48,6 +49,12 @@ export type PublicTripPayload = {
     distanceRemaining: number | null;
   } | null;
   consentVersion: string;
+  evidence?: {
+    requirePop: boolean;
+    requirePod: boolean;
+    popStatus: string;
+    podStatus: string;
+  };
   disclaimer: string;
 };
 

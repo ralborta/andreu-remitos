@@ -15,6 +15,7 @@ import {
   postHeartbeat,
   postIncident,
   postPod,
+  postPop,
   postPositionsBatch,
   postStart,
   postStop,
@@ -88,12 +89,23 @@ export function TrackingDriverApp({ token }: { token: string }) {
   const [podNotes, setPodNotes] = useState("");
   const [podPhoto, setPodPhoto] = useState<File | null>(null);
 
+  const [popPallets, setPopPallets] = useState("");
+  const [popCajas, setPopCajas] = useState("");
+  const [popPhoto, setPopPhoto] = useState<File | null>(null);
+  const [popSubmitted, setPopSubmitted] = useState(false);
+
   const engineRef = useRef<TrackingGeolocationEngine | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flushRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const sessionId = trip?.session?.id ?? "";
+
+  const popBlocking = Boolean(
+    trip?.evidence?.requirePop &&
+      !popSubmitted &&
+      !["received", "observed", "approved"].includes(trip?.evidence?.popStatus || ""),
+  );
 
   const goStep = useCallback(
     (s: TrackingStep) => {
@@ -287,6 +299,33 @@ export function TrackingDriverApp({ token }: { token: string }) {
       goStep("ready");
     } catch (e) {
       setGpsError(e instanceof Error ? e.message : "No se pudo obtener ubicación");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSubmitPop() {
+    setBusy(true);
+    setError(null);
+    try {
+      let imageUrl: string | undefined;
+      if (popPhoto) {
+        const blob = await compressImageFile(popPhoto);
+        const up = await uploadPhoto(token, blob, "pop.jpg");
+        imageUrl = up.url;
+      }
+      const quantities: { pallets?: number; cajas?: number } = {};
+      if (popPallets) quantities.pallets = Number(popPallets);
+      if (popCajas) quantities.cajas = Number(popCajas);
+      await postPop(token, {
+        imageUrl,
+        quantities: Object.keys(quantities).length ? quantities : undefined,
+        photoRequired: false,
+      });
+      setPopSubmitted(true);
+      await loadTrip();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al registrar POP");
     } finally {
       setBusy(false);
     }
@@ -528,8 +567,46 @@ export function TrackingDriverApp({ token }: { token: string }) {
     return (
       <TrackingShell title="Listo para salir" subtitle={trip.viaje.destino}>
         {error && <p className="mb-3 text-sm text-[var(--red)]">{error}</p>}
+        {popBlocking && (
+          <TrackingCard className="mb-4 space-y-3">
+            <p className="text-sm font-medium text-[var(--text)]">Registro de retiro (POP)</p>
+            <p className="text-xs text-[var(--text-dim)]">
+              Antes de salir, registrá la carga que retirás en origen.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-xs">
+                Pallets
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-2 py-2 text-sm"
+                  value={popPallets}
+                  onChange={(e) => setPopPallets(e.target.value)}
+                />
+              </label>
+              <label className="text-xs">
+                Cajas
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-2 py-2 text-sm"
+                  value={popCajas}
+                  onChange={(e) => setPopCajas(e.target.value)}
+                />
+              </label>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => setPopPhoto(e.target.files?.[0] || null)}
+              className="text-xs"
+            />
+            <TrackingButton disabled={busy} onClick={() => void handleSubmitPop()}>
+              Registrar retiro (POP)
+            </TrackingButton>
+          </TrackingCard>
+        )}
         <div className="space-y-2">
-          <TrackingButton disabled={busy} onClick={() => void handleStart()}>
+          <TrackingButton disabled={busy || popBlocking} onClick={() => void handleStart()}>
             Iniciar seguimiento
           </TrackingButton>
           <TrackingButton variant="secondary" onClick={() => window.open(mapsUrl, "_blank")}>

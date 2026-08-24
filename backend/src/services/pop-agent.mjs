@@ -113,6 +113,7 @@ export async function procesarPopWhatsApp({
       const obs = await markObservedIfDifference(updated.id, {
         expected,
         reported: updated.reported_quantities,
+        viaje,
       });
       if (obs) updated = obs;
     }
@@ -197,7 +198,7 @@ export async function procesarPopWhatsApp({
     });
     if (row.estado === "pendiente") {
       if (expected && row.reported_quantities) {
-        await markObservedIfDifference(row.id, { expected, reported: row.reported_quantities });
+        await markObservedIfDifference(row.id, { expected, reported: row.reported_quantities, viaje });
       }
       if (viaje?.id) await syncMilestonesForTrip(viaje.id);
       const msg = mensajeConfirmacionPop(row, lectura);

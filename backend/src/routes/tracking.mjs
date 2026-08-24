@@ -175,6 +175,14 @@ export default async function trackingRoutes(fastify) {
     }
   });
 
+  fastify.post("/public/:token/pop", async (request, reply) => {
+    try {
+      return await tracking.submitPop(request.params.token, request, request.body ?? {});
+    } catch (err) {
+      return mapError(reply, err);
+    }
+  });
+
   fastify.post("/public/:token/pod", async (request, reply) => {
     try {
       return await tracking.submitPod(request.params.token, request, request.body ?? {});
