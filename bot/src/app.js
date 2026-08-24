@@ -27,6 +27,8 @@ const andreuHandler = async (ctx, { provider, fallBack }) => {
 const andreuFlows = [
   EVENTS.WELCOME,
   EVENTS.MEDIA,
+  // WhatsApp manda PNG/PDF como "documento" si se adjunta archivo (no cámara).
+  EVENTS.DOCUMENT,
   EVENTS.VOICE_NOTE,
   EVENTS.LOCATION,
   EVENTS.ACTION,
