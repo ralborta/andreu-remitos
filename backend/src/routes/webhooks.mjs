@@ -47,7 +47,9 @@ import {
 } from "../services/pod-agent.mjs";
 import {
   procesarPopWhatsApp,
+  mensajePopSoloChoferes,
   parecePop,
+  parecePopHeuristica,
 } from "../services/pop-agent.mjs";
 import * as podStore from "../db/pod-store.mjs";
 import * as evidenceStore from "../db/evidence-store.mjs";
@@ -649,6 +651,21 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 
   if (intent.intent === "reclamo") {
     return tryProcesarReclamo(ev, { texto, log });
+  }
+
+  if (intent.intent === "pop") {
+    if (!esChoferOperativo) {
+      const msg = mensajePopSoloChoferes();
+      await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      return { flow: "pop_solo_choferes", message: msg };
+    }
+    const out = await tryProcesarPop(ev, { texto, log, forzar: true });
+    if (out) return out;
+    const msg =
+      `Perfecto, vamos con el *registro de retiro (POP)*.\n\n` +
+      `Mandame *fotos claras* de la carga / comprobante de retiro.`;
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "pop_fallback", message: msg };
   }
 
   if (intent.intent === "incidencia") {
@@ -1286,10 +1303,13 @@ export default async function webhooksRoutes(fastify) {
 
       // Reclamo pendiente + foto/texto: ANTES de rendición/remito
       // (foto de producto dañado / equivocado no debe caer a OCR de remito)
+      // EXCEPCIÓN: si el mensaje es claramente POP/POD, no dejar que un reclamo
+      // stale (recolectando) robe el flujo de evidencias.
       const pendingReclamoEarly = ev.from
         ? await reclamosStore.getReclamoPendientePorTelefono(ev.from)
         : null;
-      if (pendingReclamoEarly && (texto || esFoto)) {
+      const textoQuierePop = Boolean(texto) && parecePopHeuristica(texto);
+      if (pendingReclamoEarly && (texto || esFoto) && !textoQuierePop) {
         let imageBuffer = null;
         let mime = null;
         if (esFoto) {

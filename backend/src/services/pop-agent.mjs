@@ -21,7 +21,7 @@ import {
 import { resolverChoferFromPhone } from "./pod-agent.mjs";
 import { persistChatMedia } from "./chat-media.mjs";
 
-export { parecePop, mensajePopSoloChoferes };
+export { parecePop, parecePopHeuristica, mensajePopSoloChoferes };
 
 async function enviar(phone, mensaje, meta = {}) {
   const p = sanitizePhone(phone);
