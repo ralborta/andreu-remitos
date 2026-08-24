@@ -9,6 +9,8 @@ import { EtaPanel } from "./EtaPanel";
 import { PodModuleWithChat } from "./PodModuleWithChat";
 import { ModuleWithChat } from "./ModuleWithChat";
 import { ChatCentralPanel } from "./ChatCentralPanel";
+import { TrackingTowerPanel } from "./tracking/TrackingTowerPanel";
+import { ViajesTable } from "./ViajesTable";
 import { Card, SectionTitle } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
 import { ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
@@ -48,6 +50,22 @@ export function AgentData({ slug }: { slug: string }) {
       >
         <RemitosPanel />
       </ModuleWithChat>
+    );
+  }
+
+  if (slug === "tracking") {
+    return (
+      <div className="space-y-6">
+        <TrackingTowerPanel />
+        <Card>
+          <SectionTitle>Viajes · generar enlace</SectionTitle>
+          <p className="mb-4 text-sm text-[var(--text-dim)]">
+            Abrí un viaje asignado o en curso y usá <strong>Tracking Express</strong> para generar
+            el enlace (y enviarlo por WhatsApp al chofer).
+          </p>
+          <ViajesTable />
+        </Card>
+      </div>
     );
   }
 

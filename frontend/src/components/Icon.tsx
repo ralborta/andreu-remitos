@@ -9,6 +9,7 @@ import {
   MessageSquareWarning,
   ChartColumnBig,
   Radio,
+  Navigation,
   type LucideProps,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ const MAP = {
   MessageSquareWarning,
   ChartColumnBig,
   Radio,
+  Navigation,
 } as const;
 
 export type IconName = keyof typeof MAP;

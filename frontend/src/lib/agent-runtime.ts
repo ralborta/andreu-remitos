@@ -48,6 +48,8 @@ export type AgentRuntimeInputs = {
   destinosEnCurso?: number;
   viajesActivos?: number;
   viajesPendientes?: number;
+  trackingActivos?: number;
+  trackingStale?: number;
   rendicion?: Pick<ResumenRendicion, "pendientes"> | null;
   incidencias?: Pick<ResumenIncidencias, "abiertas" | "esperando_causa"> | null;
   eta?: Pick<ResumenEta, "enCola" | "esperandoChofer" | "demorasAbiertas"> | null;
@@ -107,6 +109,18 @@ export function resolveAgentRuntime(
           hold: "{n} viajes pendientes de asignación",
           activo: "{n} viajes en curso",
           idle: "Sin viajes activos",
+        }),
+      };
+    }
+    case "tracking": {
+      const stale = inputs.trackingStale ?? 0;
+      const activos = inputs.trackingActivos ?? 0;
+      return {
+        slug: agent.slug,
+        ...pick(stale, activos, {
+          hold: "{n} tracking stale / sin señal",
+          activo: "{n} viajes con tracking activo",
+          idle: "Sin tracking activo",
         }),
       };
     }

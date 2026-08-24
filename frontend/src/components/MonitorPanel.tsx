@@ -38,6 +38,7 @@ import {
   resumenPods,
   resumenReclamos,
   resumenRendicion,
+  getTrackingPilotMetrics,
 } from "@/lib/api";
 import { BRAND } from "@/lib/brand";
 import { useConfirm } from "@/lib/confirm-context";
@@ -199,6 +200,7 @@ export function MonitorPanel() {
         resumenEta(),
         resumenReclamos(),
         resumenPods(),
+        getTrackingPilotMetrics(),
       ]);
 
       const remitos = settled[0].status === "fulfilled" ? settled[0].value : [];
@@ -209,6 +211,7 @@ export function MonitorPanel() {
       const eta = settled[5].status === "fulfilled" ? settled[5].value : null;
       const reclamos = settled[6].status === "fulfilled" ? settled[6].value : null;
       const pods = settled[7].status === "fulfilled" ? settled[7].value : null;
+      const trackingMetrics = settled[8].status === "fulfilled" ? settled[8].value : null;
 
       const destinosEsperandoCliente = destinos.filter((d) => d.estado === "esperando_cliente").length;
       const destinosEnCurso = destinos.filter(
@@ -224,6 +227,8 @@ export function MonitorPanel() {
           destinosEnCurso,
           viajesActivos,
           viajesPendientes,
+          trackingActivos: trackingMetrics?.live?.activeTracking ?? 0,
+          trackingStale: trackingMetrics?.live?.stale ?? 0,
           rendicion,
           incidencias,
           eta,

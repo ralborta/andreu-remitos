@@ -1076,3 +1076,165 @@ export function getAgentChatTraces(conversationId: string) {
     traces: Array<Record<string, unknown>>;
   }>(`/api/agents/chat/${conversationId}/traces`);
 }
+
+// ─── SOL Tracking Express (torre / mesa) ─────────────────────────────────────
+
+export type TrackingTripState = {
+  trip_id: string;
+  tenant_id?: string | null;
+  session_id?: string | null;
+  status?: string | null;
+  last_position?: {
+    latitude: number;
+    longitude: number;
+    accuracy: number | null;
+    recordedAt: string;
+  } | null;
+  last_position_at?: string | null;
+  position_age_seconds?: number | null;
+  accuracy?: number | null;
+  source?: string | null;
+  current_eta?: string | null;
+  distance_remaining?: number | null;
+  updated_at?: string;
+};
+
+export type TrackingLiveResponse = {
+  tripId: string;
+  viaje: { codigo: string; estado: string; origen: string; destino: string };
+  tracking: TrackingTripState | null;
+  session: {
+    id: string;
+    status: string;
+    started_at: string | null;
+    last_position_at: string | null;
+    source: string;
+  } | null;
+};
+
+export type TrackingHistoryResponse = {
+  tripId: string;
+  positions: Array<{
+    id: string;
+    sequence: number;
+    latitude: number;
+    longitude: number;
+    accuracy: number | null;
+    recorded_at: string;
+    source: string;
+  }>;
+  events: Array<{
+    id: string;
+    type: string;
+    payload: Record<string, unknown>;
+    occurred_at: string;
+  }>;
+};
+
+export type TrackingLinkCreateResponse = {
+  link: {
+    id: string;
+    tripId: string;
+    tenantId: string;
+    expiresAt: string;
+    createdAt: string;
+  };
+  token: string;
+  trackingUrl: string;
+};
+
+export function getClientConfig() {
+  return api<{
+    googleMapsApiKey: string | null;
+    googleMapsEnabled: boolean;
+    trackingExpressEnabled: boolean;
+    trackingPilot?: {
+      enabled: boolean;
+      whatsapp: boolean;
+      tenants_mode: string;
+      tenants_size: number | null;
+      phones_mode: string;
+      phones_size: number | null;
+      gated: boolean;
+      pilot: boolean;
+    };
+  }>("/api/config/client");
+}
+
+export function getTrackingPilotMetrics() {
+  return api<{
+    collectedAt: string;
+    gate: Record<string, unknown>;
+    totals: Record<string, number>;
+    last24h: Record<string, number>;
+    live: Record<string, number>;
+  }>("/api/tracking/pilot/metrics");
+}
+
+export function getTrackingPilotGate() {
+  return api<{
+    enabled: boolean;
+    whatsapp: boolean;
+    tenants_mode: string;
+    tenants_size: number | null;
+    phones_mode: string;
+    phones_size: number | null;
+    gated: boolean;
+    pilot: boolean;
+  }>("/api/tracking/pilot/gate");
+}
+
+export function createTrackingLink(tripId: string, opts?: { sendWhatsApp?: boolean }) {
+  return api<TrackingLinkCreateResponse & { whatsapp?: { ok: boolean; error?: string } | null }>(
+    "/api/tracking/links",
+    {
+      method: "POST",
+      body: JSON.stringify({ tripId, sendWhatsApp: Boolean(opts?.sendWhatsApp) }),
+    },
+  );
+}
+
+export function sendTrackingLinkWhatsApp(
+  linkId: string,
+  opts?: { kind?: string; force?: boolean },
+) {
+  return api<{ ok: boolean; kind?: string; skipped?: boolean; reason?: string }>(
+    `/api/tracking/links/${linkId}/send`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        kind: opts?.kind || "assigned",
+        force: opts?.force !== false,
+      }),
+    },
+  );
+}
+
+export function revokeTrackingLink(linkId: string) {
+  return api<{ ok: boolean; link: { id: string; revokedAt: string } }>(
+    `/api/tracking/links/${linkId}/revoke`,
+    { method: "POST" },
+  );
+}
+
+export function listActiveTrackingTrips(tenant?: string) {
+  const q = tenant ? `?tenant=${encodeURIComponent(tenant)}` : "";
+  return api<{ trips: TrackingTripState[] }>(`/api/tracking/trips/active${q}`);
+}
+
+export function getTrackingTripLive(tripId: string) {
+  return api<TrackingLiveResponse>(`/api/tracking/trips/${encodeURIComponent(tripId)}/live`);
+}
+
+export function getTrackingTripHistory(tripId: string) {
+  return api<TrackingHistoryResponse>(
+    `/api/tracking/trips/${encodeURIComponent(tripId)}/history`,
+  );
+}
+
+export function getTrackingMeta() {
+  return api<{ enabled: boolean; module: string; version: string; note: string }>(
+    "/api/tracking/meta",
+  );
+}
+

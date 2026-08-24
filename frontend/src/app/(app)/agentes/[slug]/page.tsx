@@ -47,6 +47,7 @@ export default async function AgentPage({
       {slug === "remitos" ||
       slug === "destinos" ||
       slug === "viajes" ||
+      slug === "tracking" ||
       slug === "rendicion" ||
       slug === "reclamos" ||
       slug === "incidencias" ||

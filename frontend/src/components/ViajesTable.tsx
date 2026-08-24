@@ -5,6 +5,8 @@ import {
   Calendar,
   Check,
   Clock,
+  Copy,
+  Link2,
   MapPin,
   MessageCircle,
   Package,
@@ -16,7 +18,10 @@ import {
 } from "lucide-react";
 import {
   cambiarEstadoViaje,
+  createTrackingLink,
+  getClientConfig,
   listViajes,
+  sendTrackingLinkWhatsApp,
   type Viaje,
   type ViajeEstado,
 } from "@/lib/api";
@@ -153,10 +158,21 @@ function ViajeDetalleModal({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [trackingEnabled, setTrackingEnabled] = useState(false);
+  const [trackingUrl, setTrackingUrl] = useState<string | null>(null);
+  const [trackingLinkId, setTrackingLinkId] = useState<string | null>(null);
+  const [trackingMsg, setTrackingMsg] = useState<string | null>(null);
   const tripTone = mapEstadoViaje(viaje.estado);
   const estadoStyle = estadoBadgeStyle(viaje.estado);
   const historial = (viaje.historial || []).slice(-10);
   const unidad = [viaje.tipoUnidad, viaje.tractor, viaje.semi].filter(Boolean).join(" · ") || "—";
+  const canTrack = ["asignado", "en_curso", "confirmado"].includes(viaje.estado);
+
+  useEffect(() => {
+    void getClientConfig()
+      .then((c) => setTrackingEnabled(Boolean(c.trackingExpressEnabled)))
+      .catch(() => setTrackingEnabled(false));
+  }, []);
 
   async function cambiar(estado: ViajeEstado) {
     setBusy(true);
@@ -168,6 +184,57 @@ function ViajeDetalleModal({
       setError(err instanceof Error ? err.message : "No pude actualizar el estado");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function generarTracking(sendWa: boolean) {
+    setBusy(true);
+    setTrackingMsg(null);
+    setError(null);
+    try {
+      const res = await createTrackingLink(viaje.id, { sendWhatsApp: sendWa });
+      setTrackingUrl(res.trackingUrl);
+      setTrackingLinkId(res.link.id);
+      if (sendWa) {
+        if (res.whatsapp?.ok) {
+          setTrackingMsg("Enlace generado y enviado por WhatsApp al chofer.");
+        } else {
+          setTrackingMsg(
+            `Enlace generado. WhatsApp: ${res.whatsapp?.error || "no enviado (revisá teléfono / bot)"}.`,
+          );
+        }
+      } else {
+        setTrackingMsg("Enlace generado. Copialo o envialo por WhatsApp.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pude crear el enlace");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function reenviarWa() {
+    if (!trackingLinkId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await sendTrackingLinkWhatsApp(trackingLinkId, { kind: "assigned", force: true });
+      if (r.ok) setTrackingMsg("WhatsApp reenviado al chofer.");
+      else setTrackingMsg(`No enviado: ${r.reason || "desconocido"}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Fallo al enviar WhatsApp");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copiarUrl() {
+    if (!trackingUrl) return;
+    try {
+      await navigator.clipboard.writeText(trackingUrl);
+      setTrackingMsg("URL copiada al portapapeles");
+    } catch {
+      setTrackingMsg(trackingUrl);
     }
   }
 
@@ -386,6 +453,97 @@ function ViajeDetalleModal({
               </div>
             </div>
           </section>
+
+          {trackingEnabled && canTrack && (
+            <section
+              className="mb-4 rounded-2xl border p-4"
+              style={{ borderColor: RC.border, background: "#faf5ff" }}
+            >
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold" style={{ color: RC.title }}>
+                <Link2 size={16} style={{ color: RC.purple }} />
+                Tracking Express
+              </div>
+              <p className="mb-3 text-xs" style={{ color: RC.muted }}>
+                Generá un enlace seguro para que el chofer abra la webapp desde WhatsApp.
+              </p>
+              {!trackingUrl ? (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void generarTracking(false)}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                    style={{ background: RC.purple }}
+                  >
+                    <Link2 size={15} />
+                    Generar enlace
+                  </button>
+                  {viaje.telefonoChofer && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void generarTracking(true)}
+                      className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                      style={{ background: RC.wa }}
+                    >
+                      <MessageCircle size={15} />
+                      Generar y enviar WA
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="break-all rounded-lg bg-white px-3 py-2 text-xs" style={{ color: RC.body }}>
+                    {trackingUrl}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void copiarUrl()}
+                      className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold"
+                      style={{ borderColor: RC.border, color: RC.purpleText }}
+                    >
+                      <Copy size={13} />
+                      Copiar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void reenviarWa()}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                      style={{ background: RC.wa }}
+                    >
+                      <MessageCircle size={13} />
+                      Enviar por bot WA
+                    </button>
+                    {viaje.telefonoChofer && (
+                      <a
+                        href={`https://wa.me/${String(viaje.telefonoChofer).replace(/\D/g, "")}?text=${encodeURIComponent(
+                          `Hola${viaje.chofer ? `, ${viaje.chofer}` : ""}. Tenés asignado el viaje ${viaje.codigo}.\n\nOrigen: ${viaje.origen}\nDestino: ${viaje.destino}\nUnidad: ${[viaje.tractor, viaje.semi].filter(Boolean).join(" / ") || "—"}\n\nAbrí el siguiente enlace para iniciar el seguimiento:\n${trackingUrl}`,
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold"
+                        style={{ borderColor: RC.wa, color: RC.wa }}
+                      >
+                        wa.me (manual)
+                      </a>
+                    )}
+                  </div>
+                  {trackingLinkId && (
+                    <p className="text-[10px]" style={{ color: RC.label }}>
+                      Link id: {trackingLinkId}
+                    </p>
+                  )}
+                </div>
+              )}
+              {trackingMsg && (
+                <p className="mt-2 text-xs" style={{ color: RC.purpleText }}>
+                  {trackingMsg}
+                </p>
+              )}
+            </section>
+          )}
 
           {error && (
             <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>

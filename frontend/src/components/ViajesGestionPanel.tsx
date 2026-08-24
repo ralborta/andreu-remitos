@@ -35,6 +35,7 @@ import {
 import { useConfirm } from "@/lib/confirm-context";
 import { Card, KpiCard } from "./ui";
 import { ViajesTable } from "./ViajesTable";
+import { TrackingTowerPanel } from "./tracking/TrackingTowerPanel";
 
 const DIAS = [
   { id: 0, label: "D" },
@@ -152,7 +153,7 @@ function waLink(telefono: string) {
 
 export function ViajesGestionPanel() {
   const confirm = useConfirm();
-  const [tab, setTab] = useState<"viajes" | "choferes" | "camiones">("viajes");
+  const [tab, setTab] = useState<"viajes" | "tracking" | "choferes" | "camiones">("viajes");
   const [choferes, setChoferes] = useState<ViajesChoferFlota[]>([]);
   const [camiones, setCamiones] = useState<ViajesCamionFlota[]>([]);
   const [viajes, setViajes] = useState<Viaje[]>([]);
@@ -392,6 +393,7 @@ export function ViajesGestionPanel() {
         {(
           [
             ["viajes", "Viajes"],
+            ["tracking", "Tracking Express"],
             ["choferes", "Choferes"],
             ["camiones", "Camiones"],
           ] as const
@@ -413,7 +415,7 @@ export function ViajesGestionPanel() {
         ))}
       </div>
 
-      {tab !== "viajes" && (
+      {tab !== "viajes" && tab !== "tracking" && (
         <>
           {/* Filtros */}
           <Card className="!p-4">
@@ -526,6 +528,8 @@ export function ViajesGestionPanel() {
 
       {tab === "viajes" ? (
         <ViajesTable />
+      ) : tab === "tracking" ? (
+        <TrackingTowerPanel />
       ) : (
         <Card className="!p-0 overflow-hidden">
           <div className="overflow-x-auto">
