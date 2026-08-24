@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-24 pop-no-echo
+# cache-bust 2026-08-24 webhook-strip-mensaje
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
