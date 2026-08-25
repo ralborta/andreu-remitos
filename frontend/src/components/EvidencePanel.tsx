@@ -91,16 +91,16 @@ function EvidenceDetalleModal({
               <span className="text-sm font-normal text-[var(--text-dim)]">({caso.typeLabel})</span>
             </h3>
             <div className="mt-1.5 flex flex-wrap gap-2">
-              <Pill color={caso.type === "POP" ? "#0ea5e9" : "#7c3aed"}>{caso.type}</Pill>
+              <Pill color={caso.type === "POP" ? "#0284c7" : "#7c3aed"}>{caso.type}</Pill>
               <Pill
                 color={
                   caso.estado === "ok"
-                    ? "#22c55e"
+                    ? "#16a34a"
                     : caso.estado === "rechazado"
-                      ? "#ef4444"
+                      ? "#dc2626"
                       : caso.estado === "observado"
-                        ? "#f59e0b"
-                        : "#f59e0b"
+                        ? "#d97706"
+                        : "#ca8a04"
                 }
               >
                 {caso.estadoLabel}
@@ -273,8 +273,14 @@ export function EvidencePanel() {
                 type="button"
                 onClick={() => setTipo(t)}
                 className={clsx(
-                  "rounded-lg px-3 py-1.5 text-xs",
-                  tipo === t ? "bg-sky-600 text-white" : "bg-white/5 text-[var(--text-dim)]",
+                  "rounded-lg px-3 py-1.5 text-xs font-medium",
+                  tipo === t
+                    ? t === "POP"
+                      ? "bg-sky-500/15 text-[var(--text)] ring-1 ring-inset ring-sky-500/25"
+                      : t === "POD"
+                        ? "bg-violet-500/15 text-[var(--text)] ring-1 ring-inset ring-violet-500/25"
+                        : "bg-[var(--violet)]/15 text-[var(--text)] ring-1 ring-inset ring-[var(--violet)]/25"
+                    : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
                 )}
               >
                 {t === "todos" ? "Todos" : t}
@@ -294,8 +300,10 @@ export function EvidencePanel() {
                 type="button"
                 onClick={() => setFiltro(id)}
                 className={clsx(
-                  "rounded-lg px-3 py-1.5 text-xs",
-                  filtro === id ? "bg-[var(--violet)] text-white" : "bg-white/5 text-[var(--text-dim)]",
+                  "rounded-lg px-3 py-1.5 text-xs font-medium",
+                  filtro === id
+                    ? "bg-[var(--violet)]/15 text-[var(--text)] ring-1 ring-inset ring-[var(--violet)]/25"
+                    : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
                 )}
               >
                 {label}
@@ -331,7 +339,7 @@ export function EvidencePanel() {
                 >
                   <td className="py-2.5 pr-3 font-medium text-white">{r.codigo}</td>
                   <td className="py-2.5 pr-3">
-                    <Pill color={r.type === "POP" ? "#0ea5e9" : "#7c3aed"}>{r.type}</Pill>
+                    <Pill color={r.type === "POP" ? "#0284c7" : "#7c3aed"}>{r.type}</Pill>
                   </td>
                   <td className="py-2.5 pr-3">{r.estadoLabel}</td>
                   <td className="py-2.5 pr-3">{r.viaje}</td>
