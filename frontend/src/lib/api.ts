@@ -1250,6 +1250,8 @@ export type TrackingLinkCreateResponse = {
   };
   token: string;
   trackingUrl: string;
+  /** true si se reutilizó un enlace activo (sin crear otro) */
+  reused?: boolean;
 };
 
 export function getClientConfig() {

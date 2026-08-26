@@ -198,14 +198,22 @@ function ViajeDetalleModal({
       setTrackingLinkId(res.link.id);
       if (sendWa) {
         if (res.whatsapp?.ok) {
-          setTrackingMsg("Enlace generado y enviado por WhatsApp al chofer.");
+          setTrackingMsg(
+            res.reused
+              ? "Enlace activo reenviado por WhatsApp al chofer."
+              : "Enlace generado y enviado por WhatsApp al chofer.",
+          );
         } else {
           setTrackingMsg(
-            `Enlace generado. WhatsApp: ${res.whatsapp?.error || "no enviado (revisá teléfono / bot)"}.`,
+            `Enlace ${res.reused ? "activo" : "generado"}. WhatsApp: ${res.whatsapp?.error || "no enviado (revisá teléfono / bot)"}.`,
           );
         }
       } else {
-        setTrackingMsg("Enlace generado. Copialo o envialo por WhatsApp.");
+        setTrackingMsg(
+          res.reused
+            ? "Enlace activo listo. Copialo o envialo por WhatsApp."
+            : "Enlace generado. Copialo o envialo por WhatsApp.",
+        );
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pude crear el enlace");

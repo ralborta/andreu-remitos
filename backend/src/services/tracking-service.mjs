@@ -3,7 +3,7 @@
  */
 import * as trackingStore from "../db/tracking-store.mjs";
 import * as viajesStore from "../db/viajes-store.mjs";
-import { generateTrackingToken, buildTrackingPublicUrl } from "../../../lib/tracking/tokens.mjs";
+import { generateTrackingToken, buildTrackingPublicUrl, openTrackingToken } from "../../../lib/tracking/tokens.mjs";
 import {
   isTrackingExpressEnabled,
   trackingConsentVersion,
@@ -227,10 +227,40 @@ export async function createTrackingLink({ tripId, createdBy, expiresAt, sendWha
 
   const existing = trackingStore.listLinksByTrip(viaje.id).find((l) => !l.revoked_at);
   if (existing && new Date(existing.expires_at).getTime() > Date.now()) {
-    throw Object.assign(
-      new Error("Ya existe un enlace activo para este viaje. Revocalo antes de crear otro."),
-      { statusCode: 409, existingLinkId: existing.id },
-    );
+    // Reusar enlace activo (no 409): permite reenviar WA / copiar URL sin revocar.
+    const plainToken = openTrackingToken(existing.token_sealed);
+    if (!plainToken) {
+      throw Object.assign(new Error("No se pudo recuperar el enlace activo"), {
+        statusCode: 500,
+        existingLinkId: existing.id,
+      });
+    }
+    const result = {
+      link: {
+        id: existing.id,
+        tripId: existing.trip_id,
+        tenantId: existing.tenant_id,
+        expiresAt: existing.expires_at,
+        createdAt: existing.created_at,
+      },
+      token: plainToken,
+      trackingUrl: buildTrackingPublicUrl(plainToken),
+      reused: true,
+      whatsapp: null,
+    };
+    if (sendWhatsApp && isTrackingWhatsAppEnabled()) {
+      try {
+        const { sendTrackingWhatsApp } = await import("./tracking-wa.mjs");
+        result.whatsapp = await sendTrackingWhatsApp({
+          linkId: existing.id,
+          kind: "assigned",
+          force: true,
+        });
+      } catch (err) {
+        result.whatsapp = { ok: false, error: err.message };
+      }
+    }
+    return result;
   }
 
   const plainToken = generateTrackingToken();
@@ -264,6 +294,7 @@ export async function createTrackingLink({ tripId, createdBy, expiresAt, sendWha
     },
     token: plainToken,
     trackingUrl,
+    reused: false,
     whatsapp: null,
   };
 
