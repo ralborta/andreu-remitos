@@ -20,7 +20,19 @@ export type DemoRoom = {
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "rooms.json");
-export const PUBLIC_DEMO_TOKEN = process.env.DEMO_PUBLIC_TOKEN || "sol-public";
+export const PUBLIC_DEMO_TOKEN = process.env.DEMO_PUBLIC_TOKEN || "public";
+
+const RESERVED = new Set([
+  "admin",
+  "api",
+  "demo",
+  "r",
+  "public",
+  "sol-public",
+  "stitch-screens",
+  "_next",
+  "favicon.ico",
+]);
 
 function ensure() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -115,16 +127,11 @@ export function createRoom(input: {
   const expires = input.public
     ? new Date("2099-12-31T23:59:59.000Z")
     : new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-  const rand = crypto.randomBytes(3).toString("hex");
   const base = slugify(input.company) || "cliente";
-  let token = input.public ? PUBLIC_DEMO_TOKEN : `${base}-${rand}`;
   const rows = readAll();
-  if (!input.public) {
-    while (rows.some((r) => r.token === token)) {
-      token = `${base}-${crypto.randomBytes(3).toString("hex")}`;
-    }
-  } else {
-    const idx = rows.findIndex((r) => r.token === PUBLIC_DEMO_TOKEN || r.public);
+
+  if (input.public) {
+    const idx = rows.findIndex((r) => r.token === PUBLIC_DEMO_TOKEN);
     if (idx >= 0) {
       rows[idx] = {
         ...rows[idx],
@@ -137,6 +144,22 @@ export function createRoom(input: {
       return rows[idx];
     }
   }
+
+  // Link legible: /demo/{nombre-cliente} (solo sufijo si hay colisión)
+  let token = input.public ? PUBLIC_DEMO_TOKEN : base;
+  if (!input.public) {
+    if (RESERVED.has(token)) token = `${base}-demo`;
+    let n = 2;
+    while (rows.some((r) => r.token === token) || RESERVED.has(token)) {
+      token = `${base}-${n}`;
+      n += 1;
+      if (n > 50) {
+        token = `${base}-${crypto.randomBytes(2).toString("hex")}`;
+        break;
+      }
+    }
+  }
+
   const room: DemoRoom = {
     token,
     company: input.company.trim(),

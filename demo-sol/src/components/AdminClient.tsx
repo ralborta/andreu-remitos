@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { DemoRoom } from "../lib/rooms";
+import { withBase } from "../lib/base-path";
 
 type Props = { initiallyAuthed: boolean; initialRooms: DemoRoom[]; publicBase: string };
 
@@ -25,12 +26,12 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
 
   useEffect(() => {
     if (!publicBase && typeof window !== "undefined") {
-      setBase(window.location.origin);
+      setBase(`${window.location.origin}/demo`);
     }
   }, [publicBase]);
 
   async function refresh() {
-    const res = await fetch("/api/admin/rooms");
+    const res = await fetch(withBase("/api/admin/rooms"));
     if (!res.ok) return;
     const data = await res.json();
     setRooms(data.rooms || []);
@@ -40,7 +41,7 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const res = await fetch("/api/admin/login", {
+    const res = await fetch(withBase("/api/admin/login"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
@@ -58,7 +59,7 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const res = await fetch("/api/admin/rooms", {
+    const res = await fetch(withBase("/api/admin/rooms"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -69,14 +70,15 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
       setError(data.error || "No se pudo crear");
       return;
     }
-    const link = `${base || window.location.origin}/r/${data.room.token}`;
+    const root = (base || `${window.location.origin}/demo`).replace(/\/$/, "");
+    const link = `${root}/${data.room.token}`;
     setLastLink(link);
     setForm((f) => ({ ...f, company: "", contactName: "", contactEmail: "", contactPhone: "" }));
     await refresh();
   }
 
   async function extend(token: string) {
-    await fetch("/api/admin/rooms", {
+    await fetch(withBase("/api/admin/rooms"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "extend", token, days: 3 }),
@@ -86,7 +88,7 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
 
   async function remove(token: string) {
     if (!confirm("¿Eliminar esta demo room?")) return;
-    await fetch("/api/admin/rooms", {
+    await fetch(withBase("/api/admin/rooms"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "delete", token }),
@@ -140,7 +142,9 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
         </div>
         <button
           type="button"
-          onClick={() => fetch("/api/admin/logout", { method: "POST" }).then(() => setAuthed(false))}
+          onClick={() =>
+            fetch(withBase("/api/admin/logout"), { method: "POST" }).then(() => setAuthed(false))
+          }
           className="text-sm text-[var(--text-dim)] hover:text-[var(--text)]"
         >
           Salir
@@ -152,18 +156,18 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           Link público permanente (sin login)
         </div>
         <p className="mt-1 break-all text-sm font-medium">
-          {(base || "").replace(/\/$/, "")}/demo
+          {(base || "https://empliados.net/demo").replace(/\/$/, "")}/{"{cliente}"}
         </p>
         <p className="mt-1 text-xs text-[var(--text-dim)]">
-          También: {(base || "").replace(/\/$/, "")}/r/sol-public — compartible con cualquier prospecto.
+          Ejemplos: …/demo/transportes-acme · …/demo/public
         </p>
         <button
           type="button"
           className="mt-2 rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm"
           onClick={() => {
-            const link = `${(base || window.location.origin).replace(/\/$/, "")}/demo`;
-            navigator.clipboard.writeText(link);
-            setLastLink(link);
+            const link = (base || `${window.location.origin}/demo`).replace(/\/$/, "");
+            navigator.clipboard.writeText(`${link}/public`);
+            setLastLink(`${link}/public`);
           }}
         >
           Copiar link público
@@ -267,7 +271,7 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           <p className="text-sm text-[var(--text-dim)]">Todavía no hay demos.</p>
         )}
         {rooms.map((r) => {
-          const link = `${base || ""}/r/${r.token}`;
+          const link = `${(base || "").replace(/\/$/, "")}/${r.token}`;
           const expired = new Date(r.expiresAt).getTime() <= Date.now();
           return (
             <div

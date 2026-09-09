@@ -58,14 +58,14 @@
   };
 
   function currentSlug() {
-    var m = location.pathname.match(/\/stitch-screens\/([^/.]+)/);
+    var m = location.pathname.match(/\/(?:demo\/)?stitch-screens\/([^/.]+)/);
     return m ? m[1] : "menu";
   }
 
   function go(slug) {
     if (!slug) return;
     var q = location.search || "";
-    var next = "/stitch-screens/" + slug + ".html" + q;
+    var next = "/demo/stitch-screens/" + slug + ".html" + q;
     if (window.parent && window.parent !== window) {
       try {
         window.parent.postMessage({ type: "sol-demo-nav", slug: slug }, "*");

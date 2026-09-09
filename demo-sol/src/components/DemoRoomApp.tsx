@@ -42,7 +42,8 @@ export function DemoRoomApp({ room }: { room: DemoRoom }) {
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
-  const src = `/stitch-screens/${slug}.html?company=${encodeURIComponent(room.company)}`;
+  const src = `/demo/stitch-screens/${slug}.html?company=${encodeURIComponent(room.company)}`;
+
 
   return (
     <div className="flex h-screen flex-col bg-[#0b1c30] text-white">

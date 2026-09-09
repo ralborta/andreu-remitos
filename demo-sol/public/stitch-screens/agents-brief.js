@@ -3,7 +3,7 @@
  */
 (function () {
   function slug() {
-    var m = location.pathname.match(/\/stitch-screens\/([^/.]+)/);
+    var m = location.pathname.match(/\/(?:demo\/)?stitch-screens\/([^/.]+)/);
     return m ? m[1] : "menu";
   }
 

@@ -55,7 +55,7 @@
       "sol-screen-thumb block h-44 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]";
     img.alt = title;
     img.loading = "lazy";
-    img.src = "/stitch-screens/" + slug + ".png";
+    img.src = "/demo/stitch-screens/" + slug + ".png";
     img.onerror = function () {
       wrap.remove();
     };
