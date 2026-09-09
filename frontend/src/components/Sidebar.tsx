@@ -130,11 +130,11 @@ export function Sidebar({
           </Link>
 
           <Link
-            href="/demos"
+            href="/salas-demo"
             onClick={onClose}
             className={clsx(
               "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/demos")
+              isActive("/salas-demo")
                 ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
                 : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
             )}
