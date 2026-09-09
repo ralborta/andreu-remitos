@@ -125,19 +125,19 @@ export function DemoMap({ trips = DEMO_TRIPS }: { trips?: DemoTrip[] }) {
   }, [trips]);
 
   return (
-    <div className="relative h-full min-h-[360px] overflow-hidden rounded-2xl border border-[var(--border)]">
+    <div className="relative h-full min-h-[280px] overflow-hidden rounded-xl">
       <div ref={ref} className="absolute inset-0 z-0" />
       {!ready && !error && (
-        <div className="absolute inset-0 z-10 grid place-items-center bg-[var(--panel)]/80 text-sm text-[var(--text-dim)]">
+        <div className="absolute inset-0 z-10 grid place-items-center bg-[#0c0a18]/90 text-sm text-[#a79fc9]">
           Cargando mapa de flota…
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 z-10 grid place-items-center bg-[var(--panel)] text-sm text-[var(--danger)]">
+        <div className="absolute inset-0 z-10 grid place-items-center bg-[#0c0a18] text-sm text-[#ef4444]">
           {error}
         </div>
       )}
-      <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg bg-black/55 px-3 py-1.5 text-xs text-[var(--accent-2)] backdrop-blur">
+      <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg bg-black/55 px-3 py-1.5 text-xs text-[#c4b5fd] backdrop-blur">
         DEMO · rutas y unidades de ejemplo
       </div>
     </div>

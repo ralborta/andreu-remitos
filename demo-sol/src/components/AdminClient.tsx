@@ -120,7 +120,7 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           <button
             type="submit"
             disabled={busy}
-            className="mt-4 w-full rounded-xl bg-[var(--accent)] py-2.5 font-semibold text-[#042026]"
+            className="btn-primary mt-4 w-full py-2.5"
           >
             Entrar
           </button>
@@ -215,7 +215,7 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           <button
             type="submit"
             disabled={busy}
-            className="rounded-xl bg-[var(--accent)] px-5 py-2.5 font-semibold text-[#042026]"
+            className="btn-primary px-5 py-2.5"
           >
             Generar link demo
           </button>
