@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rendición de Viajes - Empliados</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#7c3aed',
+              light: '#ede9fe',
+              hover: '#6d28d9',
+            },
+            canvas: '#f4f5fa',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-overrides">
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Custom scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-[#f3f4f9] text-[#1e293b] font-sans text-[13px] antialiased overflow-x-hidden min-h-screen flex">
+<!-- BEGIN: Sidebar -->
+<aside class="w-[238px] bg-white border-r border-[#e2e8f0] flex flex-col shrink-0 min-h-screen sticky top-0 h-screen select-none" data-purpose="main-sidebar">
+<!-- Brand Logo Area -->
+<div class="h-14 flex items-center px-4 border-b border-transparent gap-1.5">
+<span class="font-bold text-[20px] tracking-tight text-[#1e1b4b]">Emplia<span class="text-[#ec4899]">dos</span></span>
+<span class="bg-[#f1f5f9] text-[#64748b] text-[10px] font-semibold px-2 py-0.5 rounded ml-1 tracking-wide uppercase">DEMO offline</span>
+</div>
+<!-- Navigation Scrollable Area -->
+<div class="flex-1 overflow-y-auto px-2.5 py-3 space-y-5">
+<!-- General Navigation -->
+<nav aria-label="General" class="space-y-0.5">
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] font-normal transition-colors text-[13px]" href="#">
+<i class="w-4 h-4" data-lucide="layout-grid"></i>
+<span>Torre de Control</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] font-normal transition-colors text-[13px]" href="#">
+<i class="w-4 h-4" data-lucide="activity"></i>
+<span>Monitor</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] font-normal transition-colors text-[13px]" href="#">
+<i class="w-4 h-4" data-lucide="navigation"></i>
+<span>Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] font-normal transition-colors text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="message-circle"></i>
+<span>WhatsApp</span>
+</div>
+<span class="bg-[#dcfce7] text-[#15803d] text-[10px] font-semibold px-1.5 py-0.2 rounded-full leading-tight">Nuevo</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a] font-normal transition-colors text-[13px]" href="#">
+<i class="w-4 h-4" data-lucide="bar-chart-2"></i>
+<span>Métricas</span>
+</a>
+</nav>
+<!-- AGENTES Section -->
+<div>
+<h3 class="text-[11px] font-semibold text-[#94a3b8] px-3 mb-1 tracking-wider uppercase">AGENTES</h3>
+<nav aria-label="Agentes" class="space-y-0.5">
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4 rotate-90" data-lucide="git-fork"></i>
+<span>Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="navigation"></i>
+<span>Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+</a>
+<!-- Remitos Collapsible (Expanded) -->
+<div class="space-y-0.5">
+<button class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[#475569] hover:bg-[#f8fafc] font-normal text-[13px]">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="file-text"></i>
+<span>Remitos</span>
+</div>
+<i class="w-3.5 h-3.5 text-[#94a3b8]" data-lucide="chevron-up"></i>
+</button>
+<div class="pl-7 pr-2 space-y-1 py-0.5">
+<a class="block py-1 text-[#64748b] hover:text-[#0f172a] text-[12.5px]" href="#">Resumen del agente</a>
+<a class="flex items-center gap-2 py-1 text-[#64748b] hover:text-[#0f172a] text-[12.5px]" href="#">
+<i class="w-3.5 h-3.5 text-[#94a3b8]" data-lucide="file-text"></i>
+<span>Remitos</span>
+</a>
+<a class="flex items-center gap-2 py-1 text-[#64748b] hover:text-[#0f172a] text-[12.5px]" href="#">
+<i class="w-3.5 h-3.5 text-[#94a3b8]" data-lucide="table"></i>
+<span>Planilla</span>
+</a>
+<a class="flex items-center gap-2 py-1 text-[#64748b] hover:text-[#0f172a] text-[12.5px]" href="#">
+<i class="w-3.5 h-3.5 text-[#94a3b8]" data-lucide="upload"></i>
+<span>Subir remito</span>
+</a>
+</div>
+</div>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="map-pin"></i>
+<span>Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="alert-triangle"></i>
+<span>Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
+</a>
+<!-- Active Page: Rendición -->
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#eeebfd] text-[#5b21b6] font-medium border border-[#c4b5fd] text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4 text-[#7c3aed]" data-lucide="receipt"></i>
+<span>Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="clock"></i>
+<span>ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="check-square"></i>
+<span>POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="message-square"></i>
+<span>Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg text-[#64748b] hover:bg-[#f8fafc] font-normal text-[13px]" href="#">
+<div class="flex items-center gap-2.5">
+<i class="w-4 h-4" data-lucide="bar-chart"></i>
+<span>Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
+</a>
+</nav>
+</div>
+</div>
+<!-- OPERACIÓN Profile Footer -->
+<div class="p-3 border-t border-[#f1f5f9] bg-white">
+<div class="text-[10px] font-semibold text-[#94a3b8] mb-1.5 tracking-wider uppercase">OPERACIÓN</div>
+<div class="flex items-center justify-between bg-[#f5f3ff] hover:bg-[#ede9fe] p-2 rounded-xl border border-[#e0e7ff]/70 transition-colors cursor-pointer">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-[#8b5cf6] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+            GO
+          </div>
+<div class="leading-tight">
+<div class="font-semibold text-[#1e1b4b] text-[12.5px]">Gonzalo Demo</div>
+<div class="text-[11px] text-[#64748b]">Administrador</div>
+</div>
+</div>
+<button class="text-[#64748b] hover:text-[#0f172a] p-1" title="Cerrar sesión">
+<i class="w-4 h-4 rotate-180" data-lucide="log-out"></i>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#f4f5fa] overflow-y-auto">
+<!-- Top Header Bar -->
+<header class="h-12 bg-white border-b border-[#e2e8f0] px-6 flex items-center justify-between sticky top-0 z-20">
+<div class="text-xs text-[#64748b] font-normal flex items-center gap-2">
+<span>Torre y agentes · consultas en Chat Central</span>
+</div>
+<div class="flex items-center gap-3">
+<!-- Sistemas activos badge -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f8fafc] border border-[#e2e8f0] text-[11.5px] text-[#475569] font-medium">
+<span class="w-2 h-2 rounded-full bg-[#22c55e]"></span>
+          Sistemas activos
+        </span>
+<!-- Night mode toggle -->
+<button class="text-[#64748b] hover:text-[#0f172a] p-1">
+<i class="w-4 h-4" data-lucide="moon"></i>
+</button>
+<!-- Notification Bell -->
+<button class="text-[#64748b] hover:text-[#0f172a] p-1 relative">
+<i class="w-4 h-4" data-lucide="bell"></i>
+</button>
+<!-- Clock & Date -->
+<div class="text-right leading-none pl-1 border-l border-[#e2e8f0]">
+<span class="text-xs font-semibold text-[#0f172a] tracking-tight">06:43:32 p. m.</span>
+<span class="block text-[10px] text-[#94a3b8] mt-0.5">Mié, 09 Sep</span>
+</div>
+</div>
+</header>
+<!-- Page Body -->
+<div class="p-6 space-y-5 max-w-[1550px] mx-auto w-full">
+<!-- Title Header Section -->
+<div class="flex items-center gap-3.5">
+<div class="w-11 h-11 rounded-xl bg-[#dcd6fc] flex items-center justify-center text-[#6d28d9] shadow-sm">
+<i class="w-6 h-6" data-lucide="receipt"></i>
+</div>
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="text-2xl font-bold tracking-tight text-[#0f172a]">Rendición de Viajes</h1>
+<span class="inline-flex items-center gap-1.5 bg-[#dcfce7] text-[#16a34a] text-xs font-medium px-2.5 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+              Operativo
+            </span>
+</div>
+<p class="text-xs text-[#64748b] mt-0.5">Gastos, comprobantes y liquidación de viajes</p>
+</div>
+</div>
+<!-- Top 3 Primary KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- KPI 1 -->
+<div class="bg-white p-5 rounded-2xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs font-medium text-[#64748b]">Rendiciones del mes</div>
+<div class="text-[32px] font-bold text-[#0f172a] tracking-tight mt-1 leading-none">486</div>
+<div class="flex items-center gap-1 mt-3 text-xs font-semibold text-[#16a34a]">
+<i class="w-3.5 h-3.5" data-lucide="trending-up"></i>
+<span>+11%</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white p-5 rounded-2xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs font-medium text-[#64748b]">Comprobantes leídos</div>
+<div class="text-[32px] font-bold text-[#0f172a] tracking-tight mt-1 leading-none">3.124</div>
+<div class="flex items-center gap-1 mt-3 text-xs font-semibold text-[#16a34a]">
+<i class="w-3.5 h-3.5" data-lucide="trending-up"></i>
+<span>+17%</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white p-5 rounded-2xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs font-medium text-[#64748b]">Tiempo de liquidación</div>
+<div class="text-[32px] font-bold text-[#0f172a] tracking-tight mt-1 leading-none">0,9 días</div>
+<div class="flex items-center gap-1 mt-3 text-xs font-semibold text-[#16a34a]">
+<i class="w-3.5 h-3.5" data-lucide="trending-down"></i>
+<span>-52%</span>
+</div>
+</div>
+</div>
+<!-- Row of 4 Secondary Metric Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Card 1 -->
+<div class="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs text-[#64748b] font-medium">Pendientes</div>
+<div class="text-2xl font-bold text-[#0f172a] mt-0.5 leading-none">4</div>
+<div class="text-[11px] text-[#94a3b8] mt-2">esperan OK humano</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs text-[#64748b] font-medium">Monto pendiente</div>
+<div class="text-2xl font-bold text-[#0f172a] mt-0.5 leading-none">$60.725</div>
+<div class="text-[11px] text-[#94a3b8] mt-2">a revisar</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs text-[#64748b] font-medium">Aprobados</div>
+<div class="text-2xl font-bold text-[#0f172a] mt-0.5 leading-none">1</div>
+<div class="text-[11px] text-[#94a3b8] mt-2">del período</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm">
+<div class="text-xs text-[#64748b] font-medium">Rechazados</div>
+<div class="text-2xl font-bold text-[#0f172a] mt-0.5 leading-none">2</div>
+<div class="text-[11px] text-[#94a3b8] mt-2">del período</div>
+</div>
+</div>
+<!-- BEGIN: ApprovalQueueCard -->
+<section class="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm space-y-4" data-purpose="cola-aprobacion">
+<!-- Card Header -->
+<div>
+<h2 class="text-base font-bold text-[#0f172a] tracking-tight">Cola de aprobación</h2>
+<p class="text-[11.5px] text-[#64748b] mt-0.5">Clic en un registro para abrir el detalle · Excel / Excel ERP exportan el filtro (ERP usa aprobados si estás en Pendientes)</p>
+</div>
+<!-- Filter Buttons & Actions Bar -->
+<div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<button class="px-3 py-1.5 bg-[#7c3aed] text-white text-xs font-medium rounded-lg shadow-sm hover:bg-[#6d28d9] transition-colors">
+              Pendientes
+            </button>
+<button class="px-3 py-1.5 bg-white border border-[#e2e8f0] text-[#475569] text-xs font-medium rounded-lg hover:bg-[#f8fafc] transition-colors">
+              Aprobados
+            </button>
+<button class="px-3 py-1.5 bg-white border border-[#e2e8f0] text-[#475569] text-xs font-medium rounded-lg hover:bg-[#f8fafc] transition-colors">
+              Rechazados
+            </button>
+<button class="px-3 py-1.5 bg-white border border-[#e2e8f0] text-[#475569] text-xs font-medium rounded-lg hover:bg-[#f8fafc] transition-colors">
+              Todos
+            </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e2e8f0] text-[#475569] text-xs font-medium rounded-lg hover:bg-[#f8fafc] transition-colors ml-1">
+<i class="w-3.5 h-3.5 text-[#64748b]" data-lucide="rotate-cw"></i>
+<span>Actualizar</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e2e8f0] text-[#475569] text-xs font-medium rounded-lg hover:bg-[#f8fafc] transition-colors">
+<i class="w-3.5 h-3.5 text-[#64748b]" data-lucide="download"></i>
+<span>Excel</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e2e8f0] text-[#475569] text-xs font-medium rounded-lg hover:bg-[#f8fafc] transition-colors">
+<i class="w-3.5 h-3.5 text-[#64748b]" data-lucide="download"></i>
+<span>Excel ERP</span>
+</button>
+</div>
+<div>
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#bbf7d0] hover:bg-[#86efac] text-[#15803d] text-xs font-semibold rounded-lg transition-colors shadow-xs">
+<i class="w-3.5 h-3.5" data-lucide="send"></i>
+<span>Enviar al ERP</span>
+</button>
+</div>
+</div>
+<!-- Filter Inputs (Search, Desde, Hasta) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end pt-1">
+<!-- Search Field -->
+<div class="md:col-span-8">
+<label class="block text-xs font-medium text-[#475569] mb-1">Buscar</label>
+<div class="relative">
+<i class="w-4 h-4 text-[#94a3b8] absolute left-3 top-1/2 -translate-y-1/2" data-lucide="search"></i>
+<input class="w-full pl-9 pr-3 py-2 bg-[#ede9fe]/40 hover:bg-[#ede9fe]/60 focus:bg-white border-0 rounded-lg text-xs text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-[#7c3aed] transition-all" placeholder="Remito, chofer o patente..." type="text"/>
+</div>
+</div>
+<!-- Desde Date -->
+<div class="md:col-span-2">
+<label class="block text-xs font-medium text-[#475569] mb-1">Desde</label>
+<div class="relative">
+<input class="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent" placeholder="dd/mm/aaaa" type="text"/>
+<i class="w-3.5 h-3.5 text-[#94a3b8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" data-lucide="calendar"></i>
+</div>
+</div>
+<!-- Hasta Date -->
+<div class="md:col-span-2">
+<label class="block text-xs font-medium text-[#475569] mb-1">Hasta</label>
+<div class="relative">
+<input class="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent" placeholder="dd/mm/aaaa" type="text"/>
+<i class="w-3.5 h-3.5 text-[#94a3b8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" data-lucide="calendar"></i>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto pt-2">
+<table class="w-full text-left text-xs border-collapse">
+<thead>
+<tr class="text-[#64748b] border-b border-[#f1f5f9] text-[11px] font-semibold uppercase tracking-wider">
+<th class="py-3 px-2">CÓDIGO</th>
+<th class="py-3 px-2">FECHA</th>
+<th class="py-3 px-2">CHOFER</th>
+<th class="py-3 px-2">CATEGORÍA</th>
+<th class="py-3 px-2">MONTO</th>
+<th class="py-3 px-2">DETALLE</th>
+<th class="py-3 px-2">ESTADO</th>
+<th class="py-3 px-2 text-center">ACCIÓN</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#f8fafc] text-[#334155]">
+<!-- Row 1 -->
+<tr class="hover:bg-[#faf5ff]/40 transition-colors">
+<td class="py-3.5 px-2 font-bold text-[#0f172a]">RG-0006</td>
+<td class="py-3.5 px-2 text-[#475569]">24/05/2025</td>
+<td class="py-3.5 px-2 text-[#475569]">Raúl A.</td>
+<td class="py-3.5 px-2 text-[#475569]">Peaje</td>
+<td class="py-3.5 px-2 font-medium text-[#0f172a]">
+<div class="flex items-center gap-1">
+<span>$ 1.800</span>
+<i class="w-3 h-3 text-[#94a3b8]" data-lucide="image"></i>
+</div>
+</td>
+<td class="py-3.5 px-2 text-[#475569]">Corredores Viales</td>
+<td class="py-3.5 px-2">
+<span class="inline-block bg-[#fef3c7] text-[#d97706] text-[11px] font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                    Pendiente aprobación
+                  </span>
+</td>
+<td class="py-3.5 px-2 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#dcfce7] text-[#16a34a] hover:bg-[#bbf7d0] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="check"></i> OK
+                    </button>
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#ffe4e6] text-[#e11d48] hover:bg-[#fecdd3] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="x"></i> No
+                    </button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-[#faf5ff]/40 transition-colors">
+<td class="py-3.5 px-2 font-bold text-[#0f172a]">RG-0005</td>
+<td class="py-3.5 px-2 text-[#475569]">09/08/2026</td>
+<td class="py-3.5 px-2 text-[#475569]">Raúl A.</td>
+<td class="py-3.5 px-2 text-[#475569]">Peaje</td>
+<td class="py-3.5 px-2 font-medium text-[#64748b]">—</td>
+<td class="py-3.5 px-2 text-[#475569]">Tengo peaje para rendir</td>
+<td class="py-3.5 px-2">
+<span class="inline-block bg-[#fef3c7] text-[#d97706] text-[11px] font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                    Pendiente aprobación
+                  </span>
+</td>
+<td class="py-3.5 px-2 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#dcfce7] text-[#16a34a] hover:bg-[#bbf7d0] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="check"></i> OK
+                    </button>
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#ffe4e6] text-[#e11d48] hover:bg-[#fecdd3] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="x"></i> No
+                    </button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-[#faf5ff]/40 transition-colors">
+<td class="py-3.5 px-2 font-bold text-[#0f172a]">RG-0004</td>
+<td class="py-3.5 px-2 text-[#475569]">24/05/2025</td>
+<td class="py-3.5 px-2 text-[#475569]">Raúl A.</td>
+<td class="py-3.5 px-2 text-[#475569]">Peaje</td>
+<td class="py-3.5 px-2 font-medium text-[#0f172a]">
+<div class="flex items-center gap-1">
+<span>$ 1.800</span>
+<i class="w-3 h-3 text-[#94a3b8]" data-lucide="image"></i>
+</div>
+</td>
+<td class="py-3.5 px-2 text-[#475569]">Corredores Viales</td>
+<td class="py-3.5 px-2">
+<span class="inline-block bg-[#fef3c7] text-[#d97706] text-[11px] font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                    Pendiente aprobación
+                  </span>
+</td>
+<td class="py-3.5 px-2 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#dcfce7] text-[#16a34a] hover:bg-[#bbf7d0] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="check"></i> OK
+                    </button>
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#ffe4e6] text-[#e11d48] hover:bg-[#fecdd3] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="x"></i> No
+                    </button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-[#faf5ff]/40 transition-colors">
+<td class="py-3.5 px-2 font-bold text-[#0f172a]">RG-0002</td>
+<td class="py-3.5 px-2 text-[#475569]">08/09/2026</td>
+<td class="py-3.5 px-2 text-[#475569]">Raúl A.</td>
+<td class="py-3.5 px-2 text-[#475569]">Combustible / nafta</td>
+<td class="py-3.5 px-2 font-medium text-[#0f172a]">
+<div class="flex items-center gap-1">
+<span>$ 57.125</span>
+<i class="w-3 h-3 text-[#94a3b8]" data-lucide="image"></i>
+</div>
+</td>
+<td class="py-3.5 px-2 text-[#475569]">ESTACIÓN DEMO SUR S.A.</td>
+<td class="py-3.5 px-2">
+<span class="inline-block bg-[#fef3c7] text-[#d97706] text-[11px] font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                    Pendiente aprobación
+                  </span>
+</td>
+<td class="py-3.5 px-2 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#dcfce7] text-[#16a34a] hover:bg-[#bbf7d0] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="check"></i> OK
+                    </button>
+<button class="inline-flex items-center gap-1 px-2 py-1 bg-[#ffe4e6] text-[#e11d48] hover:bg-[#fecdd3] font-semibold text-[11px] rounded transition-colors">
+<i class="w-3 h-3 stroke-[3]" data-lucide="x"></i> No
+                    </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: ApprovalQueueCard -->
+<!-- BEGIN: BottomChatSection -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5 pb-8" data-purpose="chat-asistente">
+<!-- Left: Chat Card -->
+<div class="lg:col-span-8 bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm min-h-[160px] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-[#7c3aed] flex items-center justify-center text-white">
+<i class="w-4 h-4" data-lucide="receipt"></i>
+</div>
+<div>
+<h3 class="font-bold text-sm text-[#0f172a] leading-none">Rendición</h3>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+<span class="text-[11px] text-[#64748b]">En línea</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 text-xs">
+<button class="flex items-center gap-1 text-[#64748b] hover:text-[#0f172a] transition-colors">
+<i class="w-3.5 h-3.5" data-lucide="rotate-ccw"></i>
+<span>Historial</span>
+</button>
+<span class="text-[#cbd5e1]">|</span>
+<button class="text-[#0f172a] hover:text-[#7c3aed] font-medium transition-colors">
+                + Nueva conversación
+              </button>
+</div>
+</div>
+</div>
+<!-- Right: Questions Helper Panel -->
+<div class="lg:col-span-4 bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-[#0f172a] tracking-wider uppercase">QUÉ PODÉS PREGUNTAR</h4>
+<a class="flex items-center gap-1 text-xs text-[#7c3aed] font-medium hover:underline" href="#">
+<i class="w-3.5 h-3.5" data-lucide="book-open"></i>
+<span>Guía</span>
+</a>
+</div>
+<p class="text-xs text-[#64748b] leading-relaxed">
+            El chat consulta datos reales de Rendición. Tocá un ejemplo para enviarlo.
+          </p>
+<div class="space-y-1.5 pt-1">
+<div class="flex items-center gap-1 text-[11px] font-semibold text-[#64748b] uppercase tracking-wider">
+<i class="w-3 h-3" data-lucide="sliders"></i>
+<span>CONTEOS Y MONTOS</span>
+</div>
+<ul class="text-xs text-[#475569] space-y-1 pl-1">
+<li class="cursor-pointer hover:text-[#7c3aed] transition-colors">
+                · Pendientes / aprobados / rechazados
+              </li>
+<li class="cursor-pointer hover:text-[#7c3aed] transition-colors">
+                · Montos del resumen
+              </li>
+</ul>
+</div>
+</div>
+</section>
+<!-- END: BottomChatSection -->
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- Icon Rendering Script -->
+<script data-purpose="icon-initializer">
+    lucide.createIcons();
+  </script>
+</body></html>

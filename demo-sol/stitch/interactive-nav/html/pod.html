@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-100/60" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Evidencias de Transporte - POP/POD - Empliados</title>
+<!-- Tailwind CSS v3 CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Phosphor Icons CDN for accurate modern line iconography -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              purple: '#6366f1',
+              accent: '#8b5cf6',
+              lilac: '#f3e8ff',
+              light: '#f8fafc'
+            }
+          },
+          fontSize: {
+            '2xs': '0.6875rem',
+            '3xs': '0.625rem'
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Custom thin scrollbar for smooth dashboard aesthetics */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased flex overflow-hidden">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 select-none z-20" data-purpose="sidebar">
+<!-- Top Branding & Navigation Area -->
+<div class="flex flex-col overflow-y-auto">
+<!-- Logo and Tag -->
+<div class="h-16 px-6 flex items-center gap-2">
+<span class="text-xl font-bold tracking-tight text-slate-900">Empli<span class="text-pink-500">ados</span></span>
+<span class="text-2xs bg-slate-100 text-slate-500 font-medium px-2 py-0.5 rounded border border-slate-200">DEMO offline</span>
+</div>
+<!-- General Menu -->
+<div class="px-3 space-y-0.5 mt-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<i class="ph ph-sliders text-base text-slate-500"></i>
+<span>Torre de Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<i class="ph ph-pulse text-base text-slate-500"></i>
+<span>Monitor</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<i class="ph ph-navigation-arrow text-base text-slate-500"></i>
+<span>Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-chat-circle-dots text-base text-slate-500"></i>
+<span>WhatsApp</span>
+</div>
+<span class="text-3xs bg-emerald-100 text-emerald-700 font-semibold px-1.5 py-0.5 rounded-full">Nuevo</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<i class="ph ph-chart-bar text-base text-slate-500"></i>
+<span>Métricas</span>
+</a>
+</div>
+<!-- Section: AGENTES -->
+<div class="mt-6 px-4">
+<p class="text-3xs font-bold uppercase tracking-wider text-slate-400">Agentes</p>
+</div>
+<div class="px-3 space-y-0.5 mt-2">
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-git-branch text-base text-slate-500"></i>
+<span>Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-navigation-arrow text-base text-slate-500"></i>
+<span>Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Accordion Item: Remitos -->
+<div>
+<button class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors">
+<div class="flex items-center gap-3">
+<i class="ph ph-file-text text-base text-slate-500"></i>
+<span>Remitos</span>
+</div>
+<i class="ph ph-caret-up text-xs text-slate-400"></i>
+</button>
+<div class="pl-8 pr-2 py-1 space-y-1 text-xs">
+<span class="block py-1 text-2xs text-slate-400 font-medium">Resumen del agente</span>
+<a class="flex items-center gap-2 py-1 text-slate-600 hover:text-slate-900 font-normal" href="#">
+<i class="ph ph-file-text text-slate-400 text-xs"></i>
+<span>Remitos</span>
+</a>
+<a class="flex items-center gap-2 py-1 text-slate-600 hover:text-slate-900 font-normal" href="#">
+<i class="ph ph-table text-slate-400 text-xs"></i>
+<span>Planilla</span>
+</a>
+<a class="flex items-center gap-2 py-1 text-slate-600 hover:text-slate-900 font-normal" href="#">
+<i class="ph ph-upload-simple text-slate-400 text-xs"></i>
+<span>Subir remito</span>
+</a>
+</div>
+</div>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-map-pin text-base text-slate-500"></i>
+<span>Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-warning-diamond text-base text-slate-500"></i>
+<span>Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-receipt text-base text-slate-500"></i>
+<span>Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-clock text-base text-slate-500"></i>
+<span>ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Active Item: POP/POD -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg bg-indigo-50/70 text-indigo-700 text-sm font-medium transition-colors shadow-sm ring-1 ring-indigo-200/50" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-clipboard-text text-base text-indigo-600"></i>
+<span>POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-chat-text text-base text-slate-500"></i>
+<span>Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-sm font-medium transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="ph ph-chart-line-up text-base text-slate-500"></i>
+<span>Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+</div>
+</div>
+<!-- Bottom User Bar -->
+<div class="p-3 border-t border-slate-200/80">
+<p class="px-3 pb-1 text-3xs font-bold uppercase tracking-wider text-slate-400">Operación</p>
+<div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">
+            GD
+          </div>
+<div class="leading-tight">
+<p class="text-xs font-semibold text-slate-800">Gonzalo Demo</p>
+<p class="text-2xs text-slate-400">Administrador</p>
+</div>
+</div>
+<button aria-label="Cerrar sesión" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="ph ph-sign-out text-lg"></i>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContentArea -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/50">
+<!-- Top Global Header -->
+<header class="h-14 bg-white border-b border-slate-200/70 px-8 flex items-center justify-between shrink-0" data-purpose="top-header">
+<!-- Breadcrumb info -->
+<div class="text-xs text-slate-500 font-normal">
+        Torre y agentes · consultas en Chat Central
+      </div>
+<!-- Top Right Controls -->
+<div class="flex items-center gap-4">
+<!-- Status Indicator Pill -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Dark mode / Theme Icon -->
+<button aria-label="Cambiar modo" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition">
+<i class="ph ph-moon text-base"></i>
+</button>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition">
+<i class="ph ph-bell text-base"></i>
+<span class="absolute top-1 right-1 w-2 h-2 bg-purple-600 rounded-full"></span>
+</button>
+<!-- Time and Date -->
+<div class="text-right leading-tight border-l border-slate-200 pl-3">
+<p class="text-xs font-bold text-slate-800">06:43:59 p. m.</p>
+<p class="text-3xs text-slate-400">Mié, 09 Sept</p>
+</div>
+<!-- SOL Logo Box -->
+<div class="ml-1 px-3 py-1 bg-slate-100 rounded border border-slate-200 text-slate-800 font-extrabold text-xs tracking-wider">
+          SOL
+        </div>
+</div>
+</header>
+<!-- Scrollable Workspace -->
+<main class="flex-1 overflow-y-auto px-8 py-6 space-y-5" data-purpose="main-workspace">
+<!-- BEGIN: PageHeader -->
+<section class="flex items-start gap-4" data-purpose="page-title-banner">
+<div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 shadow-sm shrink-0">
+<i class="ph ph-clipboard-text text-2xl"></i>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-2.5">
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Evidencias de Transporte</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Operativo
+            </span>
+</div>
+<p class="text-xs text-slate-500">Proof of Pickup y Proof of Delivery — cadena de custodia por WhatsApp</p>
+</div>
+</section>
+<!-- END: PageHeader -->
+<!-- BEGIN: MetricCardsTop -->
+<section class="grid grid-cols-3 gap-4" data-purpose="primary-metrics-row">
+<!-- Card 1: POP pendientes -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">POP pendientes</span>
+<p class="text-xl font-bold text-slate-800 mt-2">—</p>
+</div>
+<!-- Card 2: POD pendientes -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">POD pendientes</span>
+<p class="text-xl font-bold text-slate-800 mt-2">—</p>
+</div>
+<!-- Card 3: Con diferencias -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">Con diferencias</span>
+<p class="text-xl font-bold text-slate-800 mt-2">—</p>
+</div>
+</section>
+<!-- END: MetricCardsTop -->
+<!-- BEGIN: MetricCardsSecondary -->
+<section class="grid grid-cols-4 gap-4" data-purpose="secondary-counters-row">
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">Pendientes</span>
+<p class="text-xl font-bold text-slate-800 mt-2">0</p>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">Observados</span>
+<p class="text-xl font-bold text-slate-800 mt-2">0</p>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">Aprobados</span>
+<p class="text-xl font-bold text-slate-800 mt-2">2</p>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+<span class="text-xs font-medium text-slate-500">Rechazados</span>
+<p class="text-xl font-bold text-slate-800 mt-2">0</p>
+</div>
+</section>
+<!-- END: MetricCardsSecondary -->
+<!-- BEGIN: EvidenceTableSection -->
+<section class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden" data-purpose="evidence-table-container">
+<!-- Table Header Toolbar -->
+<div class="p-4 border-b border-slate-100 flex items-center justify-between gap-4 flex-wrap">
+<div>
+<h2 class="text-sm font-semibold text-slate-900">Evidencias de Transporte</h2>
+<p class="text-2xs text-slate-400">POP (retiro) y POD (entrega)</p>
+</div>
+<!-- Filter Pills and Action -->
+<div class="flex items-center gap-1.5 flex-wrap">
+<button class="px-2.5 py-1 text-xs rounded-md font-medium bg-purple-100/70 text-purple-700 hover:bg-purple-200/60 transition">Todos</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium text-slate-600 hover:bg-slate-100 transition">POP</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium text-slate-600 hover:bg-slate-100 transition">POD</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium text-slate-600 hover:bg-slate-100 transition">Pendientes</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium text-slate-600 hover:bg-slate-100 transition">Observados</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium text-slate-600 hover:bg-slate-100 transition">OK</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium text-slate-600 hover:bg-slate-100 transition">Rechazados</button>
+<button class="px-2.5 py-1 text-xs rounded-md font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition">Todos</button>
+<button aria-label="Actualizar datos" class="p-1 text-slate-500 hover:text-slate-800 rounded hover:bg-slate-100 transition">
+<i class="ph ph-arrows-clockwise text-sm"></i>
+</button>
+</div>
+</div>
+<!-- Tabular List -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-slate-100 text-2xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/40">
+<th class="py-2.5 px-4 font-semibold">Código</th>
+<th class="py-2.5 px-4 font-semibold">Tipo</th>
+<th class="py-2.5 px-4 font-semibold">Estado</th>
+<th class="py-2.5 px-4 font-semibold">Viaje</th>
+<th class="py-2.5 px-4 font-semibold">Chofer</th>
+<th class="py-2.5 px-4 font-semibold">Cantidades</th>
+<th class="py-2.5 px-4 font-semibold">Fecha</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 font-medium text-slate-900">POP-0001</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded-full text-2xs font-semibold bg-sky-100 text-sky-700">POP</span>
+</td>
+<td class="py-3 px-4 text-slate-600">Aprobado</td>
+<td class="py-3 px-4 text-slate-600 font-mono text-2xs">VJ-20260821-001</td>
+<td class="py-3 px-4 text-slate-700">Raúl Alborta</td>
+<td class="py-3 px-4 text-slate-600">80 cajas</td>
+<td class="py-3 px-4 text-slate-500">24/8, 08:01 p. m.</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 font-medium text-slate-900">POD-0001</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded-full text-2xs font-semibold bg-purple-100 text-purple-700">POD</span>
+</td>
+<td class="py-3 px-4 text-slate-600">Aprobado</td>
+<td class="py-3 px-4 text-slate-600 font-mono text-2xs">PE-20260810-000842</td>
+<td class="py-3 px-4 text-slate-700">Raúl Alborta</td>
+<td class="py-3 px-4 text-slate-400">—</td>
+<td class="py-3 px-4 text-slate-500">10/8, 08:54 p. m.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: EvidenceTableSection -->
+<!-- BEGIN: ChatAndGuideGrid -->
+<section class="grid grid-cols-12 gap-5 pb-6" data-purpose="chat-assistant-container">
+<!-- Left Sub-Panel: POD Chat Module (7 Cols) -->
+<div class="col-span-12 lg:col-span-8 bg-white rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between min-h-[380px]">
+<!-- Chat Header -->
+<div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center">
+<i class="ph ph-clipboard-text text-sm"></i>
+</div>
+<div>
+<p class="text-xs font-semibold text-slate-900">POD</p>
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="text-3xs text-slate-400 font-medium">En línea</span>
+</div>
+</div>
+</div>
+<!-- Top Actions -->
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 font-medium transition">
+<i class="ph ph-clock-counter-clockwise text-sm"></i>
+<span>Historial</span>
+</button>
+<button class="flex items-center gap-1 text-xs text-slate-700 hover:text-slate-900 font-medium transition">
+<i class="ph ph-plus text-xs"></i>
+<span>Nueva conversación</span>
+</button>
+</div>
+</div>
+<!-- Chat Body: Empty Prompt State -->
+<div class="p-6 flex flex-col items-center justify-center text-center my-auto">
+<div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
+<i class="ph ph-chat-teardrop-dots text-xl"></i>
+</div>
+<h3 class="text-base font-bold text-slate-900">¿Qué necesitás saber de POD?</h3>
+<p class="text-xs text-slate-400 mt-1 max-w-sm">
+              Preguntame por pendientes, rechazos, últimos del día o el viaje de un código.
+            </p>
+<!-- Quick Action Chips Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-6 w-full max-w-2xl px-2">
+<!-- Chip 1 -->
+<button class="flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl text-left transition group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-purple-100/70 text-purple-700 flex items-center justify-center shrink-0">
+<i class="ph ph-clipboard-text text-sm"></i>
+</div>
+<span class="text-2xs font-medium text-slate-700 leading-tight">¿cuántos POD recibimos hoy?</span>
+</div>
+<i class="ph ph-arrow-right text-xs text-slate-400 group-hover:text-slate-700 shrink-0 ml-1"></i>
+</button>
+<!-- Chip 2 -->
+<button class="flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl text-left transition group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+<i class="ph ph-file-text text-sm"></i>
+</div>
+<span class="text-2xs font-medium text-slate-700 leading-tight">¿cuántos están pendientes?</span>
+</div>
+<i class="ph ph-arrow-right text-xs text-slate-400 group-hover:text-slate-700 shrink-0 ml-1"></i>
+</button>
+<!-- Chip 3 -->
+<button class="flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl text-left transition group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+<i class="ph ph-warning text-sm"></i>
+</div>
+<span class="text-2xs font-medium text-slate-700 leading-tight">¿cuáles fueron rechazados?</span>
+</div>
+<i class="ph ph-arrow-right text-xs text-slate-400 group-hover:text-slate-700 shrink-0 ml-1"></i>
+</button>
+<!-- Chip 4 -->
+<button class="flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl text-left transition group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+<i class="ph ph-check-square-offset text-sm"></i>
+</div>
+<span class="text-2xs font-medium text-slate-700 leading-tight">mostrame los últimos 10</span>
+</div>
+<i class="ph ph-arrow-right text-xs text-slate-400 group-hover:text-slate-700 shrink-0 ml-1"></i>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Sub-Panel: Questions Guide (4 Cols) -->
+<div class="col-span-12 lg:col-span-4 bg-white rounded-xl border border-slate-200/80 shadow-xs p-5 flex flex-col justify-between">
+<div>
+<!-- Header -->
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<span class="text-2xs font-bold text-slate-800 uppercase tracking-wider">QUÉ PODÉS PREGUNTAR</span>
+<a class="inline-flex items-center gap-1 text-2xs font-semibold text-purple-600 hover:text-purple-700" href="#">
+<i class="ph ph-book-open text-xs"></i>
+<span>Guía</span>
+</a>
+</div>
+<p class="text-2xs text-slate-400 mt-2">
+              El chat consulta datos reales de POD. Tocá un ejemplo para enviarlo.
+            </p>
+<!-- Question Groups Section -->
+<div class="mt-4 space-y-4 text-xs">
+<!-- Category: Contadores -->
+<div>
+<p class="text-3xs font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+<i class="ph ph-faders"></i>
+<span>CONTADORES</span>
+</p>
+<div class="mt-1 space-y-1 pl-1">
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· ¿Cuántos POD recibimos hoy?</p>
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· ¿Cuántos están pendientes / OK / rechazados?</p>
+</div>
+</div>
+<!-- Category: Listados -->
+<div>
+<p class="text-3xs font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+<i class="ph ph-list-bullets"></i>
+<span>LISTADOS</span>
+</p>
+<div class="mt-1 space-y-1 pl-1">
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· Mostrame los últimos 10</p>
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· ¿Cuáles fueron rechazados?</p>
+</div>
+</div>
+<!-- Category: Detalle -->
+<div>
+<p class="text-3xs font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+<i class="ph ph-file-search"></i>
+<span>DETALLE</span>
+</p>
+<div class="mt-1 space-y-1 pl-1">
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· ¿Por qué se rechazó POD-0002?</p>
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· ¿Qué viaje corresponde a POD-0001?</p>
+</div>
+</div>
+<!-- Category: Seguimiento -->
+<div>
+<p class="text-3xs font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+<i class="ph ph-arrow-bend-down-right"></i>
+<span>SEGUIMIENTO</span>
+</p>
+<div class="mt-1 space-y-1 pl-1">
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· Después de un listado: ¿cuáles son?</p>
+<p class="text-slate-600 hover:text-purple-700 cursor-pointer transition">· ¿Y de esos cuáles son de Córdoba?</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: ChatAndGuideGrid -->
+</main>
+</div>
+<!-- END: MainContentArea -->
+</body></html>

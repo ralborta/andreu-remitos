@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f8f9fc]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Confirmación de Destinos - Empliados</title>
+<!-- Tailwind CSS v3 with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9'
+            },
+            panel: '#ffffff',
+            sidebar: '#fbfbfe'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+  </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased overflow-hidden flex bg-[#f8f9fd]">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-[#fafafc] border-r border-slate-200/80 flex flex-col justify-between shrink-0 h-full select-none" data-purpose="main-sidebar">
+<!-- Top Part: Brand & Navigation -->
+<div class="flex flex-col h-full overflow-y-auto">
+<!-- Logo Brand -->
+<div class="px-6 pt-5 pb-4 flex items-center gap-2">
+<div class="flex items-center">
+<span class="text-xl font-bold tracking-tight text-slate-900">Emplia<span class="text-[#e040fb]">dos</span></span>
+</div>
+</div>
+<!-- Navigation Sections -->
+<nav class="px-3 space-y-5 text-[13px] text-slate-600 flex-1">
+<!-- Main Management Links -->
+<div class="space-y-0.5">
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Torre de Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Monitor</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">WhatsApp</span>
+</div>
+<span class="text-[10px] bg-emerald-100/70 text-emerald-600 font-medium px-1.5 py-0.5 rounded-md">Nuevo</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Métricas</span>
+</a>
+</div>
+<!-- Section: AGENTES -->
+<div class="pt-2">
+<p class="px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase mb-2">AGENTES</p>
+<div class="space-y-0.5">
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Submenu Remitos -->
+<div>
+<button class="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Remitos</span>
+</div>
+<svg class="w-3.5 h-3.5 text-slate-400 stroke-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4.5 15.75l7.5-7.5 7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<div class="pl-7 pr-2 py-1 space-y-1 text-[12.5px] text-slate-500">
+<a class="block py-1 px-2 rounded-lg hover:text-slate-800" href="#">Resumen del agente</a>
+<a class="flex items-center gap-2 py-1 px-2 rounded-lg hover:text-slate-800" href="#">
+<svg class="w-3.5 h-3.5 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Remitos</span>
+</a>
+<a class="flex items-center gap-2 py-1 px-2 rounded-lg hover:text-slate-800" href="#">
+<svg class="w-3.5 h-3.5 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Planilla</span>
+</a>
+<a class="flex items-center gap-2 py-1 px-2 rounded-lg hover:text-slate-800" href="#">
+<svg class="w-3.5 h-3.5 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Subir remito</span>
+</a>
+</div>
+</div>
+<!-- Active Nav Item: Destinos -->
+<a class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#e9d5ff]/50 text-purple-950 font-medium border border-purple-200/50 transition-colors shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-purple-700 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-slate-900 font-semibold text-[13px]">Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 ring-2 ring-purple-100"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium">Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Section: OPERACIÓN & User Profile -->
+<div class="p-3 mt-auto">
+<p class="px-3 text-[10px] font-semibold tracking-wider text-slate-400 uppercase mb-2">OPERACIÓN</p>
+<div class="bg-slate-100/80 rounded-2xl p-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-[#7c3aed] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+              GO
+            </div>
+<div class="leading-tight">
+<p class="text-xs font-semibold text-slate-800">Gonzalo Demo</p>
+<p class="text-[11px] text-slate-400">Administrador</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 p-1">
+<svg class="w-4 h-4 stroke-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- BEGIN: TopHeader -->
+<header class="h-14 border-b border-slate-200/80 bg-white/70 backdrop-blur px-8 flex items-center justify-between shrink-0" data-purpose="top-header">
+<!-- Breadcrumb / Context text -->
+<div class="flex items-center text-xs text-slate-500 font-medium">
+<span>Torre y agentes · consultas en Chat Central</span>
+</div>
+<!-- Right Header Actions -->
+<div class="flex items-center gap-4">
+<!-- Badge Sistemas Activos -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium border border-emerald-200/60">
+<svg class="w-3.5 h-3.5 fill-emerald-600" viewbox="0 0 24 24"><path d="M4 4h16v16H4z"></path></svg>
+<span>Sistemas activos</span>
+</div>
+<!-- Moon / Darkmode Toggle -->
+<button class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Notification Bell with purple indicator dot -->
+<div class="relative">
+<button class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+</div>
+<!-- Clock & Date -->
+<div class="text-right pl-1">
+<div class="text-xs font-semibold text-slate-800 leading-none">06:42:59 p. m.</div>
+<div class="text-[10px] text-slate-400 mt-0.5 leading-none">Mié, 09 Sept</div>
+</div>
+<!-- SOL Badge -->
+<div class="ml-1 border border-slate-300 rounded px-2 py-0.5 font-bold text-xs tracking-wider text-slate-800 bg-white">
+          SOL
+        </div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentArea -->
+<main class="flex-1 overflow-y-auto px-10 py-6" data-purpose="destinos-dashboard">
+<div class="max-w-[1240px] mx-auto space-y-6">
+<!-- Header Title Banner -->
+<div class="flex items-center gap-4">
+<!-- Big purple location icon container -->
+<div class="w-12 h-12 rounded-2xl bg-[#ede9fe] text-purple-700 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Confirmación de Destinos</h1>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#dcfce7] text-[#15803d]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#16a34a]"></span>
+                Operativo
+              </span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Validación de direcciones y coordinación para entregas cortas</p>
+</div>
+</div>
+<!-- KPI Cards Grid (3 Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-purpose="kpi-cards">
+<!-- KPI 1 -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+<p class="text-xs text-slate-500 font-medium">Destinos validados hoy</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold tracking-tight text-slate-900">138</span>
+</div>
+<div class="mt-1 flex items-center text-xs font-semibold text-emerald-600">
+<svg class="w-3.5 h-3.5 mr-0.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>+19%</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+<p class="text-xs text-slate-500 font-medium">Direcciones corregidas</p>
+<div class="mt-2 flex items-baseline">
+<span class="text-3xl font-bold tracking-tight text-slate-900">24</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+<p class="text-xs text-slate-500 font-medium">Precisión de geocodeo</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold tracking-tight text-slate-900">98,6%</span>
+</div>
+<div class="mt-1 flex items-center text-xs font-semibold text-emerald-600">
+<svg class="w-3.5 h-3.5 mr-0.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>+0,9%</span>
+</div>
+</div>
+</div>
+<!-- Main Form Card: VALIDAR DESTINO — WHATSAPP REAL -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm" data-purpose="form-section">
+<!-- Section Title & Sync Time -->
+<div class="flex items-center justify-between pb-4">
+<h2 class="text-xs font-bold tracking-wider text-slate-700 uppercase">VALIDAR DESTINO — WHATSAPP REAL</h2>
+<div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+<svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Sync 06:42:58</span>
+</div>
+</div>
+<!-- Type Selector Pills -->
+<div class="flex items-center gap-2 mb-5">
+<button class="px-4 py-1.5 rounded-lg bg-[#ddd6fe] text-purple-900 text-xs font-semibold transition">
+              Dirección
+            </button>
+<button class="px-4 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 text-xs font-medium transition">
+              Coordenadas
+            </button>
+</div>
+<!-- Form Inputs -->
+<div class="space-y-4">
+<!-- DIRECCIÓN -->
+<div>
+<label class="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1.5">DIRECCIÓN</label>
+<input class="w-full text-xs text-slate-700 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-3 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" placeholder="Ej: Echeverría 850, Pacheco" type="text"/>
+</div>
+<!-- CLIENTE & WHATSAPP CLIENTE * -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1.5">CLIENTE</label>
+<input class="w-full text-xs text-slate-700 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" type="text"/>
+</div>
+<div>
+<label class="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1.5">WHATSAPP CLIENTE *</label>
+<input class="w-full text-xs text-slate-700 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" type="text" value="5492616168767"/>
+</div>
+</div>
+<!-- WHATSAPP CHOFER * -->
+<div>
+<label class="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1.5">WHATSAPP CHOFER *</label>
+<input class="w-full text-xs text-slate-500 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400" type="text" value="54911..."/>
+<p class="text-[11px] text-slate-400 mt-1.5">Obligatorio: cuando el cliente confirma, se le envía el destino al chofer</p>
+</div>
+<!-- Action Button -->
+<div class="pt-2">
+<button class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#c084fc] hover:bg-purple-400 text-white font-medium text-xs shadow-sm transition">
+<svg class="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Geocodificar y enviar WhatsApp</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Grid: Protocol Card & Pending Response Card -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8" data-purpose="protocol-summary-section">
+<!-- Protocol Info Left Card -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+<!-- Header ID & status -->
+<div class="flex items-center gap-2.5 mb-2">
+<span class="text-base font-bold text-slate-900">PD-PROT-0012</span>
+<span class="text-[11px] font-medium bg-[#fef3c7] text-[#b45309] px-2.5 py-0.5 rounded-full">
+                Esperando cliente
+              </span>
+</div>
+<!-- Location details -->
+<div class="space-y-0.5 mb-3">
+<p class="text-xs font-semibold text-slate-800">Calle Falsa 123</p>
+<p class="text-[11px] text-slate-400">0.00000, 0.00000</p>
+<a class="inline-block text-xs font-medium text-blue-600 hover:underline pt-0.5" href="#">Abrir en Google Maps</a>
+</div>
+<!-- Divider -->
+<hr class="border-slate-100 my-4"/>
+<!-- Resumen Checklist -->
+<div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">RESUMEN</p>
+<ul class="space-y-2 text-xs text-slate-600">
+<li class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0"></span>
+<span>Estado: Esperando cliente</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0"></span>
+<span>Dirección: Calle Falsa 123</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0"></span>
+<span>Se contactó al cliente por WhatsApp (...0012)</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0"></span>
+<span>Pendiente: esperando confirmación del cliente</span>
+</li>
+</ul>
+</div>
+<!-- Bottom link -->
+<div class="mt-5 pt-1">
+<a class="text-xs font-medium text-blue-600 hover:underline" href="#">Ver detalle técnico</a>
+</div>
+</div>
+<!-- Waiting Status Right Card -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-start">
+<div class="flex items-center gap-2.5 text-[#d97706]">
+<!-- Spinner Icon -->
+<svg class="w-4 h-4 animate-spin text-[#d97706]" fill="none" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor"></path>
+</svg>
+<span class="text-xs font-medium text-[#b45309]">Esperando respuesta del cliente...</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1.5 ml-6">Se actualiza solo cada 3 segundos</p>
+</div>
+</div>
+</div>
+</main>
+<!-- END: MainContentArea -->
+</div>
+</body></html>

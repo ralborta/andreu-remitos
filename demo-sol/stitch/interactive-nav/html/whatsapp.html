@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f8f9fc]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contactos - Empliados</title>
+<!-- Tailwind CSS v3 CDN with forms and container plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Custom thin scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .dark-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    .dark-scroll::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="h-full overflow-hidden text-slate-800 flex font-sans antialiased text-sm">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none z-20" data-purpose="main-sidebar">
+<!-- Top brand & navigation items -->
+<div class="flex flex-col overflow-y-auto">
+<!-- Logo Header -->
+<div class="h-16 px-5 flex items-center gap-2 border-b border-slate-100">
+<span class="text-xl font-bold tracking-tight text-slate-900">Empli<span class="text-purple-600">ados</span></span>
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium border border-amber-200">DEMO offline</span>
+</div>
+<!-- Navigation groups -->
+<div class="p-3 space-y-6">
+<!-- Main items -->
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-[13px] font-medium" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Torre de Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-[13px] font-medium" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Monitor</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-[13px] font-medium" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Tracking Express</span>
+</a>
+<!-- Active WhatsApp link -->
+<a class="flex items-center justify-between px-3 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200/80 font-medium text-[13px] shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-purple-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6.454 3.09 1.25 4.36L2.5 21.5l4.37-1.164a8.966 8.966 0 004.38 1.144c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>WhatsApp</span>
+</div>
+<span class="text-[10px] uppercase tracking-wide bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded">Nuevo</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-[13px] font-medium" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Métricas</span>
+</a>
+</nav>
+<!-- Section: AGENTES -->
+<div>
+<div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-1">Agentes</div>
+<nav class="space-y-0.5">
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Remitos</span>
+</div>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6.454 3.09 1.25 4.36L2.5 21.5l4.37-1.164a8.966 8.966 0 004.38 1.144c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+</nav>
+</div>
+<!-- Section: OPERACIÓN -->
+<div>
+<div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-1">Operación</div>
+<nav class="space-y-0.5">
+<a class="flex items-center gap-3 px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Chat Central</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Usuarios</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-slate-600 rounded-lg hover:bg-slate-50 text-[13px]" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span>Parámetros maestros</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+<!-- User Profile Footer -->
+<div class="p-3 border-t border-slate-200">
+<div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition cursor-pointer">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">GO</div>
+<div class="leading-tight">
+<p class="text-xs font-semibold text-slate-800">Gonzalo Demo</p>
+<p class="text-[11px] text-slate-400">Administrador</p>
+</div>
+</div>
+<svg class="w-4 h-4 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContentArea -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8f9fc]">
+<!-- BEGIN: TopBar -->
+<header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0" data-purpose="top-navigation-bar">
+<div class="text-xs font-medium text-slate-500">
+        Torre y agentes · consultas en Chat Central
+      </div>
+<div class="flex items-center gap-4">
+<!-- Sistemas activos badge -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Sistemas activos
+        </span>
+<!-- Dark mode toggle button -->
+<button class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<!-- Bell button with badge -->
+<button class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg relative" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-purple-600 ring-2 ring-white"></span>
+</button>
+<!-- Clock -->
+<div class="text-right">
+<div class="text-xs font-semibold text-slate-800">06:41:57 p. m.</div>
+<div class="text-[10px] text-slate-400">Mié, 09 Sept</div>
+</div>
+<!-- Sol Logística Logo -->
+<div class="h-7 px-2 border border-slate-200 rounded flex items-center justify-center bg-white shadow-xs">
+<span class="text-xs font-black tracking-widest text-slate-900 font-serif">SOL</span>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContentBody -->
+<main class="flex-1 flex flex-col p-6 overflow-hidden min-h-0" data-purpose="contactos-workspace">
+<!-- Title and Subtitle -->
+<div class="flex items-center gap-3.5 mb-5">
+<div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 shadow-sm shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6.454 3.09 1.25 4.36L2.5 21.5l4.37-1.164a8.966 8.966 0 004.38 1.144c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Contactos</h1>
+<p class="text-xs text-slate-500">WhatsApp con choferes — respondé desde acá (como support-desk, mejorado)</p>
+</div>
+</div>
+<!-- Filters & Actions Header -->
+<div class="flex items-center justify-between mb-4 shrink-0">
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-1 rounded-full bg-purple-600 text-white font-medium text-xs shadow-sm" type="button">Todos</button>
+<button class="px-3.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-xs transition" type="button">TransitOne</button>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-medium shadow-2xs transition" type="button">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Actualizar
+        </button>
+</div>
+<!-- 3-Panel Columns Grid -->
+<div class="flex-1 grid grid-cols-12 gap-5 min-h-0 overflow-hidden">
+<!-- ======================= PANEL 1: CHOFERES ======================= -->
+<!-- BEGIN: ChoferesListPanel -->
+<section class="col-span-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden" data-purpose="drivers-list-column">
+<div class="p-3 border-b border-slate-100 flex flex-col gap-2">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Choferes</span>
+<div class="relative">
+<input class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:bg-white transition" placeholder="Buscar chofer o teléfono..." type="text"/>
+<svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+</div>
+<!-- Driver items list -->
+<div class="flex-1 overflow-y-auto divide-y divide-slate-100">
+<!-- Active Chofer 1 -->
+<div class="p-3 bg-slate-50/80 cursor-pointer border-l-4 border-purple-600 transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">Raúl Alborta</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-cyan-50 text-cyan-700 border border-cyan-200">TransitOne</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91133788190</p>
+<p class="text-xs text-slate-500 truncate">Hola, Raúl Alborta. Recordatorio: el viaje *VJ-2026...</p>
+</div>
+<!-- Chofer 2 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">Gonzalo</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91160156473</p>
+<p class="text-xs text-slate-500 truncate">Hola Gonzalo, tu reserva para el viaje de Tigre a M...</p>
+</div>
+<!-- Chofer 3 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">Marioly R. 🎈</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91130370101</p>
+<p class="text-xs text-slate-500 truncate">¿Necesitás ayuda con un viaje o tenés un reclamo?</p>
+</div>
+<!-- Chofer 4 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">Off Allowlist</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-cyan-50 text-cyan-700 border border-cyan-200">TransitOne</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91198800999</p>
+<p class="text-xs text-slate-500 truncate">Tu incidencia *INC-20260811-0035-PI* está *en g...</p>
+</div>
+<!-- Chofer 5 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">V11Ctrl</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91198800108</p>
+<p class="text-xs text-slate-500 truncate">Recibí tu mensaje de viaje pero tuve un problema: ...</p>
+</div>
+<!-- Chofer 6 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">V11Ctrl</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-cyan-50 text-cyan-700 border border-cyan-200">TransitOne</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91198800106</p>
+<p class="text-xs text-slate-500 truncate">Listo, cancelamos lo anterior. Seguimos con lo act...</p>
+</div>
+<!-- Chofer 7 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">V11Ctrl</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91198800105</p>
+<p class="text-xs text-slate-500 truncate">Entiendo que estás necesitando un viaje a Mendoz...</p>
+</div>
+<!-- Chofer 8 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">V11Ctrl</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91198800104</p>
+<p class="text-xs text-slate-500 truncate">faltan 2 pallets</p>
+</div>
+<!-- Chofer 9 -->
+<div class="p-3 hover:bg-slate-50 cursor-pointer transition">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-semibold text-xs text-slate-900">V11Ctrl</span>
+</div>
+<p class="text-[11px] text-emerald-600 font-medium mb-1">+54 91198800103</p>
+<p class="text-xs text-slate-500 truncate">Seguimos con tu *viaje*. ¿Me pasás el dato que fal...</p>
+</div>
+</div>
+</section>
+<!-- END: ChoferesListPanel -->
+<!-- ======================= PANEL 2: CONVERSACIÓN ======================= -->
+<!-- BEGIN: WhatsAppChatPanel -->
+<section class="col-span-5 bg-[#121b22] rounded-2xl flex flex-col overflow-hidden text-slate-200 shadow-sm border border-slate-800" data-purpose="chat-active-conversation">
+<!-- Conversation Header -->
+<div class="px-4 py-3 bg-[#1f2c34] flex items-center justify-between border-b border-slate-700/60 shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-purple-700 text-white font-bold text-xs flex items-center justify-center shadow">
+                RA
+              </div>
+<div>
+<div class="text-xs font-semibold text-white leading-tight">Raúl Alborta</div>
+<div class="text-[11px] text-slate-400">+54 91133788190</div>
+</div>
+</div>
+<span class="px-2 py-0.5 text-[11px] font-medium rounded bg-emerald-900/60 text-emerald-400 border border-emerald-700/50">WhatsApp</span>
+</div>
+<!-- Chat History -->
+<div class="flex-1 p-4 overflow-y-auto space-y-3 dark-scroll flex flex-col justify-start">
+<!-- Message 1 (Incoming / Agente context message) -->
+<div class="max-w-[85%] bg-[#1f2c34] rounded-lg p-3 text-xs leading-relaxed text-slate-200 shadow-sm self-start border border-slate-700/50">
+<p>Abrí el enlace para confirmar y empezar:</p>
+<a class="text-sky-400 hover:underline break-all" href="#">https://sol.nivel41.com/tracking/t/jiSpWAiGWei-Y8k80e4G16uRHzjUbHSh2qVbslwAPI0</a>
+<div class="text-[10px] text-slate-400 text-right mt-1.5 font-mono">27/8, 03:37 a. m.</div>
+</div>
+<!-- Message 2 (Outgoing Agent message) -->
+<div class="max-w-[85%] bg-[#005c4b]/50 rounded-lg p-3 text-xs leading-relaxed text-slate-200 shadow-sm self-start border border-emerald-900/50">
+<span class="text-[10px] font-semibold text-emerald-400 block mb-1">Agente</span>
+<p>Hola, Raúl Alborta. Recordatorio: el viaje *VJ-20260821-001* todavía no tiene seguimiento activo.</p>
+<p class="mt-2">Abrí el enlace para confirmar y empezar:</p>
+<a class="text-sky-400 hover:underline break-all" href="#">https://sol.nivel41.com/tracking/t/jiSpWAiGWei-Y8k80e4G16uRHzjUbHSh2qVbslwAPI0</a>
+<div class="text-[10px] text-slate-400 text-right mt-1.5 font-mono">27/8, 04:07 a. m.</div>
+</div>
+<!-- Message 3 (Outgoing Agent message repeating alert) -->
+<div class="max-w-[85%] bg-[#005c4b]/50 rounded-lg p-3 text-xs leading-relaxed text-slate-200 shadow-sm self-start border border-emerald-900/50">
+<span class="text-[10px] font-semibold text-emerald-400 block mb-1">Agente</span>
+<p>Hola, Raúl Alborta. Recordatorio: el viaje *VJ-20260821-001* todavía no tiene seguimiento activo.</p>
+<p class="mt-2">Abrí el enlace para confirmar y empezar:</p>
+<a class="text-sky-400 hover:underline break-all" href="#">https://sol.nivel41.com/tracking/t/jiSpWAiGWei-Y8k80e4G16uRHzjUbHSh2qVbslwAPI0</a>
+<div class="text-[10px] text-slate-400 text-right mt-1.5 font-mono">27/8, 04:37 a. m.</div>
+</div>
+<!-- Message 4 (Outgoing Agent message) -->
+<div class="max-w-[85%] bg-[#005c4b]/50 rounded-lg p-3 text-xs leading-relaxed text-slate-200 shadow-sm self-start border border-emerald-900/50">
+<span class="text-[10px] font-semibold text-emerald-400 block mb-1">Agente</span>
+<p>Hola, Raúl Alborta. Recordatorio: el viaje *VJ-20260821-001* todavía no tiene seguimiento activo.</p>
+<p class="mt-2">Abrí el enlace para confirmar y empezar:</p>
+<a class="text-sky-400 hover:underline break-all" href="#">https://sol.nivel41.com/tracking/t/jiSpWAiGWei-Y8k80e4G16uRHzjUbHSh2qVbslwAPI0</a>
+<div class="text-[10px] text-slate-400 text-right mt-1.5 font-mono">27/8, 05:07 a. m.</div>
+</div>
+</div>
+<!-- Bottom controls and Input form -->
+<div class="p-3 bg-[#1f2c34] border-t border-slate-700/60 shrink-0">
+<!-- Toggles top row -->
+<div class="flex items-center justify-between mb-2 text-xs text-slate-300">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input class="w-3.5 h-3.5 rounded bg-[#2a3942] border-slate-600 text-purple-600 focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="text-[11px] text-slate-300">Nota interna (no va a WhatsApp)</span>
+</label>
+<button class="inline-flex items-center gap-1 text-[11px] text-slate-300 hover:text-white transition" type="button">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                Pausar bot
+              </button>
+</div>
+<!-- Input and Send button -->
+<div class="flex items-center gap-2">
+<input class="flex-1 bg-[#2a3942] border border-slate-600/80 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition" placeholder="Escribí al chofer por WhatsApp..." type="text"/>
+<button class="w-9 h-9 rounded-lg bg-[#00a884] hover:bg-[#029071] text-white flex items-center justify-center transition shadow-sm shrink-0" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+</button>
+</div>
+</div>
+</section>
+<!-- END: WhatsAppChatPanel -->
+<!-- ======================= PANEL 3: ÚLTIMO REMITO ======================= -->
+<!-- BEGIN: RemitoPreviewPanel -->
+<section class="col-span-4 bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between overflow-hidden" data-purpose="remito-detail-column">
+<div class="flex flex-col h-full">
+<h2 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">Último Remito</h2>
+<!-- Document Scan Container -->
+<div class="flex-1 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center p-2 relative shadow-inner">
+<!-- Realistic SVG representation of TransitOne Remito (Guía de transporte de cargas sólidas) -->
+<svg class="w-full h-full object-contain drop-shadow-sm bg-white border border-slate-300 rounded" viewbox="0 0 500 700" xmlns="http://www.w3.org/2000/svg">
+<!-- Header of Document -->
+<rect fill="#fcfdfd" height="700" width="500" x="0" y="0"></rect>
+<!-- Logo & Brand Header -->
+<path d="M25,25 L45,25 L55,45 L35,45 Z" fill="#0284c7"></path>
+<path d="M40,25 L60,25 L70,45 L50,45 Z" fill="#0369a1"></path>
+<text fill="#0f172a" font-family="sans-serif" font-size="20" font-weight="900" x="75" y="42">Transit<tspan fill="#0284c7">One</tspan></text>
+<text fill="#64748b" font-family="sans-serif" font-size="6" letter-spacing="1" x="76" y="52">LOGÍSTICA QUE CONECTA</text>
+<!-- Box "G" Document Type -->
+<rect fill="none" height="30" stroke="#0f172a" stroke-width="1.5" width="30" x="235" y="15"></rect>
+<text fill="#0f172a" font-family="sans-serif" font-size="20" font-weight="bold" x="244" y="37">G</text>
+<text fill="#0f172a" font-family="sans-serif" font-size="7" font-weight="bold" x="215" y="55">GUÍA DE TRANSPORTE</text>
+<text fill="#0f172a" font-family="sans-serif" font-size="7" font-weight="bold" x="223" y="63">CARGAS SÓLIDAS</text>
+<!-- Document Number Box -->
+<rect fill="none" height="20" stroke="#94a3b8" stroke-width="1" width="120" x="360" y="15"></rect>
+<text fill="#0f172a" font-family="monospace" font-size="9" x="370" y="28">13 | 05 | 25</text>
+<text fill="#0f172a" font-family="sans-serif" font-size="9" font-weight="bold" x="360" y="46">Nº 00019584</text>
+<text fill="#64748b" font-family="sans-serif" font-size="6" x="360" y="56">UNIRS / UNPH</text>
+<!-- Sub-bar document info -->
+<rect fill="#e2e8f0" height="14" stroke="#cbd5e1" width="460" x="20" y="70"></rect>
+<text fill="#475569" font-family="sans-serif" font-size="6.5" font-weight="bold" x="130" y="80">DOCUMENTO NO VALIDO COMO FACTURA</text>
+<!-- Field lines & Metadata -->
+<g fill="#334155" font-family="sans-serif" font-size="7.5">
+<!-- Row 1 -->
+<text x="22" y="100">PROCEDENCIA:</text>
+<text fill="#0369a1" font-style="italic" x="80" y="100">Mendoza / Guaymallén</text>
+<text x="310" y="100">DESTINO:</text>
+<text fill="#0369a1" font-style="italic" x="355" y="100">C.A.B.A. / Retiro</text>
+<line stroke="#cbd5e1" stroke-width="0.75" x1="20" x2="480" y1="105" y2="105"></line>
+<!-- Row 2 -->
+<text x="22" y="118">CHASIS Nº:</text>
+<text font-style="italic" x="75" y="118">AE 123 CD</text>
+<text x="160" y="118">ACOPLADO Nº:</text>
+<text font-style="italic" x="225" y="118">LRK 789</text>
+<text x="310" y="118">CONDUCTOR:</text>
+<text font-style="italic" x="375" y="118">Pereyra, Juan C.</text>
+<line stroke="#cbd5e1" stroke-width="0.75" x1="20" x2="480" y1="123" y2="123"></line>
+<!-- Row 3 -->
+<text x="22" y="136">SUB-CONTRATISTA:</text>
+<text font-style="italic" x="100" y="136">TransitOne</text>
+<text x="180" y="136">Nº INTERNO:</text>
+<text font-style="italic" x="235" y="136">0415</text>
+<text x="310" y="136">OPERACIÓN:</text>
+<text font-style="italic" x="365" y="136">Carga general</text>
+<line stroke="#cbd5e1" stroke-width="0.75" x1="20" x2="480" y1="141" y2="141"></line>
+<!-- Row 4 -->
+<text x="22" y="154">SALIDA DE BASE: 13/05/25</text>
+<text x="170" y="154">Hs: 07:15</text>
+<text x="310" y="154">Kilómetros: 275560</text>
+<line stroke="#94a3b8" stroke-width="1" x1="20" x2="480" y1="159" y2="159"></line>
+</g>
+<!-- Table Header Items -->
+<rect fill="#f1f5f9" height="16" stroke="#94a3b8" stroke-width="0.75" width="460" x="20" y="165"></rect>
+<g fill="#1e293b" font-family="sans-serif" font-size="7" font-weight="bold">
+<text x="30" y="176">ITEM</text>
+<text x="65" y="176">CANTIDAD</text>
+<text x="170" y="176">DESCRIPCIÓN</text>
+<text x="430" y="176">KILOGRAMOS</text>
+</g>
+<!-- Table Content Lines -->
+<line stroke="#cbd5e1" stroke-width="0.75" x1="55" x2="55" y1="165" y2="280"></line>
+<line stroke="#cbd5e1" stroke-width="0.75" x1="110" x2="110" y1="165" y2="280"></line>
+<line stroke="#cbd5e1" stroke-width="0.75" x1="410" x2="410" y1="165" y2="300"></line>
+<g fill="#334155" font-family="sans-serif" font-size="8" font-style="italic">
+<text x="35" y="195">1</text>
+<text x="75" y="195">4</text>
+<text x="125" y="195">Cajas 0186 - 0473</text>
+<text x="435" y="195">1200</text>
+<line stroke="#e2e8f0" stroke-width="0.5" x1="20" x2="480" y1="202" y2="202"></line>
+<text x="35" y="217">2</text>
+<text x="75" y="217">2</text>
+<text x="125" y="217">Bulto 34225</text>
+<text x="435" y="217">450</text>
+<line stroke="#e2e8f0" stroke-width="0.5" x1="20" x2="480" y1="224" y2="224"></line>
+<text x="35" y="239">3</text>
+<text x="75" y="239">3</text>
+<text x="125" y="239">Bultos 30/70</text>
+<text x="435" y="239">900</text>
+<line stroke="#e2e8f0" stroke-width="0.5" x1="20" x2="480" y1="246" y2="246"></line>
+</g>
+<!-- Total Weight Box -->
+<rect fill="none" height="20" stroke="#94a3b8" stroke-width="0.75" width="460" x="20" y="280"></rect>
+<text fill="#0f172a" font-family="sans-serif" font-size="7.5" font-weight="bold" x="340" y="293">TOTAL (Transportado):</text>
+<text fill="#0284c7" font-family="sans-serif" font-size="9" font-weight="bold" x="435" y="294">2550</text>
+<!-- Checklist boxes -->
+<rect fill="none" height="40" stroke="#cbd5e1" width="460" x="20" y="310"></rect>
+<text fill="#64748b" font-family="sans-serif" font-size="6" font-weight="bold" x="25" y="322">LLENAR CON UNA CRUZ LO QUE CORRESPONDA</text>
+<!-- Signatures & Stamp block -->
+<g transform="translate(0, 360)">
+<text fill="#334155" font-family="sans-serif" font-size="7" x="25" y="20">Llegada a lugar de descarga: 13/05/25 Hs: 07:30</text>
+<text fill="#334155" font-family="sans-serif" font-size="7" x="25" y="35">Salida de lugar de descarga: 13/05/25 Hs: 08:00</text>
+<text fill="#334155" font-family="sans-serif" font-size="7" x="25" y="55">Inicio descarga: -</text>
+<text fill="#334155" font-family="sans-serif" font-size="7" x="260" y="20">Llegada a lugar de descarga: 14/05/25 Hs: 14:10</text>
+<text fill="#334155" font-family="sans-serif" font-size="7" x="260" y="35">Salida lugar de descarga: 14/05/25 Hs: 15:00</text>
+<line stroke="#94a3b8" stroke-width="0.75" x1="20" x2="480" y1="70" y2="70"></line>
+<text fill="#334155" font-family="sans-serif" font-size="7" x="25" y="85">LLegada a base: 14/05/25 Hs: 19:35</text>
+<text fill="#334155" font-family="sans-serif" font-size="7" x="260" y="85">Kilómetros: 276480</text>
+<!-- Signatures Lines -->
+<path d="M60,140 Q90,120 120,135 T150,130" fill="none" opacity="0.8" stroke="#2563eb" stroke-width="1.5"></path>
+<line stroke="#94a3b8" stroke-width="1" x1="50" x2="160" y1="145" y2="145"></line>
+<text fill="#64748b" font-family="sans-serif" font-size="7" x="75" y="155">TransitOne</text>
+<path d="M340,142 Q370,125 390,138 T420,135" fill="none" opacity="0.8" stroke="#1e293b" stroke-width="1.5"></path>
+<line stroke="#94a3b8" stroke-width="1" x1="330" x2="440" y1="145" y2="145"></line>
+<text fill="#64748b" font-family="sans-serif" font-size="7" x="375" y="155">Chofer</text>
+</g>
+<!-- Outer doc frame border -->
+<rect fill="none" height="680" rx="4" stroke="#94a3b8" stroke-width="1.5" width="480" x="10" y="10"></rect>
+</svg>
+</div>
+<!-- Footer Details & Action Button -->
+<div class="mt-3">
+<p class="text-xs text-slate-500 font-medium text-center mb-2.5">
+                TransitOne · pendiente revision
+              </p>
+<button class="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2" type="button">
+                Abrir remito
+              </button>
+</div>
+</div>
+</section>
+<!-- END: RemitoPreviewPanel -->
+</div>
+</main>
+<!-- END: MainContentBody -->
+</div>
+<!-- END: MainContentArea -->
+</body></html>

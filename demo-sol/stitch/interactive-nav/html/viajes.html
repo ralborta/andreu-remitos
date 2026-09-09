@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Agente de Gestión de Viajes - Empliados</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Custom Config -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Subtle custom scrollbar for dashboard consistency */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+  </style>
+</head>
+<body class="bg-[#f8f9fc] text-slate-700 antialiased font-sans flex h-screen overflow-hidden text-[13px]">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 h-full overflow-y-auto select-none" data-purpose="sidebar">
+<div class="p-4">
+<!-- App Brand / Logo -->
+<div class="flex items-center gap-2 mb-6 px-2">
+<div class="flex items-center">
+<span class="text-xl font-bold tracking-tight text-slate-900">Emplia</span>
+<span class="text-xl font-bold tracking-tight text-pink-500">dos</span>
+</div>
+<span class="text-[10px] font-medium bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full border border-amber-200/60 ml-auto">DEMO offline</span>
+</div>
+<!-- General Navigation Section -->
+<nav aria-label="General" class="space-y-1 mb-6">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Torre de Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Monitor</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>WhatsApp</span>
+</div>
+<span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Nuevo</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors group" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Métricas</span>
+</a>
+</nav>
+<!-- AGENTES Section -->
+<div class="mb-4">
+<p class="text-[11px] font-semibold text-slate-400 tracking-wider uppercase px-3 mb-2">Agentes</p>
+<div class="space-y-1">
+<!-- Active Item: Gestión de Viajes -->
+<a class="flex items-center justify-between px-3 py-2 text-brand-700 bg-brand-50/80 rounded-lg font-medium border border-brand-200/70 shadow-sm" href="#">
+<div class="flex items-center gap-2.5">
+<span class="p-1 bg-brand-100 text-brand-600 rounded">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<span>Gestión de Viajes</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Tracking Express</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Remitos</span>
+</div>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Destinos</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Incidencias</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Rendición</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>ETA</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>POP/POD</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Reclamos</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Analítica</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+</a>
+</div>
+</div>
+<!-- OPERACIÓN Section -->
+<div class="mb-2">
+<p class="text-[11px] font-semibold text-slate-400 tracking-wider uppercase px-3 mb-2">Operación</p>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Chat Central</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Usuarios</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Parámetros maestros</span>
+</a>
+</div>
+</div>
+</div>
+<!-- User Profile Footer -->
+<div class="p-3 border-t border-slate-200">
+<div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
+            GO
+          </div>
+<div class="leading-tight">
+<p class="font-semibold text-slate-800 text-xs">Gonzalo Demo</p>
+<p class="text-[11px] text-slate-400">Administrador</p>
+</div>
+</div>
+<button aria-label="Cerrar sesión" class="text-slate-400 hover:text-slate-600 p-1" title="Cerrar sesión">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContentWrapper -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- Top Header Bar -->
+<header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0" data-purpose="top-navigation-bar">
+<!-- Breadcrumbs -->
+<div class="flex items-center text-xs text-slate-500 font-medium">
+<span>Torre y agentes</span>
+<span class="mx-2 text-slate-300">·</span>
+<span class="text-slate-600">consultas en Chat Central</span>
+</div>
+<!-- Right Header Actions -->
+<div class="flex items-center gap-4">
+<!-- System Status Badge -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Dark mode toggle icon -->
+<button aria-label="Tema" class="text-slate-400 hover:text-slate-600 p-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="text-slate-400 hover:text-slate-600 p-1 relative">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
+</button>
+<!-- Current Time & Date -->
+<div class="text-right leading-tight border-l border-slate-200 pl-4">
+<p class="text-xs font-semibold text-slate-800">06:42:12 p. m.</p>
+<p class="text-[10px] text-slate-400 font-medium">Mié, 09 Sept</p>
+</div>
+<!-- Org Brand Logo Badge -->
+<div class="ml-1 px-2 py-0.5 border border-slate-200 rounded font-black text-xs text-slate-800 tracking-tighter">
+          SOL
+        </div>
+</div>
+</header>
+<!-- Scrollable Main View Area -->
+<main class="flex-1 overflow-y-auto px-8 py-6 space-y-6" data-purpose="dashboard-body">
+<!-- BEGIN: HeroAgentTitle -->
+<section class="flex items-center gap-3" data-purpose="agent-header">
+<div class="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 shadow-sm">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="text-xl font-bold text-slate-900 tracking-tight">Agente de Gestión de Viajes</h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Operativo
+            </span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Configura y administra los horarios y disponibilidad de tu flota</p>
+</div>
+</section>
+<!-- END: HeroAgentTitle -->
+<!-- BEGIN: MetricCardsGrid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-5" data-purpose="kpi-metrics-grid">
+<!-- KPI 1 -->
+<div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+<p class="text-xs font-medium text-slate-500">Viajes coordinados hoy</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-bold text-slate-900 tracking-tight">97</span>
+</div>
+<div class="mt-2 flex items-center gap-1 text-xs font-medium text-emerald-600">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>+14%</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+<p class="text-xs font-medium text-slate-500">Uso de flota</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-bold text-slate-900 tracking-tight">91%</span>
+</div>
+<div class="mt-2 flex items-center gap-1 text-xs font-medium text-emerald-600">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>+8 pts</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+<p class="text-xs font-medium text-slate-500">Tiempo de asignación</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-bold text-slate-900 tracking-tight">3,6 min</span>
+</div>
+<div class="mt-2 flex items-center gap-1 text-xs font-medium text-emerald-600">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>-63%</span>
+</div>
+</div>
+</section>
+<!-- END: MetricCardsGrid -->
+<!-- BEGIN: ManagementHeaderActions -->
+<section class="flex items-center justify-between pt-2" data-purpose="trips-section-header">
+<div>
+<h2 class="text-lg font-bold text-slate-900 tracking-tight">Gestión de Viajes</h2>
+<p class="text-xs text-slate-500 mt-0.5">Configura y administra los horarios y disponibilidad de tu flota</p>
+</div>
+<div class="flex items-center gap-3">
+<button aria-label="Alertas" class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors shadow-xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#7c3aed] hover:bg-[#6d28d9] text-white text-xs font-medium rounded-xl shadow-xs transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Nuevo Viaje</span>
+</button>
+</div>
+</section>
+<!-- END: ManagementHeaderActions -->
+<!-- Navigation Tabs -->
+<div class="border-b border-slate-200">
+<nav class="flex space-x-6 text-xs font-medium">
+<button class="pb-2.5 text-brand-700 border-b-2 border-brand-600 font-semibold focus:outline-none">
+            Viajes
+          </button>
+<button class="pb-2.5 text-slate-500 hover:text-slate-800 focus:outline-none transition-colors">
+            Tracking Express
+          </button>
+<button class="pb-2.5 text-slate-500 hover:text-slate-800 focus:outline-none transition-colors">
+            Choferes
+          </button>
+<button class="pb-2.5 text-slate-500 hover:text-slate-800 focus:outline-none transition-colors">
+            Camiones
+          </button>
+</nav>
+</div>
+<!-- BEGIN: RegisteredTripsTable -->
+<section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden" data-purpose="trips-table-container">
+<!-- Table Card Header -->
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<div>
+<h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Viajes Registrados</h3>
+<p class="text-xs text-slate-400 mt-1">Click en un viaje para ver el detalle. Quedan grabados al confirmar la reserva por WhatsApp.</p>
+</div>
+<div class="flex items-center gap-1 text-xs text-slate-400 font-medium">
+<span>2 viajes</span>
+<button aria-label="Recargar tabla" class="p-1 hover:text-slate-600">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Responsive Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-slate-50/60 text-slate-400 font-semibold border-b border-slate-100 uppercase tracking-wider text-[10px]">
+<tr>
+<th class="px-5 py-3" scope="col">Viaje</th>
+<th class="px-5 py-3" scope="col">Fecha / Hora</th>
+<th class="px-5 py-3" scope="col">Cliente</th>
+<th class="px-5 py-3" scope="col">Ruta</th>
+<th class="px-5 py-3" scope="col">Carga</th>
+<th class="px-5 py-3" scope="col">Chofer</th>
+<th class="px-5 py-3" scope="col">Unidad</th>
+<th class="px-5 py-3 text-right" scope="col">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-normal text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-5 py-3.5 font-semibold text-slate-900">VJ-20260821-001</td>
+<td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">21/08/2026 · 16:00</td>
+<td class="px-5 py-3.5">Gonzalo</td>
+<td class="px-5 py-3.5 whitespace-nowrap">Tigre <span class="text-slate-400">→</span> Mar del Plata</td>
+<td class="px-5 py-3.5">arena 10 t</td>
+<td class="px-5 py-3.5">Raúl Alborta</td>
+<td class="px-5 py-3.5 whitespace-nowrap">volcador · AF654KL</td>
+<td class="px-5 py-3.5 text-right">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    Cancelado
+                  </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-5 py-3.5 font-semibold text-slate-900">VJ-20260809-001</td>
+<td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">11/08/2026 · 09:00</td>
+<td class="px-5 py-3.5">Marioly R. ❣️</td>
+<td class="px-5 py-3.5 whitespace-nowrap">Tigre <span class="text-slate-400">→</span> Córdoba</td>
+<td class="px-5 py-3.5">muebles de madera 1.5 t</td>
+<td class="px-5 py-3.5">Diego Fernández</td>
+<td class="px-5 py-3.5 whitespace-nowrap">sider · AH111OP</td>
+<td class="px-5 py-3.5 text-right">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    Cerrado
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: RegisteredTripsTable -->
+<!-- BEGIN: InteractiveAssistantSection -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-8" data-purpose="chat-assistant-container">
+<!-- Left 2 Cols: Travel Chatbot Interactive Center -->
+<div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between p-6 min-h-[360px]">
+<!-- Chat Card Sub-header -->
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-xl bg-[#7c3aed] flex items-center justify-center text-white">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<p class="font-bold text-slate-900 text-xs">Viajes</p>
+<div class="flex items-center gap-1 text-[11px] text-slate-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>En línea</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs">
+<button class="flex items-center gap-1.5 text-slate-500 hover:text-slate-800">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Historial</span>
+</button>
+<button class="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-medium">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Nueva conversación</span>
+</button>
+</div>
+</div>
+<!-- Chat Center Prompt Prompt -->
+<div class="py-12 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+<div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 mb-4">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h4 class="text-base font-bold text-slate-800 mb-1 tracking-tight">¿Qué necesitás saber de Viajes?</h4>
+<p class="text-xs text-slate-400">Consultá viajes reales. Demoras se ven en ETA/Incidencias (no hay estado demorado aquí).</p>
+</div>
+<!-- Question Pills / Suggestions -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+<button class="p-2.5 text-left rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-[11px] text-slate-600 transition-colors truncate">
+              ¿Cuántos activos?
+            </button>
+<button class="p-2.5 text-left rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-[11px] text-slate-600 transition-colors truncate">
+              ¿Cuántos creados hoy?
+            </button>
+<button class="p-2.5 text-left rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-[11px] text-slate-600 transition-colors truncate">
+              ¿Cuáles son?
+            </button>
+<button class="p-2.5 text-left rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-[11px] text-slate-600 transition-colors truncate">
+              mostrame últimos 5
+            </button>
+</div>
+</div>
+<!-- Right Col: Suggested Prompts Guide -->
+<div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 flex flex-col">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<h4 class="text-xs font-bold text-slate-800 tracking-wider uppercase">Qué podés preguntar</h4>
+<a class="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1" href="#">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Guía</span>
+</a>
+</div>
+<p class="text-[11px] text-slate-400 mt-2 mb-4">El chat consulta datos reales de Viajes. Tocá un ejemplo para enviarlo.</p>
+<div class="space-y-4 text-xs">
+<!-- Group 1: Conteos -->
+<div>
+<p class="text-[10px] font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5 mb-1.5">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Conteos</span>
+</p>
+<ul class="space-y-1 text-slate-600 pl-4 list-disc marker:text-slate-300">
+<li class="cursor-pointer hover:text-brand-600 transition-colors">¿Cuántos viajes hay?</li>
+<li class="cursor-pointer hover:text-brand-600 transition-colors">¿Cuántos activos?</li>
+<li class="cursor-pointer hover:text-brand-600 transition-colors">¿Cuántos creados hoy?</li>
+</ul>
+</div>
+<!-- Group 2: Listados -->
+<div>
+<p class="text-[10px] font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5 mb-1.5">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Listados</span>
+</p>
+<ul class="space-y-1 text-slate-600 pl-4 list-disc marker:text-slate-300">
+<li class="cursor-pointer hover:text-brand-600 transition-colors">¿Cuáles son?</li>
+<li class="cursor-pointer hover:text-brand-600 transition-colors">¿Qué viajes van a Córdoba?</li>
+<li class="cursor-pointer hover:text-brand-600 transition-colors">Últimos N</li>
+</ul>
+</div>
+<!-- Group 3: Detalle -->
+<div>
+<p class="text-[10px] font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5 mb-1.5">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Detalle</span>
+</p>
+<ul class="space-y-1 text-slate-600 pl-4 list-disc marker:text-slate-300">
+<li class="cursor-pointer hover:text-brand-600 transition-colors">¿Qué chofer / tractor tiene este viaje?</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- END: InteractiveAssistantSection -->
+</main>
+</div>
+<!-- END: MainContentWrapper -->
+</body></html>

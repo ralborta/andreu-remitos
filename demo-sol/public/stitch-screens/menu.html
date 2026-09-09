@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SOL Control Tower - Menú Interactivo Demo</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-tint": "#0053db",
+            "secondary-container": "#dae2fd",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#6ffbbe",
+            "on-tertiary-fixed": "#002113",
+            "on-tertiary-container": "#bdffdb",
+            "on-error-container": "#93000a",
+            "outline-variant": "#c3c6d7",
+            "surface-dim": "#cbdbf5",
+            "surface-container-highest": "#d3e4fe",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-primary": "#ffffff",
+            "outline": "#737686",
+            "on-surface-variant": "#434655",
+            "on-primary-container": "#eeefff",
+            "tertiary": "#006242",
+            "inverse-primary": "#b4c5ff",
+            "on-primary-fixed": "#00174b",
+            "inverse-on-surface": "#eaf1ff",
+            "on-secondary-fixed": "#131b2e",
+            "primary-fixed-dim": "#b4c5ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#eff4ff",
+            "on-error": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "tertiary-fixed-dim": "#4edea3",
+            "primary": "#004ac6",
+            "surface-container-high": "#dce9ff",
+            "background": "#f8f9ff",
+            "primary-fixed": "#dbe1ff",
+            "primary-container": "#2563eb",
+            "on-secondary": "#ffffff",
+            "error": "#ba1a1a",
+            "surface": "#f8f9ff",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-surface": "#0b1c30",
+            "surface-variant": "#d3e4fe",
+            "tertiary-container": "#007d55",
+            "surface-container": "#e5eeff",
+            "secondary-fixed": "#dae2fd",
+            "on-tertiary": "#ffffff",
+            "inverse-surface": "#213145",
+            "on-background": "#0b1c30",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-secondary-container": "#5c647a",
+            "secondary": "#565e74"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "1.25rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "table-row-h-standard": "2.75rem",
+            "space-2xs": "0.125rem",
+            "space-xl": "1.5rem",
+            "space-base": "1rem",
+            "header-h": "3.5rem",
+            "sidebar-expanded-w": "16.5rem",
+            "space-2xl": "2rem",
+            "filter-bar-h": "3.25rem",
+            "table-row-h-dense": "2.25rem",
+            "sidebar-collapsed-w": "4.5rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "label-mono-md": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "label-sans-bold": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "label-mono-sm": ["JetBrains Mono"],
+            "display-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-mono-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-sans-bold": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }],
+            "display-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-mono-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-full flex overflow-x-hidden antialiased select-none">
+<!-- Fixed Left Sidebar (w-sidebar-expanded-w = 16.5rem) -->
+<aside class="fixed left-0 top-0 h-screen w-sidebar-expanded-w flex flex-col justify-between py-space-md px-space-sm z-40 bg-surface-container-lowest border-r border-outline-variant/40 custom-scrollbar overflow-y-auto">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col space-y-3">
+<!-- Logo Branding Box -->
+<div class="flex items-center justify-between px-2 pt-1 pb-2">
+<div class="flex items-center space-x-2">
+<div class="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-sm text-white font-headline-sm font-bold">
+            E
+          </div>
+<div class="flex items-center space-x-1.5">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">Empliados</span>
+<span class="px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-label-sans-bold font-label-sans-bold text-[9px] border border-pink-200">DEMO offline</span>
+</div>
+</div>
+</div>
+<!-- Live Switcher Banner (Active Shell State) -->
+<div class="mx-1 px-2.5 py-2 rounded-lg bg-surface-container-high/40 border border-primary-container/20 flex items-center justify-between">
+<div class="flex items-center space-x-2 truncate">
+<span class="material-symbols-outlined text-primary text-[18px]">explore</span>
+<span class="text-label-sans-bold font-label-sans-bold text-primary truncate">Menú interactivo demo</span>
+</div>
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+</div>
+<!-- Navigation Links: Header Section -->
+<nav class="space-y-0.5 pt-1">
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 group" href="#torre">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">dashboard</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant group-hover:text-on-surface">Torre de Control</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 group" href="#monitor">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">monitoring</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant group-hover:text-on-surface">Monitor</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 group" href="#tracking">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">local_shipping</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant group-hover:text-on-surface">Tracking Express</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 group" href="#whatsapp">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-emerald-600">chat</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant group-hover:text-on-surface">WhatsApp</span>
+</div>
+<span class="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-label-sans-bold font-label-sans-bold text-[9px] border border-emerald-200">Nuevo</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 group" href="#metricas">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">analytics</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant group-hover:text-on-surface">Métricas</span>
+</div>
+</a>
+</nav>
+<!-- Section: AGENTES -->
+<div class="pt-2">
+<div class="px-2.5 pb-1 flex items-center justify-between">
+<span class="text-label-sans-bold font-label-sans-bold text-[10px] text-slate-400 tracking-wider">AGENTES</span>
+<span class="text-label-mono-sm font-label-mono-sm text-[10px] text-slate-400">9 ACTIVOS</span>
+</div>
+<nav class="space-y-0.5">
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#viajes">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">route</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Gestión de Viajes</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#tracking-express">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">near_me</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Tracking Express</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Remitos Dropdown Tree Item -->
+<div class="space-y-0.5">
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" type="button">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">receipt_long</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Remitos</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
+</button>
+<div class="pl-8 pr-1 py-0.5 space-y-0.5 border-l border-slate-200 ml-4">
+<a class="block px-2 py-1 text-[11px] font-body-sm text-slate-500 hover:text-primary rounded" href="#remitos-resumen">Resumen</a>
+<a class="block px-2 py-1 text-[11px] font-body-sm text-slate-500 hover:text-primary rounded" href="#remitos-planilla">Planilla</a>
+<a class="block px-2 py-1 text-[11px] font-body-sm text-slate-500 hover:text-primary rounded" href="#remitos-subir">Subir remito</a>
+</div>
+</div>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#destinos">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">place</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Destinos</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#incidencias">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-cyan-600">warning</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Incidencias</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#rendicion">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">payments</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Rendición</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#eta">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">schedule</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">ETA</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#pod">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">verified</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">POP/POD</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#reclamos">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-cyan-600">report_problem</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Reclamos</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#analitica">
+<div class="flex items-center space-x-2.5">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-purple-600">insights</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Analítica</span>
+</div>
+<span class="h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+</a>
+</nav>
+</div>
+<!-- Section: OPERACIÓN -->
+<div class="pt-2">
+<div class="px-2.5 pb-1 flex items-center justify-between">
+<span class="text-label-sans-bold font-label-sans-bold text-[10px] text-slate-400 tracking-wider">OPERACIÓN</span>
+</div>
+<nav class="space-y-0.5">
+<a class="flex items-center space-x-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#chat-central">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">forum</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Chat Central</span>
+</a>
+<a class="flex items-center space-x-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#usuarios">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">group</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Usuarios</span>
+</a>
+<a class="flex items-center space-x-2.5 px-2.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#parametros">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:text-primary">tune</span>
+<span class="text-body-sm font-body-sm group-hover:text-on-surface">Parámetros maestros</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Bottom User Profile Area -->
+<div class="pt-3 border-t border-slate-200 mt-4 space-y-1">
+<div class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="flex items-center space-x-2.5 min-w-0">
+<div class="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-label-sans-bold text-[11px] shrink-0">
+            GD
+          </div>
+<div class="truncate">
+<div class="text-body-sm font-headline-sm text-on-surface leading-snug truncate">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400 truncate">Administrador</div>
+</div>
+</div>
+<button class="p-1 rounded text-slate-400 hover:text-rose-600 transition-colors" title="Cerrar sesión" type="button">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper (shifted by w-sidebar-expanded-w = 16.5rem) -->
+<div class="pl-sidebar-expanded-w flex-1 flex flex-col min-h-screen bg-background">
+<!-- Sticky Top Operational Bar -->
+<header class="sticky top-0 z-30 h-header-h w-full bg-surface-container-lowest border-b border-outline-variant/30 flex items-center justify-between px-space-xl backdrop-blur-md">
+<!-- Breadcrumbs / HUD status -->
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-2 text-body-sm font-body-sm text-slate-500">
+<span class="text-slate-400">Torre y agentes</span>
+<span class="text-slate-300">·</span>
+<span>consultas en Chat Central</span>
+<span class="text-slate-300">/</span>
+<span class="font-headline-sm text-on-surface font-semibold">menú interactivo demo</span>
+</div>
+<div class="hidden xl:flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
+<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-label-sans-bold font-label-sans-bold text-[10px] text-emerald-800">Sistemas activos</span>
+</div>
+</div>
+<!-- Center & Right Utility Cluster -->
+<div class="flex items-center space-x-4">
+<!-- Live System Clock -->
+<div class="hidden lg:flex items-center space-x-2 px-2.5 py-1 rounded bg-slate-50 border border-slate-200/80">
+<span class="material-symbols-outlined text-[16px] text-slate-500">schedule</span>
+<span class="text-label-mono-sm font-label-mono-sm text-slate-700" id="live-clock">06:45:10 p. m. Mié, 09 Sept</span>
+</div>
+<!-- Trailing Action Icons -->
+<div class="flex items-center space-x-1 text-slate-600">
+<button class="relative p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Notificaciones" type="button">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>
+</button>
+<button class="p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Modo Oscuro / Claro" type="button">
+<span class="material-symbols-outlined text-[20px]">dark_mode</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-slate-100 transition-colors" title="Ayuda y documentación" type="button">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+</div>
+<!-- Official SOL Brand Badge -->
+<div class="pl-2 border-l border-slate-200">
+<div class="flex items-center space-x-2 px-2.5 py-1 rounded-md bg-slate-900 text-white shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-amber-400" style="font-variation-settings: 'FILL' 1;">wb_sunny</span>
+<span class="text-label-sans-bold font-label-sans-bold text-[11px] tracking-wider">SOL LOGÍSTICA</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Operational Workspace -->
+<main class="flex-1 p-space-xl max-w-[1720px] mx-auto w-full">
+<!-- Hub Header Banner (Hero Panel) -->
+<section class="mb-space-xl p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/40 shadow-sm relative overflow-hidden">
+<div class="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-gradient-to-br from-indigo-100/50 via-purple-100/30 to-pink-100/20 pointer-events-none blur-2xl"></div>
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+<!-- Left Icon & Titles -->
+<div class="flex items-start space-x-4">
+<div class="h-14 w-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0">
+<span class="material-symbols-outlined text-[32px]">hub</span>
+</div>
+<div>
+<div class="flex items-center space-x-2 mb-1">
+<h1 class="text-headline-md font-headline-md text-on-surface font-bold tracking-tight">Menú interactivo · Hub de Navegación SOL</h1>
+<span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-label-sans-bold font-label-sans-bold text-[10px]">v4.8 DEMO</span>
+</div>
+<p class="text-body-md font-body-md text-slate-500">Catálogo completo de pantallas y agentes para demostración operativa 1:1 en vivo.</p>
+</div>
+</div>
+<!-- Quick Action -->
+<div class="flex items-center space-x-3">
+<button class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition shadow-sm font-label-sans-bold text-label-sans-bold tracking-wide" type="button">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span>Modo Presentación Demo</span>
+</button>
+</div>
+</div>
+<!-- Filter & Search Toolbar -->
+<div class="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+<!-- Filter Tabs -->
+<div class="flex items-center space-x-1.5 p-1 bg-slate-100/80 rounded-lg w-full md:w-auto overflow-x-auto">
+<button class="px-3 py-1.5 rounded-md text-label-sans-bold font-label-sans-bold text-[11px] bg-white text-on-surface shadow-xs transition" id="filter-all" type="button">
+              Todos (14)
+            </button>
+<button class="px-3 py-1.5 rounded-md text-label-sans-bold font-label-sans-bold text-[11px] text-slate-600 hover:text-on-surface hover:bg-white/60 transition" id="filter-core" type="button">
+              Módulos Principales (5)
+            </button>
+<button class="px-3 py-1.5 rounded-md text-label-sans-bold font-label-sans-bold text-[11px] text-slate-600 hover:text-on-surface hover:bg-white/60 transition" id="filter-agents" type="button">
+              Agentes Operativos (9)
+            </button>
+</div>
+<!-- Search Bar -->
+<div class="relative w-full md:w-72">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</span>
+<input class="w-full pl-9 pr-4 py-2 text-body-sm font-body-sm bg-surface-container-low border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-on-surface placeholder-slate-400" id="card-search" placeholder="Filtrar módulo o agente..." type="text"/>
+</div>
+</div>
+</section>
+<!-- Grid of Interactive Screen Cards (3 Columns) -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="screens-grid">
+<!-- Card 1: Torre de Control -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-200 flex flex-col justify-between" data-category="core">
+<div class="h-1 absolute top-0 left-0 right-0 bg-blue-600 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-label-sans-bold font-label-sans-bold text-[10px] border border-blue-200/60">Control Tower</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>En línea</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-primary transition-colors">Torre de Control</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /torre-control</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Panel central de supervisión, KPIs consolidados, Chat Central y mapa satelital del cono sur.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">12 Unidades radar</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Monitor de Servicios -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-200 flex flex-col justify-between" data-category="core">
+<div class="h-1 absolute top-0 left-0 right-0 bg-amber-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-amber-200/60">Infraestructura</span>
+<div class="flex items-center space-x-1.5 text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-amber-200">
+<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+<span>Alerta Baileys</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">monitoring</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-amber-700 transition-colors">Monitor de Servicios</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /monitor-infra</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Monitoreo de infraestructura técnica, conexión WhatsApp Baileys y salud de webhooks.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">99.8% Uptime</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 3: Tracking Express -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-200 flex flex-col justify-between" data-category="core">
+<div class="h-1 absolute top-0 left-0 right-0 bg-indigo-600 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-label-sans-bold font-label-sans-bold text-[10px] border border-indigo-200/60">GPS / Tracking</span>
+<div class="flex items-center space-x-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-slate-200">
+<span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+<span>0 activo</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-indigo-50 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-indigo-600 transition-colors">Tracking Express</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /tracking-express</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Monitoreo en tiempo real de choferes vía web móvil sin instalación, generación de links.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">Web PWA Link</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 4: WhatsApp Contactos -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="core">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-600 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Mensajería</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>Multi-hilo</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">WhatsApp Contactos</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /whatsapp-panel</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Bandeja de soporte y chat con choferes, envío de links y visor de remito digital.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">14 Canales</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 5: Métricas y Backoffice -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 flex flex-col justify-between" data-category="core">
+<div class="h-1 absolute top-0 left-0 right-0 bg-blue-700 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-label-sans-bold font-label-sans-bold text-[10px] border border-blue-200/60">Reporting</span>
+<div class="flex items-center space-x-1.5 text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-blue-200">
+<span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+<span>Actualizado</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-primary transition-colors">Métricas y Backoffice</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /metricas-backoffice</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Métricas globales de gestión documental, tiempos de resolución y ratios de rendimiento.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">KPIs v2.4</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 6: Gestión de Viajes -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Agente Viajes</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>97 coordinados</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">route</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">Gestión de Viajes</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-viajes</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Coordinación y despacho de viajes, asignación de conductores y consultas en lenguaje natural.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">Despacho IA</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 7: Remitos TransitOne -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Agente Remitos</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>45 remitos</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">Remitos TransitOne</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-remitos</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">OCR y validación de remitos físicos, edición de guías de carga y control de horarios.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">OCR Motor v3</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 8: Confirmación de Destinos -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Agente Destinos</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>98.6% geo</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">place</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">Confirmación de Destinos</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-destinos</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Geocodificación asistida de entregas y validación automática de direcciones por WhatsApp.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">Google Geo APIs</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 9: Incidencias en Ruta -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-cyan-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-cyan-200/60">Agente Incidencias</span>
+<div class="flex items-center space-x-1.5 text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-cyan-200">
+<span class="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+<span>35 abiertas</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-cyan-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-cyan-700 transition-colors">Incidencias en Ruta</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-incidencias</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Detección satelital de paradas no programadas y categorización de desvíos con chofer.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">Telemetría GPS</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 10: Rendición de Viajes -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Agente Rendición</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>$60.725 pend.</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">Rendición de Viajes</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-rendicion</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Liquidación de comprobantes, peajes y combustible con exportación directa a ERP.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">SAP / Tango Ready</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 11: ETA y Notificaciones -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Agente ETA</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>618 avisos</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">ETA y Notificaciones</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-eta</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Cálculo de hora estimada de arribo y avisos proactivos automáticos de demoras al cliente.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">Predictor ML</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 12: Evidencias POP / POD -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-emerald-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-emerald-200/60">Agente Custodia</span>
+<div class="flex items-center space-x-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-emerald-200">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+<span>2 aprobados</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-emerald-700 transition-colors">Evidencias POP / POD</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-pod</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Proof of Pickup y Proof of Delivery, cadena de custodia con fotos de descarga y remitos.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">S3 Vault</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 13: Reclamos Logísticos -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-cyan-500 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-800 text-label-sans-bold font-label-sans-bold text-[10px] border border-cyan-200/60">Agente Reclamos</span>
+<div class="flex items-center space-x-1.5 text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-cyan-200">
+<span class="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+<span>23 abiertos</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-cyan-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">report_problem</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-cyan-700 transition-colors">Reclamos Logísticos</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-reclamos</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Clasificación de disconformidades por WhatsApp, criticidad y resolución asistida con IA.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">NLP Classifier</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 14: Analítica de Performance -->
+<div class="screen-card group relative bg-surface-container-lowest rounded-xl border border-slate-200/90 p-5 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/5 transition-all duration-200 flex flex-col justify-between" data-category="agents">
+<div class="h-1 absolute top-0 left-0 right-0 bg-purple-600 rounded-t-xl"></div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-label-sans-bold font-label-sans-bold text-[10px] border border-purple-200/60">Agente BI</span>
+<div class="flex items-center space-x-1.5 text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm border border-purple-200">
+<span class="h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+<span>Looker sync</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 mb-2">
+<div class="p-2 rounded-lg bg-purple-50 text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">insights</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-purple-700 transition-colors">Analítica de Performance</h3>
+<span class="text-[10px] text-slate-400 font-label-mono-sm">Ruta: /agente-analitica</span>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-slate-600 line-clamp-2 mt-2">Modelos de datos consolidados, curvas de viajes por día, SLA por zona e incidencias.</p>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">Data Lake v4</span>
+<button class="inline-flex items-center space-x-1 text-primary hover:text-blue-700 font-label-sans-bold text-[11px] group/btn" type="button">
+<span>Abrir pantalla</span>
+<span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bottom System Status Strip -->
+<footer class="mt-8 mb-4 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex flex-col md:flex-row items-center justify-between gap-4 text-body-sm font-body-sm text-slate-500">
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-1.5">
+<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+<span class="font-label-sans-bold text-[11px] text-slate-700">Cluster SOL-AR-BUE-01: OK</span>
+</div>
+<span class="text-slate-300">|</span>
+<span class="text-label-mono-sm font-label-mono-sm text-[11px]">Latencia: 24ms</span>
+<span class="text-slate-300">|</span>
+<span class="text-label-mono-sm font-label-mono-sm text-[11px]">Baileys Socket: Conectado</span>
+</div>
+<div class="flex items-center space-x-4">
+<span class="text-[11px]">SOL Logística S.A. © 2025 · Ambiente de Demostración Controlada</span>
+</div>
+</footer>
+</main>
+</div>
+<!-- Interactive JavaScript for Live Filtering, Clock, and Click Micro-interactions -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Live Clock update
+      const clockElement = document.getElementById('live-clock');
+      function updateClock() {
+        const now = new Date();
+        const options = {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short'
+        };
+        // Keep crisp clean layout format
+        clockElement.textContent = '06:45:10 p. m. Mié, 09 Sept';
+      }
+      updateClock();
+
+      // Filter Tabs Logic
+      const filterAll = document.getElementById('filter-all');
+      const filterCore = document.getElementById('filter-core');
+      const filterAgents = document.getElementById('filter-agents');
+      const cards = document.querySelectorAll('.screen-card');
+      const searchInput = document.getElementById('card-search');
+
+      function setActiveTab(activeBtn) {
+        [filterAll, filterCore, filterAgents].forEach(btn => {
+          btn.className = 'px-3 py-1.5 rounded-md text-label-sans-bold font-label-sans-bold text-[11px] text-slate-600 hover:text-on-surface hover:bg-white/60 transition';
+        });
+        activeBtn.className = 'px-3 py-1.5 rounded-md text-label-sans-bold font-label-sans-bold text-[11px] bg-white text-on-surface shadow-xs transition';
+      }
+
+      function filterCards(category = 'all', query = '') {
+        const cleanQuery = query.toLowerCase().trim();
+        cards.forEach(card => {
+          const cardCat = card.getAttribute('data-category');
+          const title = card.querySelector('h3').textContent.toLowerCase();
+          const desc = card.querySelector('p').textContent.toLowerCase();
+
+          const matchesCategory = (category === 'all') || (cardCat === category);
+          const matchesSearch = !cleanQuery || title.includes(cleanQuery) || desc.includes(cleanQuery);
+
+          if (matchesCategory && matchesSearch) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      let currentCategory = 'all';
+
+      filterAll.addEventListener('click', () => {
+        setActiveTab(filterAll);
+        currentCategory = 'all';
+        filterCards(currentCategory, searchInput.value);
+      });
+
+      filterCore.addEventListener('click', () => {
+        setActiveTab(filterCore);
+        currentCategory = 'core';
+        filterCards(currentCategory, searchInput.value);
+      });
+
+      filterAgents.addEventListener('click', () => {
+        setActiveTab(filterAgents);
+        currentCategory = 'agents';
+        filterCards(currentCategory, searchInput.value);
+      });
+
+      searchInput.addEventListener('input', (e) => {
+        filterCards(currentCategory, e.target.value);
+      });
+
+      // Card Click mock interaction feedback
+      cards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('a') && !e.target.closest('button')) {
+            const title = card.querySelector('h3').textContent;
+            console.log(`Navegando a demo interactiva: ${title}`);
+            card.classList.add('ring-2', 'ring-primary');
+            setTimeout(() => {
+              card.classList.remove('ring-2', 'ring-primary');
+            }, 300);
+          }
+        });
+      });
+    });
+  </script>
+<script src="/stitch-screens/nav.js"></script>
+</body></html>

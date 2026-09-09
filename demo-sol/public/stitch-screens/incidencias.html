@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f6f7fb]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Incidencias - Empleados</title>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- FontAwesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              purple: '#6d28d9',
+              lightPurple: '#ede9fe',
+              accent: '#7c3aed',
+              darkText: '#1e293b',
+              muted: '#64748b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased overflow-hidden flex">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none z-20">
+<div class="flex flex-col h-full overflow-hidden">
+<!-- Logo Header -->
+<div class="h-16 flex items-center px-5 gap-2 border-b border-slate-100">
+<div class="flex items-center font-bold text-xl tracking-tight">
+<span class="text-slate-800">Empli</span><span class="text-pink-500 font-normal">ados</span>
+</div>
+<span class="ml-auto bg-amber-100 text-amber-800 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-300">
+          DEMO offline
+        </span>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 overflow-y-auto px-3 py-3 space-y-0.5 text-xs text-slate-600 font-medium">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<i class="fa-solid fa-gamepad w-4 text-slate-400"></i>
+<span>Torre de Control</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<i class="fa-solid fa-chart-line w-4 text-slate-400"></i>
+<span>Monitor</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<i class="fa-regular fa-paper-plane w-4 text-slate-400"></i>
+<span>Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-brands fa-whatsapp w-4 text-slate-400 text-sm"></i>
+<span>WhatsApp</span>
+</div>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.2 rounded font-normal">Nuevo</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<i class="fa-solid fa-chart-simple w-4 text-slate-400"></i>
+<span>Métricas</span>
+</a>
+<!-- Section AGENTES -->
+<div class="pt-4 pb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          AGENTES
+        </div>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-solid fa-arrows-split-up-and-left w-4 text-slate-400"></i>
+<span>Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-solid fa-location-arrow w-4 text-slate-400"></i>
+<span>Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Remitos Accordion -->
+<div>
+<button class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-3">
+<i class="fa-regular fa-file-lines w-4 text-slate-400"></i>
+<span>Remitos</span>
+</div>
+<i class="fa-solid fa-chevron-up text-[10px] text-slate-400"></i>
+</button>
+<div class="pl-7 pr-2 py-1 space-y-1 text-slate-500">
+<span class="block px-2 py-1 text-[11px] font-medium text-slate-400">Resumen del agente</span>
+<a class="flex items-center gap-2 px-2 py-1 text-[11px] rounded hover:text-slate-800" href="#">
+<i class="fa-regular fa-file-alt text-xs"></i>
+<span>Remitos</span>
+</a>
+<a class="flex items-center gap-2 px-2 py-1 text-[11px] rounded hover:text-slate-800" href="#">
+<i class="fa-regular fa-calendar-check text-xs"></i>
+<span>Planilla</span>
+</a>
+<a class="flex items-center gap-2 px-2 py-1 text-[11px] rounded hover:text-slate-800" href="#">
+<i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+<span>Subir remito</span>
+</a>
+</div>
+</div>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-solid fa-location-dot w-4 text-slate-400"></i>
+<span>Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Active Item: Incidencias -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-purple-100/70 text-purple-900 font-semibold border border-purple-200" href="#">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded bg-purple-200 flex items-center justify-center text-purple-700 text-xs">
+<i class="fa-solid fa-triangle-exclamation"></i>
+</div>
+<span>Incidencias</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-cyan-400 shadow-sm"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-regular fa-clipboard w-4 text-slate-400"></i>
+<span>Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-regular fa-clock w-4 text-slate-400"></i>
+<span>ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-regular fa-image w-4 text-slate-400"></i>
+<span>POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-regular fa-comment-dots w-4 text-slate-400"></i>
+<span>Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<i class="fa-solid fa-chart-column w-4 text-slate-400"></i>
+<span>Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+</a>
+<div class="pt-3 pb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          OPERACIÓN
+        </div>
+</nav>
+<!-- User Profile at bottom of sidebar -->
+<div class="p-3 border-t border-slate-100">
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-purple-700 text-white flex items-center justify-center font-bold text-xs">
+              GO
+            </div>
+<div class="flex flex-col leading-tight">
+<span class="text-xs font-semibold text-slate-800">Gonzalo Demo</span>
+<span class="text-[10px] text-slate-400">Administrador</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 p-1.5">
+<i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-[#f8fafc]">
+<!-- BEGIN: TopBar -->
+<header class="h-16 px-8 flex items-center justify-between shrink-0 bg-transparent">
+<!-- Breadcrumb -->
+<div class="text-xs font-medium text-slate-600">
+<span>Torre y agentes</span>
+<span class="mx-1.5 text-slate-400">·</span>
+<span class="text-slate-500 font-normal">consultas en Chat Central</span>
+</div>
+<!-- Right Header Actions -->
+<div class="flex items-center gap-4">
+<!-- System Status Badge -->
+<div class="flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Dark mode toggle -->
+<button class="text-slate-500 hover:text-slate-700 text-xs p-1">
+<i class="fa-regular fa-moon"></i>
+</button>
+<!-- Notifications -->
+<button class="relative text-purple-600 hover:text-purple-800 text-xs p-1">
+<i class="fa-regular fa-bell text-sm"></i>
+<span class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
+</button>
+<!-- Time and Date -->
+<div class="text-right leading-tight">
+<div class="text-xs font-bold text-slate-800">06:43:18 p. m.</div>
+<div class="text-[10px] text-slate-400">Mié, 09 Sept</div>
+</div>
+<!-- SOL Logo / Avatar -->
+<div class="border border-slate-200 bg-white rounded-lg px-2 py-1 flex items-center justify-center font-bold text-xs tracking-wider text-slate-800 shadow-sm">
+          SOL
+        </div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: Scrollable Content -->
+<main class="flex-1 overflow-y-auto px-8 pb-10 space-y-4">
+<!-- BEGIN: Primary KPI Row -->
+<section class="grid grid-cols-3 gap-4">
+<!-- KPI 1 -->
+<div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium mb-1">Eventos detectados hoy</div>
+<div class="text-3xl font-extrabold text-slate-800 tracking-tight">52</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium mb-1">Causa declarada</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-slate-800 tracking-tight">94%</span>
+<span class="text-xs text-emerald-600 font-semibold flex items-center gap-0.5">
+<i class="fa-solid fa-arrow-trend-up text-[10px]"></i> +13 pts
+            </span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium mb-1">Tiempo de respuesta</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-slate-800 tracking-tight">2,8 min</span>
+<span class="text-xs text-emerald-600 font-semibold flex items-center gap-0.5">
+<i class="fa-solid fa-arrow-trend-down text-[10px]"></i> -68%
+            </span>
+</div>
+</div>
+</section>
+<!-- END: Primary KPI Row -->
+<!-- BEGIN: Secondary Counters Row -->
+<section class="grid grid-cols-4 gap-4">
+<!-- Counter 1 -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium">Abiertas</div>
+<div class="text-2xl font-extrabold text-slate-800 mt-1">35</div>
+<div class="text-[11px] text-slate-400 mt-0.5">activas</div>
+</div>
+<!-- Counter 2 -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium">Nuevas</div>
+<div class="text-2xl font-extrabold text-slate-800 mt-1">33</div>
+<div class="text-[11px] text-slate-400 mt-0.5">recién abiertas</div>
+</div>
+<!-- Counter 3 -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium">Esperando causa</div>
+<div class="text-2xl font-extrabold text-slate-800 mt-1">0</div>
+<div class="text-[11px] text-slate-400 mt-0.5">consulta al chofer</div>
+</div>
+<!-- Counter 4 -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
+<div class="text-xs text-slate-500 font-medium">Criticidad alta</div>
+<div class="text-2xl font-extrabold text-slate-800 mt-1">0</div>
+<div class="text-[11px] text-slate-400 mt-0.5">prioridad</div>
+</div>
+</section>
+<!-- END: Secondary Counters Row -->
+<!-- BEGIN: Interactive Action Box (Map + Controls) -->
+<section class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-4">
+<div>
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-triangle-exclamation text-amber-500 text-sm"></i>
+<h2 class="text-sm font-bold text-slate-800">
+                Flujo principal: parada en mapa → preguntar al chofer
+              </h2>
+</div>
+<p class="text-xs text-slate-400 mt-0.5">
+              Elegí punto + chofer de Viajes → WhatsApp "¿por qué estás parado?". Si no responde: a los 5 min repregunta y a los 10 min cierra sola
+            </p>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
+<i class="fa-solid fa-sliders text-slate-500"></i>
+<span>Config</span>
+</button>
+</div>
+<!-- Card Content: Left Controls & Right Map -->
+<div class="grid grid-cols-12 gap-6 pt-1">
+<!-- Form Elements -->
+<div class="col-span-7 flex flex-col justify-between space-y-4">
+<!-- Ubicación Input -->
+<div>
+<label class="block text-xs font-medium text-slate-600 mb-1.5">Ubicación de la parada (Google Maps)</label>
+<div class="flex gap-2">
+<div class="relative flex-1">
+<input class="w-full bg-[#f3e8ff]/50 border-purple-200 rounded-lg text-xs py-2 px-3 text-slate-800 font-medium focus:ring-purple-500 focus:border-purple-500" readonly="" type="text" value="RN A002, Ezeiza, Provincia de Buenos Aires, Argentina"/>
+</div>
+<button class="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+<i class="fa-regular fa-compass"></i>
+<span>Ubicar</span>
+</button>
+</div>
+</div>
+<!-- Demo Pins -->
+<div>
+<span class="block text-[11px] text-slate-400 mb-1.5">Pins de demo (simulá detección GPS)</span>
+<div class="flex flex-wrap gap-2 text-xs">
+<button class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 text-xs">Panamericana km 35</button>
+<button class="px-3 py-1 bg-purple-700 text-white rounded-full font-medium text-xs shadow-sm">Acceso Ezeiza</button>
+<button class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 text-xs">Puerto Madero</button>
+<button class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 text-xs">Pacheco</button>
+<button class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 text-xs">Acceso Luján</button>
+</div>
+</div>
+<!-- Dropdowns Chofer & Tipo -->
+<div class="grid grid-cols-2 gap-3 pt-1">
+<div>
+<label class="block text-xs font-medium text-slate-600 mb-1.5">Chofer (flota Viajes)</label>
+<select class="w-full border border-slate-300 rounded-lg text-xs py-2 px-3 text-slate-700 focus:ring-purple-500 focus:border-purple-500 bg-white">
+<option selected="">Carlos Méndez · 5491144556677 (Viajes)</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-medium text-slate-600 mb-1.5">Tipo sugerido</label>
+<select class="w-full border border-slate-300 rounded-lg text-xs py-2 px-3 text-slate-700 focus:ring-purple-500 focus:border-purple-500 bg-white">
+<option selected="">Parada no prevista</option>
+</select>
+</div>
+</div>
+<!-- Trigger Button -->
+<div class="pt-2">
+<button class="w-full py-2.5 bg-[#6d28d9] hover:bg-[#5b21b6] text-white rounded-xl font-medium text-xs flex items-center justify-center gap-2 shadow-sm transition-colors">
+<i class="fa-regular fa-comment-dots text-sm"></i>
+<span>¿Por qué estás parado?</span>
+</button>
+</div>
+</div>
+<!-- Map View Area -->
+<div class="col-span-5 relative rounded-xl overflow-hidden border border-slate-200 min-h-[220px] bg-slate-900 group">
+<!-- Mocked Map Imagery Styled with CSS Gradients & Layers -->
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,#2d4030,#1a281e_80%)] overflow-hidden">
+<!-- Roads Overlay Mockup -->
+<svg class="absolute inset-0 w-full h-full opacity-60 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<path d="M 120 0 L 150 250" fill="none" opacity="0.4" stroke="#f1f5f9" stroke-width="6"></path>
+<path d="M 270 0 L 260 250" fill="none" stroke="#fbbf24" stroke-width="4"></path>
+<path d="M 0 160 Q 200 150 380 180" fill="none" opacity="0.5" stroke="#64748b" stroke-width="3"></path>
+<path d="M 230 140 C 260 170 280 160 300 210" fill="none" opacity="0.6" stroke="#cbd5e1" stroke-width="3"></path>
+</svg>
+<!-- Map Point Labels & Markers -->
+<div class="absolute top-10 left-6 text-[10px] text-white font-medium flex items-center gap-1">
+<div class="w-3 h-3 rounded-full bg-emerald-500 border border-white flex items-center justify-center"></div>
+<span class="drop-shadow">Estadio Nacional<br/>De Béisbol</span>
+</div>
+<div class="absolute top-1/2 right-16 text-[10px] text-white font-medium flex items-center gap-1">
+<span class="drop-shadow">Pista Bmx</span>
+<div class="w-3 h-3 rounded-full bg-emerald-500 border border-white flex items-center justify-center"></div>
+</div>
+<!-- Main Red Map Pin -->
+<div class="absolute top-[38%] left-[55%] -translate-x-1/2 -translate-y-full flex flex-col items-center">
+<i class="fa-solid fa-location-dot text-rose-600 text-3xl drop-shadow-md"></i>
+</div>
+<!-- Map Controls & Badges -->
+<div class="absolute bottom-10 left-2 w-8 h-8 rounded border-2 border-white overflow-hidden shadow-md bg-slate-800">
+<div class="w-full h-full bg-cyan-700/60 flex items-center justify-center text-[9px] text-white font-bold">Mapa</div>
+</div>
+<div class="absolute bottom-11 right-2 w-6 h-6 rounded-full bg-white shadow flex items-center justify-center text-slate-600 text-[10px]">
+<i class="fa-solid fa-expand"></i>
+</div>
+<div class="absolute bottom-7 left-2 flex items-center gap-1 text-[10px] font-bold text-white tracking-tighter drop-shadow">
+<span>Google</span>
+</div>
+<div class="absolute bottom-7 right-2 text-[8px] text-slate-300 flex items-center gap-2">
+<span>Combinaciones de teclas</span>
+<span>Datos del mapa</span>
+<span>Términos</span>
+<span>Notificar un problema de Maps</span>
+</div>
+</div>
+<!-- Footer Bar of Map -->
+<div class="absolute bottom-0 inset-x-0 bg-slate-200/90 backdrop-blur-xs px-3 py-1.5 flex items-center justify-between text-[11px] border-t border-slate-300">
+<div class="truncate">
+<span class="font-semibold text-slate-800">RN A002, Ezeiza, Provincia de Buenos Aires, Argentina</span>
+<span class="text-[9px] text-slate-500 block -mt-0.5">-34.77555, -58.52447</span>
+</div>
+<a class="text-purple-700 hover:text-purple-900 font-medium text-[10px] shrink-0 flex items-center gap-0.5 ml-2" href="#">
+<span>Abrir</span>
+<i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Interactive Action Box -->
+<!-- BEGIN: Table Section "Incidencias en ruta" -->
+<section class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
+<!-- Table Filter Header -->
+<div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+<div>
+<h3 class="text-sm font-bold text-slate-800">Incidencias en ruta</h3>
+<p class="text-[11px] text-slate-400 mt-0.5">Clic en un caso para ver el resumen · agente pregunta al chofer · demoras de Destinos</p>
+</div>
+<!-- Filters and Actions -->
+<div class="flex items-center gap-2">
+<div class="flex bg-slate-100 p-0.5 rounded-lg text-xs font-medium text-slate-600">
+<button class="px-2.5 py-1 rounded-md bg-purple-700 text-white font-medium shadow-sm">Abiertas</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-800">Nuevas</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-800">Esperando causa</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-800">En gestión</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-800">Resueltas</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-800">Todos</button>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+<i class="fa-solid fa-rotate text-slate-400 text-xs"></i>
+<span>Actualizar</span>
+</button>
+<button class="p-2 text-xs text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+<i class="fa-solid fa-sliders"></i>
+</button>
+</div>
+</div>
+<!-- Table Data -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="text-[10px] font-semibold tracking-wider text-slate-400 border-b border-slate-100 uppercase">
+<th class="py-3 px-2 font-medium">INCIDENCIA</th>
+<th class="py-3 px-2 font-medium">CHOFER</th>
+<th class="py-3 px-2 font-medium">TIPO</th>
+<th class="py-3 px-2 font-medium">CAUSA</th>
+<th class="py-3 px-2 font-medium">ORIGEN</th>
+<th class="py-3 px-2 font-medium">CRITICIDAD</th>
+<th class="py-3 px-2 font-medium">ESTADO</th>
+<th class="py-3 px-2 font-medium">SLA</th>
+<th class="py-3 px-2 font-medium">ACCIÓN</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-normal">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/60 transition-colors">
+<td class="py-3.5 px-2 font-semibold text-slate-800 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+<span>INC-20260811-0035-PI</span>
+</div>
+</td>
+<td class="py-3.5 px-2">
+<div class="font-medium text-slate-800">Off Allowlist</div>
+<div class="text-[10px] text-slate-400">5491198800999</div>
+</td>
+<td class="py-3.5 px-2 text-slate-700">Pinchazo / llanta</td>
+<td class="py-3.5 px-2 text-slate-600">tuve un pinchazo</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-purple-600 bg-purple-50 rounded-full border border-purple-100 font-medium">Chofer</span>
+</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-amber-700 bg-amber-50 rounded-full border border-amber-200 font-medium">Media</span>
+</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-sky-700 bg-sky-50 rounded-full border border-sky-200 font-medium">En gestión</span>
+</td>
+<td class="py-3.5 px-2 text-amber-600 font-medium">Por vencer</td>
+<td class="py-3.5 px-2">
+<button class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                  </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/60 transition-colors">
+<td class="py-3.5 px-2 font-semibold text-slate-800 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+<span>INC-20260811-0032-PI</span>
+</div>
+</td>
+<td class="py-3.5 px-2">
+<div class="font-medium text-slate-800">Canary Real</div>
+<div class="text-[10px] text-slate-400">5491133788190</div>
+</td>
+<td class="py-3.5 px-2 text-slate-700">Pinchazo / llanta</td>
+<td class="py-3.5 px-2 text-slate-600">tuve un pinchazo en la ruta</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-purple-600 bg-purple-50 rounded-full border border-purple-100 font-medium">Chofer</span>
+</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-amber-700 bg-amber-50 rounded-full border border-amber-200 font-medium">Media</span>
+</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-sky-700 bg-sky-50 rounded-full border border-sky-200 font-medium">En gestión</span>
+</td>
+<td class="py-3.5 px-2 text-amber-600 font-medium">Por vencer</td>
+<td class="py-3.5 px-2">
+<button class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                  </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/60 transition-colors">
+<td class="py-3.5 px-2 font-semibold text-slate-800 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+<span>INC-20260811-0031-DE</span>
+</div>
+</td>
+<td class="py-3.5 px-2">
+<div class="font-medium text-slate-800">V11Ctrl</div>
+<div class="text-[10px] text-slate-400">5491198800108</div>
+</td>
+<td class="py-3.5 px-2 text-slate-700">Demora</td>
+<td class="py-3.5 px-2 text-slate-600">tuve una demora en el control</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-purple-600 bg-purple-50 rounded-full border border-purple-100 font-medium">Chofer</span>
+</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-amber-700 bg-amber-50 rounded-full border border-amber-200 font-medium">Media</span>
+</td>
+<td class="py-3.5 px-2">
+<span class="px-2 py-0.5 text-[10px] text-purple-700 bg-purple-50 rounded-full border border-purple-200 font-medium">Nueva</span>
+</td>
+<td class="py-3.5 px-2 text-amber-600 font-medium">Por vencer</td>
+<td class="py-3.5 px-2 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs font-semibold transition-colors">
+                      Tomar
+                    </button>
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                    </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: Table Section -->
+</main>
+<!-- END: Scrollable Content -->
+</div>
+<!-- END: Main Area -->
+<script src="/stitch-screens/nav.js"></script>
+</body></html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f6f7fb]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analítica de Performance - Empliados</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              purple: '#7c3aed',
+              darkPurple: '#581c87',
+              lightPurple: '#e9d5ff',
+              bgLight: '#f6f7fb',
+              border: '#f1f2f6',
+              sidebarText: '#596780',
+              accentPink: '#ec4899',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom CSS Styles -->
+<style data-purpose="custom-scrollbars">
+    /* Custom thin scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+  </style>
+<style data-purpose="typography-adjustments">
+    body {
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden text-slate-700 antialiased font-sans text-xs">
+<!-- BEGIN: MainSidebar -->
+<aside class="w-[230px] flex-shrink-0 bg-white border-r border-slate-200/80 flex flex-col justify-between h-screen select-none z-30" data-purpose="sidebar-navigation">
+<div class="flex flex-col h-full overflow-hidden">
+<!-- Logo Container -->
+<div class="h-14 px-5 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+<div class="flex items-center space-x-1.5">
+<span class="text-lg font-bold tracking-tight text-[#c026d3]">Emplia<span class="text-[#e879f9]">dos</span></span>
+</div>
+<span class="text-[10px] font-medium text-slate-400 border border-slate-200 rounded-full px-2 py-0.5 tracking-tight">DEMO offline</span>
+</div>
+<!-- Navigation Links Container -->
+<div class="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+<!-- Main Platform Section -->
+<nav aria-label="Plataforma" class="space-y-0.5">
+<a class="flex items-center px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px] font-normal">Torre de Control</span>
+</a>
+<a class="flex items-center px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px] font-normal">Monitor</span>
+</a>
+<a class="flex items-center px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px] font-normal">Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px] font-normal">WhatsApp</span>
+</div>
+<span class="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded font-medium border border-emerald-200/60">Nuevo</span>
+</a>
+<a class="flex items-center px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px] font-normal">Métricas</span>
+</a>
+</nav>
+<!-- Section: AGENTES -->
+<div class="pt-2">
+<div class="px-2.5 pb-1 text-[10px] font-semibold text-slate-400 tracking-wider">AGENTES</div>
+<nav aria-label="Agentes" class="space-y-0.5">
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<!-- Submenu: Remitos -->
+<div class="rounded-lg bg-slate-50/50 py-1">
+<a class="flex items-center justify-between px-2.5 py-1 rounded-lg text-slate-700 font-medium" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Remitos</span>
+</div>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+<div class="ml-7 pl-2 border-l border-slate-200 mt-1 space-y-1">
+<a class="block py-1 text-[11px] text-slate-500 hover:text-slate-800" href="#">Resumen del agente</a>
+<a class="flex items-center py-1 text-[11px] text-slate-500 hover:text-slate-800" href="#">
+<svg class="w-3.5 h-3.5 mr-1.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                  Remitos
+                </a>
+<a class="flex items-center py-1 text-[11px] text-slate-500 hover:text-slate-800" href="#">
+<svg class="w-3.5 h-3.5 mr-1.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                  Planilla
+                </a>
+<a class="flex items-center py-1 text-[11px] text-slate-500 hover:text-slate-800" href="#">
+<svg class="w-3.5 h-3.5 mr-1.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                  Subir remito
+                </a>
+</div>
+</div>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="text-[12px]">Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<!-- Active Menu Item: Analítica -->
+<a aria-current="page" class="flex items-center justify-between px-2.5 py-2 rounded-xl bg-[#ede9fe]/70 border border-[#ddd6fe] text-[#6d28d9] font-medium transition-all" href="#">
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2.5 text-[#7c3aed]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-[12px] font-semibold text-[#5b21b6]">Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"></span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Bottom User Profile Container -->
+<div class="p-3 border-t border-slate-100 flex-shrink-0 bg-slate-50/40">
+<div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-2 px-1">OPERACIÓN</div>
+<div class="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-100/70 transition-colors">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-[#a855f7] flex items-center justify-center text-white text-xs font-bold">
+              GO
+            </div>
+<div class="leading-tight">
+<div class="font-semibold text-[12px] text-slate-800">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400">Administrador</div>
+</div>
+</div>
+<button aria-label="Cerrar sesión" class="text-slate-400 hover:text-slate-600 p-1" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- END: MainSidebar -->
+<!-- BEGIN: MainContentWrapper -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- BEGIN: TopBar -->
+<header class="h-14 bg-white border-b border-slate-200/80 px-7 flex items-center justify-between flex-shrink-0 z-20">
+<!-- Left breadcrumb/context -->
+<div class="text-[12px] text-slate-600 font-normal">
+        Torre y agentes <span class="text-slate-400 font-light mx-1">·</span> consultas en Chat Central
+      </div>
+<!-- Right actions & status items -->
+<div class="flex items-center space-x-4">
+<!-- System active pill badge -->
+<div class="flex items-center space-x-1.5 px-3 py-1 rounded-full border border-emerald-200/70 bg-emerald-50 text-[11px] text-emerald-700 font-medium">
+<span class="w-2 h-2 rounded-sm bg-emerald-500"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Moon / Dark mode icon -->
+<button aria-label="Cambiar modo oscuro" class="text-slate-500 hover:text-slate-700 p-1 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</button>
+<!-- Notification bell -->
+<button aria-label="Notificaciones" class="text-slate-500 hover:text-slate-700 p-1 relative transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</button>
+<!-- Date & Time info -->
+<div class="text-right leading-tight border-l pl-3 border-slate-200">
+<div class="text-[12px] font-semibold text-slate-800">06:44:26 p. m.</div>
+<div class="text-[10px] text-slate-400">Mié, 09 Sept</div>
+</div>
+<!-- SOL Logo / badge -->
+<div class="h-8 px-2.5 bg-slate-50 border border-slate-200/80 rounded-md flex items-center justify-center">
+<span class="font-black text-xs tracking-wider text-slate-800">SOL</span>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: DashboardBodyScrollable -->
+<main class="flex-1 overflow-y-auto px-8 py-6 space-y-6" data-purpose="dashboard-content">
+<!-- BEGIN: PageHeader -->
+<section aria-label="Título de la página" class="flex items-center space-x-3.5">
+<div class="w-11 h-11 rounded-2xl bg-[#e9d5ff] flex items-center justify-center text-[#7c3aed] flex-shrink-0 shadow-sm">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<div class="flex items-center space-x-2">
+<h1 class="text-xl font-bold text-slate-900 tracking-tight">Analítica de Performance</h1>
+<span class="px-2 py-0.5 text-[10px] font-medium bg-[#e0f2fe] text-[#0284c7] rounded-full border border-sky-200">● Beta</span>
+</div>
+<p class="text-[12px] text-slate-500 mt-0.5">Datos consolidados, KPIs operativos y alertas inteligentes</p>
+</div>
+</section>
+<!-- END: PageHeader -->
+<!-- BEGIN: MetricsCardsRow -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-5" data-purpose="kpi-metrics">
+<!-- Metric Card 1 -->
+<article class="bg-white rounded-2xl p-5 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<span class="text-[11px] font-medium text-slate-500">Viajes analizados (30d)</span>
+<div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight">6.918</div>
+<div class="mt-1 flex items-center text-[11px] font-semibold text-emerald-600">
+<span class="mr-1">↗</span> +16%
+          </div>
+</article>
+<!-- Metric Card 2 -->
+<article class="bg-white rounded-2xl p-5 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<span class="text-[11px] font-medium text-slate-500">SLA de entrega</span>
+<div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight">95,1%</div>
+<div class="mt-1 flex items-center text-[11px] font-semibold text-emerald-600">
+<span class="mr-1">↗</span> +2,9%
+          </div>
+</article>
+<!-- Metric Card 3 -->
+<article class="bg-white rounded-2xl p-5 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<span class="text-[11px] font-medium text-slate-500">Alertas generadas</span>
+<div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight">64</div>
+</article>
+</section>
+<!-- END: MetricsCardsRow -->
+<!-- BEGIN: MiddleChartsRow -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5" data-purpose="analytics-visualizations">
+<!-- Line Chart: Viajes y Entregas (7 días) -->
+<article class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<header>
+<h2 class="text-[11px] font-bold text-slate-800 tracking-wider uppercase">VIAJES Y ENTREGAS (7 DÍAS)</h2>
+</header>
+<div class="mt-4 relative h-[180px] w-full" data-purpose="smooth-line-chart">
+<!-- Y-Axis Labels -->
+<div class="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-slate-400 font-medium">
+<span>120</span>
+<span>90</span>
+<span>60</span>
+<span>30</span>
+<span>0</span>
+</div>
+<!-- SVG Line Graph Area -->
+<div class="ml-7 mr-2 h-full pb-6 relative">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 300 120">
+<defs>
+<lineargradient id="areaGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#c084fc" stop-opacity="0.45"></stop>
+<stop offset="100%" stop-color="#fdf4ff" stop-opacity="0.05"></stop>
+</lineargradient>
+</defs>
+<!-- Filled Area -->
+<path d="M 0 45 C 40 30, 80 40, 115 20 C 150 5, 175 15, 205 30 C 240 50, 270 70, 300 85 L 300 120 L 0 120 Z" fill="url(#areaGrad)"></path>
+<!-- Gradient Line Layer 1 -->
+<path d="M 0 45 C 40 30, 80 40, 115 20 C 150 5, 175 15, 205 30 C 240 50, 270 70, 300 85" fill="none" stroke="#7e22ce" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Secondary Overlay Smooth Line for exact magenta gradient glow in snapshot -->
+<path d="M 0 49 C 40 35, 80 44, 115 24 C 150 8, 175 18, 205 34 C 240 54, 270 74, 300 89" fill="none" stroke="#e879f9" stroke-linecap="round" stroke-opacity="0.8" stroke-width="1.5"></path>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute -bottom-5 left-0 right-0 flex justify-between text-[10px] text-slate-400 font-medium">
+<span>Lun</span>
+<span>Mar</span>
+<span>Mié</span>
+<span>Jue</span>
+<span>Vie</span>
+<span>Sáb</span>
+<span>Dom</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Bar Chart: SLA Por Zona -->
+<article class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<header>
+<h2 class="text-[11px] font-bold text-slate-800 tracking-wider uppercase">SLA POR ZONA</h2>
+</header>
+<div class="mt-4 relative h-[180px] w-full" data-purpose="vertical-bar-chart">
+<!-- Y-Axis Labels -->
+<div class="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-slate-400 font-medium">
+<span>100</span>
+<span>95</span>
+<span>90</span>
+<span>85</span>
+<span>80</span>
+</div>
+<!-- Bar Columns Container -->
+<div class="ml-6 mr-1 h-full pb-6 flex items-end justify-between px-2 pt-2">
+<!-- Bar 1: AMBA -->
+<div class="flex flex-col items-center flex-1 h-full justify-end px-1.5">
+<div class="w-full bg-[#7c3aed] rounded-md transition-all" style="height: 87%;"></div>
+<span class="text-[9px] text-slate-500 font-medium mt-2">AMBA</span>
+</div>
+<!-- Bar 2: Centro -->
+<div class="flex flex-col items-center flex-1 h-full justify-end px-1.5">
+<div class="w-full bg-[#8b5cf6] rounded-md transition-all" style="height: 74%;"></div>
+<span class="text-[9px] text-slate-500 font-medium mt-2">Centro</span>
+</div>
+<!-- Bar 3: Litoral -->
+<div class="flex flex-col items-center flex-1 h-full justify-end px-1.5">
+<div class="w-full bg-[#9333ea] rounded-md transition-all opacity-85" style="height: 64%;"></div>
+<span class="text-[9px] text-slate-500 font-medium mt-2">Litoral</span>
+</div>
+<!-- Bar 4: Cuyo -->
+<div class="flex flex-col items-center flex-1 h-full justify-end px-1.5">
+<div class="w-full bg-[#f59e0b] rounded-md transition-all" style="height: 55%;"></div>
+<span class="text-[9px] text-slate-500 font-medium mt-2">Cuyo</span>
+</div>
+<!-- Bar 5: NOA -->
+<div class="flex flex-col items-center flex-1 h-full justify-end px-1.5">
+<div class="w-full bg-[#ef4444] rounded-md transition-all" style="height: 42%;"></div>
+<span class="text-[9px] text-slate-500 font-medium mt-2">NOA</span>
+</div>
+<!-- Bar 6: Patagonia -->
+<div class="flex flex-col items-center flex-1 h-full justify-end px-1.5">
+<div class="w-full bg-[#7c3aed] rounded-md transition-all opacity-90" style="height: 60%;"></div>
+<span class="text-[9px] text-slate-500 font-medium mt-2">Patagonia</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Right Side: Conversación del Agente -->
+<article class="lg:col-span-4 flex flex-col">
+<h2 class="text-[11px] font-bold text-slate-800 tracking-wider uppercase mb-3">CONVERSACIÓN DEL AGENTE</h2>
+<div class="bg-white rounded-2xl p-6 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex-1 flex items-center justify-center min-h-[140px]">
+<p class="text-[12px] text-slate-400 font-normal">Sin conversaciones activas en este momento.</p>
+</div>
+</article>
+</section>
+<!-- END: MiddleChartsRow -->
+<!-- BEGIN: DonutSection -->
+<section class="bg-white rounded-2xl p-6 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)]" data-purpose="incidents-breakdown">
+<header>
+<h2 class="text-[11px] font-bold text-slate-800 tracking-wider uppercase">INCIDENCIAS POR TIPO</h2>
+</header>
+<div class="py-6 flex justify-center items-center">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Donut SVG Ring -->
+<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<!-- Segment 1: Orange -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#f59e0b" stroke-dasharray="80 238" stroke-dashoffset="0" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Segment 2: Purple -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#8b5cf6" stroke-dasharray="60 238" stroke-dashoffset="-85" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Segment 3: Sky Blue -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#38bdf8" stroke-dasharray="45 238" stroke-dashoffset="-150" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Segment 4: Red/Coral -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#ef4444" stroke-dasharray="35 238" stroke-dashoffset="-200" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<!-- Center Summary Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-2xl font-bold text-slate-900 tracking-tight leading-none">140</span>
+<span class="text-[11px] text-slate-400 font-normal mt-0.5">eventos</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: DonutSection -->
+<!-- BEGIN: BottomInfoGrid -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5 pb-6" data-purpose="agent-details-and-benefits">
+<!-- Left: Qué hace card -->
+<article class="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<header class="flex items-center justify-between mb-3">
+<h2 class="text-[11px] font-bold text-slate-800 tracking-wider uppercase">QUÉ HACE</h2>
+<div class="flex items-center space-x-1 text-emerald-600 font-medium text-[11px]">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.828a5 5 0 010-7.072m7.072 0a5 5 0 010 7.072M12 12h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Agente activo</span>
+</div>
+</header>
+<p class="text-[12px] text-slate-600 leading-relaxed font-normal">
+            Consolida la información generada por viajes, remitos, incidencias, reclamos y rendiciones. Permite detectar patrones, medir desempeño y alimentar dashboards ejecutivos u operativos en BigQuery y Looker.
+          </p>
+</article>
+<!-- Right: Beneficios card -->
+<article class="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<header class="mb-3">
+<h2 class="text-[11px] font-bold text-slate-800 tracking-wider uppercase">BENEFICIOS</h2>
+</header>
+<ul class="space-y-2.5 text-[12px] text-slate-600 font-normal">
+<li class="flex items-center space-x-2">
+<span class="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">✓</span>
+<span>Decisiones con datos</span>
+</li>
+<li class="flex items-center space-x-2">
+<span class="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">✓</span>
+<span>Detección de cuellos de botella</span>
+</li>
+<li class="flex items-center space-x-2">
+<span class="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">✓</span>
+<span>Mejora continua</span>
+</li>
+</ul>
+</article>
+</section>
+<!-- END: BottomInfoGrid -->
+</main>
+<!-- END: DashboardBodyScrollable -->
+</div>
+<!-- END: MainContentWrapper -->
+</body></html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SOL · Empliados — Torre de Control (demo)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          bg: "#f4f0fb",
+          "bg-2": "#ebe4f8",
+          panel: "#ffffff",
+          "panel-2": "#f8f5ff",
+          border: "#d4c8ef",
+          "border-soft": "#e4dcf5",
+          ink: "#1e1433",
+          dim: "#4a3d6b",
+          faint: "#7a6d9a",
+          violet: "#7c3aed",
+          "violet-2": "#6d28d9",
+          magenta: "#c026d3",
+          ok: "#16a34a",
+          warn: "#d97706",
+          danger: "#dc2626",
+        },
+        fontFamily: {
+          sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+          display: ["Space Grotesk", "Inter", "sans-serif"],
+        },
+        borderRadius: {
+          DEFAULT: "0.75rem",
+          xl: "1rem",
+          "2xl": "1rem",
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body {
+    background:
+      radial-gradient(900px 500px at 12% -5%, rgba(124, 58, 237, 0.1), transparent 60%),
+      radial-gradient(700px 500px at 100% 0%, rgba(192, 38, 211, 0.06), transparent 55%),
+      #f4f0fb;
+  }
+  .material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+  .material-symbols-outlined.fill {
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid #d4c8ef;
+    border-radius: 16px;
+  }
+  .map-fake {
+    background:
+      linear-gradient(135deg, #12101f 0%, #1a1436 45%, #0c0a18 100%);
+  }
+  .route {
+    stroke-dasharray: 6 8;
+  }
+</style>
+</head>
+<body class="font-sans text-ink antialiased">
+<div class="relative flex min-h-screen w-full">
+
+  <!-- SIDEBAR -->
+  <aside class="sticky top-0 z-20 flex h-screen w-[264px] shrink-0 flex-col border-r border-border bg-bg-2/95 backdrop-blur-xl">
+    <div class="flex h-14 items-center gap-2.5 px-4">
+      <div class="grid h-8 w-8 place-items-center rounded-xl bg-violet/15 text-xs font-bold text-violet">SOL</div>
+      <div class="min-w-0">
+        <div class="truncate text-sm font-semibold tracking-wide">Empliados</div>
+        <div class="truncate text-[11px] text-faint">Mesa de control</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
+      <a class="flex items-center gap-3 rounded-xl bg-violet/15 px-3 py-2.5 text-sm font-medium ring-1 ring-violet/40" href="#">
+        <span class="material-symbols-outlined text-[18px]">dashboard</span>
+        Torre de Control
+      </a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-dim hover:bg-black/5" href="#">
+        <span class="material-symbols-outlined text-[18px]">monitor_heart</span>
+        Monitor
+      </a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-dim hover:bg-black/5" href="#">
+        <span class="material-symbols-outlined text-[18px]">navigation</span>
+        Tracking Express
+      </a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-dim hover:bg-black/5" href="#">
+        <span class="material-symbols-outlined text-[18px]">chat</span>
+        <span class="flex-1">WhatsApp</span>
+        <span class="rounded-full bg-[#25d366]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[#25d366]">Demo</span>
+      </a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-dim hover:bg-black/5" href="#">
+        <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+        Viajes
+      </a>
+
+      <p class="px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-wider text-faint">Agentes</p>
+      <!-- 10 agentes -->
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">VI</span>Viajes</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">TR</span>Tracking</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">RE</span>Remitos</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">DE</span>Destinos</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">IN</span>Incidencias</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">RN</span>Rendición</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">ET</span>ETA</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">PO</span>Evidencias</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">RC</span>Reclamos</a>
+      <a class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-dim hover:bg-black/5" href="#"><span class="grid h-7 w-7 place-items-center rounded-lg bg-black/5 text-[10px] font-bold">AN</span>Analítica</a>
+    </nav>
+
+    <div class="border-t border-border p-3">
+      <div class="rounded-xl bg-violet/10 px-3 py-2.5 text-xs leading-snug text-dim">
+        <div class="font-semibold text-violet">100% DEMO</div>
+        <div class="mt-1">Prospecto SA · Contacto demo</div>
+        <div class="mt-1 text-faint">Vence en 3 días</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="min-w-0 flex-1">
+    <!-- TOPBAR -->
+    <header class="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-border bg-bg/90 px-6 backdrop-blur-xl">
+      <p class="min-w-0 flex-1 truncate text-sm text-dim">Torre y agentes · consultas en Chat Central · datos ficticios</p>
+      <div class="flex items-center gap-2 rounded-full border border-border bg-panel px-3 py-1.5">
+        <span class="h-2 w-2 rounded-full bg-ok"></span>
+        <span class="text-xs font-medium text-dim">Sistemas activos</span>
+      </div>
+      <button class="rounded-lg p-2 text-dim hover:bg-black/5" type="button">
+        <span class="material-symbols-outlined text-[20px]">dark_mode</span>
+      </button>
+      <button class="relative rounded-lg p-2 text-dim hover:bg-black/5" type="button">
+        <span class="material-symbols-outlined text-[20px]">notifications</span>
+        <span class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-magenta"></span>
+      </button>
+      <span class="tabular-nums text-xs text-dim">18:42:11</span>
+      <div class="ml-1 border-l border-border pl-3 text-xs font-semibold">SOL</div>
+    </header>
+
+    <main class="mx-auto max-w-[1400px] space-y-6 px-8 py-8">
+      <!-- Header -->
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2 text-violet">
+            <span class="material-symbols-outlined">monitoring</span>
+            <h1 class="font-display text-2xl font-bold tracking-tight text-ink">Torre de Control</h1>
+          </div>
+          <p class="mt-1 text-sm text-dim">Operación logística en tiempo real · agentes, flota, documentación y SLA</p>
+        </div>
+        <div class="flex items-center gap-2 rounded-full border border-ok/30 bg-ok/10 px-3 py-1.5">
+          <span class="h-2 w-2 rounded-full bg-ok"></span>
+          <span class="text-xs font-semibold text-ok">10 agentes en línea</span>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="panel px-4 py-3 text-sm text-dim">Buscar viaje, chofer o remito… · demo para Prospecto SA</div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-5 gap-3">
+        <div class="panel p-4">
+          <div class="flex items-start justify-between">
+            <p class="text-xs font-medium text-dim">Viajes activos</p>
+            <span class="material-symbols-outlined text-[16px] text-faint">local_shipping</span>
+          </div>
+          <p class="font-display mt-2 text-2xl font-bold">3</p>
+          <p class="mt-1.5 text-xs text-faint">de 6 en gestión</p>
+        </div>
+        <div class="panel p-4">
+          <div class="flex items-start justify-between">
+            <p class="text-xs font-medium text-dim">Entregas hoy</p>
+            <span class="material-symbols-outlined text-[16px] text-faint">package_2</span>
+          </div>
+          <p class="font-display mt-2 text-2xl font-bold">241</p>
+          <p class="mt-1.5 text-xs text-ok">+16% vs. ayer</p>
+        </div>
+        <div class="panel p-4">
+          <div class="flex items-start justify-between">
+            <p class="text-xs font-medium text-dim">Remitos procesados</p>
+            <span class="material-symbols-outlined text-[16px] text-faint">description</span>
+          </div>
+          <p class="font-display mt-2 text-2xl font-bold">412</p>
+          <p class="mt-1.5 text-xs text-faint">97,1% lectura auto</p>
+        </div>
+        <div class="panel p-4">
+          <div class="flex items-start justify-between">
+            <p class="text-xs font-medium text-dim">SLA de entrega</p>
+            <span class="material-symbols-outlined text-[16px] text-faint">speed</span>
+          </div>
+          <p class="font-display mt-2 text-2xl font-bold">94,2%</p>
+          <p class="mt-1.5 text-xs text-ok">+2,4 pts</p>
+        </div>
+        <div class="panel p-4">
+          <div class="flex items-start justify-between">
+            <p class="text-xs font-medium text-dim">Incidencias abiertas</p>
+            <span class="material-symbols-outlined text-[16px] text-faint">warning</span>
+          </div>
+          <p class="font-display mt-2 text-2xl font-bold">3</p>
+          <p class="mt-1.5 text-xs text-warn">1 de criticidad alta</p>
+        </div>
+      </div>
+
+      <!-- Chat + Map -->
+      <div class="grid grid-cols-5 gap-6">
+        <div class="panel col-span-3 flex min-h-[420px] flex-col overflow-hidden">
+          <div class="border-b border-border-soft px-4 py-3">
+            <h2 class="text-sm font-semibold">Chat Central</h2>
+            <p class="text-xs text-faint">Consultas en lenguaje natural a los especialistas</p>
+          </div>
+          <div class="flex-1 space-y-3 p-4">
+            <div class="ml-auto max-w-[85%] rounded-2xl bg-violet px-3.5 py-2.5 text-sm text-white">¿Qué viajes van demorados ahora?</div>
+            <div class="max-w-[90%] rounded-2xl bg-panel-2 px-3.5 py-2.5 text-sm ring-1 ring-border">Hay 1 viaje demorado: VJ-DEM-003 (Mendoza → Córdoba). Causa probable: cola en peaje. ETA 21:05. ¿Querés que Incidencias abra el caso?</div>
+            <div class="ml-auto max-w-[85%] rounded-2xl bg-violet px-3.5 py-2.5 text-sm text-white">Sí, y avisá al cliente.</div>
+            <div class="max-w-[90%] rounded-2xl bg-panel-2 px-3.5 py-2.5 text-sm ring-1 ring-border">Listo (demo): caso abierto en Incidencias y mensaje WhatsApp preparado para Cliente Demo Cuyo.</div>
+          </div>
+          <div class="flex gap-2 border-t border-border-soft p-3">
+            <input class="flex-1 rounded-xl border border-border bg-bg px-3 py-2 text-sm outline-none" placeholder="Preguntá algo… (demo sin backend)" type="text"/>
+            <button class="rounded-[10px] bg-violet px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(124,58,237,0.45)]" type="button">Enviar</button>
+          </div>
+        </div>
+
+        <div class="panel col-span-2 p-4">
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold">Flota en tiempo real</h2>
+            <span class="text-xs text-faint">Leaflet · rutas demo</span>
+          </div>
+          <div class="map-fake relative h-[360px] overflow-hidden rounded-xl">
+            <!-- Dibujo SVG tipo mapa (para Stitch, sin dependencia Leaflet) -->
+            <svg class="absolute inset-0 h-full w-full" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern height="32" id="grid" patternUnits="userSpaceOnUse" width="32">
+                  <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#2a2147" stroke-width="1"/>
+                </pattern>
+              </defs>
+              <rect fill="url(#grid)" height="360" width="640"/>
+              <!-- rutas -->
+              <path d="M80 260 C180 200, 260 160, 420 140" fill="none" stroke="#7c3aed" stroke-opacity="0.7" stroke-width="3"/>
+              <path d="M120 80 C220 120, 340 180, 520 220" fill="none" stroke="#a78bfa" stroke-opacity="0.65" stroke-width="3"/>
+              <path class="route" d="M60 160 C200 140, 300 240, 540 280" fill="none" stroke="#d97706" stroke-opacity="0.8" stroke-width="3"/>
+              <!-- nodos origen -->
+              <circle cx="80" cy="260" fill="#a79fc9" r="5"/>
+              <circle cx="120" cy="80" fill="#a79fc9" r="5"/>
+              <circle cx="60" cy="160" fill="#a79fc9" r="5"/>
+              <!-- unidades -->
+              <circle cx="280" cy="175" fill="#7c3aed" r="8" stroke="#c4b5fd" stroke-width="2"/>
+              <circle cx="360" cy="168" fill="#7c3aed" r="8" stroke="#c4b5fd" stroke-width="2"/>
+              <circle cx="300" cy="210" fill="#d97706" r="8" stroke="#fde68a" stroke-width="2"/>
+              <circle cx="420" cy="140" fill="#22c55e" r="6"/>
+              <circle cx="520" cy="220" fill="#22c55e" r="6"/>
+            </svg>
+            <div class="absolute left-3 top-3 rounded-lg bg-black/55 px-3 py-1.5 text-xs text-[#c4b5fd] backdrop-blur">DEMO · rutas y unidades de ejemplo</div>
+            <div class="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 text-[10px] text-[#c4b5fd]">
+              <span class="rounded-md bg-black/50 px-2 py-1">● En curso</span>
+              <span class="rounded-md bg-black/50 px-2 py-1">● Demorado</span>
+              <span class="rounded-md bg-black/50 px-2 py-1">● Entregado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity + diagnóstico -->
+      <div class="grid grid-cols-3 gap-6">
+        <div class="panel col-span-2 p-4">
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold">Actividad de agentes</h2>
+            <span class="text-xs text-faint">En vivo</span>
+          </div>
+          <ul class="space-y-3 text-sm">
+            <li class="border-b border-border-soft pb-3"><span class="font-semibold text-violet-2">Tracking</span><span class="text-dim"> · Link WhatsApp abierto · VJ-DEM-002</span><div class="text-xs text-faint">hace 2 min</div></li>
+            <li class="border-b border-border-soft pb-3"><span class="font-semibold text-violet-2">Remitos</span><span class="text-dim"> · Remito leído 97% confianza · TransitOne</span><div class="text-xs text-faint">hace 6 min</div></li>
+            <li class="border-b border-border-soft pb-3"><span class="font-semibold text-violet-2">Incidencias</span><span class="text-dim"> · Demora clasificada: cola en peaje · VJ-DEM-003</span><div class="text-xs text-faint">hace 11 min</div></li>
+            <li><span class="font-semibold text-violet-2">ETA</span><span class="text-dim"> · ETA actualizado 21:05 · aviso a cliente Cuyo</span><div class="text-xs text-faint">hace 18 min</div></li>
+          </ul>
+        </div>
+        <div class="panel p-4">
+          <h2 class="mb-3 text-sm font-semibold">Diagnóstico express</h2>
+          <ul class="space-y-2 text-sm text-dim">
+            <li>· Visibilidad de flota y ETA en una sola mesa</li>
+            <li>· Remitos y evidencias sin app de chofer</li>
+            <li>· Excepciones con handoff humano</li>
+            <li>· 10 agentes coordinados bajo Kernel SOL</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Viajes table -->
+      <div class="panel p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-sm font-semibold">Viajes en gestión</h2>
+          <span class="text-xs font-medium text-violet-2">Ver todos</span>
+        </div>
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="text-left text-xs uppercase tracking-wider text-faint">
+              <th class="px-3 py-2 font-medium">Viaje</th>
+              <th class="px-3 py-2 font-medium">Cliente</th>
+              <th class="px-3 py-2 font-medium">Ruta</th>
+              <th class="px-3 py-2 font-medium">Chofer</th>
+              <th class="px-3 py-2 font-medium">Estado</th>
+              <th class="px-3 py-2 font-medium">Avance</th>
+              <th class="px-3 py-2 font-medium">ETA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-border-soft">
+              <td class="px-3 py-3 font-medium">VJ-DEM-001</td>
+              <td class="px-3 py-3 text-dim">Cliente Demo Norte</td>
+              <td class="px-3 py-3 text-dim">Córdoba → CABA</td>
+              <td class="px-3 py-3 text-dim">Martín Ríos</td>
+              <td class="px-3 py-3"><span class="rounded-full bg-violet/10 px-2 py-0.5 text-xs font-medium text-violet">En curso</span></td>
+              <td class="px-3 py-3 text-dim">62%</td>
+              <td class="px-3 py-3 text-dim">18:40</td>
+            </tr>
+            <tr class="border-t border-border-soft">
+              <td class="px-3 py-3 font-medium">VJ-DEM-002</td>
+              <td class="px-3 py-3 text-dim">Cliente Demo Litoral</td>
+              <td class="px-3 py-3 text-dim">Rosario → CABA</td>
+              <td class="px-3 py-3 text-dim">Lucía Fernández</td>
+              <td class="px-3 py-3"><span class="rounded-full bg-violet/10 px-2 py-0.5 text-xs font-medium text-violet">En curso</span></td>
+              <td class="px-3 py-3 text-dim">35%</td>
+              <td class="px-3 py-3 text-dim">17:15</td>
+            </tr>
+            <tr class="border-t border-border-soft">
+              <td class="px-3 py-3 font-medium">VJ-DEM-003</td>
+              <td class="px-3 py-3 text-dim">Cliente Demo Cuyo</td>
+              <td class="px-3 py-3 text-dim">Mendoza → Córdoba</td>
+              <td class="px-3 py-3 text-dim">Diego Suárez</td>
+              <td class="px-3 py-3"><span class="rounded-full bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn">Demorado</span></td>
+              <td class="px-3 py-3 text-dim">48%</td>
+              <td class="px-3 py-3 text-dim">21:05</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Agentes grid -->
+      <div>
+        <h2 class="mb-3 text-sm font-semibold">Agentes de la suite</h2>
+        <div class="grid grid-cols-5 gap-3">
+          <div class="panel p-4"><div class="grid h-10 w-10 place-items-center rounded-xl bg-violet/15 text-xs font-bold text-violet-2">VI</div><p class="mt-3 font-semibold">Gestión de Viajes</p><p class="mt-1 text-xs text-dim">Pedidos, flota/chofer y carga en el TMS.</p></div>
+          <div class="panel p-4"><div class="grid h-10 w-10 place-items-center rounded-xl bg-violet/15 text-xs font-bold text-violet-2">TR</div><p class="mt-3 font-semibold">Tracking Express</p><p class="mt-1 text-xs text-dim">Seguimiento por link WhatsApp.</p></div>
+          <div class="panel p-4"><div class="grid h-10 w-10 place-items-center rounded-xl bg-violet/15 text-xs font-bold text-violet-2">RE</div><p class="mt-3 font-semibold">Remitos</p><p class="mt-1 text-xs text-dim">Foto → lectura IA → TMS.</p></div>
+          <div class="panel p-4"><div class="grid h-10 w-10 place-items-center rounded-xl bg-violet/15 text-xs font-bold text-violet-2">IN</div><p class="mt-3 font-semibold">Incidencias</p><p class="mt-1 text-xs text-dim">Paradas y eventos en ruta.</p></div>
+          <div class="panel p-4"><div class="grid h-10 w-10 place-items-center rounded-xl bg-violet/15 text-xs font-bold text-violet-2">ET</div><p class="mt-3 font-semibold">ETA</p><p class="mt-1 text-xs text-dim">Estima llegada y avisa demoras.</p></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

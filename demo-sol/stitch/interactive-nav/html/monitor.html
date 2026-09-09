@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monitor de Servicios - Empliados</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              purple: '#6366f1',
+              pink: '#ec4899',
+              sidebar: '#f9fafb',
+              activeMenu: '#ede9fe',
+              textMuted: '#6b7280',
+              borderLight: '#f3f4f6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-scrollbars">
+    /* Custom thin scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+  </style>
+</head>
+<body class="bg-[#f8f9fd] text-[#1e293b] font-sans antialiased h-screen flex overflow-hidden">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-[#fafafc] border-r border-[#eaecf0] flex flex-col justify-between shrink-0 h-full select-none" data-purpose="sidebar-navigation">
+<div class="flex flex-col flex-1 overflow-hidden">
+<!-- Logo Header -->
+<div class="h-16 flex items-center px-5 border-b border-[#f1f3f7] gap-2.5">
+<div class="flex items-center gap-1.5">
+<span class="text-xl font-bold tracking-tight text-[#1e1b4b]">Emplia<span class="text-[#ec4899]">dos</span></span>
+<span class="text-[10px] uppercase tracking-wider font-bold bg-[#fee2e2] text-[#ef4444] px-1.5 py-0.5 rounded border border-[#fecaca] ml-1">DEMO offline</span>
+</div>
+</div>
+<!-- Navigation Links Container -->
+<div class="flex-1 overflow-y-auto px-3 py-3 space-y-5">
+<!-- Primary Menu -->
+<nav class="space-y-0.5">
+<!-- Torre de Control -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Torre de Control</span>
+</a>
+<!-- Monitor (Active Selected Item) -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-[#6941c6] bg-[#f4f3ff] rounded-lg border border-[#d6bbfb]/40 shadow-xs" href="#">
+<svg class="w-4 h-4 text-[#6941c6]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Monitor</span>
+</a>
+<!-- Tracking Express -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Tracking Express</span>
+</a>
+<!-- WhatsApp -->
+<a class="flex items-center justify-between px-3 py-2 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>WhatsApp</span>
+</div>
+<span class="text-[10px] font-medium bg-[#ecfdf3] text-[#027a48] px-1.5 py-0.5 rounded-full border border-[#abefc6]">Nuevo</span>
+</a>
+<!-- Métricas -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Métricas</span>
+</a>
+</nav>
+<!-- AGENTES Section -->
+<div>
+<span class="px-3 text-[11px] font-semibold text-[#98a2b3] tracking-wider uppercase block mb-1">AGENTES</span>
+<nav class="space-y-0.5">
+<!-- Gestión de Viajes -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m-6 3.75l3 3m0 0l3-3m-3 3V1.5m6 9h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#12b76a]"></span>
+</a>
+<!-- Tracking Express -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#12b76a]"></span>
+</a>
+<!-- Remitos -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Remitos</span>
+</div>
+<svg class="w-3.5 h-3.5 text-[#98a2b3]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+<!-- Destinos -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#12b76a]"></span>
+</a>
+<!-- Incidencias -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#0ba5ec]"></span>
+</a>
+<!-- Rendición -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#12b76a]"></span>
+</a>
+<!-- ETA -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#12b76a]"></span>
+</a>
+<!-- POP/POD -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#12b76a]"></span>
+</a>
+<!-- Reclamos -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#0ba5ec]"></span>
+</a>
+<!-- Analítica -->
+<a class="flex items-center justify-between px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#0ba5ec]"></span>
+</a>
+</nav>
+</div>
+<!-- OPERACIÓN Section -->
+<div>
+<span class="px-3 text-[11px] font-semibold text-[#98a2b3] tracking-wider uppercase block mb-1">OPERACIÓN</span>
+<nav class="space-y-0.5">
+<!-- Chat Central -->
+<a class="flex items-center gap-3 px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Chat Central</span>
+</a>
+<!-- Usuarios -->
+<a class="flex items-center gap-3 px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Usuarios</span>
+</a>
+<!-- Parámetros maestros -->
+<a class="flex items-center gap-3 px-3 py-1.5 text-sm text-[#475467] rounded-lg hover:bg-gray-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="text-[13px]">Parámetros maestros</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- User Profile Footer -->
+<div class="p-3 border-t border-[#eaecf0] bg-[#f8f9fa]">
+<div class="flex items-center justify-between p-1.5 rounded-lg">
+<div class="flex items-center gap-2.5 overflow-hidden">
+<div class="w-9 h-9 rounded-full bg-[#a855f7] text-white flex items-center justify-center font-bold text-xs shrink-0">
+              GO
+            </div>
+<div class="flex flex-col truncate">
+<span class="text-xs font-semibold text-[#1e293b] truncate">Gonzalo Demo</span>
+<span class="text-[11px] text-[#64748b] truncate">Administrador</span>
+</div>
+</div>
+<button class="text-[#94a3b8] hover:text-[#475467] p-1" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- Top Header Bar -->
+<header class="h-14 bg-white border-b border-[#eaecf0] px-6 flex items-center justify-between shrink-0" data-purpose="top-navigation">
+<div class="text-xs text-[#64748b]">
+        Torre y agentes · consultas en Chat Central
+      </div>
+<div class="flex items-center gap-4">
+<!-- Sistemas activos pill -->
+<div class="flex items-center gap-1.5 px-3 py-1 bg-[#f0fdf4] border border-[#bbf7d0] rounded-full text-xs font-medium text-[#16a34a]">
+<span class="inline-block w-2 h-2 rounded-full bg-[#16a34a]"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Moon / Dark mode icon -->
+<button class="text-[#64748b] hover:text-[#1e293b] p-1" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</button>
+<!-- Notification Bell with badge -->
+<button class="text-[#64748b] hover:text-[#1e293b] p-1 relative" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+<span class="absolute top-1 right-1 w-1.5 h-1.5 bg-[#ec4899] rounded-full"></span>
+</button>
+<!-- Current Time & Date -->
+<div class="flex flex-col text-right">
+<span class="text-xs font-semibold text-[#1e293b] leading-tight">06:41:33 p. m.</span>
+<span class="text-[10px] text-[#94a3b8] leading-tight">Mié, 09 Sept</span>
+</div>
+<!-- SOL Logo Box -->
+<div class="h-8 px-2.5 rounded bg-white border border-[#e2e8f0] flex items-center justify-center shadow-xs">
+<span class="text-[11px] font-black tracking-tighter text-[#0284c7]">SOL</span>
+</div>
+</div>
+</header>
+<!-- Scrollable Content View -->
+<main class="flex-1 overflow-y-auto p-8 space-y-6" data-purpose="monitor-dashboard">
+<!-- BEGIN: Dashboard Title Header -->
+<section class="flex items-center justify-between" data-purpose="page-header">
+<div class="flex items-center gap-3.5">
+<!-- Activity Icon Badge -->
+<div class="w-12 h-12 rounded-2xl bg-[#ede9fe] text-[#7c3aed] flex items-center justify-center shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-[#111827]">Monitor de servicios</h1>
+<p class="text-xs text-[#6b7280] mt-0.5">Chequeo cada 15s · infraestructura + estado de agentes</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<!-- Botón Actualizar -->
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#374151] bg-white border border-[#e5e7eb] rounded-lg hover:bg-gray-50 shadow-xs" type="button">
+<svg class="w-3.5 h-3.5 text-[#6b7280]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Actualizar</span>
+</button>
+<!-- Botón Activar alertas -->
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#374151] bg-white border border-[#e5e7eb] rounded-lg hover:bg-gray-50 shadow-xs" type="button">
+<svg class="w-3.5 h-3.5 text-[#6b7280]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3 3l18 18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Activar alertas</span>
+</button>
+</div>
+</section>
+<!-- END: Dashboard Title Header -->
+<!-- BEGIN: Alert Banner -->
+<section class="p-4 rounded-xl bg-[#fef2f2] border border-[#fee2e2] flex items-start gap-3.5 shadow-xs" data-purpose="error-alert">
+<!-- Red Cross Icon -->
+<div class="text-[#ef4444] shrink-0 mt-0.5">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="space-y-1 text-xs leading-relaxed">
+<div class="flex items-center gap-3">
+<h2 class="font-bold text-sm text-[#111827]">Atención — hay servicios caídos</h2>
+</div>
+<p class="text-[#6b7280] text-[11px]">Último chequeo: 06:41:25 p. m.</p>
+<div class="pt-1.5 space-y-1 text-[#ca8a04]">
+<p class="text-xs text-[#ca8a04] flex items-center gap-1.5 font-normal">
+<span>→</span> WhatsApp desconectado — usá «Mostrar QR» abajo o abrí el monitor del bot.
+            </p>
+<p class="text-xs text-[#ca8a04] flex items-center gap-1.5 font-normal">
+<span>→</span> Baileys reconecta solo ante cortes de red; si la sesión expiró, escaneá QR.
+            </p>
+</div>
+</div>
+</section>
+<!-- END: Alert Banner -->
+<!-- BEGIN: Vincular WhatsApp Card -->
+<section class="bg-white rounded-xl border border-[#eaecf0] p-4 flex items-center justify-between shadow-xs" data-purpose="whatsapp-link">
+<div class="space-y-1 max-w-2xl">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-[#475467]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<h3 class="text-xs font-bold text-[#111827]">Vincular WhatsApp</h3>
+</div>
+<p class="text-xs text-[#6b7280]">
+            Baileys reconecta automáticamente ante cortes de red. Si la sesión expiró o cerraste sesión en el teléfono, escaneá el QR acá (se renueva cada ~60 s).
+          </p>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#344054] bg-white border border-[#d0d5dd] rounded-lg hover:bg-gray-50 shadow-xs shrink-0" type="button">
+<svg class="w-4 h-4 text-[#344054]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Mostrar QR</span>
+</button>
+</section>
+<!-- END: Vincular WhatsApp Card -->
+<!-- BEGIN: Infraestructura Section -->
+<section class="space-y-3" data-purpose="infrastructure-status">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-[#98a2b3]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-13.5-6h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-13.5-6h13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<h2 class="text-xs font-bold text-[#64748b] tracking-wider uppercase">INFRAESTRUCTURA</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- 1. API SOL -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 space-y-3 shadow-xs">
+<div class="flex items-start justify-between">
+<div class="w-9 h-9 rounded-lg bg-[#e0f2fe] flex items-center justify-center text-[#0284c7]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-13.5-6h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[11px] font-semibold text-[#16a34a] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 rounded-full">OK</span>
+</div>
+<div>
+<h3 class="text-xs font-bold text-[#1e293b]">API SOL</h3>
+</div>
+</div>
+<!-- 2. Bot Baileys (HTTP) -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 space-y-3 shadow-xs">
+<div class="flex items-start justify-between">
+<div class="w-9 h-9 rounded-lg bg-[#dcfce7] flex items-center justify-center text-[#16a34a]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693l-1.57-.393m15.6 0l1.4 3.5a2.25 2.25 0 01-2.089 3.082H4.889a2.25 2.25 0 01-2.089-3.082l1.4-3.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[11px] font-semibold text-[#16a34a] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 rounded-full">OK</span>
+</div>
+<div>
+<h3 class="text-xs font-bold text-[#1e293b]">Bot Baileys (HTTP)</h3>
+<div class="flex items-center justify-between text-[11px] text-[#64748b] mt-1.5">
+<span>Latencia</span>
+<span class="font-medium text-[#1e293b]">4 ms</span>
+</div>
+</div>
+</div>
+<!-- 3. WhatsApp (CAÍDO) -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 space-y-3 shadow-xs">
+<div class="flex items-start justify-between">
+<div class="w-9 h-9 rounded-lg bg-[#fee2e2] flex items-center justify-center text-[#ef4444]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[11px] font-semibold text-[#dc2626] bg-[#fee2e2] border border-[#fca5a5] px-2 py-0.5 rounded-full">CAÍDO</span>
+</div>
+<div>
+<h3 class="text-xs font-bold text-[#1e293b]">WhatsApp</h3>
+<div class="text-[11px] text-[#64748b] mt-1.5">
+<span>Detalle</span>
+</div>
+</div>
+</div>
+<!-- 4. Webhook agentes -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 space-y-3 shadow-xs">
+<div class="flex items-start justify-between">
+<div class="w-9 h-9 rounded-lg bg-[#e0f2fe] flex items-center justify-center text-[#0284c7]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[11px] font-semibold text-[#16a34a] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 rounded-full">OK</span>
+</div>
+<div>
+<h3 class="text-xs font-bold text-[#1e293b]">Webhook agentes</h3>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Infraestructura Section -->
+<!-- BEGIN: Agentes Involucrados Section -->
+<section class="space-y-3 pt-2" data-purpose="involved-agents">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-[#98a2b3]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<h2 class="text-xs font-bold text-[#64748b] tracking-wider uppercase">AGENTES INVOLUCRADOS</h2>
+</div>
+<!-- Status counter legend pills -->
+<div class="flex items-center gap-3 text-xs">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#12b76a]"></span>
+<span class="text-[#64748b]">Activo</span>
+<span class="font-bold text-[#1e293b]">2</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#38bdf8]"></span>
+<span class="text-[#64748b]">En espera</span>
+<span class="font-bold text-[#1e293b]">2</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
+<span class="text-[#64748b]">En hold</span>
+<span class="font-bold text-[#1e293b]">0</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#94a3b8]"></span>
+<span class="text-[#64748b]">Offline</span>
+<span class="font-bold text-[#1e293b]">7</span>
+</div>
+</div>
+</div>
+<!-- Legend Subtext -->
+<p class="text-[11px] text-[#64748b]">
+<span class="text-[#12b76a] font-medium">• Activo</span> = con cola o procesando  • 
+          <span class="text-[#38bdf8] font-medium">• En espera</span> = online sin trabajo  • 
+          <span class="text-[#f59e0b] font-medium">• En hold</span> = espera humana / cliente / chofer
+        </p>
+<!-- Grid of 11 Agents (4 columns) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+<!-- Agent 1: Chat Central [En espera] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#e0f2fe] flex items-center justify-center text-[#0284c7]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#0284c7] bg-[#f0f9ff] border border-[#bae6fd] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#0284c7]"></span> En espera
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Chat Central</h3>
+<p class="text-[10px] text-[#94a3b8]">Chat Central Commander</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">Listo para consultas de mesa</p>
+<p class="text-[10px] text-[#94a3b8]">Online, sin trabajo pendiente</p>
+</div>
+</div>
+<!-- Agent 2: Gestión de Viajes [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m-6 3.75l3 3m0 0l3-3m-3 3V1.5m6 9h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Gestión de Viajes</h3>
+<p class="text-[10px] text-[#94a3b8]">Agente de Gestión de Viajes</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 3: Tracking Express [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Tracking Express</h3>
+<p class="text-[10px] text-[#94a3b8]">SOL Tracking Express</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 4: Remitos [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Remitos</h3>
+<p class="text-[10px] text-[#94a3b8]">Agente de Remitos</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 5: Destinos [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Destinos</h3>
+<p class="text-[10px] text-[#94a3b8]">Confirmación de Destinos</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 6: Incidencias [Activo] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#ecfdf5] flex items-center justify-center text-[#10b981]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#047857] bg-[#ecfdf5] border border-[#a7f3d0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span> Activo
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Incidencias</h3>
+<p class="text-[10px] text-[#94a3b8]">Gestión de Incidencias</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">35 incidencias abiertas</p>
+<p class="text-[10px] text-[#94a3b8]">Procesando o con cola en curso</p>
+</div>
+</div>
+<!-- Agent 7: Rendición [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Rendición</h3>
+<p class="text-[10px] text-[#94a3b8]">Rendición de Viajes</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 8: ETA [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">ETA</h3>
+<p class="text-[10px] text-[#94a3b8]">ETA y Notificación Proactiva</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 9: POP/POD [Offline] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#94a3b8]"></span> Offline
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">POP/POD</h3>
+<p class="text-[10px] text-[#94a3b8]">Validación y Carga</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">WhatsApp desconectado</p>
+<p class="text-[10px] text-[#94a3b8]">No desplegado / sin señal</p>
+</div>
+</div>
+<!-- Agent 10: Reclamos [Activo] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#ecfdf5] flex items-center justify-center text-[#10b981]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#047857] bg-[#ecfdf5] border border-[#a7f3d0] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span> Activo
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Reclamos</h3>
+<p class="text-[10px] text-[#94a3b8]">Gestión de Reclamos</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">Escucha activa en canales</p>
+<p class="text-[10px] text-[#94a3b8]">Procesando o con cola en curso</p>
+</div>
+</div>
+<!-- Agent 11: Analítica [En espera] -->
+<div class="bg-white rounded-xl border border-[#eaecf0] p-4 flex flex-col justify-between shadow-xs min-h-[145px]">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-[#e0f2fe] flex items-center justify-center text-[#0284c7]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125-1.125V4.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<span class="text-[10px] font-medium text-[#0284c7] bg-[#f0f9ff] border border-[#bae6fd] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#0284c7]"></span> En espera
+                </span>
+</div>
+<div class="mt-2.5">
+<h3 class="text-xs font-bold text-[#1e293b]">Analítica</h3>
+<p class="text-[10px] text-[#94a3b8]">Motor de Métricas</p>
+</div>
+</div>
+<div class="mt-3 pt-2 text-[11px] space-y-0.5">
+<p class="text-[#475467] font-medium">En espera de eventos</p>
+<p class="text-[10px] text-[#94a3b8]">Online, sin trabajo pendiente</p>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Agentes Involucrados Section -->
+</main>
+</div>
+<!-- END: Main Area -->
+</body></html>

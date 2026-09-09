@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Torre de Control - SOL Logística</title>
+<!-- Tailwind CSS v3 with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+            },
+            sidebar: '#fbfaff',
+            mainbg: '#f8fafc',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars-and-map">
+    /* Custom scrollbar for subtle appearance */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+
+    /* Map watermarked background effect */
+    .map-pattern {
+      background-color: #f1f5f9;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.85) 0%, rgba(241,245,249,0.5) 100%),
+        repeating-linear-gradient(45deg, rgba(203, 213, 225, 0.15) 0, rgba(203, 213, 225, 0.15) 1px, transparent 0, transparent 40px);
+    }
+  </style>
+</head>
+<body class="h-full bg-[#f4f6fb] text-[#1e293b] font-sans antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-[260px] flex-shrink-0 bg-[#fbfaff] border-r border-[#ece8f6] flex flex-col justify-between select-none h-full z-20">
+<!-- Top Section: Logo & Navigation Links -->
+<div class="flex flex-col flex-1 overflow-y-auto">
+<!-- Logo Area with DEMO offline badge -->
+<div class="h-16 px-5 flex items-center gap-2 border-b border-[#f3f0fa]">
+<div class="flex items-center gap-1.5 font-bold text-xl tracking-tight text-[#111827]">
+<span class="text-[#7c3aed]">amplia</span><span class="text-[#f43f5e]">dos</span>
+</div>
+<!-- Tag DEMO offline -->
+<span class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+            DEMO offline
+          </span>
+</div>
+<!-- Main Navigation Items -->
+<nav class="px-3 py-3 space-y-0.5 text-xs font-medium text-[#4b5563]">
+<!-- Active: Torre de Control -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#f3e8ff]/70 text-[#7c3aed] font-semibold border border-[#d8b4fe]/60 shadow-xs" href="#">
+<svg class="w-4 h-4 text-[#7c3aed]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Torre de Control</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Monitor</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>WhatsApp</span>
+</div>
+<span class="text-[10px] font-medium bg-[#dcfce7] text-[#16a34a] px-1.5 py-0.2 rounded">Nuevo</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Métricas</span>
+</a>
+<!-- AGENTES SECTION -->
+<div class="pt-3 pb-1">
+<p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Agentes</p>
+</div>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Gestión de Viajes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Tracking Express</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Remitos</span>
+</div>
+<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Destinos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Incidencias</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Rendición</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>ETA</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>POP/POD</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Reclamos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<a class="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Analítica</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+</a>
+<!-- OPERACIÓN SECTION -->
+<div class="pt-3 pb-1">
+<p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Operación</p>
+</div>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Chat Central</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Usuarios</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg hover:bg-white/80 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Parámetros maestros</span>
+</a>
+</nav>
+</div>
+<!-- User Profile Card at Bottom of Sidebar -->
+<div class="p-3 border-t border-[#ece8f6] bg-[#f9f8fe]">
+<div class="flex items-center justify-between p-1 rounded-lg">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-[#8b5cf6] text-white font-bold flex items-center justify-center text-xs shadow-xs">
+              GD
+            </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-gray-800 leading-tight">Gonzalo Demo</span>
+<span class="text-[10px] text-gray-500">Administrador</span>
+</div>
+</div>
+<button class="text-gray-400 hover:text-gray-700 p-1.5 rounded transition-colors" title="Cerrar sesión">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContentWrapper -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="h-14 bg-white/70 backdrop-blur border-b border-gray-200/80 px-6 flex items-center justify-between shrink-0">
+<div class="text-xs text-gray-600 font-medium">
+          Torre y agentes · <span class="text-gray-400 font-normal">consultas en Chat Central</span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Status pill -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 text-xs font-medium text-gray-700 bg-white shadow-2xs">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Night mode toggle button -->
+<button class="text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Notification bell -->
+<button class="text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors relative">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Clock and date -->
+<div class="text-right">
+<p class="text-xs font-semibold text-gray-800 leading-none">06:41:21 p. m.</p>
+<p class="text-[10px] text-gray-400 leading-none mt-0.5">Mié, 09 Sept</p>
+</div>
+<!-- Logo SOL Logística -->
+<div class="pl-2 border-l border-gray-200">
+<div class="border border-gray-300 rounded px-1.5 py-0.5 text-center bg-white">
+<span class="text-xs font-black tracking-widest text-[#0f172a] block leading-none">SOL</span>
+<span class="text-[7px] text-gray-400 block tracking-tighter uppercase font-medium leading-none mt-0.5">LOGÍSTICA</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Scrollable Main Dashboard Area -->
+<main class="flex-1 overflow-y-auto px-8 py-5 space-y-4">
+<!-- Header: Torre de Control Title & Subtitle -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#ede9fe] text-[#7c3aed] flex items-center justify-center shadow-xs">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-xl font-bold text-gray-900 tracking-tight leading-tight">Torre de Control</h1>
+<p class="text-xs text-gray-500">Operación logística en tiempo real · agentes, flota, documentación y SLA</p>
+</div>
+</div>
+<!-- Agent status badge -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#f0fdf4] border border-[#bbf7d0] text-[#16a34a] text-xs font-medium rounded-full shadow-2xs">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>8 agentes en línea</span>
+</div>
+</div>
+<!-- Search Bar Section -->
+<div class="bg-white rounded-2xl p-4 border border-gray-200/70 shadow-2xs">
+<label class="block text-[10px] font-bold tracking-wider text-gray-500 uppercase mb-0.5">BÚSQUEDA GENERAL SOL</label>
+<p class="text-xs text-gray-500 mb-2.5">Buscá en remitos por número, chofer o patente. Los buscadores de cada agente siguen en su pantalla.</p>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-9 pr-4 py-2 bg-[#f8fafc] border border-gray-200 rounded-xl text-xs placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 focus:border-[#7c3aed] transition-all" placeholder="Nº remito, chofer o patente..." type="text"/>
+</div>
+</div>
+<!-- 5 KPI Cards Row -->
+<div class="grid grid-cols-5 gap-3.5">
+<!-- Card 1 -->
+<div class="bg-white rounded-xl p-3.5 border border-gray-200/70 shadow-2xs flex flex-col justify-between h-[96px]">
+<div class="flex items-center justify-between text-gray-500">
+<span class="text-xs font-medium">Viajes activos</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-bold text-gray-900 leading-none">15</div>
+<p class="text-[11px] text-gray-400 mt-1">de 26 en gestión</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white rounded-xl p-3.5 border border-gray-200/70 shadow-2xs flex flex-col justify-between h-[96px]">
+<div class="flex items-center justify-between text-gray-500">
+<span class="text-xs font-medium">Entregas hoy</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-bold text-gray-900 leading-none">243</div>
+<p class="text-[11px] text-emerald-600 font-medium mt-1">+16% vs. ayer</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white rounded-xl p-3.5 border border-gray-200/70 shadow-2xs flex flex-col justify-between h-[96px]">
+<div class="flex items-center justify-between text-gray-500">
+<span class="text-xs font-medium">Remitos procesados</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-bold text-gray-900 leading-none">415</div>
+<p class="text-[11px] text-gray-400 mt-1">97,1% lectura auto</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-white rounded-xl p-3.5 border border-gray-200/70 shadow-2xs flex flex-col justify-between h-[96px]">
+<div class="flex items-center justify-between text-gray-500">
+<span class="text-xs font-medium">SLA de entrega</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-bold text-gray-900 leading-none">94,2%</div>
+<p class="text-[11px] text-emerald-600 font-medium mt-1">+2,4 pts</p>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="bg-white rounded-xl p-3.5 border border-gray-200/70 shadow-2xs flex flex-col justify-between h-[96px]">
+<div class="flex items-center justify-between text-gray-500">
+<span class="text-xs font-medium">Incidencias abiertas</span>
+<svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-bold text-gray-900 leading-none">7</div>
+<p class="text-[11px] text-amber-600 font-medium mt-1">2 de criticidad alta</p>
+</div>
+</div>
+</div>
+<!-- 2 Column Layout: Chat Central & Real Time Fleet Map -->
+<div class="grid grid-cols-12 gap-4 pb-4">
+<!-- BEGIN: ChatCentralColumn (Left) -->
+<div class="col-span-8 bg-white rounded-2xl border border-gray-200/70 p-5 flex flex-col justify-between min-h-[460px] shadow-2xs">
+<!-- Chat Header -->
+<div class="flex items-center justify-between border-b border-gray-100 pb-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-[#7c3aed] text-white flex items-center justify-center">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h2 class="text-sm font-bold text-gray-900 leading-tight">Chat Central</h2>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="text-[11px] text-gray-400">En línea</span>
+</div>
+</div>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 px-2.5 py-1 rounded-md hover:bg-gray-100 transition-colors">
+<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Historial</span>
+</button>
+<button class="flex items-center gap-1 text-xs text-gray-700 font-medium px-2.5 py-1 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors">
+<span class="text-sm leading-none">+</span>
+<span>Nueva conversación</span>
+</button>
+</div>
+</div>
+<!-- Central Inquiry Callout -->
+<div class="my-auto py-6 flex flex-col items-center text-center">
+<div class="w-10 h-10 rounded-full bg-[#f3e8ff] text-[#7c3aed] flex items-center justify-center mb-3">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<h3 class="text-lg font-bold text-gray-900 mb-1">¿Qué necesitás saber de la operación?</h3>
+<p class="text-xs text-gray-400 max-w-lg mb-6">Consultá viajes, incidencias, ETA, POD, remitos y rendiciones con datos en tiempo real.</p>
+<!-- 4 Prompt Quick-Action Cards -->
+<div class="grid grid-cols-4 gap-2.5 w-full max-w-3xl px-2">
+<!-- Prompt 1 -->
+<button class="flex items-center justify-between p-3 rounded-xl border border-[#ede9fe] bg-white hover:border-[#7c3aed]/40 hover:shadow-xs transition-all text-left group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-[#faf5ff] text-[#7c3aed] flex items-center justify-center shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-[11px] font-medium text-gray-700 leading-tight">¿Cuántos camiones están por salir?</span>
+</div>
+<svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-[#7c3aed] shrink-0 ml-1 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Prompt 2 -->
+<button class="flex items-center justify-between p-3 rounded-xl border border-[#e0f2fe] bg-white hover:border-sky-400 hover:shadow-xs transition-all text-left group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-[11px] font-medium text-gray-700 leading-tight">¿Qué incidencias tenemos?</span>
+</div>
+<svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-sky-600 shrink-0 ml-1 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Prompt 3 -->
+<button class="flex items-center justify-between p-3 rounded-xl border border-[#fef3c7] bg-white hover:border-amber-400 hover:shadow-xs transition-all text-left group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-[11px] font-medium text-gray-700 leading-tight">¿Qué camiones tienen demora?</span>
+</div>
+<svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-600 shrink-0 ml-1 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Prompt 4 -->
+<button class="flex items-center justify-between p-3 rounded-xl border border-[#dcfce7] bg-white hover:border-emerald-400 hover:shadow-xs transition-all text-left group">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-[11px] font-medium text-gray-700 leading-tight">¿Qué viajes están pendientes?</span>
+</div>
+<svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-600 shrink-0 ml-1 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Chat Bottom Input Bar -->
+<div class="pt-2">
+<div class="relative flex items-center border border-gray-200 rounded-2xl bg-white px-3 py-2 shadow-2xs focus-within:border-[#7c3aed] focus-within:ring-2 focus-within:ring-[#7c3aed]/20 transition-all">
+<button class="text-gray-400 hover:text-gray-600 p-1.5 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<input class="w-full text-xs text-gray-700 placeholder-gray-400 bg-transparent border-0 focus:ring-0 focus:outline-none px-2" placeholder="Preguntá algo sobre la operación..." type="text"/>
+<div class="flex items-center gap-2 shrink-0">
+<!-- Mode Selector Pill -->
+<button class="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 border border-gray-200 hover:bg-gray-100 rounded-full text-[11px] text-gray-700 font-medium transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Operación en vivo</span>
+<svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Send button -->
+<button class="w-8 h-8 rounded-full bg-[#f3e8ff] hover:bg-[#e9d5ff] text-[#7c3aed] flex items-center justify-center transition-colors shadow-2xs">
+<svg class="w-4 h-4 transform rotate-45 -translate-y-0.5 translate-x-0.5" fill="currentColor" viewbox="0 0 20 20">
+<path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- END: ChatCentralColumn -->
+<!-- BEGIN: RealTimeFleetMapColumn (Right) -->
+<div class="col-span-4 bg-white rounded-2xl border border-gray-200/70 p-4 flex flex-col justify-between shadow-2xs min-h-[460px]">
+<!-- Map Header Title & Legends -->
+<div>
+<h2 class="text-xs font-bold tracking-wider uppercase text-gray-800 mb-2">FLOTA EN TIEMPO REAL</h2>
+<div class="flex items-center gap-2 flex-wrap text-[11px] mb-3">
+<span class="inline-flex items-center gap-1.5 bg-[#eff6ff] text-sky-700 px-2.5 py-0.5 rounded-full border border-sky-100 font-medium">
+<span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                  15 en curso
+                </span>
+<span class="inline-flex items-center gap-1.5 bg-[#fffbeb] text-amber-700 px-2.5 py-0.5 rounded-full border border-amber-100 font-medium">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  3 detenidos
+                </span>
+<span class="inline-flex items-center gap-1.5 bg-[#f0fdf4] text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-100 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  entregados
+                </span>
+</div>
+</div>
+<!-- Interactive Vector Argentina Map Container -->
+<div class="relative flex-1 w-full rounded-xl border border-gray-200 overflow-hidden bg-[#eaf2f8] min-h-[350px]">
+<!-- Zoom buttons top-left -->
+<div class="absolute top-2.5 left-2.5 z-10 flex flex-col bg-white rounded border border-gray-300 shadow-xs overflow-hidden">
+<button class="w-6 h-6 flex items-center justify-center text-gray-700 hover:bg-gray-100 text-sm font-bold border-b border-gray-200">+</button>
+<button class="w-6 h-6 flex items-center justify-center text-gray-700 hover:bg-gray-100 text-sm font-bold">−</button>
+</div>
+<!-- Map SVG: Detailed stylized map of Argentina, Chile, Paraguay, Uruguay, Brazil borders -->
+<svg class="w-full h-full object-cover" fill="none" viewbox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Tile watermark pattern -->
+<pattern height="160" id="cartoWatermark" patterntransform="rotate(-30)" patternunits="userSpaceOnUse" width="160">
+<text fill="#cbd5e1" font-family="sans-serif" font-size="10" font-weight="600" opacity="0.3" x="10" y="40">API KEY REQUIRED</text>
+<text fill="#94a3b8" font-family="sans-serif" font-size="8" opacity="0.25" x="10" y="60">carto.com/basemaps/apikey</text>
+</pattern>
+</defs>
+<!-- Water Background -->
+<rect fill="#dbeafe" height="480" width="400"></rect>
+<!-- Watermark overlay on sea/map -->
+<rect fill="url(#cartoWatermark)" height="480" width="400"></rect>
+<!-- Landmass: South America southern cone representation -->
+<!-- Chile outline -->
+<path d="M 60 120 Q 95 240 105 380 L 115 390 L 110 440 L 90 430 Q 70 300 50 180 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"></path>
+<!-- Argentina main landmass -->
+<path d="M 105 100 
+                         Q 150 90 220 100 
+                         L 240 120 
+                         L 250 160 
+                         L 300 170 
+                         L 280 230 
+                         L 275 250 
+                         L 260 270 
+                         Q 240 310 230 360 
+                         L 220 410 
+                         L 180 460 
+                         L 165 470 
+                         L 145 440 
+                         L 125 390 
+                         L 110 320 
+                         L 95 220 
+                         L 100 160 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"></path>
+<!-- Paraguay area -->
+<path d="M 215 90 L 270 95 L 290 140 L 245 155 L 215 120 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"></path>
+<!-- Uruguay area -->
+<path d="M 275 240 L 310 245 L 305 285 L 270 280 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"></path>
+<!-- Brazil southern region -->
+<path d="M 285 130 L 370 140 L 380 230 L 310 240 L 285 190 Z" fill="#edf2f7" stroke="#cbd5e1" stroke-width="1"></path>
+<!-- Country Labels -->
+<text fill="#94a3b8" font-size="9" font-weight="600" letter-spacing="1" x="75" y="240">CHILE</text>
+<text fill="#94a3b8" font-size="9" font-weight="600" letter-spacing="1" x="235" y="115">PARAGUAY</text>
+<text fill="#94a3b8" font-size="8" font-weight="600" letter-spacing="0.5" x="280" y="260">URUGUAY</text>
+<text fill="#cbd5e1" font-size="11" font-weight="bold" letter-spacing="2" x="165" y="290">ARGENTINA</text>
+<!-- Logistics Route Lines connected to hubs -->
+<g opacity="0.6" stroke="#818cf8" stroke-dasharray="3,3" stroke-width="1.5">
+<!-- Buenos Aires hub to Mendoza / Cordoba / Rosario / Salta / Neuquen -->
+<line x1="260" x2="225" y1="265" y2="200"></line>
+<line x1="260" x2="195" y1="265" y2="215"></line>
+<line x1="260" x2="245" y1="265" y2="235"></line>
+<line x1="260" x2="270" y1="265" y2="310"></line>
+<line x1="225" x2="190" y1="200" y2="135"></line>
+<line x1="225" x2="235" y1="200" y2="155"></line>
+<line x1="195" x2="160" y1="215" y2="250"></line>
+<line x1="260" x2="200" y1="265" y2="350"></line>
+<line x1="200" x2="165" y1="350" y2="395"></line>
+</g>
+<!-- Flota Dots / Vehicle Nodes -->
+<!-- Purple Transit Nodes -->
+<circle cx="260" cy="265" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="245" cy="235" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="225" cy="200" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="195" cy="215" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="235" cy="155" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="190" cy="135" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="250" cy="180" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="270" cy="310" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="200" cy="350" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="165" cy="395" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<!-- Amber (Detenidos) Nodes -->
+<circle cx="215" cy="175" fill="#f59e0b" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="270" cy="275" fill="#f59e0b" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<circle cx="190" cy="380" fill="#f59e0b" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
+<!-- Green (Entregados) Nodes -->
+<circle cx="240" cy="250" fill="#10b981" r="4" stroke="#1e293b" stroke-width="1.5"></circle>
+<circle cx="255" cy="290" fill="#10b981" r="4" stroke="#1e293b" stroke-width="1.5"></circle>
+<circle cx="290" cy="340" fill="#10b981" r="4" stroke="#1e293b" stroke-width="1.5"></circle>
+<!-- Small connection hub circles -->
+<circle cx="160" cy="250" fill="#818cf8" r="3"></circle>
+<circle cx="185" cy="320" fill="#818cf8" r="3"></circle>
+</svg>
+<!-- Map Bottom Tag -->
+<div class="absolute bottom-2 left-2 z-10">
+<span class="px-2 py-0.5 rounded text-[10px] tracking-wide font-bold bg-slate-700/80 text-white backdrop-blur-xs uppercase">
+                  FLOTA EN TIEMPO REAL · ARGENTINA
+                </span>
+</div>
+<!-- Leaflet / OSM attribution bottom-right -->
+<div class="absolute bottom-1 right-2 z-10 text-[9px] text-gray-500 bg-white/80 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-2xs">
+<span class="inline-block w-2.5 h-1.5 bg-blue-500 border border-yellow-400"></span>
+<span class="text-blue-600 font-semibold">Leaflet</span> | © OpenStreetMap © CARTO
+              </div>
+</div>
+</div>
+<!-- END: RealTimeFleetMapColumn -->
+</div>
+</main>
+<!-- END: Scrollable Main Dashboard Area -->
+</div>
+<!-- END: MainContentWrapper -->
+</div>
+</body></html>
