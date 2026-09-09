@@ -1,5 +1,5 @@
 /**
- * Inserta previews HD de cada pantalla Stitch en las cards del hub.
+ * Inserta previews HD + descripción corta del agente en las cards del hub.
  */
 (function () {
   var TITLE_TO_SLUG = {
@@ -45,11 +45,14 @@
     var slug = slugFor(title);
     if (!slug) return;
 
+    var brief = (window.SOL_AGENT_BRIEFS || {})[slug];
+
     var wrap = document.createElement("div");
     wrap.className =
       "mb-3 -mx-1 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm";
     var img = document.createElement("img");
-    img.className = "sol-screen-thumb block h-44 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]";
+    img.className =
+      "sol-screen-thumb block h-44 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]";
     img.alt = title;
     img.loading = "lazy";
     img.src = "/stitch-screens/" + slug + ".png";
@@ -64,6 +67,28 @@
       insertBefore.parentNode.insertBefore(wrap, insertBefore);
     } else {
       card.insertBefore(wrap, card.firstChild.nextSibling);
+    }
+
+    if (brief) {
+      var box = document.createElement("div");
+      box.className =
+        "mb-3 rounded-lg border border-violet-100 bg-violet-50/70 p-2.5 text-[11px] leading-snug text-slate-700";
+      var steps = (brief.flow || [])
+        .slice(0, 4)
+        .map(function (s, i) {
+          return i + 1 + ". " + s;
+        })
+        .join(" → ");
+      box.innerHTML =
+        '<div class="mb-1 text-[10px] font-bold uppercase tracking-wider text-violet-700">Qué hace · flujo</div>' +
+        "<p class=\"mb-1.5\">" +
+        brief.what +
+        "</p>" +
+        '<p class="text-slate-500"><strong class="text-violet-800">Flujo:</strong> ' +
+        steps +
+        ((brief.flow || []).length > 4 ? "…" : "") +
+        "</p>";
+      wrap.insertAdjacentElement("afterend", box);
     }
 
     card.style.cursor = "pointer";
