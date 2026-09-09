@@ -147,6 +147,29 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
         </button>
       </div>
 
+      <div className="mt-4 rounded-2xl border border-[var(--violet)]/30 bg-[var(--violet)]/10 p-4">
+        <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+          Link público permanente (sin login)
+        </div>
+        <p className="mt-1 break-all text-sm font-medium">
+          {(base || "").replace(/\/$/, "")}/demo
+        </p>
+        <p className="mt-1 text-xs text-[var(--text-dim)]">
+          También: {(base || "").replace(/\/$/, "")}/r/sol-public — compartible con cualquier prospecto.
+        </p>
+        <button
+          type="button"
+          className="mt-2 rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm"
+          onClick={() => {
+            const link = `${(base || window.location.origin).replace(/\/$/, "")}/demo`;
+            navigator.clipboard.writeText(link);
+            setLastLink(link);
+          }}
+        >
+          Copiar link público
+        </button>
+      </div>
+
       <form
         onSubmit={createRoom}
         className="mt-6 grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:grid-cols-2"

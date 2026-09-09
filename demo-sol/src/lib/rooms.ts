@@ -14,10 +14,13 @@ export type DemoRoom = {
   expiresAt: string;
   createdBy: string;
   extendedCount?: number;
+  /** Link permanente público (no vence). */
+  public?: boolean;
 };
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "rooms.json");
+export const PUBLIC_DEMO_TOKEN = process.env.DEMO_PUBLIC_TOKEN || "sol-public";
 
 function ensure() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -48,15 +51,51 @@ function slugify(s: string) {
     .slice(0, 24);
 }
 
+/** Garantiza una sala pública permanente para compartir sin login. */
+export function ensurePublicDemoRoom(): DemoRoom {
+  const rows = readAll();
+  const existing = rows.find((r) => r.token === PUBLIC_DEMO_TOKEN);
+  if (existing) {
+    let dirty = false;
+    if (!existing.public) {
+      existing.public = true;
+      dirty = true;
+    }
+    if (existing.expiresAt < "2099-01-01") {
+      existing.expiresAt = "2099-12-31T23:59:59.000Z";
+      dirty = true;
+    }
+    if (dirty) writeAll(rows);
+    return existing;
+  }
+  const room: DemoRoom = {
+    token: PUBLIC_DEMO_TOKEN,
+    company: "SOL Demo Pública",
+    contactName: "Prospecto",
+    painPoint: "Tour completo de mesa y agentes",
+    createdAt: new Date().toISOString(),
+    expiresAt: "2099-12-31T23:59:59.000Z",
+    createdBy: "system",
+    extendedCount: 0,
+    public: true,
+  };
+  rows.unshift(room);
+  writeAll(rows);
+  return room;
+}
+
 export function listRooms(): DemoRoom[] {
+  ensurePublicDemoRoom();
   return readAll().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export function getRoom(token: string): DemoRoom | null {
+  ensurePublicDemoRoom();
   return readAll().find((r) => r.token === token) ?? null;
 }
 
 export function isExpired(room: DemoRoom, now = Date.now()): boolean {
+  if (room.public || room.token === PUBLIC_DEMO_TOKEN) return false;
   return new Date(room.expiresAt).getTime() <= now;
 }
 
@@ -68,16 +107,35 @@ export function createRoom(input: {
   painPoint?: string;
   days?: number;
   createdBy?: string;
+  public?: boolean;
 }): DemoRoom {
+  ensurePublicDemoRoom();
   const days = Math.max(1, Math.min(14, input.days ?? 3));
   const now = new Date();
-  const expires = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = input.public
+    ? new Date("2099-12-31T23:59:59.000Z")
+    : new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
   const rand = crypto.randomBytes(3).toString("hex");
   const base = slugify(input.company) || "cliente";
-  let token = `${base}-${rand}`;
+  let token = input.public ? PUBLIC_DEMO_TOKEN : `${base}-${rand}`;
   const rows = readAll();
-  while (rows.some((r) => r.token === token)) {
-    token = `${base}-${crypto.randomBytes(3).toString("hex")}`;
+  if (!input.public) {
+    while (rows.some((r) => r.token === token)) {
+      token = `${base}-${crypto.randomBytes(3).toString("hex")}`;
+    }
+  } else {
+    const idx = rows.findIndex((r) => r.token === PUBLIC_DEMO_TOKEN || r.public);
+    if (idx >= 0) {
+      rows[idx] = {
+        ...rows[idx],
+        company: input.company.trim(),
+        contactName: input.contactName.trim(),
+        public: true,
+        expiresAt: expires.toISOString(),
+      };
+      writeAll(rows);
+      return rows[idx];
+    }
   }
   const room: DemoRoom = {
     token,
@@ -90,6 +148,7 @@ export function createRoom(input: {
     expiresAt: expires.toISOString(),
     createdBy: input.createdBy || "vendedor",
     extendedCount: 0,
+    public: Boolean(input.public),
   };
   rows.unshift(room);
   writeAll(rows);
@@ -100,6 +159,7 @@ export function extendRoom(token: string, days = 3): DemoRoom | null {
   const rows = readAll();
   const idx = rows.findIndex((r) => r.token === token);
   if (idx < 0) return null;
+  if (rows[idx].public) return rows[idx];
   const base = Math.max(Date.now(), new Date(rows[idx].expiresAt).getTime());
   rows[idx].expiresAt = new Date(base + days * 24 * 60 * 60 * 1000).toISOString();
   rows[idx].extendedCount = (rows[idx].extendedCount || 0) + 1;
@@ -108,9 +168,16 @@ export function extendRoom(token: string, days = 3): DemoRoom | null {
 }
 
 export function deleteRoom(token: string): boolean {
+  if (token === PUBLIC_DEMO_TOKEN) return false;
   const rows = readAll();
   const next = rows.filter((r) => r.token !== token);
   if (next.length === rows.length) return false;
   writeAll(next);
   return true;
+}
+
+export function publicBaseUrl(): string {
+  const fromEnv = process.env.DEMO_PUBLIC_BASE_URL?.replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  return "";
 }
