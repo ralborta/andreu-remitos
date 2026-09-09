@@ -18,6 +18,7 @@ import {
   ChartColumn,
   Radio,
   Navigation,
+  Sparkles,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -126,6 +127,23 @@ export function Sidebar({
           >
             <Navigation size={18} />
             Tracking Express
+          </Link>
+
+          <Link
+            href="/demos"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/demos")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <Sparkles size={18} />
+            <span className="flex-1">DEMO</span>
+            <span className="rounded-full bg-[var(--violet)]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--violet-2)]">
+              Links
+            </span>
           </Link>
 
           <Link
