@@ -1,6 +1,6 @@
-import { isAdminAuthed } from "@/lib/auth-admin";
-import { listRooms } from "@/lib/rooms";
-import { AdminClient } from "@/components/AdminClient";
+import { isAdminAuthed } from "../../lib/auth-admin";
+import { listRooms } from "../../lib/rooms";
+import { AdminClient } from "../../components/AdminClient";
 
 export const dynamic = "force-dynamic";
 

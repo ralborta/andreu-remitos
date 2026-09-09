@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { isAdminAuthed } from "@/lib/auth-admin";
-import { createRoom, deleteRoom, extendRoom, listRooms } from "@/lib/rooms";
+import { isAdminAuthed } from "../../../../lib/auth-admin";
+import { createRoom, deleteRoom, extendRoom, listRooms } from "../../../../lib/rooms";
 
 export async function GET() {
   if (!(await isAdminAuthed())) {

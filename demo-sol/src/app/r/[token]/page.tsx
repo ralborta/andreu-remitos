@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getRoom, isExpired } from "@/lib/rooms";
-import { DemoRoomApp } from "@/components/DemoRoomApp";
+import { getRoom, isExpired } from "../../../lib/rooms";
+import { DemoRoomApp } from "../../../components/DemoRoomApp";
 
 export const dynamic = "force-dynamic";
 

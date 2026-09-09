@@ -7,7 +7,7 @@ import {
   STATUS_LABEL,
   tripPosition,
   type DemoTrip,
-} from "@/lib/seed";
+} from "../lib/seed";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

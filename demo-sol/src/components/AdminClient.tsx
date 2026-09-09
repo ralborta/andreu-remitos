@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { DemoRoom } from "@/lib/rooms";
+import type { DemoRoom } from "../lib/rooms";
 
 type Props = { initiallyAuthed: boolean; initialRooms: DemoRoom[]; publicBase: string };
 

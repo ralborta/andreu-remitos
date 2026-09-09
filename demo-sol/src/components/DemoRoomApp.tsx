@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { DemoRoom } from "@/lib/rooms";
-import { DEMO_AGENTS, FAQ_INTRO, FAQ_ITEMS } from "@/lib/agents";
-import { DEMO_TRIPS, STATUS_COLOR, STATUS_LABEL, diagnosticBullets } from "@/lib/seed";
+import type { DemoRoom } from "../lib/rooms";
+import { DEMO_AGENTS, FAQ_INTRO, FAQ_ITEMS } from "../lib/agents";
+import { DEMO_TRIPS, STATUS_COLOR, STATUS_LABEL, diagnosticBullets } from "../lib/seed";
 import { DemoMap } from "./DemoMap";
 
 type Tab = "mesa" | "agentes" | "viajes" | "faq";

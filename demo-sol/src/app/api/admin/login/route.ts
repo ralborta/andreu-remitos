@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE, adminToken, checkPassword } from "@/lib/auth-admin";
+import { ADMIN_COOKIE, adminToken, checkPassword } from "../../../../lib/auth-admin";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));

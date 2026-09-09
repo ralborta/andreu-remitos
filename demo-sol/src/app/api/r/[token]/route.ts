@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRoom, isExpired } from "@/lib/rooms";
+import { getRoom, isExpired } from "../../../../lib/rooms";
 
 export async function GET(
   _req: Request,
