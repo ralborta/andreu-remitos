@@ -25,6 +25,9 @@ WhatsApp/
 *.jpg
 *.jpeg
 *.png
+!demo-sol/public/stitch-screens/
+!demo-sol/public/stitch-screens/**
+!demo-sol/public/stitch-screens/*.png
 
 # JSON generados
 *.json
