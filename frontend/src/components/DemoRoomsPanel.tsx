@@ -19,6 +19,7 @@ export function DemoRoomsPanel() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [lastLink, setLastLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [form, setForm] = useState({
     company: "",
     contactName: "",
@@ -59,6 +60,8 @@ export function DemoRoomsPanel() {
     }
     setLastLink(data.link || data.room?.link || null);
     setForm({ company: "", contactName: "", contactEmail: "", days: 3 });
+    const link = data.link || data.room?.link;
+    if (link) void copy(link);
     await refresh();
   }
 
@@ -81,9 +84,33 @@ export function DemoRoomsPanel() {
     await refresh();
   }
 
-  function copy(text: string) {
-    void navigator.clipboard.writeText(text);
+  async function copy(text: string) {
     setLastLink(text);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setCopied(text);
+        window.setTimeout(() => setCopied((c) => (c === text ? null : c)), 2500);
+        return;
+      }
+    } catch {
+      /* fallback */
+    }
+    try {
+      const el = document.createElement("textarea");
+      el.value = text;
+      el.setAttribute("readonly", "");
+      el.style.position = "fixed";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setCopied(text);
+      window.setTimeout(() => setCopied((c) => (c === text ? null : c)), 2500);
+    } catch {
+      alert("No se pudo copiar. Seleccioná el link y usá Cmd/Ctrl+C.");
+    }
   }
 
   return (
@@ -110,7 +137,7 @@ export function DemoRoomsPanel() {
               onClick={() => copy(publicLink)}
               className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-sm"
             >
-              <Copy size={14} /> Copiar
+              <Copy size={14} /> {copied === publicLink ? "¡Copiado!" : "Copiar"}
             </button>
             <a
               href={publicLink}
@@ -174,11 +201,26 @@ export function DemoRoomsPanel() {
             <p className="sm:col-span-2 text-sm text-[var(--red)]">{error}</p>
           )}
           {lastLink && (
-            <div className="sm:col-span-2 rounded-xl border border-[var(--green)]/30 bg-[var(--green)]/10 px-3 py-2 text-sm">
-              Link listo:{" "}
-              <a className="font-medium text-[var(--violet-2)] underline" href={lastLink} target="_blank" rel="noreferrer">
-                {lastLink}
-              </a>
+            <div className="sm:col-span-2 rounded-xl border border-[var(--green)]/30 bg-[var(--green)]/10 px-3 py-3">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--green)]">
+                Link listo
+              </div>
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  readOnly
+                  value={lastLink}
+                  onFocus={(e) => e.currentTarget.select()}
+                  onClick={(e) => e.currentTarget.select()}
+                  className="w-full flex-1 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2 font-mono text-sm outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => void copy(lastLink)}
+                  className="btn-primary inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm"
+                >
+                  <Copy size={14} /> {copied === lastLink ? "¡Copiado!" : "Copiar"}
+                </button>
+              </div>
             </div>
           )}
           <div className="sm:col-span-2 flex gap-2">
@@ -233,10 +275,10 @@ export function DemoRoomsPanel() {
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       type="button"
-                      onClick={() => copy(link)}
+                      onClick={() => void copy(link)}
                       className="rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs"
                     >
-                      Copiar
+                      {copied === link ? "¡Copiado!" : "Copiar"}
                     </button>
                     <a
                       href={link}

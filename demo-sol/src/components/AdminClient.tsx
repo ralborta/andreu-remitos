@@ -1,10 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DemoRoom } from "../lib/rooms";
 import { withBase } from "../lib/base-path";
 
 type Props = { initiallyAuthed: boolean; initialRooms: DemoRoom[]; publicBase: string };
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* fallback abajo */
+  }
+  try {
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.position = "fixed";
+    el.style.left = "-9999px";
+    document.body.appendChild(el);
+    el.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(el);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 
 export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props) {
   const [authed, setAuthed] = useState(initiallyAuthed);
@@ -22,7 +47,21 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
     createdBy: "vendedor",
   });
   const [lastLink, setLastLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [base, setBase] = useState(publicBase);
+  const lastLinkRef = useRef<HTMLInputElement>(null);
+
+  async function handleCopy(text: string) {
+    const ok = await copyText(text);
+    if (ok) {
+      setCopied(text);
+      window.setTimeout(() => setCopied((c) => (c === text ? null : c)), 2500);
+      return;
+    }
+    lastLinkRef.current?.focus();
+    lastLinkRef.current?.select();
+    alert("No se pudo copiar automáticamente. Seleccioná el link y usá Cmd/Ctrl+C.");
+  }
 
   useEffect(() => {
     if (!publicBase && typeof window !== "undefined") {
@@ -75,6 +114,11 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
     setLastLink(link);
     setForm((f) => ({ ...f, company: "", contactName: "", contactEmail: "", contactPhone: "" }));
     await refresh();
+    window.setTimeout(() => {
+      lastLinkRef.current?.focus();
+      lastLinkRef.current?.select();
+    }, 50);
+    void handleCopy(link);
   }
 
   async function extend(token: string) {
@@ -165,12 +209,12 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           type="button"
           className="mt-2 rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm"
           onClick={() => {
-            const link = (base || `${window.location.origin}/demo`).replace(/\/$/, "");
-            navigator.clipboard.writeText(`${link}/public`);
-            setLastLink(`${link}/public`);
+            const link = `${(base || `${window.location.origin}/demo`).replace(/\/$/, "")}/public`;
+            setLastLink(link);
+            void handleCopy(link);
           }}
         >
-          Copiar link público
+          {copied?.endsWith("/public") ? "¡Copiado!" : "Copiar link público"}
         </button>
       </div>
 
@@ -254,14 +298,26 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           <div className="text-xs uppercase tracking-wider text-[var(--accent-2)]">
             Link listo para el cliente
           </div>
-          <div className="mt-2 break-all font-mono text-sm">{lastLink}</div>
-          <button
-            type="button"
-            className="mt-3 rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm"
-            onClick={() => navigator.clipboard.writeText(lastLink)}
-          >
-            Copiar link
-          </button>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              ref={lastLinkRef}
+              readOnly
+              value={lastLink}
+              onFocus={(e) => e.currentTarget.select()}
+              onClick={(e) => e.currentTarget.select()}
+              className="w-full flex-1 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2 font-mono text-sm outline-none"
+            />
+            <button
+              type="button"
+              className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm font-medium"
+              onClick={() => void handleCopy(lastLink)}
+            >
+              {copied === lastLink ? "¡Copiado!" : "Copiar link"}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-[var(--text-dim)]">
+            Tocá el campo para seleccionar todo · o usá el botón Copiar
+          </p>
         </div>
       )}
 
@@ -271,18 +327,24 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
           <p className="text-sm text-[var(--text-dim)]">Todavía no hay demos.</p>
         )}
         {rooms.map((r) => {
-          const link = `${(base || "").replace(/\/$/, "")}/${r.token}`;
+          const root =
+            (base || (typeof window !== "undefined" ? `${window.location.origin}/demo` : "")).replace(
+              /\/$/,
+              "",
+            );
+          const link = `${root}/${r.token}`;
           const expired = new Date(r.expiresAt).getTime() <= Date.now();
           return (
             <div
               key={r.token}
               className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-3"
             >
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="font-medium">
                   {r.company}{" "}
                   <span className="text-xs text-[var(--text-faint)]">· {r.token}</span>
                 </div>
+                <div className="truncate text-xs text-[var(--text-dim)]">{link}</div>
                 <div className="text-xs text-[var(--text-dim)]">
                   {r.contactName}
                   {expired ? " · EXPIRADA" : ` · vence ${new Date(r.expiresAt).toLocaleString("es-AR")}`}
@@ -300,9 +362,9 @@ export function AdminClient({ initiallyAuthed, initialRooms, publicBase }: Props
                 <button
                   type="button"
                   className="rounded-lg border border-[var(--border)] px-3 py-1.5"
-                  onClick={() => navigator.clipboard.writeText(link)}
+                  onClick={() => void handleCopy(link)}
                 >
-                  Copiar
+                  {copied === link ? "¡Copiado!" : "Copiar"}
                 </button>
                 <button
                   type="button"
