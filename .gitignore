@@ -28,6 +28,9 @@ WhatsApp/
 !demo-sol/public/stitch-screens/
 !demo-sol/public/stitch-screens/**
 !demo-sol/public/stitch-screens/*.png
+!backend/seed-media/
+!backend/seed-media/**
+!backend/seed-media/**/*.png
 
 # JSON generados
 *.json
@@ -41,6 +44,7 @@ WhatsApp/
 !scripts/gcp/schema-beraldi.json
 !scripts/gcp/schema-tsb.json
 !scripts/gcp/dataset-init.json
+!backend/seed-media/**/*.json
 
 samples/remitos/*
 !samples/remitos/.gitkeep
