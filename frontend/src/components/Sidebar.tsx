@@ -130,23 +130,6 @@ export function Sidebar({
           </Link>
 
           <Link
-            href="/salas-demo"
-            onClick={onClose}
-            className={clsx(
-              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/salas-demo")
-                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-            )}
-          >
-            <Sparkles size={18} />
-            <span className="flex-1">DEMO</span>
-            <span className="rounded-full bg-[var(--violet)]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--violet-2)]">
-              Links
-            </span>
-          </Link>
-
-          <Link
             href="/contactos"
             onClick={onClose}
             className={clsx(
@@ -375,6 +358,23 @@ export function Sidebar({
               Parámetros maestros
             </Link>
           )}
+
+          <Link
+            href="/salas-demo"
+            onClick={onClose}
+            className={clsx(
+              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive("/salas-demo")
+                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
+                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+            )}
+          >
+            <Sparkles size={18} />
+            <span className="flex-1">DEMO</span>
+            <span className="rounded-full bg-[var(--violet)]/20 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--violet-2)]">
+              Links
+            </span>
+          </Link>
         </nav>
 
         <div className="border-t border-[var(--border)] p-4">
