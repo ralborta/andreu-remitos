@@ -49,3 +49,7 @@ WhatsApp/
 samples/remitos/*
 !samples/remitos/.gitkeep
 samples/lectura-frio-resultados.json
+
+# qwen-lab
+qwen-lab/node_modules/
+qwen-lab/.next/
