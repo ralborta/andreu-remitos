@@ -53,3 +53,6 @@ samples/lectura-frio-resultados.json
 # qwen-lab
 qwen-lab/node_modules/
 qwen-lab/.next/
+!qwen-lab/public/
+!qwen-lab/public/**/*.jpg
+!qwen-lab/public/**/*.png
