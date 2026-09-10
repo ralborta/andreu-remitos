@@ -188,11 +188,11 @@ export function LabChat() {
       <header className="top">
         <div className="brand">
           <img
-            src="/sol-lab-logo.png"
+            src="/sol-lab-brand.png?v=3"
             alt="SOL Lab · Empliados LLM Server"
             className="logo"
-            width={320}
-            height={128}
+            width={420}
+            height={168}
           />
         </div>
         <div className="status">
