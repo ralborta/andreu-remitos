@@ -191,8 +191,8 @@ export function LabChat() {
             src="/sol-lab-logo.png"
             alt="SOL Lab · Empliados LLM Server"
             className="logo"
-            width={220}
-            height={110}
+            width={320}
+            height={128}
           />
         </div>
         <div className="status">
