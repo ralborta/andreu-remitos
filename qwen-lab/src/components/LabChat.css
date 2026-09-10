@@ -26,13 +26,13 @@
 }
 
 .logo {
-  height: 64px;
+  height: 78px;
   width: auto;
-  max-width: min(360px, 70vw);
+  max-width: min(420px, 78vw);
   object-fit: contain;
   object-position: left center;
   display: block;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .brand-meta {
