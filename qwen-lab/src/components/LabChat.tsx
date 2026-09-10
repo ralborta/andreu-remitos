@@ -64,7 +64,7 @@ export function LabChat() {
   const statusLabel = useMemo(() => {
     if (!health) return "Chequeando…";
     if (health.online) return `Online · ${health.latencyMs ?? "—"} ms`;
-    return `Offline · ${health.error || "NagoGamer no responde"}`;
+    return `Offline · ${health.error || "servidor no responde"}`;
   }, [health]);
 
   async function onSubmit(e: FormEvent) {
@@ -191,12 +191,9 @@ export function LabChat() {
             src="/sol-lab-logo.jpg"
             alt="SOL Lab · Empliados LLM Server"
             className="logo"
-            width={220}
-            height={110}
+            width={240}
+            height={120}
           />
-          <div className="brand-meta">
-            <p>{health?.host || "NagoGamer · pc-gamer-nacho"}</p>
-          </div>
         </div>
         <div className="status">
           <span className={`dot ${health?.online ? "on" : "off"}`} />
@@ -244,18 +241,15 @@ export function LabChat() {
         <button type="button" className="ghost wide" onClick={clearChat} disabled={!messages.length && !busy}>
           Limpiar chat
         </button>
-        <p className="foot">
-          Proxy → Ollama en Tailscale.
-          {!health?.online && " Encendé la PC de Nacho / Ollama para probar."}
-        </p>
+        <p className="foot">Empliados LLM Server · chat de prueba</p>
       </aside>
 
       <main className="stage">
         {!messages.length && (
           <div className="hero">
-            <h2>SOL Lab</h2>
+            <h2>Probá el LLM</h2>
             <p>
-              Empliados LLM Server · streaming contra <strong>{model}</strong> en NagoGamer.
+              Empliados LLM Server · modelo <strong>{model}</strong>
             </p>
             <div className="suggestions">
               {[
@@ -286,7 +280,7 @@ export function LabChat() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={health?.online ? "Escribí un prompt…" : "NagoGamer offline — igual podés redactar"}
+            placeholder={health?.online ? "Escribí un prompt…" : "Servidor offline — igual podés redactar"}
             rows={2}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

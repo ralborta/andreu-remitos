@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SOL Lab · Empliados LLM Server",
-  description: "Playground SOL Lab para probar el LLM local en NagoGamer (Ollama)",
+  description: "Playground SOL Lab · Empliados LLM Server",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

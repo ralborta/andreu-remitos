@@ -4,4 +4,4 @@ export const OLLAMA_BASE_URL =
 export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "qwen2.5:1.5b";
 
 export const LAB_TITLE = process.env.LAB_TITLE || "Qwen Lab";
-export const LAB_HOST_LABEL = process.env.LAB_HOST_LABEL || "NagoGamer · pc-gamer-nacho";
+export const LAB_HOST_LABEL = process.env.LAB_HOST_LABEL || "Empliados LLM Server";
