@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { OLLAMA_BASE_URL, OLLAMA_MODEL, LAB_HOST_LABEL } from "@/lib/config";
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, LAB_HOST_LABEL } from "../../lib/config";
 
 export const dynamic = "force-dynamic";
 

@@ -1,4 +1,4 @@
-import { LabChat } from "@/components/LabChat";
+import { LabChat } from "../components/LabChat";
 
 export default function HomePage() {
   return <LabChat />;

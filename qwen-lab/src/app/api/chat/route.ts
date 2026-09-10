@@ -1,4 +1,4 @@
-import { OLLAMA_BASE_URL, OLLAMA_MODEL } from "@/lib/config";
+import { OLLAMA_BASE_URL, OLLAMA_MODEL } from "../../lib/config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
