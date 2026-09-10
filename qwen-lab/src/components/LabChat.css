@@ -26,12 +26,11 @@
 }
 
 .logo {
-  height: 72px;
+  height: 88px;
   width: auto;
-  max-width: min(320px, 70vw);
+  max-width: min(280px, 55vw);
   object-fit: contain;
   object-position: left center;
-  border-radius: 8px;
   display: block;
 }
 
