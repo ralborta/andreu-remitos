@@ -95,9 +95,9 @@ export const DEMO_TRIPS: DemoTrip[] = [
 ];
 
 export const STATUS_COLOR: Record<DemoTrip["estado"], string> = {
-  en_curso: "#7c3aed",
-  demorado: "#d97706",
-  asignado: "#0284c7",
+  en_curso: "#38bdf8",
+  demorado: "#f59e0b",
+  asignado: "#a79fc9",
   entregado: "#22c55e",
 };
 

@@ -347,67 +347,12 @@
 <!-- Two Columns: Map and Active Trips -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 <!-- Left: Map Container (approx. 58-60% width) -->
-<div class="lg:col-span-7 bg-slate-100 rounded-xl border border-slate-200/90 overflow-hidden relative min-h-[380px] shadow-xs flex flex-col justify-between" data-purpose="interactive-map-simulation">
-<!-- Simulated Map Canvas Background Styling with Carto Watermarks & Controls -->
-<div class="absolute inset-0 bg-[#f2efe9] overflow-hidden">
-<!-- Water Color / Coastline Simulation -->
-<div class="absolute right-0 top-0 bottom-0 w-2/5 bg-[#c5e1f0] opacity-90"></div>
-<svg class="absolute inset-0 w-full h-full text-slate-300/80 stroke-slate-300 fill-none" xmlns="http://www.w3.org/2000/svg">
-<!-- Administrative boundaries / Coastline path -->
-<path d="M 460,0 C 450,80 430,120 400,160 C 370,200 420,240 380,300 C 350,350 360,400 370,450" fill="#f2efe9" stroke="#cbd5e1" stroke-width="1.5"></path>
-<path d="M 280,0 L 290,140 L 330,180 L 350,260 L 310,380" stroke="#94a3b8" stroke-dasharray="2,3" stroke-width="1"></path>
-</svg>
-<!-- Watermark text repetitions mimicking Leaflet CARTO tile requirement -->
-<div class="absolute top-1/4 left-1/4 -rotate-45 text-slate-400/35 font-bold tracking-wider text-xs pointer-events-none select-none">
-                API KEY REQUIRED<br/><span class="text-[9px] font-normal">carto.com/basemaps/apikey</span>
-</div>
-<div class="absolute bottom-1/4 right-1/4 -rotate-45 text-slate-400/35 font-bold tracking-wider text-xs pointer-events-none select-none">
-                API KEY REQUIRED<br/><span class="text-[9px] font-normal">carto.com/basemaps/apikey</span>
-</div>
-<div class="absolute top-1/3 right-1/3 -rotate-45 text-slate-400/30 font-bold tracking-wider text-xs pointer-events-none select-none">
-                API KEY REQUIRED<br/><span class="text-[9px] font-normal">carto.com/basemaps/apikey</span>
-</div>
-<div class="absolute bottom-12 left-10 -rotate-45 text-slate-400/30 font-bold tracking-wider text-xs pointer-events-none select-none">
-                API KEY REQUIRED
-              </div>
-<!-- Map Geographic Labels -->
-<span class="absolute top-16 left-12 text-[10px] font-semibold text-slate-600 select-none">CÓRDOBA</span>
-<span class="absolute top-20 left-28 text-[9px] text-slate-500 select-none">Santa Fe •</span>
-<span class="absolute top-18 right-44 text-[9px] text-slate-500 select-none">Salto •</span>
-<span class="absolute top-16 right-28 text-[9px] text-slate-500 select-none">Bagé •</span>
-<span class="absolute top-24 right-12 text-[9px] text-slate-500 select-none">Pelotas •</span>
-<span class="absolute top-28 left-48 text-[9px] font-medium text-slate-500 select-none">ENTRE RÍOS</span>
-<span class="absolute top-44 left-32 text-[9px] text-slate-500 select-none">Rosario •</span>
-<span class="absolute top-44 left-44 text-[9px] text-slate-500 select-none">Gualeguaychú •</span>
-<span class="absolute top-36 right-36 text-[9px] text-slate-500 select-none">Paysandú •</span>
-<span class="absolute top-48 right-32 text-[10px] font-semibold text-slate-600 select-none">URUGUAY</span>
-<span class="absolute top-52 right-36 text-[9px] text-slate-500 select-none">Durazno •</span>
-<span class="absolute bottom-36 left-48 text-[11px] font-bold text-slate-700 tracking-wide select-none">BUENOS<br/>AIRES</span>
-<span class="absolute bottom-32 right-36 text-[9px] text-slate-600 select-none">Montevideo •</span>
-<span class="absolute bottom-24 left-40 text-[9px] text-slate-500 select-none">Olavarría •</span>
-<span class="absolute bottom-14 left-44 text-[9px] text-slate-500 select-none">Tandil •</span>
-<span class="absolute bottom-28 left-16 text-[9px] text-slate-500 select-none">Santa Rosa •</span>
-<span class="absolute bottom-18 left-16 text-[10px] font-semibold text-slate-500 select-none">PAMPA</span>
-<span class="absolute top-64 left-10 text-[12px] font-bold text-slate-400/80 tracking-widest select-none">ARGENTINA</span>
-</div>
-<!-- Leaflet Zoom Controls Top-Left -->
-<div class="relative m-3 z-10 flex flex-col bg-white border border-slate-300 rounded shadow-xs w-7 text-slate-700 font-bold text-xs overflow-hidden">
-<button class="h-6 flex items-center justify-center hover:bg-slate-100 border-b border-slate-200" type="button">+</button>
-<button class="h-6 flex items-center justify-center hover:bg-slate-100" type="button">−</button>
-</div>
-<!-- Map Floating Bottom Buttons & Attribution -->
-<div class="relative m-2.5 z-10 flex items-end justify-between">
-<!-- Solo última posición badge -->
+<div class="lg:col-span-7 bg-slate-100 rounded-xl border border-slate-200/90 overflow-hidden relative min-h-[380px] shadow-xs" data-purpose="interactive-map-simulation">
+<div class="absolute inset-0 z-0" data-sol-demo-map style="min-height:380px"></div>
+<div class="pointer-events-none absolute bottom-2.5 left-2.5 z-[500]">
 <span class="bg-slate-800/60 backdrop-blur-xs text-white/90 text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded shadow-xs">
                 Solo última posición reportada
               </span>
-<!-- Leaflet Attribution -->
-<div class="bg-white/85 backdrop-blur-xs text-[10px] text-slate-600 px-1.5 py-0.5 rounded shadow-2xs flex items-center gap-1">
-<span class="inline-block w-2.5 h-1.5 bg-sky-500 border border-amber-400"></span>
-<span>Leaflet</span>
-<span>|</span>
-<span>© OpenStreetMap © CARTO</span>
-</div>
 </div>
 </div>
 <!-- Right: Viajes Activos Panel -->
@@ -506,5 +451,6 @@
 <!-- END: MainContentArea -->
 <script src="/demo/stitch-screens/agents-brief-data.js"></script>
 <script src="/demo/stitch-screens/agents-brief.js"></script>
+<script src="/demo/stitch-screens/sol-demo-map.js"></script>
 <script src="/demo/stitch-screens/nav.js"></script>
 </body></html>

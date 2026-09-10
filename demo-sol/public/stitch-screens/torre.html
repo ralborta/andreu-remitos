@@ -535,11 +535,11 @@
 <div class="flex items-center gap-2 flex-wrap text-[11px] mb-3">
 <span class="inline-flex items-center gap-1.5 bg-[#eff6ff] text-sky-700 px-2.5 py-0.5 rounded-full border border-sky-100 font-medium">
 <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-                  15 en curso
+                  9 en curso
                 </span>
 <span class="inline-flex items-center gap-1.5 bg-[#fffbeb] text-amber-700 px-2.5 py-0.5 rounded-full border border-amber-100 font-medium">
 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                  3 detenidos
+                  2 detenidos
                 </span>
 <span class="inline-flex items-center gap-1.5 bg-[#f0fdf4] text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-100 font-medium">
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -547,106 +547,14 @@
                 </span>
 </div>
 </div>
-<!-- Interactive Vector Argentina Map Container -->
+<!-- Interactive map: Leaflet + CARTO Voyager (mismo estilo que UI SOL) -->
 <div class="relative flex-1 w-full rounded-xl border border-gray-200 overflow-hidden bg-[#eaf2f8] min-h-[350px]">
-<!-- Zoom buttons top-left -->
-<div class="absolute top-2.5 left-2.5 z-10 flex flex-col bg-white rounded border border-gray-300 shadow-xs overflow-hidden">
-<button class="w-6 h-6 flex items-center justify-center text-gray-700 hover:bg-gray-100 text-sm font-bold border-b border-gray-200">+</button>
-<button class="w-6 h-6 flex items-center justify-center text-gray-700 hover:bg-gray-100 text-sm font-bold">−</button>
-</div>
-<!-- Map SVG: Detailed stylized map of Argentina, Chile, Paraguay, Uruguay, Brazil borders -->
-<svg class="w-full h-full object-cover" fill="none" viewbox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<!-- Tile watermark pattern -->
-<pattern height="160" id="cartoWatermark" patterntransform="rotate(-30)" patternunits="userSpaceOnUse" width="160">
-<text fill="#cbd5e1" font-family="sans-serif" font-size="10" font-weight="600" opacity="0.3" x="10" y="40">API KEY REQUIRED</text>
-<text fill="#94a3b8" font-family="sans-serif" font-size="8" opacity="0.25" x="10" y="60">carto.com/basemaps/apikey</text>
-</pattern>
-</defs>
-<!-- Water Background -->
-<rect fill="#dbeafe" height="480" width="400"></rect>
-<!-- Watermark overlay on sea/map -->
-<rect fill="url(#cartoWatermark)" height="480" width="400"></rect>
-<!-- Landmass: South America southern cone representation -->
-<!-- Chile outline -->
-<path d="M 60 120 Q 95 240 105 380 L 115 390 L 110 440 L 90 430 Q 70 300 50 180 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"></path>
-<!-- Argentina main landmass -->
-<path d="M 105 100 
-                         Q 150 90 220 100 
-                         L 240 120 
-                         L 250 160 
-                         L 300 170 
-                         L 280 230 
-                         L 275 250 
-                         L 260 270 
-                         Q 240 310 230 360 
-                         L 220 410 
-                         L 180 460 
-                         L 165 470 
-                         L 145 440 
-                         L 125 390 
-                         L 110 320 
-                         L 95 220 
-                         L 100 160 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"></path>
-<!-- Paraguay area -->
-<path d="M 215 90 L 270 95 L 290 140 L 245 155 L 215 120 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"></path>
-<!-- Uruguay area -->
-<path d="M 275 240 L 310 245 L 305 285 L 270 280 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"></path>
-<!-- Brazil southern region -->
-<path d="M 285 130 L 370 140 L 380 230 L 310 240 L 285 190 Z" fill="#edf2f7" stroke="#cbd5e1" stroke-width="1"></path>
-<!-- Country Labels -->
-<text fill="#94a3b8" font-size="9" font-weight="600" letter-spacing="1" x="75" y="240">CHILE</text>
-<text fill="#94a3b8" font-size="9" font-weight="600" letter-spacing="1" x="235" y="115">PARAGUAY</text>
-<text fill="#94a3b8" font-size="8" font-weight="600" letter-spacing="0.5" x="280" y="260">URUGUAY</text>
-<text fill="#cbd5e1" font-size="11" font-weight="bold" letter-spacing="2" x="165" y="290">ARGENTINA</text>
-<!-- Logistics Route Lines connected to hubs -->
-<g opacity="0.6" stroke="#818cf8" stroke-dasharray="3,3" stroke-width="1.5">
-<!-- Buenos Aires hub to Mendoza / Cordoba / Rosario / Salta / Neuquen -->
-<line x1="260" x2="225" y1="265" y2="200"></line>
-<line x1="260" x2="195" y1="265" y2="215"></line>
-<line x1="260" x2="245" y1="265" y2="235"></line>
-<line x1="260" x2="270" y1="265" y2="310"></line>
-<line x1="225" x2="190" y1="200" y2="135"></line>
-<line x1="225" x2="235" y1="200" y2="155"></line>
-<line x1="195" x2="160" y1="215" y2="250"></line>
-<line x1="260" x2="200" y1="265" y2="350"></line>
-<line x1="200" x2="165" y1="350" y2="395"></line>
-</g>
-<!-- Flota Dots / Vehicle Nodes -->
-<!-- Purple Transit Nodes -->
-<circle cx="260" cy="265" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="245" cy="235" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="225" cy="200" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="195" cy="215" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="235" cy="155" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="190" cy="135" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="250" cy="180" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="270" cy="310" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="200" cy="350" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="165" cy="395" fill="#38bdf8" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<!-- Amber (Detenidos) Nodes -->
-<circle cx="215" cy="175" fill="#f59e0b" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="270" cy="275" fill="#f59e0b" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<circle cx="190" cy="380" fill="#f59e0b" r="4.5" stroke="#1e293b" stroke-width="1.8"></circle>
-<!-- Green (Entregados) Nodes -->
-<circle cx="240" cy="250" fill="#10b981" r="4" stroke="#1e293b" stroke-width="1.5"></circle>
-<circle cx="255" cy="290" fill="#10b981" r="4" stroke="#1e293b" stroke-width="1.5"></circle>
-<circle cx="290" cy="340" fill="#10b981" r="4" stroke="#1e293b" stroke-width="1.5"></circle>
-<!-- Small connection hub circles -->
-<circle cx="160" cy="250" fill="#818cf8" r="3"></circle>
-<circle cx="185" cy="320" fill="#818cf8" r="3"></circle>
-</svg>
-<!-- Map Bottom Tag -->
-<div class="absolute bottom-2 left-2 z-10">
+<div class="absolute inset-0 z-0" data-sol-demo-map style="min-height:350px"></div>
+<div class="pointer-events-none absolute bottom-2 left-2 z-[500]">
 <span class="px-2 py-0.5 rounded text-[10px] tracking-wide font-bold bg-slate-700/80 text-white backdrop-blur-xs uppercase">
                   FLOTA EN TIEMPO REAL · ARGENTINA
                 </span>
 </div>
-<!-- Leaflet / OSM attribution bottom-right -->
-<div class="absolute bottom-1 right-2 z-10 text-[9px] text-gray-500 bg-white/80 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-2xs">
-<span class="inline-block w-2.5 h-1.5 bg-blue-500 border border-yellow-400"></span>
-<span class="text-blue-600 font-semibold">Leaflet</span> | © OpenStreetMap © CARTO
-              </div>
 </div>
 </div>
 <!-- END: RealTimeFleetMapColumn -->
@@ -658,5 +566,6 @@
 </div>
 <script src="/demo/stitch-screens/agents-brief-data.js"></script>
 <script src="/demo/stitch-screens/agents-brief.js"></script>
+<script src="/demo/stitch-screens/sol-demo-map.js"></script>
 <script src="/demo/stitch-screens/nav.js"></script>
 </body></html>
