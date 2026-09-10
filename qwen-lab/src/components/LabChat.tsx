@@ -187,9 +187,14 @@ export function LabChat() {
     <div className="shell">
       <header className="top">
         <div className="brand">
-          <div className="mark" aria-hidden />
-          <div>
-            <h1>Qwen Lab</h1>
+          <img
+            src="/sol-lab-logo.jpg"
+            alt="SOL Lab · Empliados LLM Server"
+            className="logo"
+            width={220}
+            height={110}
+          />
+          <div className="brand-meta">
             <p>{health?.host || "NagoGamer · pc-gamer-nacho"}</p>
           </div>
         </div>
@@ -248,10 +253,9 @@ export function LabChat() {
       <main className="stage">
         {!messages.length && (
           <div className="hero">
-            <h2>Probá el LLM local</h2>
+            <h2>SOL Lab</h2>
             <p>
-              Streaming contra <strong>{model}</strong> en NagoGamer. Ideal para latencia, calidad y
-              prompts de sistema.
+              Empliados LLM Server · streaming contra <strong>{model}</strong> en NagoGamer.
             </p>
             <div className="suggestions">
               {[
@@ -270,7 +274,7 @@ export function LabChat() {
         <div className="thread">
           {messages.map((m) => (
             <article key={m.id} className={`bubble ${m.role}`}>
-              <header>{m.role === "user" ? "Vos" : "Qwen"}</header>
+              <header>{m.role === "user" ? "Vos" : "SOL"}</header>
               <div className="body">{m.content || (busy ? "…" : "")}</div>
               {m.meta && <footer>{m.meta}</footer>}
             </article>

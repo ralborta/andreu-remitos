@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Qwen Lab · NagoGamer",
-  description: "Playground para probar Qwen local en NagoGamer (Ollama)",
+  title: "SOL Lab · Empliados LLM Server",
+  description: "Playground SOL Lab para probar el LLM local en NagoGamer (Ollama)",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
