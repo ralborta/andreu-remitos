@@ -8,6 +8,7 @@ import {
   downloadAuthenticatedFile,
   enviarRendicionErp,
   listGastosRendicion,
+  listViajesAnticipoRendicion,
   metaRendicion,
   patchGastoRendicion,
   rendicionExportUrl,
@@ -17,6 +18,7 @@ import {
   type RendicionRules,
   type ResumenRendicion,
   type SugerenciaViajeRemito,
+  type ViajeAnticipoRendicion,
 } from "@/lib/api";
 import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, KpiCard } from "./ui";
@@ -24,6 +26,7 @@ import { useConfirm } from "@/lib/confirm-context";
 import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "todos" | "pendiente_aprobacion" | "aprobado" | "rechazado";
+type Vista = "cola" | "viajes";
 
 type FotoPreview = {
   src: string;
@@ -397,6 +400,9 @@ export function RendicionPanel() {
   const [resumen, setResumen] = useState<ResumenRendicion | null>(null);
   const [rules, setRules] = useState<RendicionRules | null>(null);
   const [filtro, setFiltro] = useState<Filtro>("pendiente_aprobacion");
+  const [vista, setVista] = useState<Vista>("cola");
+  const [viajes, setViajes] = useState<ViajeAnticipoRendicion[]>([]);
+  const [viajesLoading, setViajesLoading] = useState(false);
   const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
   const [desde, setDesde] = useState("");
@@ -454,6 +460,23 @@ export function RendicionPanel() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadViajes = useCallback(async () => {
+    setViajesLoading(true);
+    setError(null);
+    try {
+      const list = await listViajesAnticipoRendicion({ limit: 100 });
+      setViajes(list);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pude cargar viajes");
+    } finally {
+      setViajesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (vista === "viajes") void loadViajes();
+  }, [vista, loadViajes]);
 
   useEffect(() => {
     if (!detalle) {
@@ -689,21 +712,45 @@ export function RendicionPanel() {
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-white">Cola de aprobación</h3>
+            <h3 className="font-semibold text-white">
+              {vista === "viajes" ? "Anticipo vs rendido" : "Cola de aprobación"}
+            </h3>
             <p className="text-xs text-[var(--text-faint)]">
-              Clic en un registro para abrir el detalle · Excel / Excel ERP exportan el filtro
-              (ERP usa aprobados si estás en Pendientes)
+              {vista === "viajes"
+                ? "Por Nº viaje Delfos: anticipo de la hoja vs boletas (pendientes + aprobadas)"
+                : "Clic en un registro para abrir el detalle · Excel / Excel ERP exportan el filtro (ERP usa aprobados si estás en Pendientes)"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {(
               [
-                ["pendiente_aprobacion", "Pendientes"],
-                ["aprobado", "Aprobados"],
-                ["rechazado", "Rechazados"],
-                ["todos", "Todos"],
+                ["cola", "Cola"],
+                ["viajes", "Por viaje"],
               ] as const
             ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setVista(id)}
+                className={clsx(
+                  "rounded-lg px-3 py-1.5 text-xs font-semibold",
+                  vista === id
+                    ? "bg-emerald-500/25 text-emerald-300 ring-1 ring-emerald-500/40"
+                    : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+            {vista === "cola" &&
+              (
+                [
+                  ["pendiente_aprobacion", "Pendientes"],
+                  ["aprobado", "Aprobados"],
+                  ["rechazado", "Rechazados"],
+                  ["todos", "Todos"],
+                ] as const
+              ).map(([id, label]) => (
               <button
                 key={id}
                 type="button"
@@ -720,45 +767,129 @@ export function RendicionPanel() {
             ))}
             <button
               type="button"
-              onClick={() => void load()}
+              onClick={() => void (vista === "viajes" ? loadViajes() : load())}
               className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-3 py-1.5 text-xs text-[var(--text-dim)] hover:bg-white/10"
             >
               <RefreshCw size={14} />
               Actualizar
             </button>
-            <button
-              type="button"
-              disabled={!!excelBusy}
-              onClick={() => void descargarExcel("mesa")}
-              className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15 disabled:opacity-50"
-              title="Descarga el filtro actual en Excel (mesa)"
-            >
-              <Download size={14} />
-              {excelBusy === "mesa" ? "Bajando…" : "Excel"}
-            </button>
-            <button
-              type="button"
-              disabled={!!excelBusy}
-              onClick={() => void descargarExcel("erp")}
-              className="inline-flex items-center gap-1 rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35 disabled:opacity-50"
-              title="Planilla lista para liquidar / importar al ERP (aprobados si el filtro es pendientes)"
-            >
-              <Download size={14} />
-              {excelBusy === "erp" ? "Bajando…" : "Excel ERP"}
-            </button>
-            <button
-              type="button"
-              disabled={erpBusy}
-              onClick={() => void enviarAlErp()}
-              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-50"
-              title="Simula el envío de gastos aprobados al ERP (demo, no es integración real)"
-            >
-              <Send size={14} className={erpBusy ? "animate-pulse" : undefined} />
-              {erpBusy ? "Enviando…" : "Enviar al ERP"}
-            </button>
+            {vista === "cola" && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!excelBusy}
+                  onClick={() => void descargarExcel("mesa")}
+                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15 disabled:opacity-50"
+                  title="Descarga el filtro actual en Excel (mesa)"
+                >
+                  <Download size={14} />
+                  {excelBusy === "mesa" ? "Bajando…" : "Excel"}
+                </button>
+                <button
+                  type="button"
+                  disabled={!!excelBusy}
+                  onClick={() => void descargarExcel("erp")}
+                  className="inline-flex items-center gap-1 rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35 disabled:opacity-50"
+                  title="Planilla lista para liquidar / importar al ERP (aprobados si el filtro es pendientes)"
+                >
+                  <Download size={14} />
+                  {excelBusy === "erp" ? "Bajando…" : "Excel ERP"}
+                </button>
+                <button
+                  type="button"
+                  disabled={erpBusy}
+                  onClick={() => void enviarAlErp()}
+                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-50"
+                  title="Simula el envío de gastos aprobados al ERP (demo, no es integración real)"
+                >
+                  <Send size={14} className={erpBusy ? "animate-pulse" : undefined} />
+                  {erpBusy ? "Enviando…" : "Enviar al ERP"}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
+        {vista === "viajes" ? (
+          <>
+            {error && (
+              <p className="mb-3 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+                {error}
+              </p>
+            )}
+            {viajesLoading ? (
+              <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
+            ) : viajes.length === 0 ? (
+              <p className="text-sm text-[var(--text-dim)]">
+                Todavía no hay viajes con hoja o gastos con Nº Delfos.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[960px] text-left text-sm">
+                  <thead className="text-xs uppercase text-[var(--text-faint)]">
+                    <tr className="border-b border-[var(--border)]">
+                      <th className="py-2 pr-3 font-medium">Viaje Delfos</th>
+                      <th className="py-2 pr-3 font-medium">Chofer</th>
+                      <th className="py-2 pr-3 font-medium">Hoja</th>
+                      <th className="py-2 pr-3 font-medium">Anticipo</th>
+                      <th className="py-2 pr-3 font-medium">Rendido</th>
+                      <th className="py-2 pr-3 font-medium">Aprobado</th>
+                      <th className="py-2 pr-3 font-medium">Saldo (vs rendido)</th>
+                      <th className="py-2 font-medium">Gastos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {viajes.map((v) => (
+                      <tr
+                        key={v.nroViajeDelfos}
+                        onClick={() => {
+                          setVista("cola");
+                          setFiltro("todos");
+                          setQInput(v.nroViajeDelfos);
+                          setQ(v.nroViajeDelfos);
+                        }}
+                        className="cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.04]"
+                        title="Ver gastos de este viaje en la cola"
+                      >
+                        <td className="py-3 pr-3 font-mono text-xs font-semibold text-emerald-300">
+                          {v.nroViajeDelfos}
+                        </td>
+                        <td className="max-w-[140px] truncate py-3 pr-3 text-[var(--text-dim)]">
+                          {v.choferNombre || "—"}
+                        </td>
+                        <td className="py-3 pr-3 text-[var(--text-dim)]">
+                          {v.hojaCodigo || "—"}
+                        </td>
+                        <td className="py-3 pr-3 tabular text-white">{v.anticipoLabel}</td>
+                        <td className="py-3 pr-3 tabular text-white">{v.montoRendidoLabel}</td>
+                        <td className="py-3 pr-3 tabular text-[var(--text-dim)]">
+                          {v.montoAprobadoLabel}
+                        </td>
+                        <td
+                          className={clsx(
+                            "py-3 pr-3 tabular font-semibold",
+                            v.saldoVsRendido < 0
+                              ? "text-rose-400"
+                              : v.saldoVsRendido > 0
+                                ? "text-emerald-400"
+                                : "text-white",
+                          )}
+                        >
+                          {v.saldoVsRendidoLabel}
+                        </td>
+                        <td className="py-3 text-xs text-[var(--text-dim)]">
+                          {v.cantidadGastos} · {v.cantidadPendientes} pend ·{" "}
+                          {v.cantidadAprobados} OK
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <label className="relative min-w-[200px] flex-1 text-xs text-[var(--text-dim)]">
             Buscar
@@ -899,6 +1030,8 @@ export function RendicionPanel() {
               </tbody>
             </table>
           </div>
+        )}
+          </>
         )}
       </Card>
 

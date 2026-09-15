@@ -18,6 +18,7 @@ import { getRendicionRules } from "../../../lib/rendicion-rules.mjs";
 import { sugerirContextoViajeDesdeRemitos } from "../../../lib/rendicion-viaje-suggest.mjs";
 import { hojaRutaHabilitada } from "../../../lib/hoja-ruta.mjs";
 import * as hojaStore from "../db/hoja-ruta-store.mjs";
+import { resumenAnticipoPorViaje } from "../services/rendicion-anticipo.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 
@@ -103,6 +104,12 @@ export default async function rendicionRoutes(fastify) {
   });
 
   fastify.get("/resumen", async () => rendicionStore.resumenGastos());
+
+  /** Anticipo (hoja) vs boletas por Nº viaje Delfos — antes de /:id */
+  fastify.get("/por-viaje", async (request) => {
+    const limit = request.query?.limit ? parseInt(request.query.limit, 10) : 100;
+    return resumenAnticipoPorViaje({ limit });
+  });
 
   fastify.get("/", async (request) => {
     const { limit, estado, telefono, q, desde, hasta } = request.query ?? {};

@@ -573,8 +573,42 @@ export interface ResumenRendicion {
   monto_aprobado: number;
 }
 
+export interface ViajeAnticipoRendicion {
+  nroViajeDelfos: string;
+  choferNombre: string | null;
+  telefono: string | null;
+  patente: string | null;
+  hojaId: string | null;
+  hojaCodigo: string | null;
+  anticipoMonto: number;
+  anticipoLabel: string;
+  cantidadGastos: number;
+  cantidadPendientes: number;
+  cantidadAprobados: number;
+  cantidadRechazados: number;
+  montoPendiente: number;
+  montoPendienteLabel: string;
+  montoAprobado: number;
+  montoAprobadoLabel: string;
+  montoRendido: number;
+  montoRendidoLabel: string;
+  saldoVsAprobado: number;
+  saldoVsAprobadoLabel: string;
+  saldoVsRendido: number;
+  saldoVsRendidoLabel: string;
+}
+
 export function metaRendicion() {
   return api<RendicionMeta>("/api/rendicion/meta");
+}
+
+export function listViajesAnticipoRendicion(params?: { limit?: number }) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<ViajeAnticipoRendicion[]>(
+    `/api/rendicion/por-viaje${qs ? `?${qs}` : ""}`,
+  );
 }
 
 export function sugerenciasViajeRendicion(params: {
