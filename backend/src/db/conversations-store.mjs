@@ -243,3 +243,23 @@ export async function setCorinaClienteMarca(telefono, marca) {
   writeAll(rows);
   return conv;
 }
+
+/** Esperando foto de hoja de ruta (no debe caer en flujo remito/Corina). */
+export async function setEsperandoHojaRuta(telefono, esperando = true) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (esperando) conv.esperando_hoja_ruta = true;
+  else delete conv.esperando_hoja_ruta;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function clearEsperandoHojaRuta(telefono) {
+  return setEsperandoHojaRuta(telefono, false);
+}
+
+export function convEsperaHojaRuta(conv) {
+  return Boolean(conv?.esperando_hoja_ruta);
+}

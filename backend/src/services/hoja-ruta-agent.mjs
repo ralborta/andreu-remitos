@@ -84,10 +84,13 @@ export async function procesarHojaRutaWhatsApp({
 
   const tieneFoto = !!(imageBuffer?.length || imagenPersistida);
   if (!tieneFoto) {
+    await convStore.setEsperandoHojaRuta(phone, true);
     const msg = mensajePedirFotoHojaRuta();
     await enviar(phone, msg, { nombre });
     return { flow: "hoja_ruta_pedir_foto", mensaje: msg, message: msg };
   }
+
+  await convStore.clearEsperandoHojaRuta(phone);
 
   let ocrTexto = null;
   if (imageBuffer?.length) {

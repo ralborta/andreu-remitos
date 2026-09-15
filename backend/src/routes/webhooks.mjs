@@ -531,16 +531,21 @@ export default async function webhooksRoutes(fastify) {
           media: { ...ev.media, mime_type: mime, name: filename || ev.media.name },
         };
 
-        if (!esEventoAudio(evMedia, buffer) && pareceHojaRuta(texto)) {
-          const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
-            texto,
-            log: request.log,
-            imageBuffer: buffer,
-            mime,
-            forzar: true,
-          });
-          if (hojaImgOut) {
-            return respuestaWebhook({ ...hojaImgOut, received: true });
+        if (!esEventoAudio(evMedia, buffer)) {
+          const convMedia = ev.from ? await convStore.getConversacion(ev.from) : null;
+          const esperaHoja =
+            convStore.convEsperaHojaRuta(convMedia) || pareceHojaRuta(texto);
+          if (esperaHoja) {
+            const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
+              texto: texto || "hoja de ruta",
+              log: request.log,
+              imageBuffer: buffer,
+              mime,
+              forzar: true,
+            });
+            if (hojaImgOut) {
+              return respuestaWebhook({ ...hojaImgOut, received: true });
+            }
           }
         }
 
@@ -692,6 +697,20 @@ export default async function webhooksRoutes(fastify) {
         const convFoto = ev.from ? await convStore.getConversacion(ev.from) : null;
         const pausado = !!convFoto?.bot_pausado;
         const tenantFoto = tenantCfg ?? convFoto?.tenant;
+
+        // Si pedimos hoja de ruta, no caer en remito/Corina
+        if (!pausado && convStore.convEsperaHojaRuta(convFoto)) {
+          const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
+            texto: texto || "hoja de ruta",
+            log: request.log,
+            imageBuffer: buffer,
+            mime,
+            forzar: true,
+          });
+          if (hojaImgOut) {
+            return respuestaWebhook({ ...hojaImgOut, received: true });
+          }
+        }
 
         // Corina: exigir Cervecería / Eco antes de OCR
         if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
