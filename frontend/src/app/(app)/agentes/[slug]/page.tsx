@@ -85,8 +85,8 @@ export default async function AgentPage({
         <FlowSteps steps={agent.flow} />
       </Card>
 
-      {/* Datos + Conversación (remitos usa tabla+foto a ancho completo) */}
-      {slug === "remitos" || slug === "destinos" ? (
+      {/* Datos + Conversación demo (solo agentes sin mesa real a ancho completo) */}
+      {slug === "remitos" || slug === "destinos" || slug === "rendicion" ? (
         <div className="min-w-0">
           <AgentData slug={slug} />
         </div>
