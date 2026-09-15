@@ -265,15 +265,30 @@ export function convEsperaHojaRuta(conv) {
 }
 
 /** Esperando una o más boletas/tickets de rendición (de a una). */
-export async function setEsperandoComprobantesRendicion(telefono, esperando = true) {
+export async function setEsperandoComprobantesRendicion(
+  telefono,
+  esperando = true,
+  { nroViajeDelfos = undefined, hojaRutaId = undefined } = {},
+) {
   if (!telefono) return null;
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, null);
   if (esperando) {
     conv.esperando_comprobantes_rendicion = true;
     delete conv.esperando_hoja_ruta;
+    if (nroViajeDelfos !== undefined) {
+      const v = nroViajeDelfos ? String(nroViajeDelfos).trim() : null;
+      if (v) conv.nro_viaje_delfos_activo = v;
+      else delete conv.nro_viaje_delfos_activo;
+    }
+    if (hojaRutaId !== undefined) {
+      if (hojaRutaId) conv.hoja_ruta_activa_id = String(hojaRutaId);
+      else delete conv.hoja_ruta_activa_id;
+    }
   } else {
     delete conv.esperando_comprobantes_rendicion;
+    delete conv.nro_viaje_delfos_activo;
+    delete conv.hoja_ruta_activa_id;
   }
   conv.updated_at = new Date().toISOString();
   writeAll(rows);
@@ -286,6 +301,11 @@ export async function clearEsperandoComprobantesRendicion(telefono) {
 
 export function convEsperaComprobantesRendicion(conv) {
   return Boolean(conv?.esperando_comprobantes_rendicion);
+}
+
+export function nroViajeDelfosActivo(conv) {
+  const v = conv?.nro_viaje_delfos_activo;
+  return v ? String(v).trim() : null;
 }
 
 export function pareceCierreComprobantesRendicion(texto) {

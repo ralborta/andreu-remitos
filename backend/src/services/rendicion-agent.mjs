@@ -5,6 +5,7 @@ import {
   pareceRendicionGasto,
 } from "../../../lib/rendicion-wa.mjs";
 import * as rendicionStore from "../db/rendicion-store.mjs";
+import * as hojaStore from "../db/hoja-ruta-store.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
@@ -128,9 +129,25 @@ export async function procesarGastoWhatsApp({
     log,
   });
 
+  // Nº viaje de la hoja activa (hasta "listo")
+  const conv = await convStore.getConversacion(phone);
+  let nroViaje = convStore.nroViajeDelfosActivo(conv);
+  let hojaId = conv?.hoja_ruta_activa_id || null;
+  if (!nroViaje) {
+    const hojas = await hojaStore.sugerirDesdeHojasRuta({ telefono: phone, limit: 1 });
+    if (hojas[0]?.nroViajeDelfos) {
+      nroViaje = hojas[0].nroViajeDelfos;
+      hojaId = hojas[0].hojaId;
+      await convStore.setEsperandoComprobantesRendicion(phone, true, {
+        nroViajeDelfos: nroViaje,
+        hojaRutaId: hojaId,
+      });
+    }
+  }
+
   const gasto = await rendicionStore.crearGasto({
     telefono: phone,
-    chofer_nombre: nombre || null,
+    chofer_nombre: nombre || chofer?.nombre || null,
     categoria: interp.categoria,
     monto: interp.monto,
     proveedor: interp.proveedor,
@@ -143,6 +160,8 @@ export async function procesarGastoWhatsApp({
     monto_rae: interp.monto_rae,
     cuit_proveedor: interp.cuit_proveedor,
     viaje_documento: interp.viaje_documento,
+    nro_viaje_delfos: nroViaje,
+    remito_ref: hojaId ? `hoja:${hojaId}` : null,
     nota_chofer: t || null,
     texto_ocr: ocrTexto || interp.texto_ocr || null,
     imagen_url: imagenPersistida || null,
@@ -158,6 +177,7 @@ export async function procesarGastoWhatsApp({
       codigo: gasto.codigo,
       categoria: gasto.categoria,
       monto: gasto.monto,
+      nro_viaje_delfos: nroViaje,
       fuente: interp.fuente,
     },
     "Rendición: gasto pendiente aprobación",

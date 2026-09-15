@@ -91,7 +91,6 @@ export async function procesarHojaRutaWhatsApp({
   }
 
   await convStore.clearEsperandoHojaRuta(phone);
-  await convStore.setEsperandoComprobantesRendicion(phone, true);
 
   let ocrTexto = null;
   if (imageBuffer?.length) {
@@ -130,6 +129,12 @@ export async function procesarHojaRutaWhatsApp({
     confianza: interp.confianza,
     fuente: interp.fuente,
     estado: "pendiente_revision",
+  });
+
+  // Hasta "listo": cada boleta hereda este Nº viaje Delfos
+  await convStore.setEsperandoComprobantesRendicion(phone, true, {
+    nroViajeDelfos: row.nro_viaje_delfos,
+    hojaRutaId: row.id,
   });
 
   const mensaje = mensajeConfirmacionHojaRuta(row);
