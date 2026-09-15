@@ -710,6 +710,35 @@ export function RendicionPanel() {
       </div>
 
       <Card>
+        <div
+          className="mb-4 flex gap-1 rounded-xl bg-white/[0.04] p-1 ring-1 ring-[var(--border)]"
+          role="tablist"
+          aria-label="Vista de rendición"
+        >
+          {(
+            [
+              ["cola", "Cola de aprobación"],
+              ["viajes", "Por viaje"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={vista === id}
+              onClick={() => setVista(id)}
+              className={clsx(
+                "flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition",
+                vista === id
+                  ? "bg-[var(--violet)] text-white shadow-sm"
+                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-semibold text-white">
@@ -717,31 +746,11 @@ export function RendicionPanel() {
             </h3>
             <p className="text-xs text-[var(--text-faint)]">
               {vista === "viajes"
-                ? "Por Nº viaje Delfos: anticipo de la hoja vs boletas (pendientes + aprobadas)"
+                ? "Por Nº viaje Delfos: anticipo de la hoja vs boletas (pendientes + aprobadas) · usá la pestaña de arriba para volver a la cola"
                 : "Clic en un registro para abrir el detalle · Excel / Excel ERP exportan el filtro (ERP usa aprobados si estás en Pendientes)"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {(
-              [
-                ["cola", "Cola"],
-                ["viajes", "Por viaje"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setVista(id)}
-                className={clsx(
-                  "rounded-lg px-3 py-1.5 text-xs font-semibold",
-                  vista === id
-                    ? "bg-emerald-500/25 text-emerald-300 ring-1 ring-emerald-500/40"
-                    : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
-                )}
-              >
-                {label}
-              </button>
-            ))}
             {vista === "cola" &&
               (
                 [
