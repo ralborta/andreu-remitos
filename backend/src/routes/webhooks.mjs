@@ -30,6 +30,12 @@ import { pareceSolicitudViaje } from "../../../lib/viajes-solicitud.mjs";
 import { esContactoOculto } from "../../../lib/contactos-ocultos.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
+import {
+  procesarGastoWhatsApp,
+  telefonoEsChoferRegistrado,
+  mensajeRendicionSoloChoferes,
+} from "../services/rendicion-agent.mjs";
+import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
 
 /**
  * Con Baileys self-hosted el envío confiable es POST /v1/messages.
@@ -367,12 +373,53 @@ async function tryProcesarDestinos(ev, { texto, log } = {}) {
   }
 }
 
+async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
+  if (!ev.from) return null;
+  const t = String(texto ?? "").trim();
+  if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
+  if (!forzar && imageBuffer && !pareceRendicionGasto(t)) return null;
+
+  if (!(await telefonoEsChoferRegistrado(ev.from))) {
+    log?.info?.({ from: ev.from }, "Rendición omitida: no es chofer registrado");
+    const msg = mensajeRendicionSoloChoferes();
+    await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    await convStore
+      .appendMensaje(
+        ev.from,
+        { texto: msg, tipo: "text" },
+        { dir: "out", from: "bot", agente: "rendicion", nombre: ev.nombre },
+      )
+      .catch(() => {});
+    return { flow: "rendicion_solo_choferes", message: msg, received: true, bloqueado: true };
+  }
+
+  try {
+    const out = await procesarGastoWhatsApp({
+      telefono: ev.from,
+      texto: t,
+      nombre: ev.nombre,
+      imageBuffer,
+      mime,
+      imagenUrl: ev.media?.url || null,
+      log,
+      forzar: Boolean(forzar || imageBuffer),
+    });
+    if (!out) return null;
+    return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "rendicion webhook error");
+    const msg = `Recibí tu gasto pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "rendicion_error", error: err.message, message: msg };
+  }
+}
+
 export default async function webhooksRoutes(fastify) {
   fastify.get("/builderbot/health", async () => ({
     ok: true,
     channel: "whatsapp-builderbot",
     endpoint: "POST /api/webhooks/builderbot",
-    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "viajes", "tenant-ia"],
+    features: ["foto", "audio", "correcciones", "correcciones-ia", "destinos", "viajes", "rendicion", "tenant-ia"],
   }));
 
   fastify.post("/builderbot", async (request, reply) => {
@@ -423,6 +470,16 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...viajeOut, received: true });
       }
 
+      // Rendición de gastos (peaje/nafta/…) — solo si el texto lo indica (no roba remitos)
+      const gastoTextoOut = await tryProcesarRendicion(ev, {
+        texto,
+        log: request.log,
+        forzar: false,
+      });
+      if (gastoTextoOut) {
+        return respuestaWebhook({ ...gastoTextoOut, received: true });
+      }
+
       // Media adjunto — audio (nota de voz) o foto de remito
       if (ev.media?.url) {
         const { buffer, mime, filename } = await downloadMedia(ev.media.url);
@@ -430,6 +487,19 @@ export default async function webhooksRoutes(fastify) {
           ...ev,
           media: { ...ev.media, mime_type: mime, name: filename || ev.media.name },
         };
+
+        if (!esEventoAudio(evMedia, buffer) && pareceRendicionGasto(texto)) {
+          const gastoImgOut = await tryProcesarRendicion(evMedia, {
+            texto,
+            log: request.log,
+            imageBuffer: buffer,
+            mime,
+            forzar: true,
+          });
+          if (gastoImgOut) {
+            return respuestaWebhook({ ...gastoImgOut, received: true });
+          }
+        }
 
         if (esEventoAudio(evMedia, buffer)) {
           const convAudio = ev.from ? await convStore.getConversacion(ev.from) : null;

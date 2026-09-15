@@ -16,6 +16,8 @@ import authRoutes from "./routes/auth.mjs";
 import monitorRoutes from "./routes/monitor.mjs";
 import vincularRoutes from "./routes/vincular.mjs";
 import configRoutes from "./routes/config.mjs";
+import rendicionRoutes from "./routes/rendicion.mjs";
+import mediaRoutes from "./routes/media.mjs";
 import { registerAuthGuard } from "./plugins/auth-guard.mjs";
 import { ensureSeedAdmin } from "./db/users-store.mjs";
 
@@ -50,6 +52,8 @@ await app.register(viajesRoutes, { prefix: "/api/viajes" });
 await app.register(monitorRoutes, { prefix: "/api/monitor" });
 await app.register(vincularRoutes, { prefix: "/api/vincular" });
 await app.register(configRoutes, { prefix: "/api/config" });
+await app.register(rendicionRoutes, { prefix: "/api/rendicion" });
+await app.register(mediaRoutes, { prefix: "/api/media" });
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const host = process.env.HOST || "0.0.0.0";

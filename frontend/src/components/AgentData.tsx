@@ -2,13 +2,13 @@ import { DestinosPanel } from "./DestinosPanel";
 import { ViajesTable } from "./ViajesTable";
 import { Card, SectionTitle, Pill, CritBadge } from "./ui";
 import { RemitosPanel } from "./RemitosPanel";
+import { RendicionPanel } from "./RendicionPanel";
 import { DataTable, type Column } from "./DataTable";
 import { EtaLine, ViajesArea, SlaBars, IncidenciasDonut } from "./Charts";
 import {
   remitos,
   incidencias,
   reclamos,
-  rendiciones,
   etas,
   viajesPorDia,
   slaPorZona,
@@ -16,7 +16,6 @@ import {
   type Remito,
   type Incidencia,
   type Reclamo,
-  type Rendicion,
   type EtaItem,
 } from "@/lib/data";
 
@@ -92,31 +91,7 @@ export function AgentData({ slug }: { slug: string }) {
   }
 
   if (slug === "rendicion") {
-    const cols: Column<Rendicion>[] = [
-      { key: "id", header: "Rendición", render: (r) => <span className="font-medium text-white">{r.id}</span> },
-      { key: "viaje", header: "Viaje", className: "text-[var(--text-dim)]" },
-      { key: "chofer", header: "Chofer", className: "text-[var(--text-dim)]" },
-      { key: "combustible", header: "Combustible", render: (r) => <span className="tabular text-[var(--text-dim)]">{money(r.combustible)}</span> },
-      { key: "peajes", header: "Peajes", render: (r) => <span className="tabular text-[var(--text-dim)]">{money(r.peajes)}</span> },
-      { key: "viaticos", header: "Viáticos", render: (r) => <span className="tabular text-[var(--text-dim)]">{money(r.viaticos)}</span> },
-      {
-        key: "total",
-        header: "Total",
-        render: (r) => (
-          <span className="tabular font-medium text-white">
-            {money(r.combustible + r.peajes + r.viaticos + r.otros)}
-          </span>
-        ),
-      },
-      { key: "comprobantes", header: "Comprob.", render: (r) => <span className="tabular text-[var(--text-dim)]">{r.comprobantes}</span> },
-      { key: "estado", header: "Estado", render: (r) => estadoPill(r.estado) },
-    ];
-    return (
-      <Card>
-        <SectionTitle>Rendiciones de viajes</SectionTitle>
-        <DataTable columns={cols} rows={rendiciones} minWidth={940} />
-      </Card>
-    );
+    return <RendicionPanel />;
   }
 
   if (slug === "eta") {

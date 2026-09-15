@@ -489,3 +489,235 @@ export function cambiarEstadoViaje(id: string, estado: ViajeEstado) {
 export function deleteViaje(id: string) {
   return api<{ ok: boolean }>(`/api/viajes/${id}`, { method: "DELETE" });
 }
+
+export type GastoRendicionEstado =
+  | "borrador"
+  | "pendiente_aprobacion"
+  | "aprobado"
+  | "rechazado";
+
+export interface GastoRendicion {
+  id: string;
+  codigo: string;
+  estado: GastoRendicionEstado;
+  estadoLabel: string;
+  categoria: string;
+  categoriaLabel: string;
+  monto: number | null;
+  montoLabel: string;
+  moneda: string;
+  proveedor: string | null;
+  fechaComprobante: string | null;
+  descripcion: string | null;
+  viajeRef: string | null;
+  nroViajeDelfos?: string | null;
+  viajeDocumento?: string | null;
+  remitoRef?: string | null;
+  remitoId?: string | null;
+  patente?: string | null;
+  puntoVenta?: string | null;
+  nroT?: string | null;
+  ivaPct?: number | null;
+  rae?: boolean;
+  montoRae?: number | null;
+  cuitProveedor?: string | null;
+  telefono: string | null;
+  choferNombre: string | null;
+  imagenUrl: string | null;
+  notaChofer: string | null;
+  textoOcr?: string | null;
+  notaAprobacion: string | null;
+  aprobadoPor: string | null;
+  historial: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RendicionRules {
+  productId: string;
+  requireNroViajeDelfosOnApprove: boolean;
+  suggestViajeFromRemitos: boolean;
+  labelNroViaje: string;
+  hintNroViaje: string;
+}
+
+export interface RendicionMeta {
+  categorias: { id: string; label: string }[];
+  estados: { id: string; label: string }[];
+  nota?: string;
+  rules: RendicionRules;
+}
+
+export interface SugerenciaViajeRemito {
+  remitoId: string;
+  nroRemito: string | null;
+  patente: string | null;
+  fecha: string | null;
+  choferNombre: string | null;
+  tenant: string | null;
+  viajeDocumento: string | null;
+  createdAt: string | null;
+  score?: number;
+}
+
+export interface ResumenRendicion {
+  total: number;
+  pendientes: number;
+  aprobados: number;
+  rechazados: number;
+  monto_pendiente: number;
+  monto_aprobado: number;
+}
+
+export function metaRendicion() {
+  return api<RendicionMeta>("/api/rendicion/meta");
+}
+
+export function sugerenciasViajeRendicion(params: {
+  telefono?: string | null;
+  fecha?: string | null;
+  limit?: number;
+}) {
+  const q = new URLSearchParams();
+  if (params.telefono) q.set("telefono", params.telefono);
+  if (params.fecha) q.set("fecha", params.fecha);
+  if (params.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<{ sugerencias: SugerenciaViajeRemito[]; nota: string }>(
+    `/api/rendicion/sugerencias-viaje${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export function listGastosRendicion(params?: {
+  limit?: number;
+  estado?: string;
+  telefono?: string;
+  q?: string;
+  desde?: string;
+  hasta?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set("limit", String(params.limit));
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.telefono) q.set("telefono", params.telefono);
+  if (params?.q) q.set("q", params.q);
+  if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
+  const qs = q.toString();
+  return api<GastoRendicion[]>(`/api/rendicion${qs ? `?${qs}` : ""}`);
+}
+
+/** Descarga Excel de rendiciones (mesa u ERP). Respeta filtros actuales. */
+export function rendicionExportUrl(params?: {
+  formato?: "mesa" | "erp";
+  estado?: string;
+  q?: string;
+  desde?: string;
+  hasta?: string;
+  limit?: number;
+}) {
+  const q = new URLSearchParams();
+  if (params?.formato) q.set("formato", params.formato);
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.q) q.set("q", params.q);
+  if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  // Same-origin obligatorio (cookie de sesión del front).
+  return `/backend/api/rendicion/export${qs ? `?${qs}` : ""}`;
+}
+
+/** Descarga autenticada de un export (evita navegación directa al API sin cookie). */
+export async function downloadAuthenticatedFile(url: string, fallbackName: string) {
+  const res = await fetch(url, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    let msg = `Error al descargar (${res.status})`;
+    try {
+      const data = (await res.json()) as { error?: string; message?: string };
+      msg = data.error || data.message || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition") || "";
+  const match = cd.match(/filename\*?=(?:UTF-8''|")?([^\";]+)"?/i);
+  const name = match?.[1] ? decodeURIComponent(match[1]) : fallbackName;
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
+/** Envío semi-fake al ERP (demo). */
+export function enviarRendicionErp(body?: {
+  estado?: string;
+  q?: string;
+  desde?: string;
+  hasta?: string;
+  limit?: number;
+}) {
+  return api<{
+    ok: boolean;
+    modo: string;
+    mensaje: string;
+    jobId: string;
+    enviados: number;
+    montoTotal: number;
+    endpointSimulado: string;
+    preview: Array<{
+      codigo: string;
+      fecha: string;
+      chofer: string;
+      categoria: string;
+      monto: number | string;
+      estado: string;
+    }>;
+    generadoEn: string;
+  }>("/api/rendicion/enviar-erp", {
+    method: "POST",
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
+export function resumenRendicion() {
+  return api<ResumenRendicion>("/api/rendicion/resumen");
+}
+
+export function decidirGastoRendicion(
+  id: string,
+  body: {
+    estado: "aprobado" | "rechazado";
+    nota?: string;
+    aprobado_por?: string;
+    nro_viaje_delfos?: string;
+    remito_ref?: string;
+  },
+) {
+  return api<GastoRendicion>(`/api/rendicion/${id}/decidir`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function patchGastoRendicion(
+  id: string,
+  body: {
+    nro_viaje_delfos?: string | null;
+    remito_ref?: string | null;
+    remito_id?: string | null;
+    viaje_ref?: string | null;
+  },
+) {
+  return api<GastoRendicion>(`/api/rendicion/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
