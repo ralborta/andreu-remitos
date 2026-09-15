@@ -153,9 +153,10 @@ export const agents: Agent[] = [
     subtitle: "Gastos, comprobantes y liquidación de viajes",
     status: "operativo",
     icon: "ReceiptText",
-    what: "El chofer envía gastos menores del viaje (peajes, combustible, etc.). El agente lee el comprobante y lo deja pendiente. En Andreu, al aprobar se confirma siempre el Nº viaje Delfos (el remito solo sirve de referencia).",
+    what: "El chofer envía gastos menores del viaje (peajes, combustible, etc.) y puede mandar la hoja de ruta. El agente lee el comprobante y lo deja pendiente. En Andreu, al aprobar se confirma siempre el Nº viaje Delfos (hoja de ruta y remitos solo sugieren).",
     flow: [
       "Chofer envía ticket/factura por WhatsApp",
+      "Opcional: foto de hoja de ruta (viaje + anticipo)",
       "IA lee y clasifica el gasto",
       "Queda pendiente de aprobación",
       "Mesa confirma Nº viaje Delfos y aprueba o rechaza",

@@ -537,6 +537,7 @@ export interface RendicionRules {
   productId: string;
   requireNroViajeDelfosOnApprove: boolean;
   suggestViajeFromRemitos: boolean;
+  hojaRutaEnabled?: boolean;
   labelNroViaje: string;
   hintNroViaje: string;
 }
@@ -549,6 +550,7 @@ export interface RendicionMeta {
 }
 
 export interface SugerenciaViajeRemito {
+  tipo?: "remito" | "hoja_ruta" | string;
   remitoId: string;
   nroRemito: string | null;
   patente: string | null;
@@ -556,6 +558,8 @@ export interface SugerenciaViajeRemito {
   choferNombre: string | null;
   tenant: string | null;
   viajeDocumento: string | null;
+  nroViajeDelfos?: string | null;
+  anticipoMonto?: number | null;
   createdAt: string | null;
   score?: number;
 }

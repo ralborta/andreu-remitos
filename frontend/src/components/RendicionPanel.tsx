@@ -289,21 +289,31 @@ function GastoDetalleModal({
               {sugerencias.length > 0 && (
                 <div className="mt-3 space-y-1.5">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
-                    Remitos del chofer (referencia)
+                    Sugerencias (hoja de ruta / remitos)
                   </p>
                   {sugerencias.slice(0, 5).map((s) => (
                     <button
-                      key={s.remitoId}
+                      key={`${s.tipo || "x"}-${s.remitoId}`}
                       type="button"
                       onClick={() => onUsarSugerencia(s)}
                       className="flex w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] px-2.5 py-2 text-left text-xs hover:border-amber-400/40"
                     >
                       <span className="font-medium text-white">
-                        Remito {s.nroRemito || s.remitoId}
+                        {s.tipo === "hoja_ruta"
+                          ? `Hoja ${s.nroRemito || s.remitoId}`
+                          : `Remito ${s.nroRemito || s.remitoId}`}
+                        {s.nroViajeDelfos ? ` · viaje ${s.nroViajeDelfos}` : ""}
                         {s.fecha ? ` · ${s.fecha}` : ""}
                       </span>
                       <span className="text-[var(--text-faint)]">
-                        {[s.patente, s.viajeDocumento ? `doc:${s.viajeDocumento}` : null]
+                        {[
+                          s.patente,
+                          s.anticipoMonto != null
+                            ? `anticipo $${Number(s.anticipoMonto).toLocaleString("es-AR")}`
+                            : null,
+                          s.viajeDocumento ? `doc:${s.viajeDocumento}` : null,
+                          s.tipo === "hoja_ruta" ? "tocá para prellenar Delfos" : null,
+                        ]
                           .filter(Boolean)
                           .join(" · ") || "Sin patente"}
                       </span>
@@ -574,22 +584,35 @@ export function RendicionPanel() {
   }
 
   function usarSugerencia(s: SugerenciaViajeRemito) {
-    // Remito = ancla. Si el remito trae un viajeDocumento, se muestra como pista
-    // pero NO se autocompleta como Delfos (hay que confirmar).
+    // Hoja de ruta: prellena Nº Delfos (sigue siendo editable / confirmable).
+    if (s.tipo === "hoja_ruta" && s.nroViajeDelfos) {
+      setNroViajeDraft(String(s.nroViajeDelfos));
+    }
     setDetalle((cur) =>
       cur
         ? {
             ...cur,
-            remitoRef: s.nroRemito || cur.remitoRef,
-            remitoId: s.remitoId,
+            remitoRef: s.tipo === "hoja_ruta" ? cur.remitoRef : s.nroRemito || cur.remitoRef,
+            remitoId: s.tipo === "hoja_ruta" ? cur.remitoId : s.remitoId,
             patente: s.patente || cur.patente,
+            nroViajeDelfos:
+              s.tipo === "hoja_ruta" && s.nroViajeDelfos
+                ? String(s.nroViajeDelfos)
+                : cur.nroViajeDelfos,
           }
         : cur,
     );
-    void patchGastoRendicion(detalle!.id, {
-      remito_ref: s.nroRemito,
-      remito_id: s.remitoId,
-    }).catch(() => {});
+    if (detalle && s.tipo !== "hoja_ruta") {
+      void patchGastoRendicion(detalle.id, {
+        remito_ref: s.nroRemito,
+        remito_id: s.remitoId,
+      }).catch(() => {});
+    }
+    if (detalle && s.tipo === "hoja_ruta" && s.nroViajeDelfos) {
+      void patchGastoRendicion(detalle.id, {
+        nro_viaje_delfos: String(s.nroViajeDelfos),
+      }).catch(() => {});
+    }
   }
 
   async function descargarExcel(formato: "mesa" | "erp") {

@@ -16,6 +16,8 @@ import {
 import { mensajeDecisionGasto } from "../../../lib/rendicion-wa.mjs";
 import { getRendicionRules } from "../../../lib/rendicion-rules.mjs";
 import { sugerirContextoViajeDesdeRemitos } from "../../../lib/rendicion-viaje-suggest.mjs";
+import { hojaRutaHabilitada } from "../../../lib/hoja-ruta.mjs";
+import * as hojaStore from "../db/hoja-ruta-store.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 
@@ -59,6 +61,26 @@ function mapGasto(row) {
   };
 }
 
+function mapHoja(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    codigo: row.codigo,
+    telefono: row.telefono,
+    choferNombre: row.chofer_nombre,
+    nroViajeDelfos: row.nro_viaje_delfos,
+    patente: row.patente,
+    patenteSemi: row.patente_semi,
+    fechaSalida: row.fecha_salida,
+    fechaLlegada: row.fecha_llegada,
+    anticipoMonto: row.anticipo_monto,
+    peajes: row.peajes ?? [],
+    imagenUrl: row.imagen_url,
+    estado: row.estado,
+    createdAt: row.created_at,
+  };
+}
+
 export default async function rendicionRoutes(fastify) {
   fastify.get("/meta", async () => {
     const rules = getRendicionRules();
@@ -73,6 +95,7 @@ export default async function rendicionRoutes(fastify) {
         productId: rules.productId,
         requireNroViajeDelfosOnApprove: rules.requireNroViajeDelfosOnApprove,
         suggestViajeFromRemitos: rules.suggestViajeFromRemitos,
+        hojaRutaEnabled: hojaRutaHabilitada(),
         labelNroViaje: rules.labelNroViaje,
         hintNroViaje: rules.hintNroViaje,
       },
@@ -166,7 +189,7 @@ export default async function rendicionRoutes(fastify) {
     };
   });
 
-  /** Sugerencias desde remitos del chofer (ancla; nº Delfos se confirma aparte). */
+  /** Sugerencias desde remitos + hojas de ruta del chofer. */
   fastify.get("/sugerencias-viaje", async (request) => {
     const q = request.query ?? {};
     return sugerirContextoViajeDesdeRemitos({
@@ -174,6 +197,15 @@ export default async function rendicionRoutes(fastify) {
       fechaComprobante: q.fecha || q.fecha_comprobante,
       limit: q.limit ? parseInt(q.limit, 10) : 12,
     });
+  });
+
+  fastify.get("/hojas-ruta", async (request) => {
+    const q = request.query ?? {};
+    const rows = await hojaStore.listHojasRuta({
+      limit: q.limit ? parseInt(q.limit, 10) : 50,
+      telefono: q.telefono || undefined,
+    });
+    return rows.map(mapHoja);
   });
 
   fastify.get("/:id", async (request, reply) => {

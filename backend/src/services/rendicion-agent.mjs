@@ -9,15 +9,13 @@ import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import * as master from "../db/master-data-store.mjs";
-import { getChoferViajesPorTelefono } from "../db/viajes-flota-store.mjs";
 import { persistChatMedia } from "./chat-media.mjs";
 
-/** Choferes de Parámetros/Remitos o flota Gestión de Viajes. */
+/** Choferes registrados en Parámetros / maestros. */
 export async function telefonoEsChoferRegistrado(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return false;
-  if (await master.resolverChoferPorTelefono(phone)) return true;
-  return Boolean(getChoferViajesPorTelefono(phone));
+  return Boolean(await master.resolverChoferPorTelefono(phone));
 }
 
 export function mensajeRendicionSoloChoferes() {
@@ -30,13 +28,7 @@ export function mensajeRendicionSoloChoferes() {
 async function resolverChoferRendicion(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return null;
-  const remitos = await master.resolverChoferPorTelefono(phone);
-  if (remitos) return remitos;
-  const flota = getChoferViajesPorTelefono(phone);
-  if (flota) {
-    return { nombre: flota.nombre || null, telefono: flota.telefono || phone };
-  }
-  return null;
+  return master.resolverChoferPorTelefono(phone);
 }
 
 async function enviar(phone, mensaje, meta = {}) {

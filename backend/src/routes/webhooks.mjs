@@ -36,6 +36,11 @@ import {
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
 import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
+import {
+  procesarHojaRutaWhatsApp,
+  pareceHojaRuta,
+  hojaRutaHabilitada,
+} from "../services/hoja-ruta-agent.mjs";
 
 /**
  * Con Baileys self-hosted el envío confiable es POST /v1/messages.
@@ -373,6 +378,34 @@ async function tryProcesarDestinos(ev, { texto, log } = {}) {
   }
 }
 
+async function tryProcesarHojaRuta(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
+  if (!hojaRutaHabilitada()) return null;
+  if (!ev.from) return null;
+  const t = String(texto ?? "").trim();
+  if (!forzar && !imageBuffer && !pareceHojaRuta(t)) return null;
+  if (!forzar && imageBuffer && !pareceHojaRuta(t)) return null;
+
+  try {
+    const out = await procesarHojaRutaWhatsApp({
+      telefono: ev.from,
+      texto: t,
+      nombre: ev.nombre,
+      imageBuffer,
+      mime,
+      imagenUrl: ev.media?.url || null,
+      log,
+      forzar: Boolean(forzar || imageBuffer),
+    });
+    if (!out) return null;
+    return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+  } catch (err) {
+    log?.warn?.({ err: err.message, from: ev.from }, "hoja ruta webhook error");
+    const msg = `Recibí la hoja de ruta pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+    return { flow: "hoja_ruta_error", error: err.message, message: msg };
+  }
+}
+
 async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar = false } = {}) {
   if (!ev.from) return null;
   const t = String(texto ?? "").trim();
@@ -470,6 +503,16 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...viajeOut, received: true });
       }
 
+      // Hoja de ruta (Andreu) — antes que peajes sueltos
+      const hojaTextoOut = await tryProcesarHojaRuta(ev, {
+        texto,
+        log: request.log,
+        forzar: false,
+      });
+      if (hojaTextoOut) {
+        return respuestaWebhook({ ...hojaTextoOut, received: true });
+      }
+
       // Rendición de gastos (peaje/nafta/…) — solo si el texto lo indica (no roba remitos)
       const gastoTextoOut = await tryProcesarRendicion(ev, {
         texto,
@@ -487,6 +530,19 @@ export default async function webhooksRoutes(fastify) {
           ...ev,
           media: { ...ev.media, mime_type: mime, name: filename || ev.media.name },
         };
+
+        if (!esEventoAudio(evMedia, buffer) && pareceHojaRuta(texto)) {
+          const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
+            texto,
+            log: request.log,
+            imageBuffer: buffer,
+            mime,
+            forzar: true,
+          });
+          if (hojaImgOut) {
+            return respuestaWebhook({ ...hojaImgOut, received: true });
+          }
+        }
 
         if (!esEventoAudio(evMedia, buffer) && pareceRendicionGasto(texto)) {
           const gastoImgOut = await tryProcesarRendicion(evMedia, {
