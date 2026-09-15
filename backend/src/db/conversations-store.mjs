@@ -263,3 +263,34 @@ export async function clearEsperandoHojaRuta(telefono) {
 export function convEsperaHojaRuta(conv) {
   return Boolean(conv?.esperando_hoja_ruta);
 }
+
+/** Esperando una o más boletas/tickets de rendición (de a una). */
+export async function setEsperandoComprobantesRendicion(telefono, esperando = true) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (esperando) {
+    conv.esperando_comprobantes_rendicion = true;
+    delete conv.esperando_hoja_ruta;
+  } else {
+    delete conv.esperando_comprobantes_rendicion;
+  }
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function clearEsperandoComprobantesRendicion(telefono) {
+  return setEsperandoComprobantesRendicion(telefono, false);
+}
+
+export function convEsperaComprobantesRendicion(conv) {
+  return Boolean(conv?.esperando_comprobantes_rendicion);
+}
+
+export function pareceCierreComprobantesRendicion(texto) {
+  const t = String(texto ?? "").toLowerCase().trim();
+  return /^(listo|ya est[aá]|no hay m[aá]s|termine|termin[eé]|fin|nada m[aá]s|eso es todo)\b/i.test(
+    t,
+  );
+}

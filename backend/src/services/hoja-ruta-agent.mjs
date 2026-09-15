@@ -91,6 +91,7 @@ export async function procesarHojaRutaWhatsApp({
   }
 
   await convStore.clearEsperandoHojaRuta(phone);
+  await convStore.setEsperandoComprobantesRendicion(phone, true);
 
   let ocrTexto = null;
   if (imageBuffer?.length) {

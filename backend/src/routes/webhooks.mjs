@@ -503,6 +503,20 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...viajeOut, received: true });
       }
 
+      // Cierre de carga de boletas
+      if (
+        convEarly &&
+        convStore.convEsperaComprobantesRendicion(convEarly) &&
+        convStore.pareceCierreComprobantesRendicion(texto)
+      ) {
+        await convStore.clearEsperandoComprobantesRendicion(ev.from);
+        const msg =
+          `Listo ✅ Dejamos de esperar tickets.\n` +
+          `Los que mandaste quedan en *Rendición* para la mesa.`;
+        await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
+        return respuestaWebhook({ flow: "rendicion_comprobantes_cerrado", message: msg, received: true });
+      }
+
       // Hoja de ruta (Andreu) — antes que peajes sueltos
       const hojaTextoOut = await tryProcesarHojaRuta(ev, {
         texto,
@@ -513,7 +527,7 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...hojaTextoOut, received: true });
       }
 
-      // Rendición de gastos (peaje/nafta/…) — solo si el texto lo indica (no roba remitos)
+      // Rendición de gastos (peaje/nafta/…)
       const gastoTextoOut = await tryProcesarRendicion(ev, {
         texto,
         log: request.log,
@@ -523,7 +537,7 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...gastoTextoOut, received: true });
       }
 
-      // Media adjunto — audio (nota de voz) o foto de remito
+      // Media adjunto — audio (nota de voz) o foto
       if (ev.media?.url) {
         const { buffer, mime, filename } = await downloadMedia(ev.media.url);
         const evMedia = {
@@ -547,18 +561,22 @@ export default async function webhooksRoutes(fastify) {
               return respuestaWebhook({ ...hojaImgOut, received: true });
             }
           }
-        }
 
-        if (!esEventoAudio(evMedia, buffer) && pareceRendicionGasto(texto)) {
-          const gastoImgOut = await tryProcesarRendicion(evMedia, {
-            texto,
-            log: request.log,
-            imageBuffer: buffer,
-            mime,
-            forzar: true,
-          });
-          if (gastoImgOut) {
-            return respuestaWebhook({ ...gastoImgOut, received: true });
+          // Tras hoja de ruta (o pedir foto de gasto): boletas de a una, sin texto obligatorio
+          const esperaBoletas =
+            convStore.convEsperaComprobantesRendicion(convMedia) ||
+            pareceRendicionGasto(texto);
+          if (esperaBoletas) {
+            const gastoImgOut = await tryProcesarRendicion(evMedia, {
+              texto: texto || "comprobante",
+              log: request.log,
+              imageBuffer: buffer,
+              mime,
+              forzar: true,
+            });
+            if (gastoImgOut) {
+              return respuestaWebhook({ ...gastoImgOut, received: true });
+            }
           }
         }
 
@@ -709,6 +727,20 @@ export default async function webhooksRoutes(fastify) {
           });
           if (hojaImgOut) {
             return respuestaWebhook({ ...hojaImgOut, received: true });
+          }
+        }
+
+        // Boletas de rendición (de a una) — no caer en remito/Corina
+        if (!pausado && convStore.convEsperaComprobantesRendicion(convFoto)) {
+          const gastoImgOut = await tryProcesarRendicion(evMedia, {
+            texto: texto || "comprobante",
+            log: request.log,
+            imageBuffer: buffer,
+            mime,
+            forzar: true,
+          });
+          if (gastoImgOut) {
+            return respuestaWebhook({ ...gastoImgOut, received: true });
           }
         }
 

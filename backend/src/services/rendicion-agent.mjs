@@ -96,10 +96,14 @@ export async function procesarGastoWhatsApp({
   // Bug real: "ahora tengo un peaje para rendir" → pendiente de aprobación sin pedir foto.
   const tieneFoto = !!(imageBuffer?.length || imagenPersistida);
   if (!tieneFoto) {
+    await convStore.setEsperandoComprobantesRendicion(phone, true);
     const msg = mensajePedirFotoComprobante(t);
     await enviar(phone, msg, { nombre });
     return { flow: "rendicion_pedir_foto", mensaje: msg, message: msg };
   }
+
+  // Seguir aceptando más boletas de a una
+  await convStore.setEsperandoComprobantesRendicion(phone, true);
 
   let ocrTexto = null;
   if (imageBuffer?.length) {
