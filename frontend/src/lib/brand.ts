@@ -1,5 +1,7 @@
 /** Marca del demo SOL (rama `demo`). Andreu prod usa otra rama. */
 export const BRAND = {
+  /** sol | andreu — separa reglas de negocio entre productos. */
+  productId: "sol" as const,
   /** Empresa / marca (header derecha). */
   name: "SOL",
   shortName: "SOL",
@@ -14,4 +16,7 @@ export const BRAND = {
   productLine: "Mesa de control",
   primary: "#0a1628",
   accent: "#00b8c4",
+  features: {
+    rendicionRequireNroViajeDelfos: false,
+  },
 };

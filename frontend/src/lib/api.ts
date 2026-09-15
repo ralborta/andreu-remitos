@@ -595,6 +595,17 @@ export interface GastoRendicion {
   fechaComprobante: string | null;
   descripcion: string | null;
   viajeRef: string | null;
+  nroViajeDelfos?: string | null;
+  viajeDocumento?: string | null;
+  remitoRef?: string | null;
+  remitoId?: string | null;
+  patente?: string | null;
+  puntoVenta?: string | null;
+  nroT?: string | null;
+  ivaPct?: number | null;
+  rae?: boolean;
+  montoRae?: number | null;
+  cuitProveedor?: string | null;
   telefono: string | null;
   choferNombre: string | null;
   imagenUrl: string | null;
@@ -607,6 +618,33 @@ export interface GastoRendicion {
   updatedAt?: string;
 }
 
+export interface RendicionRules {
+  productId: string;
+  requireNroViajeDelfosOnApprove: boolean;
+  suggestViajeFromRemitos: boolean;
+  labelNroViaje: string;
+  hintNroViaje: string;
+}
+
+export interface RendicionMeta {
+  categorias: { id: string; label: string }[];
+  estados: { id: string; label: string }[];
+  nota?: string;
+  rules: RendicionRules;
+}
+
+export interface SugerenciaViajeRemito {
+  remitoId: string;
+  nroRemito: string | null;
+  patente: string | null;
+  fecha: string | null;
+  choferNombre: string | null;
+  tenant: string | null;
+  viajeDocumento: string | null;
+  createdAt: string | null;
+  score?: number;
+}
+
 export interface ResumenRendicion {
   total: number;
   pendientes: number;
@@ -614,6 +652,25 @@ export interface ResumenRendicion {
   rechazados: number;
   monto_pendiente: number;
   monto_aprobado: number;
+}
+
+export function metaRendicion() {
+  return api<RendicionMeta>("/api/rendicion/meta");
+}
+
+export function sugerenciasViajeRendicion(params: {
+  telefono?: string | null;
+  fecha?: string | null;
+  limit?: number;
+}) {
+  const q = new URLSearchParams();
+  if (params.telefono) q.set("telefono", params.telefono);
+  if (params.fecha) q.set("fecha", params.fecha);
+  if (params.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<{ sugerencias: SugerenciaViajeRemito[]; nota: string }>(
+    `/api/rendicion/sugerencias-viaje${qs ? `?${qs}` : ""}`,
+  );
 }
 
 export function listGastosRendicion(params?: {
@@ -720,10 +777,31 @@ export function resumenRendicion() {
 
 export function decidirGastoRendicion(
   id: string,
-  body: { estado: "aprobado" | "rechazado"; nota?: string; aprobado_por?: string },
+  body: {
+    estado: "aprobado" | "rechazado";
+    nota?: string;
+    aprobado_por?: string;
+    nro_viaje_delfos?: string;
+    remito_ref?: string;
+  },
 ) {
   return api<GastoRendicion>(`/api/rendicion/${id}/decidir`, {
     method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function patchGastoRendicion(
+  id: string,
+  body: {
+    nro_viaje_delfos?: string | null;
+    remito_ref?: string | null;
+    remito_id?: string | null;
+    viaje_ref?: string | null;
+  },
+) {
+  return api<GastoRendicion>(`/api/rendicion/${id}`, {
+    method: "PATCH",
     body: JSON.stringify(body),
   });
 }

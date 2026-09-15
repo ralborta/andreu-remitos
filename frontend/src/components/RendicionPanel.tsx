@@ -8,10 +8,15 @@ import {
   downloadAuthenticatedFile,
   enviarRendicionErp,
   listGastosRendicion,
+  metaRendicion,
+  patchGastoRendicion,
   rendicionExportUrl,
   resumenRendicion,
+  sugerenciasViajeRendicion,
   type GastoRendicion,
+  type RendicionRules,
   type ResumenRendicion,
+  type SugerenciaViajeRemito,
 } from "@/lib/api";
 import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, KpiCard } from "./ui";
@@ -153,16 +158,32 @@ function RechazoMotivoModal({
 function GastoDetalleModal({
   caso,
   busyId,
+  rules,
+  sugerencias,
+  sugerenciasNota,
+  nroViajeDraft,
+  onNroViajeDraft,
+  onUsarSugerencia,
   onClose,
   onVerFoto,
   onDecidir,
 }: {
   caso: GastoRendicion;
   busyId: string | null;
+  rules: RendicionRules | null;
+  sugerencias: SugerenciaViajeRemito[];
+  sugerenciasNota: string | null;
+  nroViajeDraft: string;
+  onNroViajeDraft: (v: string) => void;
+  onUsarSugerencia: (s: SugerenciaViajeRemito) => void;
   onClose: () => void;
   onVerFoto: () => void;
   onDecidir: (estado: "aprobado" | "rechazado") => void;
 }) {
+  const requireViaje = Boolean(rules?.requireNroViajeDelfosOnApprove);
+  const puedeAprobar =
+    !requireViaje || Boolean(nroViajeDraft.trim() || caso.nroViajeDelfos);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
@@ -214,6 +235,22 @@ function GastoDetalleModal({
             <Campo label="Registrado">{fmtFecha(caso.createdAt)}</Campo>
             <Campo label="Proveedor">{caso.proveedor || "—"}</Campo>
             <Campo label="Fecha comprobante">{caso.fechaComprobante || "—"}</Campo>
+            {(caso.puntoVenta || caso.nroT) && (
+              <>
+                <Campo label="Punto de venta">{caso.puntoVenta || "—"}</Campo>
+                <Campo label="Nº T">{caso.nroT || "—"}</Campo>
+              </>
+            )}
+            {caso.viajeDocumento && (
+              <div className="sm:col-span-2">
+                <Campo label="Viaje en documento (no confirmado)">
+                  <span className="text-amber-300">{caso.viajeDocumento}</span>
+                  <span className="mt-1 block text-xs text-[var(--text-faint)]">
+                    Puede no ser el nº de Delfos — confirmar aparte.
+                  </span>
+                </Campo>
+              </div>
+            )}
             <div className="sm:col-span-2">
               <Campo label="Descripción / lectura">{caso.descripcion || "—"}</Campo>
             </div>
@@ -234,6 +271,57 @@ function GastoDetalleModal({
               </div>
             )}
           </div>
+
+          {caso.estado === "pendiente_aprobacion" && requireViaje && (
+            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+              <label className="text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+                {rules?.labelNroViaje || "Nº viaje Delfos"} (obligatorio)
+              </label>
+              <input
+                value={nroViajeDraft}
+                onChange={(e) => onNroViajeDraft(e.target.value)}
+                placeholder="Ej. 605095"
+                className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-amber-400/60"
+              />
+              <p className="mt-1.5 text-xs text-[var(--text-faint)]">
+                {rules?.hintNroViaje}
+              </p>
+              {sugerencias.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+                    Remitos del chofer (referencia)
+                  </p>
+                  {sugerencias.slice(0, 5).map((s) => (
+                    <button
+                      key={s.remitoId}
+                      type="button"
+                      onClick={() => onUsarSugerencia(s)}
+                      className="flex w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] px-2.5 py-2 text-left text-xs hover:border-amber-400/40"
+                    >
+                      <span className="font-medium text-white">
+                        Remito {s.nroRemito || s.remitoId}
+                        {s.fecha ? ` · ${s.fecha}` : ""}
+                      </span>
+                      <span className="text-[var(--text-faint)]">
+                        {[s.patente, s.viajeDocumento ? `doc:${s.viajeDocumento}` : null]
+                          .filter(Boolean)
+                          .join(" · ") || "Sin patente"}
+                      </span>
+                    </button>
+                  ))}
+                  {sugerenciasNota && (
+                    <p className="text-[11px] text-[var(--text-faint)]">{sugerenciasNota}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!requireViaje && caso.nroViajeDelfos && (
+            <div className="mt-4">
+              <Campo label="Nº viaje Delfos">{caso.nroViajeDelfos}</Campo>
+            </div>
+          )}
 
           {caso.imagenUrl ? (
             <button
@@ -274,7 +362,12 @@ function GastoDetalleModal({
             </button>
             <button
               type="button"
-              disabled={busyId === caso.id}
+              disabled={busyId === caso.id || !puedeAprobar}
+              title={
+                !puedeAprobar
+                  ? "Confirmá el Nº viaje Delfos antes de aprobar"
+                  : undefined
+              }
               onClick={() => onDecidir("aprobado")}
               className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-400 disabled:opacity-50"
             >
@@ -292,6 +385,7 @@ export function RendicionPanel() {
   const confirm = useConfirm();
   const [rows, setRows] = useState<GastoRendicion[]>([]);
   const [resumen, setResumen] = useState<ResumenRendicion | null>(null);
+  const [rules, setRules] = useState<RendicionRules | null>(null);
   const [filtro, setFiltro] = useState<Filtro>("pendiente_aprobacion");
   const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
@@ -305,11 +399,20 @@ export function RendicionPanel() {
   const [foto, setFoto] = useState<FotoPreview | null>(null);
   const [detalle, setDetalle] = useState<GastoRendicion | null>(null);
   const [rechazoTarget, setRechazoTarget] = useState<GastoRendicion | null>(null);
+  const [nroViajeDraft, setNroViajeDraft] = useState("");
+  const [sugerencias, setSugerencias] = useState<SugerenciaViajeRemito[]>([]);
+  const [sugerenciasNota, setSugerenciasNota] = useState<string | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => setQ(qInput.trim()), 300);
     return () => window.clearTimeout(t);
   }, [qInput]);
+
+  useEffect(() => {
+    void metaRendicion()
+      .then((m) => setRules(m.rules))
+      .catch(() => setRules(null));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -341,6 +444,40 @@ export function RendicionPanel() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!detalle) {
+      setSugerencias([]);
+      setSugerenciasNota(null);
+      setNroViajeDraft("");
+      return;
+    }
+    setNroViajeDraft(detalle.nroViajeDelfos || "");
+    if (!rules?.suggestViajeFromRemitos || !detalle.telefono) {
+      setSugerencias([]);
+      setSugerenciasNota(null);
+      return;
+    }
+    let cancelled = false;
+    void sugerenciasViajeRendicion({
+      telefono: detalle.telefono,
+      fecha: detalle.fechaComprobante,
+      limit: 8,
+    })
+      .then((res) => {
+        if (cancelled) return;
+        setSugerencias(res.sugerencias || []);
+        setSugerenciasNota(res.nota || null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setSugerencias([]);
+        setSugerenciasNota(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [detalle?.id, detalle?.telefono, detalle?.fechaComprobante, rules?.suggestViajeFromRemitos]);
 
   const exportParams = useMemo(
     () => ({
@@ -396,20 +533,35 @@ export function RendicionPanel() {
         return;
       }
     }
+    const nroDelfos = (nroViajeDraft || g.nroViajeDelfos || "").trim();
+    if (estado === "aprobado" && rules?.requireNroViajeDelfosOnApprove && !nroDelfos) {
+      setError("Confirmá el Nº viaje Delfos antes de aprobar.");
+      return;
+    }
     if (estado === "aprobado") {
       const ok = await confirm({
         title: "Aprobar gasto",
-        message: `${g.codigo} · ${g.categoriaLabel} · ${g.montoLabel}\n${g.choferNombre || g.telefono || ""}`,
+        message:
+          `${g.codigo} · ${g.categoriaLabel} · ${g.montoLabel}\n${g.choferNombre || g.telefono || ""}` +
+          (nroDelfos ? `\nNº viaje Delfos: ${nroDelfos}` : ""),
         confirmLabel: "Aprobar",
       });
       if (!ok) return;
     }
     setBusyId(g.id);
     try {
+      if (estado === "aprobado" && nroDelfos && nroDelfos !== (g.nroViajeDelfos || "")) {
+        await patchGastoRendicion(g.id, {
+          nro_viaje_delfos: nroDelfos,
+          remito_ref: g.remitoRef || undefined,
+        });
+      }
       await decidirGastoRendicion(g.id, {
         estado,
         ...(estado === "rechazado" && nota ? { nota: nota.trim() } : {}),
         ...(estado === "aprobado" && nota ? { nota } : {}),
+        ...(estado === "aprobado" && nroDelfos ? { nro_viaje_delfos: nroDelfos } : {}),
+        ...(g.remitoRef ? { remito_ref: g.remitoRef } : {}),
       });
       setDetalle(null);
       setRechazoTarget(null);
@@ -419,6 +571,25 @@ export function RendicionPanel() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  function usarSugerencia(s: SugerenciaViajeRemito) {
+    // Remito = ancla. Si el remito trae un viajeDocumento, se muestra como pista
+    // pero NO se autocompleta como Delfos (hay que confirmar).
+    setDetalle((cur) =>
+      cur
+        ? {
+            ...cur,
+            remitoRef: s.nroRemito || cur.remitoRef,
+            remitoId: s.remitoId,
+            patente: s.patente || cur.patente,
+          }
+        : cur,
+    );
+    void patchGastoRendicion(detalle!.id, {
+      remito_ref: s.nroRemito,
+      remito_id: s.remitoId,
+    }).catch(() => {});
   }
 
   async function descargarExcel(formato: "mesa" | "erp") {
@@ -620,6 +791,7 @@ export function RendicionPanel() {
                   <th className="py-2 pr-3 font-medium">Chofer</th>
                   <th className="py-2 pr-3 font-medium">Categoría</th>
                   <th className="py-2 pr-3 font-medium">Monto</th>
+                  <th className="py-2 pr-3 font-medium">Viaje Delfos</th>
                   <th className="py-2 pr-3 font-medium">Detalle</th>
                   <th className="py-2 pr-3 font-medium">Estado</th>
                   <th className="py-2 font-medium">Acción</th>
@@ -652,6 +824,11 @@ export function RendicionPanel() {
                           <ImageIcon size={14} className="text-[var(--text-faint)]" />
                         ) : null}
                       </button>
+                    </td>
+                    <td className="max-w-[110px] truncate py-3 pr-3 tabular text-[var(--text-dim)]">
+                      {g.nroViajeDelfos || (
+                        <span className="text-[var(--text-faint)]">—</span>
+                      )}
                     </td>
                     <td className="max-w-[200px] truncate py-3 pr-3 text-[var(--text-dim)]">
                       {g.proveedor || g.descripcion || "—"}
@@ -706,6 +883,12 @@ export function RendicionPanel() {
         <GastoDetalleModal
           caso={detalle}
           busyId={busyId}
+          rules={rules}
+          sugerencias={sugerencias}
+          sugerenciasNota={sugerenciasNota}
+          nroViajeDraft={nroViajeDraft}
+          onNroViajeDraft={setNroViajeDraft}
+          onUsarSugerencia={usarSugerencia}
           onClose={() => setDetalle(null)}
           onVerFoto={() => abrirComprobante(detalle)}
           onDecidir={(estado) => void decidir(detalle, estado)}

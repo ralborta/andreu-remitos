@@ -14,6 +14,8 @@ import {
   filasAoaRendicion,
 } from "../../../lib/rendicion-export.mjs";
 import { mensajeDecisionGasto } from "../../../lib/rendicion-wa.mjs";
+import { getRendicionRules } from "../../../lib/rendicion-rules.mjs";
+import { sugerirContextoViajeDesdeRemitos } from "../../../lib/rendicion-viaje-suggest.mjs";
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 
@@ -33,6 +35,17 @@ function mapGasto(row) {
     fechaComprobante: row.fecha_comprobante,
     descripcion: row.descripcion,
     viajeRef: row.viaje_ref,
+    nroViajeDelfos: row.nro_viaje_delfos || null,
+    viajeDocumento: row.viaje_documento || null,
+    remitoRef: row.remito_ref || null,
+    remitoId: row.remito_id || null,
+    patente: row.patente || null,
+    puntoVenta: row.punto_venta || null,
+    nroT: row.nro_t || null,
+    ivaPct: row.iva_pct ?? null,
+    rae: Boolean(row.rae),
+    montoRae: row.monto_rae ?? null,
+    cuitProveedor: row.cuit_proveedor || null,
     telefono: row.telefono,
     choferNombre: row.chofer_nombre,
     imagenUrl: row.imagen_url,
@@ -47,14 +60,24 @@ function mapGasto(row) {
 }
 
 export default async function rendicionRoutes(fastify) {
-  fastify.get("/meta", async () => ({
-    categorias: RENDICION_CATEGORIAS.map((c) => ({
-      id: c,
-      label: RENDICION_CATEGORIA_LABEL[c],
-    })),
-    estados: GASTO_ESTADOS.map((e) => ({ id: e, label: GASTO_ESTADO_LABEL[e] })),
-    nota: "Gastos menores sujetos a verificación humana",
-  }));
+  fastify.get("/meta", async () => {
+    const rules = getRendicionRules();
+    return {
+      categorias: RENDICION_CATEGORIAS.map((c) => ({
+        id: c,
+        label: RENDICION_CATEGORIA_LABEL[c],
+      })),
+      estados: GASTO_ESTADOS.map((e) => ({ id: e, label: GASTO_ESTADO_LABEL[e] })),
+      nota: "Gastos menores sujetos a verificación humana",
+      rules: {
+        productId: rules.productId,
+        requireNroViajeDelfosOnApprove: rules.requireNroViajeDelfosOnApprove,
+        suggestViajeFromRemitos: rules.suggestViajeFromRemitos,
+        labelNroViaje: rules.labelNroViaje,
+        hintNroViaje: rules.hintNroViaje,
+      },
+    };
+  });
 
   fastify.get("/resumen", async () => rendicionStore.resumenGastos());
 
@@ -143,6 +166,16 @@ export default async function rendicionRoutes(fastify) {
     };
   });
 
+  /** Sugerencias desde remitos del chofer (ancla; nº Delfos se confirma aparte). */
+  fastify.get("/sugerencias-viaje", async (request) => {
+    const q = request.query ?? {};
+    return sugerirContextoViajeDesdeRemitos({
+      telefono: q.telefono,
+      fechaComprobante: q.fecha || q.fecha_comprobante,
+      limit: q.limit ? parseInt(q.limit, 10) : 12,
+    });
+  });
+
   fastify.get("/:id", async (request, reply) => {
     const row = await rendicionStore.getGasto(request.params.id);
     if (!row) return reply.code(404).send({ error: "Gasto no encontrado" });
@@ -158,13 +191,38 @@ export default async function rendicionRoutes(fastify) {
     }
   });
 
+  fastify.patch("/:id", async (request, reply) => {
+    try {
+      const body = request.body ?? {};
+      const row = await rendicionStore.actualizarGasto(request.params.id, {
+        ...body,
+        historial_push: body.nro_viaje_delfos
+          ? `${new Date().toISOString()} · Nº viaje Delfos → ${String(body.nro_viaje_delfos).trim()}`
+          : undefined,
+      });
+      if (!row) return reply.code(404).send({ error: "Gasto no encontrado" });
+      return mapGasto(row);
+    } catch (err) {
+      return reply.code(err.statusCode || 400).send({ error: err.message });
+    }
+  });
+
   fastify.post("/:id/decidir", async (request, reply) => {
-    const { estado, nota, aprobado_por, notificar = true } = request.body ?? {};
+    const {
+      estado,
+      nota,
+      aprobado_por,
+      notificar = true,
+      nro_viaje_delfos,
+      remito_ref,
+    } = request.body ?? {};
     try {
       const row = await rendicionStore.decidirGasto(request.params.id, {
         estado,
         nota,
         aprobado_por,
+        nro_viaje_delfos,
+        remito_ref,
       });
       if (!row) return reply.code(404).send({ error: "Gasto no encontrado" });
 
