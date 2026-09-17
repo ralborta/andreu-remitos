@@ -35,10 +35,11 @@ import {
   telefonoEsChoferRegistrado,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
-import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
+import { pareceRendicionGasto, pareceDocumentoGasto } from "../../../lib/rendicion-wa.mjs";
 import {
   procesarHojaRutaWhatsApp,
   pareceHojaRuta,
+  pareceDocumentoHojaRuta,
   hojaRutaHabilitada,
 } from "../services/hoja-ruta-agent.mjs";
 
@@ -741,6 +742,51 @@ export default async function webhooksRoutes(fastify) {
           });
           if (gastoImgOut) {
             return respuestaWebhook({ ...gastoImgOut, received: true });
+          }
+        }
+
+        // Andreu: clasificar por OCR si no hubo sticky/caption — hoja/peaje/nafta
+        // no deben aparecer nunca en la pantalla de remitos.
+        if (!pausado && hojaRutaHabilitada() && buffer?.length) {
+          try {
+            const { ocrDocumento } = await import("../../../lib/document-ai.mjs");
+            const ocrPre = await ocrDocumento(buffer, filename || "doc.jpg");
+            const ocrTxt = String(ocrPre?.texto || "");
+            request.log?.info?.(
+              { chars: ocrTxt.length, preview: ocrTxt.slice(0, 80) },
+              "Pre-clasificación Andreu OCR",
+            );
+
+            if (pareceDocumentoHojaRuta(ocrTxt)) {
+              const hojaOcrOut = await tryProcesarHojaRuta(evMedia, {
+                texto: texto || "hoja de ruta",
+                log: request.log,
+                imageBuffer: buffer,
+                mime,
+                forzar: true,
+              });
+              if (hojaOcrOut) {
+                return respuestaWebhook({ ...hojaOcrOut, received: true, routed_by: "ocr_hoja" });
+              }
+            }
+
+            if (pareceDocumentoGasto(ocrTxt)) {
+              const gastoOcrOut = await tryProcesarRendicion(evMedia, {
+                texto: texto || "comprobante",
+                log: request.log,
+                imageBuffer: buffer,
+                mime,
+                forzar: true,
+              });
+              if (gastoOcrOut) {
+                return respuestaWebhook({ ...gastoOcrOut, received: true, routed_by: "ocr_gasto" });
+              }
+            }
+          } catch (err) {
+            request.log?.warn?.(
+              { err: err.message },
+              "Pre-clasificación Andreu OCR falló; sigo con remito",
+            );
           }
         }
 

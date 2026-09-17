@@ -6,6 +6,7 @@ import {
   interpretarHojaRuta,
   mensajeConfirmacionHojaRuta,
   mensajePedirFotoHojaRuta,
+  pareceDocumentoHojaRuta,
   pareceHojaRuta,
 } from "../../../lib/hoja-ruta.mjs";
 import * as hojaStore from "../db/hoja-ruta-store.mjs";
@@ -19,7 +20,7 @@ import {
   telefonoEsChoferRegistrado,
 } from "./rendicion-agent.mjs";
 
-export { pareceHojaRuta, hojaRutaHabilitada };
+export { pareceHojaRuta, pareceDocumentoHojaRuta, hojaRutaHabilitada };
 
 async function resolverChofer(telefono) {
   const phone = sanitizePhone(telefono);
