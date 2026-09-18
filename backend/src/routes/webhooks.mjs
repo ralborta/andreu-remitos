@@ -35,11 +35,11 @@ import {
   telefonoEsChoferRegistrado,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
-import { pareceRendicionGasto, pareceDocumentoGasto } from "../../../lib/rendicion-wa.mjs";
+import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
+import { clasificarDocumentoAndreu } from "../../../lib/documento-andreu.mjs";
 import {
   procesarHojaRutaWhatsApp,
   pareceHojaRuta,
-  pareceDocumentoHojaRuta,
   hojaRutaHabilitada,
 } from "../services/hoja-ruta-agent.mjs";
 
@@ -448,6 +448,25 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   }
 }
 
+/** OCR + clasificar: remito / gasto / hoja. El papel manda sobre sticky/caption. */
+async function clasificarFotoAndreu(buffer, filename, log) {
+  if (!hojaRutaHabilitada() || !buffer?.length) return { tipo: null, ocrTxt: "" };
+  try {
+    const { ocrDocumento } = await import("../../../lib/document-ai.mjs");
+    const ocr = await ocrDocumento(buffer, filename || "doc.jpg");
+    const ocrTxt = String(ocr?.texto || "");
+    const tipo = clasificarDocumentoAndreu(ocrTxt);
+    log?.info?.(
+      { tipo, chars: ocrTxt.length, preview: ocrTxt.slice(0, 100).replace(/\n/g, " ") },
+      "Clasificación Andreu OCR",
+    );
+    return { tipo, ocrTxt };
+  } catch (err) {
+    log?.warn?.({ err: err.message }, "Clasificación Andreu OCR falló");
+    return { tipo: null, ocrTxt: "" };
+  }
+}
+
 export default async function webhooksRoutes(fastify) {
   fastify.get("/builderbot/health", async () => ({
     ok: true,
@@ -550,7 +569,14 @@ export default async function webhooksRoutes(fastify) {
           const convMedia = ev.from ? await convStore.getConversacion(ev.from) : null;
           const esperaHoja =
             convStore.convEsperaHojaRuta(convMedia) || pareceHojaRuta(texto);
-          if (esperaHoja) {
+          const esperaBoletas =
+            convStore.convEsperaComprobantesRendicion(convMedia) ||
+            pareceRendicionGasto(texto);
+
+          // El papel manda: OCR antes de forzar rendición/hoja por sticky o caption
+          const { tipo: tipoDoc } = await clasificarFotoAndreu(buffer, filename, request.log);
+
+          if (tipoDoc === "hoja" || (esperaHoja && !tipoDoc)) {
             const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
               texto: texto || "hoja de ruta",
               log: request.log,
@@ -559,15 +585,14 @@ export default async function webhooksRoutes(fastify) {
               forzar: true,
             });
             if (hojaImgOut) {
-              return respuestaWebhook({ ...hojaImgOut, received: true });
+              return respuestaWebhook({ ...hojaImgOut, received: true, routed_by: tipoDoc || "sticky_hoja" });
             }
           }
 
-          // Tras hoja de ruta (o pedir foto de gasto): boletas de a una, sin texto obligatorio
-          const esperaBoletas =
-            convStore.convEsperaComprobantesRendicion(convMedia) ||
-            pareceRendicionGasto(texto);
-          if (esperaBoletas) {
+          // Remito claro → no meter en rendición aunque haya sticky o digan "comprobante"
+          if (tipoDoc === "remito") {
+            // cae al flujo de remito más abajo
+          } else if (tipoDoc === "gasto" || (esperaBoletas && !tipoDoc)) {
             const gastoImgOut = await tryProcesarRendicion(evMedia, {
               texto: texto || "comprobante",
               log: request.log,
@@ -576,7 +601,11 @@ export default async function webhooksRoutes(fastify) {
               forzar: true,
             });
             if (gastoImgOut) {
-              return respuestaWebhook({ ...gastoImgOut, received: true });
+              return respuestaWebhook({
+                ...gastoImgOut,
+                received: true,
+                routed_by: tipoDoc || "sticky_gasto",
+              });
             }
           }
         }
@@ -717,78 +746,8 @@ export default async function webhooksRoutes(fastify) {
         const pausado = !!convFoto?.bot_pausado;
         const tenantFoto = tenantCfg ?? convFoto?.tenant;
 
-        // Si pedimos hoja de ruta, no caer en remito/Corina
-        if (!pausado && convStore.convEsperaHojaRuta(convFoto)) {
-          const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
-            texto: texto || "hoja de ruta",
-            log: request.log,
-            imageBuffer: buffer,
-            mime,
-            forzar: true,
-          });
-          if (hojaImgOut) {
-            return respuestaWebhook({ ...hojaImgOut, received: true });
-          }
-        }
-
-        // Boletas de rendición (de a una) — no caer en remito/Corina
-        if (!pausado && convStore.convEsperaComprobantesRendicion(convFoto)) {
-          const gastoImgOut = await tryProcesarRendicion(evMedia, {
-            texto: texto || "comprobante",
-            log: request.log,
-            imageBuffer: buffer,
-            mime,
-            forzar: true,
-          });
-          if (gastoImgOut) {
-            return respuestaWebhook({ ...gastoImgOut, received: true });
-          }
-        }
-
-        // Andreu: clasificar por OCR si no hubo sticky/caption — hoja/peaje/nafta
-        // no deben aparecer nunca en la pantalla de remitos.
-        if (!pausado && hojaRutaHabilitada() && buffer?.length) {
-          try {
-            const { ocrDocumento } = await import("../../../lib/document-ai.mjs");
-            const ocrPre = await ocrDocumento(buffer, filename || "doc.jpg");
-            const ocrTxt = String(ocrPre?.texto || "");
-            request.log?.info?.(
-              { chars: ocrTxt.length, preview: ocrTxt.slice(0, 80) },
-              "Pre-clasificación Andreu OCR",
-            );
-
-            if (pareceDocumentoHojaRuta(ocrTxt)) {
-              const hojaOcrOut = await tryProcesarHojaRuta(evMedia, {
-                texto: texto || "hoja de ruta",
-                log: request.log,
-                imageBuffer: buffer,
-                mime,
-                forzar: true,
-              });
-              if (hojaOcrOut) {
-                return respuestaWebhook({ ...hojaOcrOut, received: true, routed_by: "ocr_hoja" });
-              }
-            }
-
-            if (pareceDocumentoGasto(ocrTxt)) {
-              const gastoOcrOut = await tryProcesarRendicion(evMedia, {
-                texto: texto || "comprobante",
-                log: request.log,
-                imageBuffer: buffer,
-                mime,
-                forzar: true,
-              });
-              if (gastoOcrOut) {
-                return respuestaWebhook({ ...gastoOcrOut, received: true, routed_by: "ocr_gasto" });
-              }
-            }
-          } catch (err) {
-            request.log?.warn?.(
-              { err: err.message },
-              "Pre-clasificación Andreu OCR falló; sigo con remito",
-            );
-          }
-        }
+        // Sticky hoja/gasto + OCR ya se resolvieron en el bloque de media Andreu.
+        // Si llegamos acá: remito (o sin clasificación).
 
         // Corina: exigir Cervecería / Eco antes de OCR
         if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
