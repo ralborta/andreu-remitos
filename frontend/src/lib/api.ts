@@ -506,6 +506,14 @@ export interface GastoRendicion {
   monto: number | null;
   montoLabel: string;
   moneda: string;
+  /** Ticket original (ej. CLP). */
+  monedaOrigen?: string | null;
+  montoOrigen?: number | null;
+  montoOrigenLabel?: string | null;
+  /** 1 CLP = tcClpArs ARS */
+  tcClpArs?: number | null;
+  tcFecha?: string | null;
+  tcFuente?: string | null;
   proveedor: string | null;
   fechaComprobante: string | null;
   descripcion: string | null;
@@ -751,11 +759,34 @@ export function patchGastoRendicion(
     remito_ref?: string | null;
     remito_id?: string | null;
     viaje_ref?: string | null;
+    monto?: number | null;
+    monto_origen?: number | null;
+    tc_clp_ars?: number | null;
+    tc_fecha?: string | null;
+    tc_fuente?: string | null;
+    moneda_origen?: string | null;
   },
 ) {
   return api<GastoRendicion>(`/api/rendicion/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),
   });
+}
+
+export interface CotizacionClp {
+  moneda: string;
+  quote: string;
+  valor: number;
+  compra?: number;
+  venta?: number;
+  fecha: string | null;
+  fuente: string;
+  label: string;
+}
+
+export function cotizacionClpRendicion(force = false) {
+  return api<CotizacionClp>(
+    `/api/rendicion/cotizacion/clp${force ? "?force=1" : ""}`,
+  );
 }
 

@@ -170,6 +170,7 @@ function GastoDetalleModal({
   onClose,
   onVerFoto,
   onDecidir,
+  onActualizarTc,
 }: {
   caso: GastoRendicion;
   busyId: string | null;
@@ -182,10 +183,33 @@ function GastoDetalleModal({
   onClose: () => void;
   onVerFoto: () => void;
   onDecidir: (estado: "aprobado" | "rechazado") => void;
+  onActualizarTc: (tc: number) => Promise<void>;
 }) {
   const requireViaje = Boolean(rules?.requireNroViajeDelfosOnApprove);
   const puedeAprobar =
     !requireViaje || Boolean(nroViajeDraft.trim() || caso.nroViajeDelfos);
+  const esClp = caso.monedaOrigen === "CLP" && caso.montoOrigen != null;
+  const [tcDraft, setTcDraft] = useState(
+    caso.tcClpArs != null ? String(caso.tcClpArs) : "",
+  );
+  const [tcBusy, setTcBusy] = useState(false);
+  const [tcError, setTcError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTcDraft(caso.tcClpArs != null ? String(caso.tcClpArs) : "");
+    setTcError(null);
+  }, [caso.id, caso.tcClpArs]);
+
+  const tcNum = Number(String(tcDraft).replace(",", "."));
+  const tcValido = Number.isFinite(tcNum) && tcNum > 0;
+  const tcDirty =
+    esClp &&
+    tcValido &&
+    (caso.tcClpArs == null || Math.abs(tcNum - Number(caso.tcClpArs)) > 1e-6);
+  const arsPreview =
+    esClp && tcValido
+      ? Math.round(Number(caso.montoOrigen) * tcNum * 100) / 100
+      : null;
 
   return (
     <div
@@ -207,6 +231,7 @@ function GastoDetalleModal({
             </h3>
             <p className="mt-1 text-sm text-[var(--text-dim)]">
               {caso.categoriaLabel} · {caso.montoLabel}
+              {esClp && caso.montoOrigenLabel ? ` · ${caso.montoOrigenLabel}` : ""}
             </p>
             <span
               className={clsx(
@@ -274,6 +299,64 @@ function GastoDetalleModal({
               </div>
             )}
           </div>
+
+          {esClp && (
+            <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                Conversión CLP → ARS
+              </p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <Campo label="Monto en ticket (CLP)">
+                  {caso.montoOrigenLabel || caso.montoOrigen}
+                </Campo>
+                <Campo label="Monto en ARS">{caso.montoLabel}</Campo>
+              </div>
+              <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                Cotización (ARS por 1 CLP)
+                <input
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  value={tcDraft}
+                  disabled={caso.estado !== "pendiente_aprobacion" || tcBusy || busyId === caso.id}
+                  onChange={(e) => setTcDraft(e.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-sky-400/60 disabled:opacity-60"
+                />
+              </label>
+              <p className="mt-1.5 text-xs text-[var(--text-faint)]">
+                {caso.tcFuente ? `Fuente: ${caso.tcFuente}` : "Sin fuente"}
+                {caso.tcFecha ? ` · ${fmtFecha(caso.tcFecha)}` : ""}
+                {arsPreview != null && tcDirty
+                  ? ` · Preview: $${arsPreview.toLocaleString("es-AR")}`
+                  : ""}
+              </p>
+              {tcError && <p className="mt-1 text-xs text-rose-400">{tcError}</p>}
+              {caso.estado === "pendiente_aprobacion" && (
+                <button
+                  type="button"
+                  disabled={!tcDirty || !tcValido || tcBusy || busyId === caso.id}
+                  onClick={() => {
+                    void (async () => {
+                      setTcBusy(true);
+                      setTcError(null);
+                      try {
+                        await onActualizarTc(tcNum);
+                      } catch (err) {
+                        setTcError(
+                          err instanceof Error ? err.message : "No pude guardar la cotización",
+                        );
+                      } finally {
+                        setTcBusy(false);
+                      }
+                    })();
+                  }}
+                  className="mt-3 rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+                >
+                  {tcBusy ? "Guardando…" : "Aplicar cotización"}
+                </button>
+              )}
+            </div>
+          )}
 
           {caso.estado === "pendiente_aprobacion" && requireViaje && (
             <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
@@ -638,6 +721,17 @@ export function RendicionPanel() {
     }
   }
 
+  async function actualizarTc(tc: number) {
+    if (!detalle) return;
+    const updated = await patchGastoRendicion(detalle.id, {
+      tc_clp_ars: tc,
+      tc_fuente: "manual",
+      monto_origen: detalle.montoOrigen ?? undefined,
+    });
+    setDetalle(updated);
+    setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+  }
+
   async function descargarExcel(formato: "mesa" | "erp") {
     setExcelBusy(formato);
     setError(null);
@@ -983,6 +1077,11 @@ export function RendicionPanel() {
                         title={g.imagenUrl ? "Ver comprobante" : "Sin comprobante"}
                       >
                         {g.montoLabel}
+                        {g.monedaOrigen === "CLP" && g.montoOrigenLabel ? (
+                          <span className="ml-1 text-[10px] text-sky-400">
+                            ({g.montoOrigenLabel})
+                          </span>
+                        ) : null}
                         {g.imagenUrl ? (
                           <ImageIcon size={14} className="text-[var(--text-faint)]" />
                         ) : null}
@@ -1057,6 +1156,7 @@ export function RendicionPanel() {
           onClose={() => setDetalle(null)}
           onVerFoto={() => abrirComprobante(detalle)}
           onDecidir={(estado) => void decidir(detalle, estado)}
+          onActualizarTc={actualizarTc}
         />
       )}
 

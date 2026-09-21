@@ -6,9 +6,11 @@ import {
   labelCategoria,
   labelEstadoGasto,
   moneyAR,
+  moneyCLP,
   RENDICION_CATEGORIA_LABEL,
   RENDICION_CATEGORIAS,
 } from "../../../lib/rendicion.mjs";
+import { obtenerCotizacionClpArs } from "../../../lib/tipo-cambio.mjs";
 import {
   buildPlanillaRendicion,
   filasAoaRendicion,
@@ -24,6 +26,8 @@ import * as convStore from "../db/conversations-store.mjs";
 
 function mapGasto(row) {
   if (!row) return null;
+  const monedaOrigen = row.moneda_origen || null;
+  const montoOrigen = row.monto_origen ?? null;
   return {
     id: row.id,
     codigo: row.codigo,
@@ -33,7 +37,18 @@ function mapGasto(row) {
     categoriaLabel: labelCategoria(row.categoria),
     monto: row.monto,
     montoLabel: row.monto != null ? moneyAR(row.monto) : "—",
-    moneda: row.moneda,
+    moneda: row.moneda || "ARS",
+    monedaOrigen,
+    montoOrigen,
+    montoOrigenLabel:
+      montoOrigen != null
+        ? monedaOrigen === "CLP"
+          ? moneyCLP(montoOrigen)
+          : moneyAR(montoOrigen)
+        : null,
+    tcClpArs: row.tc_clp_ars ?? null,
+    tcFecha: row.tc_fecha || null,
+    tcFuente: row.tc_fuente || null,
     proveedor: row.proveedor,
     fechaComprobante: row.fecha_comprobante,
     descripcion: row.descripcion,
@@ -104,6 +119,26 @@ export default async function rendicionRoutes(fastify) {
   });
 
   fastify.get("/resumen", async () => rendicionStore.resumenGastos());
+
+  /** Cotización CLP→ARS (DolarAPI). Antes de /:id */
+  fastify.get("/cotizacion/clp", async (request, reply) => {
+    try {
+      const force = String(request.query?.force || "") === "1";
+      const cot = await obtenerCotizacionClpArs({ force, log: request.log });
+      return {
+        moneda: "CLP",
+        quote: "ARS",
+        valor: cot.valor,
+        compra: cot.compra,
+        venta: cot.venta,
+        fecha: cot.fecha,
+        fuente: cot.fuente,
+        label: `1 CLP = ${cot.valor} ARS`,
+      };
+    } catch (err) {
+      return reply.code(502).send({ error: err.message || "No pude obtener cotización CLP" });
+    }
+  });
 
   /** Anticipo (hoja) vs boletas por Nº viaje Delfos — antes de /:id */
   fastify.get("/por-viaje", async (request) => {
@@ -233,10 +268,17 @@ export default async function rendicionRoutes(fastify) {
   fastify.patch("/:id", async (request, reply) => {
     try {
       const body = request.body ?? {};
+      const histParts = [];
+      if (body.nro_viaje_delfos) {
+        histParts.push(`Nº viaje Delfos → ${String(body.nro_viaje_delfos).trim()}`);
+      }
+      if (body.tc_clp_ars != null) {
+        histParts.push(`TC CLP→ARS → ${Number(body.tc_clp_ars)}`);
+      }
       const row = await rendicionStore.actualizarGasto(request.params.id, {
         ...body,
-        historial_push: body.nro_viaje_delfos
-          ? `${new Date().toISOString()} · Nº viaje Delfos → ${String(body.nro_viaje_delfos).trim()}`
+        historial_push: histParts.length
+          ? `${new Date().toISOString()} · ${histParts.join(" · ")}`
           : undefined,
       });
       if (!row) return reply.code(404).send({ error: "Gasto no encontrado" });

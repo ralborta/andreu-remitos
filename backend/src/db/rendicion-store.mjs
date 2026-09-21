@@ -197,6 +197,18 @@ export async function crearGasto(body = {}) {
     categoria,
     monto: body.monto != null && Number.isFinite(Number(body.monto)) ? Number(body.monto) : null,
     moneda: body.moneda || "ARS",
+    /** Moneda del ticket original (ej. CLP). null = mismo que moneda. */
+    moneda_origen: normStr(body.moneda_origen),
+    monto_origen:
+      body.monto_origen != null && Number.isFinite(Number(body.monto_origen))
+        ? Number(body.monto_origen)
+        : null,
+    tc_clp_ars:
+      body.tc_clp_ars != null && Number.isFinite(Number(body.tc_clp_ars))
+        ? Number(body.tc_clp_ars)
+        : null,
+    tc_fecha: body.tc_fecha || null,
+    tc_fuente: normStr(body.tc_fuente),
     proveedor: normStr(body.proveedor),
     fecha_comprobante: body.fecha_comprobante || null,
     descripcion: normStr(body.descripcion),
@@ -244,6 +256,11 @@ const PATCH_KEYS = [
   "categoria",
   "monto",
   "moneda",
+  "moneda_origen",
+  "monto_origen",
+  "tc_clp_ars",
+  "tc_fecha",
+  "tc_fuente",
   "proveedor",
   "fecha_comprobante",
   "descripcion",
@@ -287,7 +304,9 @@ export async function actualizarGasto(id, patch = {}) {
         k === "patente" ||
         k === "punto_venta" ||
         k === "nro_t" ||
-        k === "cuit_proveedor"
+        k === "cuit_proveedor" ||
+        k === "moneda_origen" ||
+        k === "tc_fuente"
       ) {
         row[k] = normStr(patch[k]);
       } else if (k === "rae") {
@@ -301,6 +320,8 @@ export async function actualizarGasto(id, patch = {}) {
     row.texto_ocr = String(patch.texto_ocr).slice(0, 12000);
   }
   if (patch.monto != null) row.monto = Number(patch.monto);
+  if (patch.monto_origen != null) row.monto_origen = Number(patch.monto_origen);
+  if (patch.tc_clp_ars != null) row.tc_clp_ars = Number(patch.tc_clp_ars);
   if (patch.iva_pct != null) row.iva_pct = Number(patch.iva_pct);
   if (patch.monto_rae != null) row.monto_rae = Number(patch.monto_rae);
   if (patch.categoria && RENDICION_CATEGORIAS.includes(patch.categoria)) {
@@ -309,6 +330,29 @@ export async function actualizarGasto(id, patch = {}) {
   if (patch.estado && GASTO_ESTADOS.includes(patch.estado)) {
     row.estado = patch.estado;
   }
+
+  // Recalcular ARS si cambió TC o monto origen (ticket CLP)
+  const tcChanged = patch.tc_clp_ars != null;
+  const origenChanged = patch.monto_origen != null;
+  if (
+    (tcChanged || origenChanged) &&
+    row.moneda_origen === "CLP" &&
+    row.monto_origen != null &&
+    row.tc_clp_ars != null &&
+    Number(row.tc_clp_ars) > 0
+  ) {
+    const prev = row.monto;
+    row.monto = Math.round(Number(row.monto_origen) * Number(row.tc_clp_ars) * 100) / 100;
+    row.moneda = "ARS";
+    if (patch.tc_fecha !== undefined) row.tc_fecha = patch.tc_fecha || null;
+    else if (tcChanged) row.tc_fecha = now;
+    if (patch.tc_fuente !== undefined) row.tc_fuente = normStr(patch.tc_fuente) || row.tc_fuente;
+    else if (tcChanged && !row.tc_fuente) row.tc_fuente = "manual";
+    if (!patch.historial_push) {
+      patch.historial_push = `${now} · TC CLP→ARS ${row.tc_clp_ars} · ${prev} → ${row.monto} ARS`;
+    }
+  }
+
   if (patch.historial_push) {
     row.historial = [...(row.historial ?? []), patch.historial_push];
   }
