@@ -33,12 +33,16 @@ import * as master from "../db/master-data-store.mjs";
 import {
   procesarGastoWhatsApp,
   asignarViajeRendicionWhatsApp,
+  procesarPendientesRendicionWhatsApp,
   telefonoEsChoferRegistrado,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
 import {
   pareceRendicionGasto,
   parseAsignacionViaje,
+  parseForzarDuplicado,
+  pareceAfirmacionCorta,
+  pareceNegacionCorta,
   mensajeCierreComprobantesRendicion,
 } from "../../../lib/rendicion-wa.mjs";
 import { clasificarDocumentoAndreu } from "../../../lib/documento-andreu.mjs";
@@ -540,7 +544,31 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ flow: "rendicion_comprobantes_cerrado", message: msg, received: true });
       }
 
-      // Asociar gastos a viaje anterior: "viaje 79042"
+      // Confirmación sí/no de viaje + forzar duplicado con motivo
+      if (
+        texto &&
+        (pareceAfirmacionCorta(texto) ||
+          pareceNegacionCorta(texto) ||
+          parseForzarDuplicado(texto) ||
+          convStore.getPendienteConfirmViajeRendicion(convEarly) ||
+          convStore.getPendienteDuplicadoRendicion(convEarly))
+      ) {
+        try {
+          const pend = await procesarPendientesRendicionWhatsApp({
+            telefono: ev.from,
+            texto,
+            nombre: ev.nombre,
+            log: request.log,
+          });
+          if (pend) {
+            return respuestaWebhook({ ...pend, received: true });
+          }
+        } catch (err) {
+          request.log.warn({ err: err.message, from: ev.from }, "rendicion pendientes error");
+        }
+      }
+
+      // Asociar gastos a viaje anterior: "viaje 79042" → pide confirmación sí/no
       if (parseAsignacionViaje(texto)) {
         try {
           const asig = await asignarViajeRendicionWhatsApp({

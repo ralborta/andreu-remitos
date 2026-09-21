@@ -6,8 +6,14 @@ import {
   mensajeRechazoNoComprobante,
   mensajeDuplicadoGasto,
   mensajeViajeAsignado,
+  mensajeConfirmarAsociacionViaje,
+  mensajeViajeAsociacionCancelada,
   pareceRendicionGasto,
   parseAsignacionViaje,
+  parseForzarDuplicado,
+  motivoForzarDuplicadoValido,
+  pareceAfirmacionCorta,
+  pareceNegacionCorta,
   aplicarReglaCombustibleCtaCte,
   esComprobanteGastoAceptable,
 } from "../../../lib/rendicion-wa.mjs";
@@ -50,8 +56,178 @@ async function enviar(phone, mensaje, meta = {}) {
   );
 }
 
+async function crearGastoDesdeInterp({
+  phone,
+  nombre,
+  chofer,
+  interp,
+  nroViaje,
+  hojaId,
+  t,
+  ocrTexto,
+  imagenPersistida,
+  extraNota = null,
+}) {
+  const notaParts = [
+    t || null,
+    interp.combustible_cta_cte ? "cta_cte" : null,
+    interp.pago_chofer ? "pago_chofer" : null,
+    extraNota,
+  ].filter(Boolean);
+
+  return rendicionStore.crearGasto({
+    telefono: phone,
+    chofer_nombre: nombre || chofer?.nombre || null,
+    categoria: interp.categoria,
+    monto: interp.monto,
+    proveedor: interp.proveedor,
+    fecha_comprobante: interp.fecha_comprobante,
+    descripcion: interp.descripcion,
+    punto_venta: interp.punto_venta,
+    nro_t: interp.nro_t,
+    iva_pct: interp.iva_pct,
+    rae: interp.rae,
+    monto_rae: interp.monto_rae,
+    cuit_proveedor: interp.cuit_proveedor,
+    viaje_documento: interp.viaje_documento,
+    nro_viaje_delfos: nroViaje,
+    remito_ref: hojaId ? `hoja:${hojaId}` : null,
+    nota_chofer: notaParts.length ? notaParts.join(" · ") : null,
+    texto_ocr: ocrTexto || interp.texto_ocr || null,
+    imagen_url: imagenPersistida || null,
+    estado: "pendiente_aprobacion",
+  });
+}
+
 /**
- * Activa viaje Delfos para rendición (comando "viaje NNNNN").
+ * Respuestas cortas: confirmar viaje (sí/no) o forzar duplicado con motivo.
+ */
+export async function procesarPendientesRendicionWhatsApp({
+  telefono,
+  texto,
+  nombre,
+  log,
+} = {}) {
+  const phone = sanitizePhone(telefono);
+  const t = String(texto ?? "").trim();
+  if (!phone || !t) return null;
+
+  const chofer = await resolverChoferRendicion(phone);
+  if (!chofer) return null;
+
+  const conv = await convStore.getConversacion(phone);
+
+  // 1) Confirmar / cancelar asociación a viaje
+  const pendViaje = convStore.getPendienteConfirmViajeRendicion(conv);
+  if (pendViaje) {
+    if (pareceAfirmacionCorta(t)) {
+      await convStore.setEsperandoComprobantesRendicion(phone, true, {
+        nroViajeDelfos: pendViaje.nroViajeDelfos,
+        hojaRutaId: pendViaje.hojaRutaId || null,
+      });
+      await convStore.clearPendienteConfirmViajeRendicion(phone);
+      const msg = mensajeViajeAsignado(pendViaje.nroViajeDelfos, {
+        hojaCodigo: pendViaje.hojaCodigo,
+      });
+      await enviar(phone, msg, { nombre });
+      log?.info?.(
+        { nro: pendViaje.nroViajeDelfos, hojaId: pendViaje.hojaRutaId },
+        "Rendición: viaje confirmado por chofer",
+      );
+      return {
+        flow: "rendicion_viaje_confirmado",
+        nro_viaje_delfos: pendViaje.nroViajeDelfos,
+        mensaje: msg,
+        message: msg,
+      };
+    }
+    if (pareceNegacionCorta(t)) {
+      await convStore.clearPendienteConfirmViajeRendicion(phone);
+      const msg = mensajeViajeAsociacionCancelada();
+      await enviar(phone, msg, { nombre });
+      return {
+        flow: "rendicion_viaje_cancelado",
+        mensaje: msg,
+        message: msg,
+      };
+    }
+    // Si escribió otra cosa mientras espera sí/no, repreguntar
+    if (!parseAsignacionViaje(t) && !parseForzarDuplicado(t)) {
+      const msg = mensajeConfirmarAsociacionViaje({
+        nroViaje: pendViaje.nroViajeDelfos,
+        hojaCodigo: pendViaje.hojaCodigo,
+      });
+      await enviar(phone, msg, { nombre });
+      return {
+        flow: "rendicion_viaje_repreguntar",
+        mensaje: msg,
+        message: msg,
+      };
+    }
+  }
+
+  // 2) Forzar duplicado excepcional
+  const forzar = parseForzarDuplicado(t);
+  if (forzar) {
+    const draft = convStore.getPendienteDuplicadoRendicion(conv);
+    if (!draft?.payload) {
+      const msg =
+        `No hay un ticket duplicado pendiente de forzar.\n\n` +
+        `Si mandás de nuevo un ticket repetido, te voy a indicar cómo forzar con motivo.`;
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_forzar_sin_pendiente", mensaje: msg, message: msg };
+    }
+    if (!motivoForzarDuplicadoValido(forzar.motivo)) {
+      const msg =
+        `Para forzar el duplicado necesitás un *motivo* (mín. autorización).\n\n` +
+        `Ej: *forzar duplicado autorizado mesa*`;
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_forzar_sin_motivo", mensaje: msg, message: msg };
+    }
+
+    const payload = draft.payload;
+    const gasto = await rendicionStore.crearGasto({
+      ...payload,
+      nota_chofer: [
+        payload.nota_chofer,
+        `forzar_duplicado · ${forzar.motivo}`,
+        draft.dup_codigo ? `orig ${draft.dup_codigo}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      estado: "pendiente_aprobacion",
+    });
+    await convStore.clearPendienteDuplicadoRendicion(phone);
+    await convStore.setEsperandoComprobantesRendicion(phone, true, {
+      nroViajeDelfos: payload.nro_viaje_delfos || null,
+      hojaRutaId: payload.remito_ref?.startsWith("hoja:")
+        ? payload.remito_ref.slice(5)
+        : undefined,
+    });
+
+    const mensaje =
+      `⚠️ Duplicado *forzado* (excepción).\n` +
+      `Motivo: ${forzar.motivo}\n\n` +
+      `Código *${gasto.codigo}* · queda *pendiente de aprobación*.\n\n` +
+      `Si tenés *otro ticket*, mandá la foto. Si no, escribí *listo*.`;
+    await enviar(phone, mensaje, { nombre, gasto_id: gasto.id });
+    log?.info?.(
+      { id: gasto.id, codigo: gasto.codigo, motivo: forzar.motivo, orig: draft.dup_codigo },
+      "Rendición: duplicado forzado con motivo",
+    );
+    return {
+      flow: "rendicion_duplicado_forzado",
+      gasto,
+      mensaje,
+      message: mensaje,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Propone asociar gastos a un viaje Delfos (pide sí/no antes de activar).
  */
 export async function asignarViajeRendicionWhatsApp({
   telefono,
@@ -74,19 +250,23 @@ export async function asignarViajeRendicionWhatsApp({
     telefono: phone,
     nroViajeDelfos: nro,
   });
-  await convStore.setEsperandoComprobantesRendicion(phone, true, {
+  await convStore.setPendienteConfirmViajeRendicion(phone, {
     nroViajeDelfos: nro,
     hojaRutaId: hoja?.id || null,
+    hojaCodigo: hoja?.codigo || null,
   });
 
-  const msg = mensajeViajeAsignado(nro);
+  const msg = mensajeConfirmarAsociacionViaje({
+    nroViaje: nro,
+    hojaCodigo: hoja?.codigo || null,
+  });
   await enviar(phone, msg, { nombre });
   log?.info?.(
     { nro, hojaId: hoja?.id || null, foundHoja: Boolean(hoja) },
-    "Rendición: viaje Delfos asignado por comando",
+    "Rendición: pedida confirmación de viaje",
   );
   return {
-    flow: "rendicion_viaje_asignado",
+    flow: "rendicion_viaje_pedir_confirmacion",
     nro_viaje_delfos: nro,
     hoja_id: hoja?.id || null,
     mensaje: msg,
@@ -145,7 +325,6 @@ export async function procesarGastoWhatsApp({
   }
 
   // Sin foto del comprobante NO se registra el gasto (aunque diga "peaje"/"nafta").
-  // Bug real: "ahora tengo un peaje para rendir" → pendiente de aprobación sin pedir foto.
   const tieneFoto = !!(imageBuffer?.length || imagenPersistida);
   if (!tieneFoto) {
     await convStore.setEsperandoComprobantesRendicion(phone, true);
@@ -189,7 +368,6 @@ export async function procesarGastoWhatsApp({
   }
 
   // Nº viaje SOLO de la hoja/sesión activa (hasta "listo").
-  // NO reenganchar la última hoja sola — eso rompía el cierre LISTO.
   const conv = await convStore.getConversacion(phone);
   const nroViaje = convStore.nroViajeDelfosActivo(conv);
   const hojaId = conv?.hoja_ruta_activa_id || null;
@@ -210,11 +388,41 @@ export async function procesarGastoWhatsApp({
     proveedor: interp.proveedor,
   });
   if (dup) {
+    const notaParts = [
+      t || null,
+      interp.combustible_cta_cte ? "cta_cte" : null,
+      interp.pago_chofer ? "pago_chofer" : null,
+    ].filter(Boolean);
+    await convStore.setPendienteDuplicadoRendicion(phone, {
+      dup_codigo: dup.codigo,
+      dup_id: dup.id,
+      payload: {
+        telefono: phone,
+        chofer_nombre: nombre || chofer?.nombre || null,
+        categoria: interp.categoria,
+        monto: interp.monto,
+        proveedor: interp.proveedor,
+        fecha_comprobante: interp.fecha_comprobante,
+        descripcion: interp.descripcion,
+        punto_venta: interp.punto_venta,
+        nro_t: interp.nro_t,
+        iva_pct: interp.iva_pct,
+        rae: interp.rae,
+        monto_rae: interp.monto_rae,
+        cuit_proveedor: interp.cuit_proveedor,
+        viaje_documento: interp.viaje_documento,
+        nro_viaje_delfos: nroViaje,
+        remito_ref: hojaId ? `hoja:${hojaId}` : null,
+        nota_chofer: notaParts.length ? notaParts.join(" · ") : null,
+        texto_ocr: ocrTexto || interp.texto_ocr || null,
+        imagen_url: imagenPersistida || null,
+      },
+    });
     const msg = mensajeDuplicadoGasto(dup);
     await enviar(phone, msg, { nombre, gasto_id: dup.id });
     log?.info?.(
       { dup: dup.codigo, nro_t: interp.nro_t, monto: interp.monto },
-      "Rendición: comprobante duplicado bloqueado",
+      "Rendición: comprobante duplicado bloqueado (pendiente forzar)",
     );
     return {
       flow: "rendicion_duplicado",
@@ -224,39 +432,22 @@ export async function procesarGastoWhatsApp({
     };
   }
 
-  // Seguir aceptando más boletas de a una (solo con viaje activo)
   await convStore.setEsperandoComprobantesRendicion(phone, true, {
     nroViajeDelfos: nroViaje,
     hojaRutaId: hojaId,
   });
+  await convStore.clearPendienteDuplicadoRendicion(phone);
 
-  const notaParts = [
-    t || null,
-    interp.combustible_cta_cte ? "cta_cte" : null,
-    interp.pago_chofer ? "pago_chofer" : null,
-  ].filter(Boolean);
-
-  const gasto = await rendicionStore.crearGasto({
-    telefono: phone,
-    chofer_nombre: nombre || chofer?.nombre || null,
-    categoria: interp.categoria,
-    monto: interp.monto,
-    proveedor: interp.proveedor,
-    fecha_comprobante: interp.fecha_comprobante,
-    descripcion: interp.descripcion,
-    punto_venta: interp.punto_venta,
-    nro_t: interp.nro_t,
-    iva_pct: interp.iva_pct,
-    rae: interp.rae,
-    monto_rae: interp.monto_rae,
-    cuit_proveedor: interp.cuit_proveedor,
-    viaje_documento: interp.viaje_documento,
-    nro_viaje_delfos: nroViaje,
-    remito_ref: hojaId ? `hoja:${hojaId}` : null,
-    nota_chofer: notaParts.length ? notaParts.join(" · ") : null,
-    texto_ocr: ocrTexto || interp.texto_ocr || null,
-    imagen_url: imagenPersistida || null,
-    estado: "pendiente_aprobacion",
+  const gasto = await crearGastoDesdeInterp({
+    phone,
+    nombre,
+    chofer,
+    interp,
+    nroViaje,
+    hojaId,
+    t,
+    ocrTexto,
+    imagenPersistida,
   });
 
   const mensaje = mensajeConfirmacionGasto(gasto, interp);

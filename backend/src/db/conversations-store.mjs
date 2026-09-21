@@ -296,7 +296,10 @@ export async function setEsperandoComprobantesRendicion(
 }
 
 export async function clearEsperandoComprobantesRendicion(telefono) {
-  return setEsperandoComprobantesRendicion(telefono, false);
+  const conv = await setEsperandoComprobantesRendicion(telefono, false);
+  await clearPendienteConfirmViajeRendicion(telefono);
+  await clearPendienteDuplicadoRendicion(telefono);
+  return conv;
 }
 
 export function convEsperaComprobantesRendicion(conv) {
@@ -313,4 +316,65 @@ export function pareceCierreComprobantesRendicion(texto) {
   return /^(listo|ya est[aá]|no hay m[aá]s|termine|termin[eé]|fin|nada m[aá]s|eso es todo)\b/i.test(
     t,
   );
+}
+
+/** Pendiente de confirmar asociación a viaje/hoja (sí/no). */
+export async function setPendienteConfirmViajeRendicion(
+  telefono,
+  pendiente = null,
+) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (pendiente?.nroViajeDelfos) {
+    conv.rendicion_viaje_pendiente_confirm = {
+      nroViajeDelfos: String(pendiente.nroViajeDelfos).trim(),
+      hojaRutaId: pendiente.hojaRutaId ? String(pendiente.hojaRutaId) : null,
+      hojaCodigo: pendiente.hojaCodigo ? String(pendiente.hojaCodigo) : null,
+      at: new Date().toISOString(),
+    };
+  } else {
+    delete conv.rendicion_viaje_pendiente_confirm;
+  }
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function clearPendienteConfirmViajeRendicion(telefono) {
+  return setPendienteConfirmViajeRendicion(telefono, null);
+}
+
+export function getPendienteConfirmViajeRendicion(conv) {
+  const p = conv?.rendicion_viaje_pendiente_confirm;
+  if (!p?.nroViajeDelfos) return null;
+  return p;
+}
+
+/** Borrador de gasto duplicado a forzar con motivo. */
+export async function setPendienteDuplicadoRendicion(telefono, draft = null) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (draft && typeof draft === "object") {
+    conv.rendicion_dup_pendiente = {
+      ...draft,
+      at: new Date().toISOString(),
+    };
+  } else {
+    delete conv.rendicion_dup_pendiente;
+  }
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function clearPendienteDuplicadoRendicion(telefono) {
+  return setPendienteDuplicadoRendicion(telefono, null);
+}
+
+export function getPendienteDuplicadoRendicion(conv) {
+  const d = conv?.rendicion_dup_pendiente;
+  if (!d || typeof d !== "object") return null;
+  return d;
 }
