@@ -2,7 +2,14 @@ import {
   interpretarGastoWhatsApp,
   mensajeConfirmacionGasto,
   mensajePedirFotoComprobante,
+  mensajePedirViajeOHoja,
+  mensajeRechazoNoComprobante,
+  mensajeDuplicadoGasto,
+  mensajeViajeAsignado,
   pareceRendicionGasto,
+  parseAsignacionViaje,
+  aplicarReglaCombustibleCtaCte,
+  esComprobanteGastoAceptable,
 } from "../../../lib/rendicion-wa.mjs";
 import * as rendicionStore from "../db/rendicion-store.mjs";
 import * as hojaStore from "../db/hoja-ruta-store.mjs";
@@ -41,6 +48,50 @@ async function enviar(phone, mensaje, meta = {}) {
     { texto: mensaje, tipo: "text", gasto_id: meta.gasto_id ?? null },
     { dir: "out", from: "bot", agente: "rendicion", nombre: meta.nombre ?? null },
   );
+}
+
+/**
+ * Activa viaje Delfos para rendición (comando "viaje NNNNN").
+ */
+export async function asignarViajeRendicionWhatsApp({
+  telefono,
+  texto,
+  nombre,
+  log,
+} = {}) {
+  const phone = sanitizePhone(telefono);
+  const nro = parseAsignacionViaje(texto);
+  if (!phone || !nro) return null;
+
+  const chofer = await resolverChoferRendicion(phone);
+  if (!chofer) {
+    const msg = mensajeRendicionSoloChoferes();
+    await enviar(phone, msg, { nombre });
+    return { flow: "rendicion_solo_choferes", mensaje: msg, message: msg, bloqueado: true };
+  }
+
+  const hoja = await hojaStore.findHojaPorNroViaje({
+    telefono: phone,
+    nroViajeDelfos: nro,
+  });
+  await convStore.setEsperandoComprobantesRendicion(phone, true, {
+    nroViajeDelfos: nro,
+    hojaRutaId: hoja?.id || null,
+  });
+
+  const msg = mensajeViajeAsignado(nro);
+  await enviar(phone, msg, { nombre });
+  log?.info?.(
+    { nro, hojaId: hoja?.id || null, foundHoja: Boolean(hoja) },
+    "Rendición: viaje Delfos asignado por comando",
+  );
+  return {
+    flow: "rendicion_viaje_asignado",
+    nro_viaje_delfos: nro,
+    hoja_id: hoja?.id || null,
+    mensaje: msg,
+    message: msg,
+  };
 }
 
 /**
@@ -103,9 +154,6 @@ export async function procesarGastoWhatsApp({
     return { flow: "rendicion_pedir_foto", mensaje: msg, message: msg };
   }
 
-  // Seguir aceptando más boletas de a una
-  await convStore.setEsperandoComprobantesRendicion(phone, true);
-
   let ocrTexto = null;
   if (imageBuffer?.length) {
     try {
@@ -121,29 +169,72 @@ export async function procesarGastoWhatsApp({
     }
   }
 
-  const interp = await interpretarGastoWhatsApp({
+  let interp = await interpretarGastoWhatsApp({
     texto: t,
     imageBuffer,
     mime,
     ocrTexto,
     log,
   });
+  interp = aplicarReglaCombustibleCtaCte(interp, t);
 
-  // Nº viaje de la hoja activa (hasta "listo")
-  const conv = await convStore.getConversacion(phone);
-  let nroViaje = convStore.nroViajeDelfosActivo(conv);
-  let hojaId = conv?.hoja_ruta_activa_id || null;
-  if (!nroViaje) {
-    const hojas = await hojaStore.sugerirDesdeHojasRuta({ telefono: phone, limit: 1 });
-    if (hojas[0]?.nroViajeDelfos) {
-      nroViaje = hojas[0].nroViajeDelfos;
-      hojaId = hojas[0].hojaId;
-      await convStore.setEsperandoComprobantesRendicion(phone, true, {
-        nroViajeDelfos: nroViaje,
-        hojaRutaId: hojaId,
-      });
-    }
+  if (!esComprobanteGastoAceptable({ ocrTexto, interp })) {
+    const msg = mensajeRechazoNoComprobante();
+    await enviar(phone, msg, { nombre });
+    log?.info?.(
+      { categoria: interp.categoria, chars: ocrTexto?.length || 0 },
+      "Rendición: foto rechazada (no parece comprobante)",
+    );
+    return { flow: "rendicion_rechazo_no_comprobante", mensaje: msg, message: msg };
   }
+
+  // Nº viaje SOLO de la hoja/sesión activa (hasta "listo").
+  // NO reenganchar la última hoja sola — eso rompía el cierre LISTO.
+  const conv = await convStore.getConversacion(phone);
+  const nroViaje = convStore.nroViajeDelfosActivo(conv);
+  const hojaId = conv?.hoja_ruta_activa_id || null;
+  if (!nroViaje) {
+    const msg = mensajePedirViajeOHoja();
+    await enviar(phone, msg, { nombre });
+    log?.info?.({ phone }, "Rendición: sin viaje activo tras LISTO / sin hoja");
+    return { flow: "rendicion_pedir_viaje", mensaje: msg, message: msg };
+  }
+
+  const dup = await rendicionStore.buscarDuplicadoGasto({
+    telefono: phone,
+    nro_viaje_delfos: nroViaje,
+    nro_t: interp.nro_t,
+    cuit_proveedor: interp.cuit_proveedor,
+    monto: interp.monto,
+    fecha_comprobante: interp.fecha_comprobante,
+    proveedor: interp.proveedor,
+  });
+  if (dup) {
+    const msg = mensajeDuplicadoGasto(dup);
+    await enviar(phone, msg, { nombre, gasto_id: dup.id });
+    log?.info?.(
+      { dup: dup.codigo, nro_t: interp.nro_t, monto: interp.monto },
+      "Rendición: comprobante duplicado bloqueado",
+    );
+    return {
+      flow: "rendicion_duplicado",
+      gasto: dup,
+      mensaje: msg,
+      message: msg,
+    };
+  }
+
+  // Seguir aceptando más boletas de a una (solo con viaje activo)
+  await convStore.setEsperandoComprobantesRendicion(phone, true, {
+    nroViajeDelfos: nroViaje,
+    hojaRutaId: hojaId,
+  });
+
+  const notaParts = [
+    t || null,
+    interp.combustible_cta_cte ? "cta_cte" : null,
+    interp.pago_chofer ? "pago_chofer" : null,
+  ].filter(Boolean);
 
   const gasto = await rendicionStore.crearGasto({
     telefono: phone,
@@ -162,7 +253,7 @@ export async function procesarGastoWhatsApp({
     viaje_documento: interp.viaje_documento,
     nro_viaje_delfos: nroViaje,
     remito_ref: hojaId ? `hoja:${hojaId}` : null,
-    nota_chofer: t || null,
+    nota_chofer: notaParts.length ? notaParts.join(" · ") : null,
     texto_ocr: ocrTexto || interp.texto_ocr || null,
     imagen_url: imagenPersistida || null,
     estado: "pendiente_aprobacion",
@@ -179,6 +270,7 @@ export async function procesarGastoWhatsApp({
       monto: gasto.monto,
       nro_viaje_delfos: nroViaje,
       fuente: interp.fuente,
+      combustible_cta_cte: Boolean(interp.combustible_cta_cte),
     },
     "Rendición: gasto pendiente aprobación",
   );

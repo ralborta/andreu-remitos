@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-09 fix-cmd-server
+# cache-bust 2026-09-21 rendicion-listo-dup-combustible
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/

@@ -32,10 +32,15 @@ import * as destinosStore from "../db/destinos-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 import {
   procesarGastoWhatsApp,
+  asignarViajeRendicionWhatsApp,
   telefonoEsChoferRegistrado,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
-import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
+import {
+  pareceRendicionGasto,
+  parseAsignacionViaje,
+  mensajeCierreComprobantesRendicion,
+} from "../../../lib/rendicion-wa.mjs";
 import { clasificarDocumentoAndreu } from "../../../lib/documento-andreu.mjs";
 import {
   procesarHojaRutaWhatsApp,
@@ -523,18 +528,33 @@ export default async function webhooksRoutes(fastify) {
         return respuestaWebhook({ ...viajeOut, received: true });
       }
 
-      // Cierre de carga de boletas
+      // Cierre de carga de boletas (LISTO = cierre real; no reengancha última hoja)
       if (
         convEarly &&
         convStore.convEsperaComprobantesRendicion(convEarly) &&
         convStore.pareceCierreComprobantesRendicion(texto)
       ) {
         await convStore.clearEsperandoComprobantesRendicion(ev.from);
-        const msg =
-          `Listo ✅ Dejamos de esperar tickets.\n` +
-          `Los que mandaste quedan en *Rendición* para la mesa.`;
+        const msg = mensajeCierreComprobantesRendicion();
         await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
         return respuestaWebhook({ flow: "rendicion_comprobantes_cerrado", message: msg, received: true });
+      }
+
+      // Asociar gastos a viaje anterior: "viaje 79042"
+      if (parseAsignacionViaje(texto)) {
+        try {
+          const asig = await asignarViajeRendicionWhatsApp({
+            telefono: ev.from,
+            texto,
+            nombre: ev.nombre,
+            log: request.log,
+          });
+          if (asig) {
+            return respuestaWebhook({ ...asig, received: true });
+          }
+        } catch (err) {
+          request.log.warn({ err: err.message, from: ev.from }, "rendicion asignar viaje error");
+        }
       }
 
       // Hoja de ruta (Andreu) — antes que peajes sueltos

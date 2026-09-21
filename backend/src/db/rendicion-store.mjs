@@ -119,6 +119,68 @@ export async function getGasto(id) {
   return readAll().find((r) => r.id === id) ?? null;
 }
 
+/** Clave de dedupe: nº ticket + (CUIT|proveedor) + monto + fecha. */
+export function claveDuplicadoGasto(g = {}) {
+  const nro = String(g.nro_t || "").replace(/\D/g, "");
+  const cuit = String(g.cuit_proveedor || "").replace(/\D/g, "");
+  const monto =
+    g.monto != null && Number.isFinite(Number(g.monto))
+      ? Number(g.monto).toFixed(2)
+      : "";
+  const fecha = String(g.fecha_comprobante || "").slice(0, 10);
+  const proveedor = String(g.proveedor || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+  if (nro && (cuit.length >= 8 || proveedor) && monto !== "") {
+    return `nro:${nro}|id:${cuit || proveedor}|m:${monto}|f:${fecha}`;
+  }
+  if (nro && monto !== "") return `nro:${nro}|m:${monto}|f:${fecha}`;
+  if (cuit.length >= 8 && monto !== "" && fecha) {
+    return `cuit:${cuit}|m:${monto}|f:${fecha}`;
+  }
+  return null;
+}
+
+/**
+ * Busca gasto ya cargado (mismo chofer; prioriza mismo viaje Delfos).
+ * No considera rechazados.
+ */
+export async function buscarDuplicadoGasto({
+  telefono,
+  nro_viaje_delfos,
+  nro_t,
+  cuit_proveedor,
+  monto,
+  fecha_comprobante,
+  proveedor,
+} = {}) {
+  const clave = claveDuplicadoGasto({
+    nro_t,
+    cuit_proveedor,
+    monto,
+    fecha_comprobante,
+    proveedor,
+  });
+  if (!clave) return null;
+  const phone = sanitizePhone(telefono);
+  const nroViaje = normStr(nro_viaje_delfos);
+  const rows = readAll().filter((r) => {
+    if (r.estado === "rechazado") return false;
+    if (phone && r.telefono !== phone) return false;
+    if (
+      nroViaje &&
+      r.nro_viaje_delfos &&
+      String(r.nro_viaje_delfos).trim() !== nroViaje
+    ) {
+      return false;
+    }
+    return claveDuplicadoGasto(r) === clave;
+  });
+  return rows[0] || null;
+}
+
 export async function crearGasto(body = {}) {
   const rows = readAll();
   const now = new Date().toISOString();

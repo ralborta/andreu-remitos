@@ -103,3 +103,14 @@ export async function sugerirDesdeHojasRuta({ telefono, limit = 5 } = {}) {
     fuente: "hoja_ruta",
   }));
 }
+
+/** Busca hoja del chofer por Nº viaje Delfos (para comando viaje NNNNN). */
+export async function findHojaPorNroViaje({ telefono, nroViajeDelfos } = {}) {
+  const phone = sanitizePhone(telefono);
+  const nro = String(nroViajeDelfos || "").trim();
+  if (!phone || !nro) return null;
+  const rows = await listHojasRuta({ limit: 80, telefono: phone });
+  return (
+    rows.find((r) => String(r.nro_viaje_delfos || "").trim() === nro) || null
+  );
+}
