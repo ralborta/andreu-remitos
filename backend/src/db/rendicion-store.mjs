@@ -334,14 +334,22 @@ export async function actualizarGasto(id, patch = {}) {
   // Recalcular ARS si cambió TC o monto origen (ticket CLP)
   const tcChanged = patch.tc_clp_ars != null;
   const origenChanged = patch.monto_origen != null;
+  const marcarClp =
+    patch.moneda_origen !== undefined
+      ? String(patch.moneda_origen || "").toUpperCase() === "CLP"
+      : row.moneda_origen === "CLP";
+  if (marcarClp && patch.moneda_origen !== undefined) {
+    row.moneda_origen = "CLP";
+  }
   if (
-    (tcChanged || origenChanged) &&
-    row.moneda_origen === "CLP" &&
+    (tcChanged || origenChanged || marcarClp) &&
+    (row.moneda_origen === "CLP" || marcarClp) &&
     row.monto_origen != null &&
     row.tc_clp_ars != null &&
     Number(row.tc_clp_ars) > 0
   ) {
     const prev = row.monto;
+    row.moneda_origen = "CLP";
     row.monto = Math.round(Number(row.monto_origen) * Number(row.tc_clp_ars) * 100) / 100;
     row.moneda = "ARS";
     if (patch.tc_fecha !== undefined) row.tc_fecha = patch.tc_fecha || null;

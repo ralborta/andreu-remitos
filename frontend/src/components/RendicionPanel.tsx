@@ -11,9 +11,11 @@ import {
   listViajesAnticipoRendicion,
   metaRendicion,
   patchGastoRendicion,
+  cotizacionClpRendicion,
   rendicionExportUrl,
   resumenRendicion,
   sugerenciasViajeRendicion,
+  type CotizacionClp,
   type GastoRendicion,
   type RendicionRules,
   type ResumenRendicion,
@@ -171,6 +173,7 @@ function GastoDetalleModal({
   onVerFoto,
   onDecidir,
   onActualizarTc,
+  tcVigente,
 }: {
   caso: GastoRendicion;
   busyId: string | null;
@@ -183,22 +186,37 @@ function GastoDetalleModal({
   onClose: () => void;
   onVerFoto: () => void;
   onDecidir: (estado: "aprobado" | "rechazado") => void;
-  onActualizarTc: (tc: number) => Promise<void>;
+  onActualizarTc: (tc: number, montoClp?: number) => Promise<void>;
+  tcVigente?: number | null;
 }) {
   const requireViaje = Boolean(rules?.requireNroViajeDelfosOnApprove);
   const puedeAprobar =
     !requireViaje || Boolean(nroViajeDraft.trim() || caso.nroViajeDelfos);
   const esClp = caso.monedaOrigen === "CLP" && caso.montoOrigen != null;
-  const [tcDraft, setTcDraft] = useState(
-    caso.tcClpArs != null ? String(caso.tcClpArs) : "",
-  );
+  const tcInicial =
+    caso.tcClpArs != null
+      ? String(caso.tcClpArs)
+      : tcVigente != null
+        ? String(tcVigente)
+        : "";
+  const [tcDraft, setTcDraft] = useState(tcInicial);
   const [tcBusy, setTcBusy] = useState(false);
   const [tcError, setTcError] = useState<string | null>(null);
+  const [montoClpDraft, setMontoClpDraft] = useState(
+    caso.montoOrigen != null ? String(caso.montoOrigen) : "",
+  );
 
   useEffect(() => {
-    setTcDraft(caso.tcClpArs != null ? String(caso.tcClpArs) : "");
+    setTcDraft(
+      caso.tcClpArs != null
+        ? String(caso.tcClpArs)
+        : tcVigente != null
+          ? String(tcVigente)
+          : "",
+    );
+    setMontoClpDraft(caso.montoOrigen != null ? String(caso.montoOrigen) : "");
     setTcError(null);
-  }, [caso.id, caso.tcClpArs]);
+  }, [caso.id, caso.tcClpArs, caso.montoOrigen, tcVigente]);
 
   const tcNum = Number(String(tcDraft).replace(",", "."));
   const tcValido = Number.isFinite(tcNum) && tcNum > 0;
@@ -300,7 +318,7 @@ function GastoDetalleModal({
             )}
           </div>
 
-          {esClp && (
+          {esClp ? (
             <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
                 Conversión CLP → ARS
@@ -354,6 +372,82 @@ function GastoDetalleModal({
                 >
                   {tcBusy ? "Guardando…" : "Aplicar cotización"}
                 </button>
+              )}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                Tipo de cambio CLP → ARS
+              </p>
+              <p className="mt-1 text-sm text-white">
+                {tcVigente != null
+                  ? `Vigente: 1 CLP = ${Number(tcVigente).toLocaleString("es-AR", {
+                      maximumFractionDigits: 4,
+                    })} ARS`
+                  : "Sin cotización cargada (mirá el banner de arriba)"}
+              </p>
+              {caso.estado === "pendiente_aprobacion" && (
+                <>
+                  <p className="mt-2 text-xs text-[var(--text-faint)]">
+                    Si este ticket es chileno, cargá el monto en CLP y aplicá la cotización.
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                      Monto CLP
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={montoClpDraft}
+                        onChange={(e) => setMontoClpDraft(e.target.value)}
+                        disabled={tcBusy || busyId === caso.id}
+                        className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-sky-400/60"
+                      />
+                    </label>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                      Cotización
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        value={tcDraft}
+                        onChange={(e) => setTcDraft(e.target.value)}
+                        disabled={tcBusy || busyId === caso.id}
+                        className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-sky-400/60"
+                      />
+                    </label>
+                  </div>
+                  {tcError && <p className="mt-1 text-xs text-rose-400">{tcError}</p>}
+                  <button
+                    type="button"
+                    disabled={tcBusy || busyId === caso.id}
+                    onClick={() => {
+                      void (async () => {
+                        const clp = Number(String(montoClpDraft).replace(",", "."));
+                        if (!Number.isFinite(clp) || clp <= 0 || !tcValido) {
+                          setTcError("Ingresá monto CLP y cotización válidos");
+                          return;
+                        }
+                        setTcBusy(true);
+                        setTcError(null);
+                        try {
+                          await onActualizarTc(tcNum, clp);
+                        } catch (err) {
+                          setTcError(
+                            err instanceof Error
+                              ? err.message
+                              : "No pude convertir a ARS",
+                          );
+                        } finally {
+                          setTcBusy(false);
+                        }
+                      })();
+                    }}
+                    className="mt-3 rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+                  >
+                    {tcBusy ? "Guardando…" : "Marcar CLP y convertir"}
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -501,6 +595,10 @@ export function RendicionPanel() {
   const [nroViajeDraft, setNroViajeDraft] = useState("");
   const [sugerencias, setSugerencias] = useState<SugerenciaViajeRemito[]>([]);
   const [sugerenciasNota, setSugerenciasNota] = useState<string | null>(null);
+  const [cotiz, setCotiz] = useState<CotizacionClp | null>(null);
+  const [cotizDraft, setCotizDraft] = useState("");
+  const [cotizBusy, setCotizBusy] = useState(false);
+  const [cotizError, setCotizError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => setQ(qInput.trim()), 300);
@@ -512,6 +610,26 @@ export function RendicionPanel() {
       .then((m) => setRules(m.rules))
       .catch(() => setRules(null));
   }, []);
+
+  const loadCotiz = useCallback(async (force = false) => {
+    setCotizBusy(true);
+    setCotizError(null);
+    try {
+      const c = await cotizacionClpRendicion(force);
+      setCotiz(c);
+      setCotizDraft(String(c.valor));
+    } catch (err) {
+      setCotizError(
+        err instanceof Error ? err.message : "No pude cargar cotización CLP",
+      );
+    } finally {
+      setCotizBusy(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadCotiz(false);
+  }, [loadCotiz]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -721,12 +839,17 @@ export function RendicionPanel() {
     }
   }
 
-  async function actualizarTc(tc: number) {
+  async function actualizarTc(tc: number, montoClp?: number) {
     if (!detalle) return;
+    const origen =
+      montoClp != null && Number.isFinite(montoClp)
+        ? montoClp
+        : detalle.montoOrigen ?? undefined;
     const updated = await patchGastoRendicion(detalle.id, {
       tc_clp_ars: tc,
       tc_fuente: "manual",
-      monto_origen: detalle.montoOrigen ?? undefined,
+      moneda_origen: "CLP",
+      monto_origen: origen,
     });
     setDetalle(updated);
     setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
@@ -801,6 +924,94 @@ export function RendicionPanel() {
         {kpis.map((k) => (
           <KpiCard key={k.label} label={k.label} value={k.value} hint={k.hint} />
         ))}
+      </div>
+
+      <div className="rounded-xl border border-sky-500/35 bg-sky-500/10 px-4 py-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-[200px] flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+              Tipo de cambio CLP → ARS
+            </p>
+            <p className="mt-1 text-sm text-white">
+              {cotiz
+                ? `1 peso chileno = ${Number(cotiz.valor).toLocaleString("es-AR", {
+                    maximumFractionDigits: 4,
+                  })} ARS`
+                : cotizBusy
+                  ? "Cargando cotización…"
+                  : "Sin cotización"}
+            </p>
+            <p className="mt-0.5 text-xs text-[var(--text-faint)]">
+              {cotiz?.fuente ? `Fuente: ${cotiz.fuente}` : "DolarAPI"}
+              {cotiz?.fecha ? ` · ${fmtFecha(cotiz.fecha)}` : ""}
+              {" · "}Editable por gasto en el detalle si el ticket es CLP
+            </p>
+            {cotizError && (
+              <p className="mt-1 text-xs text-rose-400">{cotizError}</p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+              Cotización
+              <input
+                type="number"
+                step="0.0001"
+                min="0"
+                value={cotizDraft}
+                onChange={(e) => setCotizDraft(e.target.value)}
+                disabled={cotizBusy}
+                className="mt-1 w-36 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm tabular text-white outline-none focus:border-sky-400/60 disabled:opacity-60"
+              />
+            </label>
+            <button
+              type="button"
+              disabled={cotizBusy}
+              onClick={() => {
+                const n = Number(String(cotizDraft).replace(",", "."));
+                if (!Number.isFinite(n) || n <= 0) {
+                  setCotizError("Ingresá una cotización válida");
+                  return;
+                }
+                setCotiz((c) =>
+                  c
+                    ? {
+                        ...c,
+                        valor: n,
+                        compra: n,
+                        venta: n,
+                        fuente: "manual",
+                        fecha: new Date().toISOString(),
+                        label: `1 CLP = ${n} ARS`,
+                      }
+                    : {
+                        moneda: "CLP",
+                        quote: "ARS",
+                        valor: n,
+                        compra: n,
+                        venta: n,
+                        fuente: "manual",
+                        fecha: new Date().toISOString(),
+                        label: `1 CLP = ${n} ARS`,
+                      },
+                );
+                setCotizError(null);
+              }}
+              className="rounded-lg bg-sky-500/25 px-3 py-2 text-xs font-semibold text-sky-200 hover:bg-sky-500/35 disabled:opacity-50"
+            >
+              Usar este TC
+            </button>
+            <button
+              type="button"
+              disabled={cotizBusy}
+              onClick={() => void loadCotiz(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-[var(--text-dim)] hover:bg-white/10 disabled:opacity-50"
+              title="Actualizar desde DolarAPI"
+            >
+              <RefreshCw size={14} className={cotizBusy ? "animate-spin" : undefined} />
+              Actualizar API
+            </button>
+          </div>
+        </div>
       </div>
 
       <Card>
@@ -1157,6 +1368,7 @@ export function RendicionPanel() {
           onVerFoto={() => abrirComprobante(detalle)}
           onDecidir={(estado) => void decidir(detalle, estado)}
           onActualizarTc={actualizarTc}
+          tcVigente={cotiz?.valor ?? null}
         />
       )}
 
