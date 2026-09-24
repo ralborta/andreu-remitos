@@ -1103,7 +1103,7 @@ export function RendicionPanel() {
               className={clsx(
                 "flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition",
                 vista === id
-                  ? "bg-[var(--violet)] text-white shadow-sm"
+                  ? "bg-[var(--bg-2)] text-[var(--text)] shadow-sm ring-1 ring-[var(--border)]"
                   : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
               )}
             >
@@ -1140,7 +1140,7 @@ export function RendicionPanel() {
                 className={clsx(
                   "rounded-lg px-3 py-1.5 text-xs",
                   filtro === id
-                    ? "bg-[var(--violet)] text-white"
+                    ? "bg-[var(--bg-2)] font-semibold text-[var(--text)] ring-1 ring-[var(--border)]"
                     : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
                 )}
               >
@@ -1171,7 +1171,7 @@ export function RendicionPanel() {
                   type="button"
                   disabled={!!excelBusy}
                   onClick={() => void descargarExcel("erp")}
-                  className="inline-flex items-center gap-1 rounded-lg bg-[var(--violet)]/25 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--violet)]/50 hover:bg-[var(--violet)]/35 disabled:opacity-50"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[var(--bg-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-[var(--border)] hover:bg-[var(--overlay-strong)] disabled:opacity-50"
                   title="Planilla lista para liquidar / importar al ERP (aprobados si el filtro es pendientes)"
                 >
                   <Download size={14} />
