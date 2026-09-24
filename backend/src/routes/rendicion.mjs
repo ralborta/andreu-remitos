@@ -15,7 +15,7 @@ import {
   buildPlanillaRendicion,
   filasAoaRendicion,
 } from "../../../lib/rendicion-export.mjs";
-import { mensajeDecisionGasto } from "../../../lib/rendicion-wa.mjs";
+import { mensajeDecisionGasto, mensajeDecisionLoteAprobado } from "../../../lib/rendicion-wa.mjs";
 import { getRendicionRules } from "../../../lib/rendicion-rules.mjs";
 import { sugerirContextoViajeDesdeRemitos } from "../../../lib/rendicion-viaje-suggest.mjs";
 import { hojaRutaHabilitada } from "../../../lib/hoja-ruta.mjs";
@@ -248,6 +248,51 @@ export default async function rendicionRoutes(fastify) {
       telefono: q.telefono || undefined,
     });
     return rows.map(mapHoja);
+  });
+
+  fastify.post("/decidir-lote", async (request, reply) => {
+    const { ids, nota, aprobado_por, notificar = true } = request.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return reply.code(400).send({ error: "Indicá los gastos a aprobar" });
+    }
+    try {
+      const { aprobados, errores } = await rendicionStore.decidirGastosLote(ids, {
+        nota,
+        aprobado_por,
+      });
+
+      if (notificar !== false) {
+        const porTelefono = new Map();
+        for (const row of aprobados) {
+          if (!row.telefono) continue;
+          const list = porTelefono.get(row.telefono) || [];
+          list.push(row);
+          porTelefono.set(row.telefono, list);
+        }
+        for (const [phone, list] of porTelefono) {
+          const msg =
+            list.length === 1 ? mensajeDecisionGasto(list[0]) : mensajeDecisionLoteAprobado(list);
+          if (!msg) continue;
+          await sendWhatsAppMessage({ number: phone, message: msg }).catch(() => {});
+          await convStore
+            .appendMensaje(
+              phone,
+              { texto: msg, tipo: "text", gasto_id: list[0]?.id ?? null },
+              { dir: "out", from: "bot", agente: "rendicion" },
+            )
+            .catch(() => {});
+        }
+      }
+
+      return {
+        aprobados: aprobados.map(mapGasto),
+        errores,
+        aprobadosCount: aprobados.length,
+        erroresCount: errores.length,
+      };
+    } catch (err) {
+      return reply.code(err.statusCode || 400).send({ error: err.message });
+    }
   });
 
   fastify.get("/:id", async (request, reply) => {

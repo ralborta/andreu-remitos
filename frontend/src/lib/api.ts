@@ -736,6 +736,18 @@ export function resumenRendicion() {
   return api<ResumenRendicion>("/api/rendicion/resumen");
 }
 
+export function decidirGastosRendicionLote(ids: string[]) {
+  return api<{
+    aprobados: GastoRendicion[];
+    errores: Array<{ id: string; error: string }>;
+    aprobadosCount: number;
+    erroresCount: number;
+  }>("/api/rendicion/decidir-lote", {
+    method: "POST",
+    body: JSON.stringify({ ids }),
+  });
+}
+
 export function decidirGastoRendicion(
   id: string,
   body: {

@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { Check, Download, ImageIcon, RefreshCw, Search, Send, X } from "lucide-react";
 import {
   decidirGastoRendicion,
+  decidirGastosRendicionLote,
   downloadAuthenticatedFile,
   enviarRendicionErp,
   listGastosRendicion,
@@ -586,6 +587,8 @@ export function RendicionPanel() {
   const [hasta, setHasta] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [erpBusy, setErpBusy] = useState(false);
   const [excelBusy, setExcelBusy] = useState<"mesa" | "erp" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -604,6 +607,10 @@ export function RendicionPanel() {
     const t = window.setTimeout(() => setQ(qInput.trim()), 300);
     return () => window.clearTimeout(t);
   }, [qInput]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [filtro, q, desde, hasta]);
 
   useEffect(() => {
     void metaRendicion()
@@ -804,6 +811,67 @@ export function RendicionPanel() {
       setError(err instanceof Error ? err.message : "No pude decidir");
     } finally {
       setBusyId(null);
+    }
+  }
+
+  const pendientesVisibles = useMemo(
+    () => rows.filter((g) => g.estado === "pendiente_aprobacion"),
+    [rows],
+  );
+  const selectedPendientes = pendientesVisibles.filter((g) => selectedIds.includes(g.id));
+  const todosMarcados =
+    pendientesVisibles.length > 0 &&
+    pendientesVisibles.every((g) => selectedIds.includes(g.id));
+
+  function toggleSeleccion(id: string) {
+    setSelectedIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+  }
+
+  function toggleTodosPendientes() {
+    setSelectedIds(todosMarcados ? [] : pendientesVisibles.map((g) => g.id));
+  }
+
+  async function aprobarSeleccionados() {
+    const elegidos = pendientesVisibles.filter((g) => selectedIds.includes(g.id));
+    if (!elegidos.length || bulkBusy) return;
+    if (rules?.requireNroViajeDelfosOnApprove) {
+      const sinViaje = elegidos.filter((g) => !String(g.nroViajeDelfos || "").trim());
+      if (sinViaje.length) {
+        setError(
+          `Estos gastos no tienen Nº viaje Delfos: ${sinViaje.map((g) => g.codigo).join(", ")}. Destildalos o cargales el viaje antes de aprobar en lote.`,
+        );
+        return;
+      }
+    }
+    const viajes = [...new Set(elegidos.map((g) => g.nroViajeDelfos).filter(Boolean))];
+    const ok = await confirm({
+      title: "Aprobar gastos",
+      message:
+        `Vas a aprobar ${elegidos.length} gasto${elegidos.length === 1 ? "" : "s"} pendiente${elegidos.length === 1 ? "" : "s"}.` +
+        (viajes.length ? `\nViaje${viajes.length === 1 ? "" : "s"}: ${viajes.join(", ")}` : "") +
+        `\n\nEl rechazo sigue siendo de a uno.`,
+      confirmLabel: "Aprobar seleccionados",
+    });
+    if (!ok) return;
+    setBulkBusy(true);
+    setError(null);
+    try {
+      const res = await decidirGastosRendicionLote(elegidos.map((g) => g.id));
+      setSelectedIds([]);
+      setDetalle(null);
+      if (res.erroresCount > 0) {
+        setError(
+          `Aprobé ${res.aprobadosCount}. No pude aprobar ${res.erroresCount}: ${res.errores
+            .map((e) => e.error)
+            .slice(0, 3)
+            .join(" · ")}`,
+        );
+      }
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pude aprobar la selección");
+    } finally {
+      setBulkBusy(false);
     }
   }
 
@@ -1241,6 +1309,33 @@ export function RendicionPanel() {
           </label>
         </div>
 
+        {pendientesVisibles.length > 0 && (
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-[var(--text-dim)]">
+              <input
+                type="checkbox"
+                checked={todosMarcados}
+                onChange={toggleTodosPendientes}
+                disabled={bulkBusy}
+                aria-label="Seleccionar todos los pendientes visibles"
+                className="size-4 accent-emerald-500"
+              />
+              Seleccionar todos ({pendientesVisibles.length})
+            </label>
+            <button
+              type="button"
+              disabled={bulkBusy || selectedPendientes.length === 0}
+              onClick={() => void aprobarSeleccionados()}
+              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-40"
+            >
+              <Check size={14} />
+              {bulkBusy
+                ? "Aprobando…"
+                : `Aprobar seleccionados${selectedPendientes.length ? ` (${selectedPendientes.length})` : ""}`}
+            </button>
+          </div>
+        )}
+
         {error && (
           <p className="mb-3 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{error}</p>
         )}
@@ -1254,6 +1349,9 @@ export function RendicionPanel() {
             <table className="w-full min-w-[880px] text-left text-sm">
               <thead className="text-xs uppercase text-[var(--text-faint)]">
                 <tr className="border-b border-[var(--border)]">
+                  <th className="w-8 py-2 pr-2 font-medium">
+                    <span className="sr-only">Selección</span>
+                  </th>
                   <th className="py-2 pr-3 font-medium">Código</th>
                   <th className="py-2 pr-3 font-medium">Fecha</th>
                   <th className="py-2 pr-3 font-medium">Chofer</th>
@@ -1272,6 +1370,18 @@ export function RendicionPanel() {
                     onClick={() => setDetalle(g)}
                     className="cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.04]"
                   >
+                    <td className="py-3 pr-2" onClick={(e) => e.stopPropagation()}>
+                      {g.estado === "pendiente_aprobacion" ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(g.id)}
+                          onChange={() => toggleSeleccion(g.id)}
+                          disabled={bulkBusy}
+                          aria-label={`Seleccionar ${g.codigo}`}
+                          className="size-4 accent-emerald-500"
+                        />
+                      ) : null}
+                    </td>
                     <td className="py-3 pr-3 font-medium text-white">{g.codigo}</td>
                     <td className="whitespace-nowrap py-3 pr-3 tabular text-[var(--text-dim)]">
                       {fmtFechaCola(g)}
@@ -1323,7 +1433,7 @@ export function RendicionPanel() {
                         <div className="flex gap-1.5">
                           <button
                             type="button"
-                            disabled={busyId === g.id}
+                            disabled={busyId === g.id || bulkBusy}
                             onClick={() => void decidir(g, "aprobado")}
                             className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 disabled:opacity-50"
                           >
@@ -1332,7 +1442,7 @@ export function RendicionPanel() {
                           </button>
                           <button
                             type="button"
-                            disabled={busyId === g.id}
+                            disabled={busyId === g.id || bulkBusy}
                             onClick={() => void decidir(g, "rechazado")}
                             className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/30 disabled:opacity-50"
                           >

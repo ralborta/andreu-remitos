@@ -416,6 +416,34 @@ export async function decidirGasto(
   return actualizarGasto(id, patch);
 }
 
+/** Aprueba varios gastos. Cada uno conserva su Nº viaje Delfos. El rechazo no entra acá. */
+export async function decidirGastosLote(ids, { nota, aprobado_por } = {}) {
+  const unique = [...new Set((Array.isArray(ids) ? ids : []).map((id) => String(id || "").trim()).filter(Boolean))];
+  if (!unique.length) {
+    throw Object.assign(new Error("Indicá al menos un gasto"), { statusCode: 400 });
+  }
+  if (unique.length > 200) {
+    throw Object.assign(new Error("Máximo 200 gastos por tanda"), { statusCode: 400 });
+  }
+
+  const aprobados = [];
+  const errores = [];
+  for (const id of unique) {
+    try {
+      const row = await decidirGasto(id, {
+        estado: "aprobado",
+        nota,
+        aprobado_por,
+      });
+      if (!row) errores.push({ id, error: "Gasto no encontrado" });
+      else aprobados.push(row);
+    } catch (err) {
+      errores.push({ id, error: err.message || "No se pudo aprobar" });
+    }
+  }
+  return { aprobados, errores };
+}
+
 export async function resumenGastos() {
   const rows = readAll();
   const sum = (est) =>
