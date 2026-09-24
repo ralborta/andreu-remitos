@@ -997,7 +997,7 @@ export function RendicionPanel() {
       <div className="rounded-xl border border-sky-500/35 bg-sky-500/10 px-4 py-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-[200px] flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
               Tipo de cambio CLP → ARS
             </p>
             <p className="mt-1 text-sm text-white">
@@ -1019,7 +1019,7 @@ export function RendicionPanel() {
             )}
           </div>
           <div className="flex flex-wrap items-end gap-2">
-            <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+            <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
               Cotización
               <input
                 type="number"
@@ -1064,7 +1064,7 @@ export function RendicionPanel() {
                 );
                 setCotizError(null);
               }}
-              className="rounded-lg bg-sky-500/25 px-3 py-2 text-xs font-semibold text-sky-200 hover:bg-sky-500/35 disabled:opacity-50"
+              className="rounded-lg bg-sky-500/20 px-3 py-2 text-xs font-semibold text-[var(--text)] ring-1 ring-sky-700/45 hover:bg-sky-500/30 disabled:opacity-50"
             >
               Usar este TC
             </button>
@@ -1181,7 +1181,7 @@ export function RendicionPanel() {
                   type="button"
                   disabled={erpBusy}
                   onClick={() => void enviarAlErp()}
-                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-50"
+                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-emerald-700/50 hover:bg-emerald-500/25 disabled:opacity-50"
                   title="Simula el envío de gastos aprobados al ERP (demo, no es integración real)"
                 >
                   <Send size={14} className={erpBusy ? "animate-pulse" : undefined} />
@@ -1311,7 +1311,7 @@ export function RendicionPanel() {
 
         {pendientesVisibles.length > 0 && (
           <div className="mb-3 flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-xs font-medium text-[var(--text-dim)]">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text)]">
               <input
                 type="checkbox"
                 checked={todosMarcados}
@@ -1326,7 +1326,7 @@ export function RendicionPanel() {
               type="button"
               disabled={bulkBusy || selectedPendientes.length === 0}
               onClick={() => void aprobarSeleccionados()}
-              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-emerald-700/50 hover:bg-emerald-500/25 disabled:opacity-40"
             >
               <Check size={14} />
               {bulkBusy
