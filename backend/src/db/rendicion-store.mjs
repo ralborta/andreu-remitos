@@ -13,6 +13,7 @@ import {
   RENDICION_CATEGORIAS,
 } from "../../../lib/rendicion.mjs";
 import { getRendicionRules } from "../../../lib/rendicion-rules.mjs";
+import { normalizarFecha } from "../../../lib/horarios.mjs";
 
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const FILE = path.join(DATA_DIR, "rendicion-gastos.json");
@@ -119,15 +120,27 @@ export async function getGasto(id) {
   return readAll().find((r) => r.id === id) ?? null;
 }
 
-/** Clave de dedupe: nº ticket + (CUIT|proveedor) + monto + fecha. */
+function normNroTicket(raw) {
+  return String(raw || "")
+    .replace(/\D/g, "")
+    .replace(/^0+/, "");
+}
+
+/** 16/09/2026, 2026-09-16 y 16-09-2026 son el mismo día. */
+function normFechaClave(raw) {
+  if (raw == null || raw === "") return "";
+  return normalizarFecha(String(raw).trim()) || "";
+}
+
+/** Clave de dedupe: nº ticket + (CUIT|proveedor) + monto + fecha normalizada. */
 export function claveDuplicadoGasto(g = {}) {
-  const nro = String(g.nro_t || "").replace(/\D/g, "");
+  const nro = normNroTicket(g.nro_t);
   const cuit = String(g.cuit_proveedor || "").replace(/\D/g, "");
   const monto =
     g.monto != null && Number.isFinite(Number(g.monto))
       ? Number(g.monto).toFixed(2)
       : "";
-  const fecha = String(g.fecha_comprobante || "").slice(0, 10);
+  const fecha = normFechaClave(g.fecha_comprobante);
   const proveedor = String(g.proveedor || "")
     .toLowerCase()
     .replace(/\s+/g, " ")
@@ -144,12 +157,11 @@ export function claveDuplicadoGasto(g = {}) {
 }
 
 /**
- * Busca gasto ya cargado (mismo chofer; prioriza mismo viaje Delfos).
- * No considera rechazados.
+ * Busca el mismo comprobante ya cargado por este chofer.
+ * No considera rechazados. El viaje no importa: un ticket fiscal no se carga dos veces.
  */
 export async function buscarDuplicadoGasto({
   telefono,
-  nro_viaje_delfos,
   nro_t,
   cuit_proveedor,
   monto,
@@ -165,17 +177,9 @@ export async function buscarDuplicadoGasto({
   });
   if (!clave) return null;
   const phone = sanitizePhone(telefono);
-  const nroViaje = normStr(nro_viaje_delfos);
   const rows = readAll().filter((r) => {
     if (r.estado === "rechazado") return false;
     if (phone && r.telefono !== phone) return false;
-    if (
-      nroViaje &&
-      r.nro_viaje_delfos &&
-      String(r.nro_viaje_delfos).trim() !== nroViaje
-    ) {
-      return false;
-    }
     return claveDuplicadoGasto(r) === clave;
   });
   return rows[0] || null;
