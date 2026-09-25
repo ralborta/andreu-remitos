@@ -320,6 +320,27 @@ export default async function rendicionRoutes(fastify) {
       if (body.tc_clp_ars != null) {
         histParts.push(`TC CLP→ARS → ${Number(body.tc_clp_ars)}`);
       }
+      if (body.monto != null) {
+        const quien = String(body.editado_por || "").trim();
+        if (!quien) {
+          return reply.code(400).send({ error: "Falta quién modifica el importe" });
+        }
+        const actual = await rendicionStore.getGasto(request.params.id);
+        if (!actual) return reply.code(404).send({ error: "Gasto no encontrado" });
+        if (actual.estado !== "pendiente_aprobacion") {
+          return reply
+            .code(400)
+            .send({ error: "Solo se puede cambiar el importe de un gasto pendiente" });
+        }
+        const next = Number(body.monto);
+        if (!Number.isFinite(next) || next < 0) {
+          return reply.code(400).send({ error: "Importe inválido" });
+        }
+        const prev = Number(actual.monto);
+        if (!Number.isFinite(prev) || Math.abs(prev - next) > 0.001) {
+          histParts.push(`${quien} · importe ${prev} → ${next} ARS`);
+        }
+      }
       const row = await rendicionStore.actualizarGasto(request.params.id, {
         ...body,
         historial_push: histParts.length

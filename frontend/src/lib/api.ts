@@ -777,6 +777,7 @@ export function patchGastoRendicion(
     tc_fecha?: string | null;
     tc_fuente?: string | null;
     moneda_origen?: string | null;
+    editado_por?: string | null;
   },
 ) {
   return api<GastoRendicion>(`/api/rendicion/${id}`, {

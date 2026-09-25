@@ -26,6 +26,7 @@ import {
 import { browsableMediaUrl } from "@/lib/media-url";
 import { Card, KpiCard } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
+import { useAuth } from "@/lib/auth-context";
 import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "todos" | "pendiente_aprobacion" | "aprobado" | "rechazado";
@@ -174,6 +175,8 @@ function GastoDetalleModal({
   onVerFoto,
   onDecidir,
   onActualizarTc,
+  onGuardarImporte,
+  editorNombre,
   tcVigente,
 }: {
   caso: GastoRendicion;
@@ -188,6 +191,8 @@ function GastoDetalleModal({
   onVerFoto: () => void;
   onDecidir: (estado: "aprobado" | "rechazado") => void;
   onActualizarTc: (tc: number, montoClp?: number) => Promise<void>;
+  onGuardarImporte: (monto: number) => Promise<void>;
+  editorNombre: string;
   tcVigente?: number | null;
 }) {
   const requireViaje = Boolean(rules?.requireNroViajeDelfosOnApprove);
@@ -206,6 +211,11 @@ function GastoDetalleModal({
   const [montoClpDraft, setMontoClpDraft] = useState(
     caso.montoOrigen != null ? String(caso.montoOrigen) : "",
   );
+  const [montoDraft, setMontoDraft] = useState(
+    caso.monto != null ? String(caso.monto) : "",
+  );
+  const [montoBusy, setMontoBusy] = useState(false);
+  const [montoError, setMontoError] = useState<string | null>(null);
 
   useEffect(() => {
     setTcDraft(
@@ -216,8 +226,10 @@ function GastoDetalleModal({
           : "",
     );
     setMontoClpDraft(caso.montoOrigen != null ? String(caso.montoOrigen) : "");
+    setMontoDraft(caso.monto != null ? String(caso.monto) : "");
     setTcError(null);
-  }, [caso.id, caso.tcClpArs, caso.montoOrigen, tcVigente]);
+    setMontoError(null);
+  }, [caso.id, caso.tcClpArs, caso.montoOrigen, caso.monto, tcVigente]);
 
   const tcNum = Number(String(tcDraft).replace(",", "."));
   const tcValido = Number.isFinite(tcNum) && tcNum > 0;
@@ -229,6 +241,12 @@ function GastoDetalleModal({
     esClp && tcValido
       ? Math.round(Number(caso.montoOrigen) * tcNum * 100) / 100
       : null;
+  const montoNum = Number(String(montoDraft).replace(",", "."));
+  const montoValido = Number.isFinite(montoNum) && montoNum >= 0;
+  const montoDirty =
+    montoValido &&
+    (caso.monto == null || Math.abs(montoNum - Number(caso.monto)) > 0.001);
+  const puedeEditarImporte = caso.estado === "pendiente_aprobacion";
 
   return (
     <div
@@ -318,6 +336,50 @@ function GastoDetalleModal({
               </div>
             )}
           </div>
+
+          {puedeEditarImporte && (
+            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-2)] p-3">
+              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
+                Importe a aprobar (ARS)
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={montoDraft}
+                  disabled={montoBusy || busyId === caso.id}
+                  onChange={(e) => setMontoDraft(e.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:ring-2 focus:ring-[var(--violet)]/40 disabled:opacity-60"
+                />
+              </label>
+              <p className="mt-1.5 text-xs text-[var(--text-dim)]">
+                {editorNombre
+                  ? `Al guardar queda registrado a nombre de ${editorNombre}.`
+                  : "No hay sesión para registrar quién cambia el importe."}
+                {esClp ? " El monto en pesos chilenos no cambia." : ""}
+              </p>
+              {montoError && <p className="mt-1 text-xs text-rose-500">{montoError}</p>}
+              <button
+                type="button"
+                disabled={!montoDirty || !montoValido || montoBusy || busyId === caso.id || !editorNombre}
+                onClick={() => {
+                  void (async () => {
+                    setMontoBusy(true);
+                    setMontoError(null);
+                    try {
+                      await onGuardarImporte(montoNum);
+                    } catch (err) {
+                      setMontoError(err instanceof Error ? err.message : "No pude guardar el importe");
+                    } finally {
+                      setMontoBusy(false);
+                    }
+                  })();
+                }}
+                className="mt-3 rounded-lg bg-[var(--bg)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-[var(--border)] hover:bg-[var(--panel)] disabled:opacity-50"
+              >
+                {montoBusy ? "Guardando…" : "Guardar importe"}
+              </button>
+            </div>
+          )}
 
           {esClp ? (
             <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-3">
@@ -574,6 +636,8 @@ function GastoDetalleModal({
 
 export function RendicionPanel() {
   const confirm = useConfirm();
+  const { user } = useAuth();
+  const editorNombre = (user?.nombre || user?.username || "").trim();
   const [rows, setRows] = useState<GastoRendicion[]>([]);
   const [resumen, setResumen] = useState<ResumenRendicion | null>(null);
   const [rules, setRules] = useState<RendicionRules | null>(null);
@@ -905,6 +969,17 @@ export function RendicionPanel() {
         nro_viaje_delfos: String(s.nroViajeDelfos),
       }).catch(() => {});
     }
+  }
+
+  async function guardarImporte(monto: number) {
+    if (!detalle) return;
+    if (!editorNombre) throw new Error("No hay sesión para registrar quién cambia el importe");
+    const updated = await patchGastoRendicion(detalle.id, {
+      monto,
+      editado_por: editorNombre,
+    });
+    setDetalle(updated);
+    setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
   }
 
   async function actualizarTc(tc: number, montoClp?: number) {
@@ -1478,6 +1553,8 @@ export function RendicionPanel() {
           onVerFoto={() => abrirComprobante(detalle)}
           onDecidir={(estado) => void decidir(detalle, estado)}
           onActualizarTc={actualizarTc}
+          onGuardarImporte={guardarImporte}
+          editorNombre={editorNombre}
           tcVigente={cotiz?.valor ?? null}
         />
       )}
