@@ -1160,7 +1160,7 @@ export function RendicionPanel() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-2 sm:pr-6 xl:pr-14">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((k) => (
           <KpiCard key={k.label} label={k.label} value={k.value} hint={k.hint} />
@@ -1533,7 +1533,7 @@ export function RendicionPanel() {
                   <th className="py-2 pr-3 font-medium">Viaje Delfos</th>
                   <th className="py-2 pr-3 font-medium">Detalle</th>
                   <th className="py-2 pr-3 font-medium">Estado</th>
-                  <th className="py-2 font-medium">Acción</th>
+                  <th className="py-2 pr-4 font-medium">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -1601,7 +1601,7 @@ export function RendicionPanel() {
                         {g.estadoLabel}
                       </span>
                     </td>
-                    <td className="py-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-3 pr-4" onClick={(e) => e.stopPropagation()}>
                       {g.estado === "pendiente_aprobacion" ? (
                         <div className="flex gap-1.5">
                           <button
