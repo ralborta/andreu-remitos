@@ -162,6 +162,60 @@ function RechazoMotivoModal({
   );
 }
 
+function EditorImporte({
+  montoDraft,
+  onMontoDraft,
+  disabled,
+  puedeGuardar,
+  busy,
+  error,
+  editorNombre,
+  notaClp,
+  onGuardar,
+}: {
+  montoDraft: string;
+  onMontoDraft: (v: string) => void;
+  disabled: boolean;
+  puedeGuardar: boolean;
+  busy: boolean;
+  error: string | null;
+  editorNombre: string;
+  notaClp: boolean;
+  onGuardar: () => void;
+}) {
+  return (
+    <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
+      <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
+        Importe a aprobar (ARS)
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          value={montoDraft}
+          disabled={disabled}
+          onChange={(e) => onMontoDraft(e.target.value)}
+          className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm font-semibold text-[var(--text)] outline-none focus:ring-2 focus:ring-[var(--violet)]/40 disabled:opacity-60"
+        />
+      </label>
+      <p className="mt-1.5 text-xs text-[var(--text-dim)]">
+        {editorNombre
+          ? `Al guardar queda registrado a nombre de ${editorNombre}.`
+          : "No hay sesión para registrar quién cambia el importe."}
+        {notaClp ? " El monto en pesos chilenos no cambia." : ""}
+      </p>
+      {error && <p className="mt-1 text-xs text-rose-500">{error}</p>}
+      <button
+        type="button"
+        disabled={!puedeGuardar}
+        onClick={onGuardar}
+        className="mt-3 rounded-lg bg-[var(--text)] px-3 py-1.5 text-xs font-semibold text-[var(--panel)] disabled:opacity-40"
+      >
+        {busy ? "Guardando…" : "Guardar importe"}
+      </button>
+    </div>
+  );
+}
+
 function GastoDetalleModal({
   caso,
   busyId,
@@ -337,48 +391,30 @@ function GastoDetalleModal({
             )}
           </div>
 
-          {puedeEditarImporte && (
-            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-2)] p-3">
-              <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
-                Importe a aprobar (ARS)
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={montoDraft}
-                  disabled={montoBusy || busyId === caso.id}
-                  onChange={(e) => setMontoDraft(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:ring-2 focus:ring-[var(--violet)]/40 disabled:opacity-60"
-                />
-              </label>
-              <p className="mt-1.5 text-xs text-[var(--text-dim)]">
-                {editorNombre
-                  ? `Al guardar queda registrado a nombre de ${editorNombre}.`
-                  : "No hay sesión para registrar quién cambia el importe."}
-                {esClp ? " El monto en pesos chilenos no cambia." : ""}
-              </p>
-              {montoError && <p className="mt-1 text-xs text-rose-500">{montoError}</p>}
-              <button
-                type="button"
-                disabled={!montoDirty || !montoValido || montoBusy || busyId === caso.id || !editorNombre}
-                onClick={() => {
-                  void (async () => {
-                    setMontoBusy(true);
-                    setMontoError(null);
-                    try {
-                      await onGuardarImporte(montoNum);
-                    } catch (err) {
-                      setMontoError(err instanceof Error ? err.message : "No pude guardar el importe");
-                    } finally {
-                      setMontoBusy(false);
-                    }
-                  })();
-                }}
-                className="mt-3 rounded-lg bg-[var(--bg)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-[var(--border)] hover:bg-[var(--panel)] disabled:opacity-50"
-              >
-                {montoBusy ? "Guardando…" : "Guardar importe"}
-              </button>
-            </div>
+          {puedeEditarImporte && !esClp && (
+            <EditorImporte
+              montoDraft={montoDraft}
+              onMontoDraft={setMontoDraft}
+              disabled={montoBusy || busyId === caso.id}
+              puedeGuardar={montoDirty && montoValido && !montoBusy && busyId !== caso.id && Boolean(editorNombre)}
+              busy={montoBusy}
+              error={montoError}
+              editorNombre={editorNombre}
+              notaClp={false}
+              onGuardar={() => {
+                void (async () => {
+                  setMontoBusy(true);
+                  setMontoError(null);
+                  try {
+                    await onGuardarImporte(montoNum);
+                  } catch (err) {
+                    setMontoError(err instanceof Error ? err.message : "No pude guardar el importe");
+                  } finally {
+                    setMontoBusy(false);
+                  }
+                })();
+              }}
+            />
           )}
 
           {esClp ? (
@@ -390,7 +426,35 @@ function GastoDetalleModal({
                 <Campo label="Monto en ticket (CLP)">
                   {caso.montoOrigenLabel || caso.montoOrigen}
                 </Campo>
-                <Campo label="Monto en ARS">{caso.montoLabel}</Campo>
+                {puedeEditarImporte ? (
+                  <div className="sm:col-span-2">
+                    <EditorImporte
+                      montoDraft={montoDraft}
+                      onMontoDraft={setMontoDraft}
+                      disabled={montoBusy || busyId === caso.id}
+                      puedeGuardar={montoDirty && montoValido && !montoBusy && busyId !== caso.id && Boolean(editorNombre)}
+                      busy={montoBusy}
+                      error={montoError}
+                      editorNombre={editorNombre}
+                      notaClp
+                      onGuardar={() => {
+                        void (async () => {
+                          setMontoBusy(true);
+                          setMontoError(null);
+                          try {
+                            await onGuardarImporte(montoNum);
+                          } catch (err) {
+                            setMontoError(err instanceof Error ? err.message : "No pude guardar el importe");
+                          } finally {
+                            setMontoBusy(false);
+                          }
+                        })();
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <Campo label="Monto en ARS">{caso.montoLabel}</Campo>
+                )}
               </div>
               <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
                 Cotización (ARS por 1 CLP)
