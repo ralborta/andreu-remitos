@@ -24,7 +24,7 @@ import {
   type ViajeAnticipoRendicion,
 } from "@/lib/api";
 import { browsableMediaUrl } from "@/lib/media-url";
-import { Card, KpiCard } from "./ui";
+import { KpiCard } from "./ui";
 import { useConfirm } from "@/lib/confirm-context";
 import { useAuth } from "@/lib/auth-context";
 import { RemitoImageLightbox } from "./RemitoImageLightbox";
@@ -74,10 +74,10 @@ function fmtFechaCola(g: GastoRendicion) {
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
-      <div className="mt-1 text-sm text-white">{children}</div>
+      <div className="mt-1 text-sm font-medium text-slate-900">{children}</div>
     </div>
   );
 }
@@ -100,25 +100,25 @@ function RechazoMotivoModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-md"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] p-5 shadow-2xl"
+        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 text-slate-800 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="rechazo-motivo-title"
       >
-        <h3 id="rechazo-motivo-title" className="text-lg font-semibold text-white">
+        <h3 id="rechazo-motivo-title" className="text-lg font-semibold text-slate-900">
           Rechazar gasto
         </h3>
-        <p className="mt-1 text-sm text-[var(--text-dim)]">
+        <p className="mt-1 text-sm text-slate-500">
           {caso.codigo} · {caso.categoriaLabel} · {caso.montoLabel}
           {caso.choferNombre ? ` · ${caso.choferNombre}` : ""}
         </p>
-        <label className="mt-4 block text-xs font-medium text-[var(--text-faint)]">
+        <label className="mt-4 block text-xs font-medium text-slate-500">
           Comentario de rechazo <span className="text-rose-400">*</span>
           <textarea
             value={nota}
@@ -127,7 +127,7 @@ function RechazoMotivoModal({
             rows={3}
             required
             placeholder="Ej. comprobante ilegible, monto incorrecto…"
-            className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-2 focus:ring-[var(--violet)]/40"
+            className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-200"
           />
         </label>
         {touched && invalid && (
@@ -140,7 +140,7 @@ function RechazoMotivoModal({
             type="button"
             disabled={busy}
             onClick={onClose}
-            className="rounded-lg bg-white/5 px-3 py-2 text-sm text-[var(--text-dim)] hover:bg-white/10 disabled:opacity-50"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -152,7 +152,7 @@ function RechazoMotivoModal({
               if (invalid) return;
               onConfirm(motivo);
             }}
-            className="rounded-lg bg-rose-500/20 px-3 py-2 text-sm font-semibold text-rose-400 hover:bg-rose-500/30 disabled:opacity-50"
+            className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
           >
             Confirmar rechazo
           </button>
@@ -184,8 +184,8 @@ function EditorImporte({
   onGuardar: () => void;
 }) {
   return (
-    <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
-      <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
+      <label className="block text-xs font-bold uppercase tracking-wide text-slate-700">
         Importe a aprobar (ARS)
         <input
           type="number"
@@ -194,22 +194,23 @@ function EditorImporte({
           value={montoDraft}
           disabled={disabled}
           onChange={(e) => onMontoDraft(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm font-semibold text-[var(--text)] outline-none focus:ring-2 focus:ring-[var(--violet)]/40 disabled:opacity-60"
+          className="mt-1.5 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-lg font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
         />
       </label>
-      <p className="mt-1.5 text-xs text-[var(--text-dim)]">
+      <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
         {editorNombre
           ? `Al guardar queda registrado a nombre de ${editorNombre}.`
           : "No hay sesión para registrar quién cambia el importe."}
         {notaClp ? " El monto en pesos chilenos no cambia." : ""}
       </p>
-      {error && <p className="mt-1 text-xs text-rose-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
       <button
         type="button"
         disabled={!puedeGuardar}
         onClick={onGuardar}
-        className="mt-3 rounded-lg bg-[var(--text)] px-3 py-1.5 text-xs font-semibold text-[var(--panel)] disabled:opacity-40"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-slate-700 px-4 py-2 text-xs font-semibold text-[#fff] hover:bg-slate-800 disabled:opacity-40"
       >
+        <Check size={14} />
         {busy ? "Guardando…" : "Guardar importe"}
       </button>
     </div>
@@ -304,49 +305,92 @@ function GastoDetalleModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-md"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel-2)] shadow-2xl"
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white text-slate-800 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="gasto-detalle-title"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
-          <div>
-            <h3 id="gasto-detalle-title" className="text-lg font-semibold text-white">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 bg-white px-6 py-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <h3 id="gasto-detalle-title" className="text-xl font-bold tracking-tight text-slate-900">
               {caso.codigo}
             </h3>
-            <p className="mt-1 text-sm text-[var(--text-dim)]">
-              {caso.categoriaLabel} · {caso.montoLabel}
-              {esClp && caso.montoOrigenLabel ? ` · ${caso.montoOrigenLabel}` : ""}
-            </p>
             <span
               className={clsx(
-                "mt-2 inline-block rounded-md px-2 py-0.5 text-xs font-semibold",
-                caso.estado === "pendiente_aprobacion" && "bg-amber-500/15 text-amber-400",
-                caso.estado === "aprobado" && "bg-emerald-500/15 text-emerald-400",
-                caso.estado === "rechazado" && "bg-rose-500/15 text-rose-500",
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                caso.estado === "pendiente_aprobacion" && "border-amber-200 bg-amber-50 text-amber-700",
+                caso.estado === "aprobado" && "border-emerald-200 bg-emerald-50 text-emerald-700",
+                caso.estado === "rechazado" && "border-rose-200 bg-rose-50 text-rose-700",
               )}
             >
               {caso.estadoLabel}
             </span>
+            <span className="hidden text-slate-300 sm:inline">|</span>
+            <p className="text-xs font-medium text-slate-500">
+              <span className="rounded-md bg-slate-100 px-2 py-0.5 font-semibold text-slate-600">
+                {caso.categoriaLabel}
+              </span>
+              {" · "}
+              <span className="font-semibold text-slate-800">{caso.montoLabel}</span>
+              {esClp && caso.montoOrigenLabel ? (
+                <span className="text-slate-400"> ({caso.montoOrigenLabel})</span>
+              ) : null}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-white/5 hover:text-white"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
             aria-label="Cerrar"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 py-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-12 md:divide-x md:divide-slate-100">
+          <aside className="flex flex-col bg-slate-100/70 p-4 md:col-span-5 md:overflow-y-auto">
+            <div className="mb-3 flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-700">
+                Comprobante
+              </span>
+              {caso.imagenUrl ? (
+                <button
+                  type="button"
+                  onClick={onVerFoto}
+                  className="text-[11px] font-semibold text-indigo-600 hover:underline"
+                >
+                  Abrir original
+                </button>
+              ) : null}
+            </div>
+            {caso.imagenUrl ? (
+              <button
+                type="button"
+                onClick={onVerFoto}
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={browsableMediaUrl(caso.imagenUrl) || ""}
+                  alt={`Comprobante ${caso.codigo}`}
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              </button>
+            ) : (
+              <p className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-400">
+                Sin comprobante
+              </p>
+            )}
+          </aside>
+          <div className="flex min-h-0 flex-col bg-white md:col-span-7">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 sm:grid-cols-2">
             <Campo label="Chofer">
               <div>{caso.choferNombre || "—"}</div>
               <div className="text-xs text-[var(--text-faint)]">{caso.telefono || ""}</div>
@@ -363,7 +407,7 @@ function GastoDetalleModal({
             {caso.viajeDocumento && (
               <div className="sm:col-span-2">
                 <Campo label="Viaje en documento (no confirmado)">
-                  <span className="text-amber-300">{caso.viajeDocumento}</span>
+                  <span className="font-semibold text-amber-700">{caso.viajeDocumento}</span>
                   <span className="mt-1 block text-xs text-[var(--text-faint)]">
                     Puede no ser el nº de Delfos — confirmar aparte.
                   </span>
@@ -418,8 +462,8 @@ function GastoDetalleModal({
           )}
 
           {esClp ? (
-            <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+            <div className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50/50 via-white to-sky-50/30 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-sky-900">
                 Conversión CLP → ARS
               </p>
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
@@ -456,7 +500,7 @@ function GastoDetalleModal({
                   <Campo label="Monto en ARS">{caso.montoLabel}</Campo>
                 )}
               </div>
-              <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+              <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-sky-800">
                 Cotización (ARS por 1 CLP)
                 <input
                   type="number"
@@ -465,7 +509,7 @@ function GastoDetalleModal({
                   value={tcDraft}
                   disabled={caso.estado !== "pendiente_aprobacion" || tcBusy || busyId === caso.id}
                   onChange={(e) => setTcDraft(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-sky-400/60 disabled:opacity-60"
+                  className="mt-1.5 w-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm font-bold text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 disabled:opacity-60"
                 />
               </label>
               <p className="mt-1.5 text-xs text-[var(--text-faint)]">
@@ -495,7 +539,7 @@ function GastoDetalleModal({
                       }
                     })();
                   }}
-                  className="mt-3 rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+                  className="mt-3 rounded-xl bg-sky-100 px-3 py-1.5 text-xs font-semibold text-sky-800 hover:bg-sky-200 disabled:opacity-50"
                 >
                   {tcBusy ? "Guardando…" : "Aplicar cotización"}
                 </button>
@@ -503,10 +547,10 @@ function GastoDetalleModal({
             </div>
           ) : (
             <div className="mt-4 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-sky-800">
                 Tipo de cambio CLP → ARS
               </p>
-              <p className="mt-1 text-sm text-white">
+              <p className="mt-1 text-sm text-slate-600">
                 {tcVigente != null
                   ? `Vigente: 1 CLP = ${Number(tcVigente).toLocaleString("es-AR", {
                       maximumFractionDigits: 4,
@@ -519,7 +563,7 @@ function GastoDetalleModal({
                     Si este ticket es chileno, cargá el monto en CLP y aplicá la cotización.
                   </p>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-800">
                       Monto CLP
                       <input
                         type="number"
@@ -528,10 +572,10 @@ function GastoDetalleModal({
                         value={montoClpDraft}
                         onChange={(e) => setMontoClpDraft(e.target.value)}
                         disabled={tcBusy || busyId === caso.id}
-                        className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-sky-400/60"
+                        className="mt-1 w-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500"
                       />
                     </label>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-300">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wide text-sky-800">
                       Cotización
                       <input
                         type="number"
@@ -540,7 +584,7 @@ function GastoDetalleModal({
                         value={tcDraft}
                         onChange={(e) => setTcDraft(e.target.value)}
                         disabled={tcBusy || busyId === caso.id}
-                        className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-sky-400/60"
+                        className="mt-1 w-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500"
                       />
                     </label>
                   </div>
@@ -570,7 +614,7 @@ function GastoDetalleModal({
                         }
                       })();
                     }}
-                    className="mt-3 rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/30 disabled:opacity-50"
+                    className="mt-3 rounded-xl bg-sky-100 px-3 py-1.5 text-xs font-semibold text-sky-800 hover:bg-sky-200 disabled:opacity-50"
                   >
                     {tcBusy ? "Guardando…" : "Marcar CLP y convertir"}
                   </button>
@@ -580,15 +624,15 @@ function GastoDetalleModal({
           )}
 
           {caso.estado === "pendiente_aprobacion" && requireViaje && (
-            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
-              <label className="text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+            <div className="mt-4 rounded-2xl border border-amber-200/70 bg-amber-50/40 p-4">
+              <label className="text-xs font-bold uppercase tracking-wide text-amber-800">
                 {rules?.labelNroViaje || "Nº viaje Delfos"} (obligatorio)
               </label>
               <input
                 value={nroViajeDraft}
                 onChange={(e) => onNroViajeDraft(e.target.value)}
                 placeholder="Ej. 605095"
-                className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-white outline-none focus:border-amber-400/60"
+                className="mt-1.5 w-full rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500"
               />
               <p className="mt-1.5 text-xs text-[var(--text-faint)]">
                 {rules?.hintNroViaje}
@@ -603,9 +647,9 @@ function GastoDetalleModal({
                       key={`${s.tipo || "x"}-${s.remitoId}`}
                       type="button"
                       onClick={() => onUsarSugerencia(s)}
-                      className="flex w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] px-2.5 py-2 text-left text-xs hover:border-amber-400/40"
+                      className="flex w-full flex-col rounded-xl border border-amber-200 bg-white px-2.5 py-2 text-left text-xs hover:border-amber-400"
                     >
-                      <span className="font-medium text-white">
+                      <span className="font-medium text-slate-900">
                         {s.tipo === "hoja_ruta"
                           ? `Hoja ${s.nroRemito || s.remitoId}`
                           : `Remito ${s.nroRemito || s.remitoId}`}
@@ -640,24 +684,12 @@ function GastoDetalleModal({
             </div>
           )}
 
-          {caso.imagenUrl ? (
-            <button
-              type="button"
-              onClick={onVerFoto}
-              className="mt-4 text-sm font-medium text-[var(--violet-2)] hover:underline"
-            >
-              Ver foto del comprobante
-            </button>
-          ) : (
-            <p className="mt-4 text-sm text-[var(--text-faint)]">Sin comprobante</p>
-          )}
-
           {(caso.historial?.length ?? 0) > 0 && (
-            <div className="mt-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
                 Historial
               </p>
-              <ul className="mt-1.5 space-y-1 text-xs text-[var(--text-faint)]">
+              <ul className="mt-1.5 space-y-1 text-xs text-slate-500">
                 {(caso.historial || []).slice(-6).map((h) => (
                   <li key={h}>{h}</li>
                 ))}
@@ -667,12 +699,12 @@ function GastoDetalleModal({
         </div>
 
         {caso.estado === "pendiente_aprobacion" && (
-          <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] px-5 py-3">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-4">
             <button
               type="button"
               disabled={busyId === caso.id}
               onClick={() => onDecidir("rechazado")}
-              className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-3 py-2 text-xs font-semibold text-rose-500 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
             >
               <X size={14} />
               Rechazar
@@ -686,13 +718,15 @@ function GastoDetalleModal({
                   : undefined
               }
               onClick={() => onDecidir("aprobado")}
-              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-400 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-100 px-5 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-200 disabled:opacity-50"
             >
               <Check size={14} />
               Aprobar
             </button>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1133,13 +1167,13 @@ export function RendicionPanel() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-sky-500/35 bg-sky-500/10 px-4 py-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="rounded-2xl border border-indigo-100/80 bg-gradient-to-r from-indigo-900/5 via-sky-900/5 to-slate-900/5 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-[200px] flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
+            <p className="inline-flex rounded-md border border-indigo-200/60 bg-indigo-50 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-indigo-700">
               Tipo de cambio CLP → ARS
             </p>
-            <p className="mt-1 text-sm text-white">
+            <p className="mt-1 text-lg font-bold text-slate-900">
               {cotiz
                 ? `1 peso chileno = ${Number(cotiz.valor).toLocaleString("es-AR", {
                     maximumFractionDigits: 4,
@@ -1148,7 +1182,7 @@ export function RendicionPanel() {
                   ? "Cargando cotización…"
                   : "Sin cotización"}
             </p>
-            <p className="mt-0.5 text-xs text-[var(--text-faint)]">
+            <p className="mt-0.5 text-xs text-slate-500">
               {cotiz?.fuente ? `Fuente: ${cotiz.fuente}` : "DolarAPI"}
               {cotiz?.fecha ? ` · ${fmtFecha(cotiz.fecha)}` : ""}
               {" · "}Editable por gasto en el detalle si el ticket es CLP
@@ -1157,8 +1191,8 @@ export function RendicionPanel() {
               <p className="mt-1 text-xs text-rose-400">{cotizError}</p>
             )}
           </div>
-          <div className="flex flex-wrap items-end gap-2">
-            <label className="block text-[10px] font-semibold uppercase tracking-wide text-[var(--text)]">
+          <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white/80 p-1.5 shadow-inner">
+            <label className="block pl-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Cotización
               <input
                 type="number"
@@ -1167,7 +1201,7 @@ export function RendicionPanel() {
                 value={cotizDraft}
                 onChange={(e) => setCotizDraft(e.target.value)}
                 disabled={cotizBusy}
-                className="mt-1 w-36 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm tabular text-white outline-none focus:border-sky-400/60 disabled:opacity-60"
+                className="mt-1 w-28 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
               />
             </label>
             <button
@@ -1203,7 +1237,7 @@ export function RendicionPanel() {
                 );
                 setCotizError(null);
               }}
-              className="rounded-lg bg-sky-500/20 px-3 py-2 text-xs font-semibold text-[var(--text)] ring-1 ring-sky-700/45 hover:bg-sky-500/30 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-[#fff] shadow-sm hover:bg-indigo-700 disabled:opacity-50"
             >
               Usar este TC
             </button>
@@ -1211,7 +1245,7 @@ export function RendicionPanel() {
               type="button"
               disabled={cotizBusy}
               onClick={() => void loadCotiz(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-[var(--text-dim)] hover:bg-white/10 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               title="Actualizar desde DolarAPI"
             >
               <RefreshCw size={14} className={cotizBusy ? "animate-spin" : undefined} />
@@ -1221,9 +1255,9 @@ export function RendicionPanel() {
         </div>
       </div>
 
-      <Card>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-slate-800 shadow-sm">
         <div
-          className="mb-4 flex gap-1 rounded-xl bg-white/[0.04] p-1 ring-1 ring-[var(--border)]"
+          className="mb-4 flex w-full max-w-md gap-1 rounded-2xl bg-slate-200/70 p-1.5 shadow-inner"
           role="tablist"
           aria-label="Vista de rendición"
         >
@@ -1240,10 +1274,10 @@ export function RendicionPanel() {
               aria-selected={vista === id}
               onClick={() => setVista(id)}
               className={clsx(
-                "flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition",
+                "flex-1 rounded-xl px-4 py-2 text-sm transition",
                 vista === id
-                  ? "bg-[var(--bg-2)] text-[var(--text)] shadow-sm ring-1 ring-[var(--border)]"
-                  : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
+                  ? "bg-white font-semibold text-indigo-900 shadow-sm"
+                  : "font-medium text-slate-600 hover:bg-white/40 hover:text-slate-900",
               )}
             >
               {label}
@@ -1253,10 +1287,10 @@ export function RendicionPanel() {
 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-white">
+            <h3 className="text-xl font-bold tracking-tight text-slate-900">
               {vista === "viajes" ? "Anticipo vs rendido" : "Cola de aprobación"}
             </h3>
-            <p className="text-xs text-[var(--text-faint)]">
+            <p className="mt-1 text-xs text-slate-500">
               {vista === "viajes"
                 ? "Por Nº viaje Delfos: anticipo de la hoja vs boletas (pendientes + aprobadas) · usá la pestaña de arriba para volver a la cola"
                 : "Clic en un registro para abrir el detalle · Excel / Excel ERP exportan el filtro (ERP usa aprobados si estás en Pendientes)"}
@@ -1277,10 +1311,10 @@ export function RendicionPanel() {
                 type="button"
                 onClick={() => setFiltro(id)}
                 className={clsx(
-                  "rounded-lg px-3 py-1.5 text-xs",
+                  "rounded-xl border px-3.5 py-1.5 text-xs",
                   filtro === id
-                    ? "bg-[var(--bg-2)] font-semibold text-[var(--text)] ring-1 ring-[var(--border)]"
-                    : "bg-white/5 text-[var(--text-dim)] hover:bg-white/10",
+                    ? "border-indigo-200 bg-indigo-50 font-semibold text-indigo-700 shadow-sm"
+                    : "border-slate-200 bg-slate-50 font-medium text-slate-600 hover:bg-slate-100",
                 )}
               >
                 {label}
@@ -1289,7 +1323,7 @@ export function RendicionPanel() {
             <button
               type="button"
               onClick={() => void (vista === "viajes" ? loadViajes() : load())}
-              className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-3 py-1.5 text-xs text-[var(--text-dim)] hover:bg-white/10"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200/80"
             >
               <RefreshCw size={14} />
               Actualizar
@@ -1300,7 +1334,7 @@ export function RendicionPanel() {
                   type="button"
                   disabled={!!excelBusy}
                   onClick={() => void descargarExcel("mesa")}
-                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-[var(--border)] hover:bg-white/15 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100/80 disabled:opacity-50"
                   title="Descarga el filtro actual en Excel (mesa)"
                 >
                   <Download size={14} />
@@ -1310,7 +1344,7 @@ export function RendicionPanel() {
                   type="button"
                   disabled={!!excelBusy}
                   onClick={() => void descargarExcel("erp")}
-                  className="inline-flex items-center gap-1 rounded-lg bg-[var(--bg-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-[var(--border)] hover:bg-[var(--overlay-strong)] disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100/80 disabled:opacity-50"
                   title="Planilla lista para liquidar / importar al ERP (aprobados si el filtro es pendientes)"
                 >
                   <Download size={14} />
@@ -1320,7 +1354,7 @@ export function RendicionPanel() {
                   type="button"
                   disabled={erpBusy}
                   onClick={() => void enviarAlErp()}
-                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-emerald-700/50 hover:bg-emerald-500/25 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-[#fff] shadow-sm hover:bg-indigo-700 disabled:opacity-50"
                   title="Simula el envío de gastos aprobados al ERP (demo, no es integración real)"
                 >
                   <Send size={14} className={erpBusy ? "animate-pulse" : undefined} />
@@ -1369,7 +1403,7 @@ export function RendicionPanel() {
                           setQInput(v.nroViajeDelfos);
                           setQ(v.nroViajeDelfos);
                         }}
-                        className="cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.04]"
+                        className="cursor-pointer border-b border-slate-100 hover:bg-indigo-50/40"
                         title="Ver gastos de este viaje en la cola"
                       >
                         <td className="py-3 pr-3 font-mono text-xs font-semibold text-emerald-300">
@@ -1381,8 +1415,8 @@ export function RendicionPanel() {
                         <td className="py-3 pr-3 text-[var(--text-dim)]">
                           {v.hojaCodigo || "—"}
                         </td>
-                        <td className="py-3 pr-3 tabular text-white">{v.anticipoLabel}</td>
-                        <td className="py-3 pr-3 tabular text-white">{v.montoRendidoLabel}</td>
+                        <td className="py-3 pr-3 font-semibold tabular-nums text-slate-900">{v.anticipoLabel}</td>
+                        <td className="py-3 pr-3 font-semibold tabular-nums text-slate-900">{v.montoRendidoLabel}</td>
                         <td className="py-3 pr-3 tabular text-[var(--text-dim)]">
                           {v.montoAprobadoLabel}
                         </td>
@@ -1424,7 +1458,7 @@ export function RendicionPanel() {
                 value={qInput}
                 onChange={(e) => setQInput(e.target.value)}
                 placeholder="Remito, chofer o patente…"
-                className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-2)] py-2 pl-8 pr-3 text-sm text-white outline-none placeholder:text-[var(--text-faint)] focus:ring-2 focus:ring-[var(--violet)]/40"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500"
               />
             </span>
           </label>
@@ -1434,7 +1468,7 @@ export function RendicionPanel() {
               type="date"
               value={desde}
               onChange={(e) => setDesde(e.target.value)}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500"
             />
           </label>
           <label className="flex flex-col gap-1.5 text-xs text-[var(--text-dim)]">
@@ -1443,14 +1477,14 @@ export function RendicionPanel() {
               type="date"
               value={hasta}
               onChange={(e) => setHasta(e.target.value)}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-[var(--violet)]/40"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500"
             />
           </label>
         </div>
 
         {pendientesVisibles.length > 0 && (
           <div className="mb-3 flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text)]">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
               <input
                 type="checkbox"
                 checked={todosMarcados}
@@ -1465,7 +1499,7 @@ export function RendicionPanel() {
               type="button"
               disabled={bulkBusy || selectedPendientes.length === 0}
               onClick={() => void aprobarSeleccionados()}
-              className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-[var(--text)] ring-1 ring-emerald-700/50 hover:bg-emerald-500/25 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200/80 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40"
             >
               <Check size={14} />
               {bulkBusy
@@ -1486,8 +1520,8 @@ export function RendicionPanel() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-left text-sm">
-              <thead className="text-xs uppercase text-[var(--text-faint)]">
-                <tr className="border-b border-[var(--border)]">
+              <thead className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-slate-200">
                   <th className="w-8 py-2 pr-2 font-medium">
                     <span className="sr-only">Selección</span>
                   </th>
@@ -1507,7 +1541,7 @@ export function RendicionPanel() {
                   <tr
                     key={g.id}
                     onClick={() => setDetalle(g)}
-                    className="cursor-pointer border-b border-[var(--border)]/60 hover:bg-white/[0.04]"
+                    className="cursor-pointer border-b border-slate-100 hover:bg-indigo-50/40"
                   >
                     <td className="py-3 pr-2" onClick={(e) => e.stopPropagation()}>
                       {g.estado === "pendiente_aprobacion" ? (
@@ -1521,7 +1555,7 @@ export function RendicionPanel() {
                         />
                       ) : null}
                     </td>
-                    <td className="py-3 pr-3 font-medium text-white">{g.codigo}</td>
+                    <td className="py-3 pr-3 font-semibold text-indigo-900">{g.codigo}</td>
                     <td className="whitespace-nowrap py-3 pr-3 tabular text-[var(--text-dim)]">
                       {fmtFechaCola(g)}
                     </td>
@@ -1533,12 +1567,12 @@ export function RendicionPanel() {
                       <button
                         type="button"
                         onClick={() => abrirComprobante(g)}
-                        className="inline-flex items-center gap-1.5 tabular text-white hover:text-[var(--violet-2)]"
+                        className="inline-flex items-center gap-1.5 font-bold tabular-nums text-slate-900 hover:text-indigo-600"
                         title={g.imagenUrl ? "Ver comprobante" : "Sin comprobante"}
                       >
                         {g.montoLabel}
                         {g.monedaOrigen === "CLP" && g.montoOrigenLabel ? (
-                          <span className="ml-1 text-[10px] text-sky-400">
+                          <span className="ml-1 text-[11px] font-normal text-sky-600">
                             ({g.montoOrigenLabel})
                           </span>
                         ) : null}
@@ -1558,10 +1592,10 @@ export function RendicionPanel() {
                     <td className="py-3 pr-3">
                       <span
                         className={clsx(
-                          "rounded-md px-2 py-0.5 text-xs font-semibold",
-                          g.estado === "pendiente_aprobacion" && "bg-amber-500/15 text-amber-400",
-                          g.estado === "aprobado" && "bg-emerald-500/15 text-emerald-400",
-                          g.estado === "rechazado" && "bg-rose-500/15 text-rose-500",
+                          "rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                          g.estado === "pendiente_aprobacion" && "border-amber-200 bg-amber-50 text-amber-700",
+                          g.estado === "aprobado" && "border-emerald-200 bg-emerald-50 text-emerald-700",
+                          g.estado === "rechazado" && "border-rose-200 bg-rose-50 text-rose-700",
                         )}
                       >
                         {g.estadoLabel}
@@ -1574,7 +1608,7 @@ export function RendicionPanel() {
                             type="button"
                             disabled={busyId === g.id || bulkBusy}
                             onClick={() => void decidir(g, "aprobado")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 hover:border-emerald-600 hover:bg-emerald-600 hover:text-[#fff] disabled:opacity-50"
                           >
                             <Check size={14} />
                             OK
@@ -1583,7 +1617,7 @@ export function RendicionPanel() {
                             type="button"
                             disabled={busyId === g.id || bulkBusy}
                             onClick={() => void decidir(g, "rechazado")}
-                            className="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/30 disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-700 hover:border-rose-600 hover:bg-rose-600 hover:text-[#fff] disabled:opacity-50"
                           >
                             <X size={14} />
                             No
@@ -1601,7 +1635,7 @@ export function RendicionPanel() {
         )}
           </>
         )}
-      </Card>
+      </div>
 
       {detalle && (
         <GastoDetalleModal
