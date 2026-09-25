@@ -31,6 +31,7 @@ import { RemitoImageLightbox } from "./RemitoImageLightbox";
 
 type Filtro = "todos" | "pendiente_aprobacion" | "aprobado" | "rechazado";
 type Vista = "cola" | "viajes";
+const POR_PAGINA = 12;
 
 type FotoPreview = {
   src: string;
@@ -740,6 +741,7 @@ export function RendicionPanel() {
   const [resumen, setResumen] = useState<ResumenRendicion | null>(null);
   const [rules, setRules] = useState<RendicionRules | null>(null);
   const [filtro, setFiltro] = useState<Filtro>("pendiente_aprobacion");
+  const [pagina, setPagina] = useState(0);
   const [vista, setVista] = useState<Vista>("cola");
   const [viajes, setViajes] = useState<ViajeAnticipoRendicion[]>([]);
   const [viajesLoading, setViajesLoading] = useState(false);
@@ -772,6 +774,7 @@ export function RendicionPanel() {
 
   useEffect(() => {
     setSelectedIds([]);
+    setPagina(0);
   }, [filtro, q, desde, hasta]);
 
   useEffect(() => {
@@ -976,11 +979,16 @@ export function RendicionPanel() {
     }
   }
 
+  const totalPaginas = Math.max(1, Math.ceil(rows.length / POR_PAGINA));
+  const paginaActual = Math.min(pagina, totalPaginas - 1);
+  const filasPagina = rows.slice(paginaActual * POR_PAGINA, paginaActual * POR_PAGINA + POR_PAGINA);
   const pendientesVisibles = useMemo(
-    () => rows.filter((g) => g.estado === "pendiente_aprobacion"),
-    [rows],
+    () => filasPagina.filter((g) => g.estado === "pendiente_aprobacion"),
+    [filasPagina],
   );
-  const selectedPendientes = pendientesVisibles.filter((g) => selectedIds.includes(g.id));
+  const selectedPendientes = rows.filter(
+    (g) => g.estado === "pendiente_aprobacion" && selectedIds.includes(g.id),
+  );
   const todosMarcados =
     pendientesVisibles.length > 0 &&
     pendientesVisibles.every((g) => selectedIds.includes(g.id));
@@ -990,11 +998,14 @@ export function RendicionPanel() {
   }
 
   function toggleTodosPendientes() {
-    setSelectedIds(todosMarcados ? [] : pendientesVisibles.map((g) => g.id));
+    const idsPagina = pendientesVisibles.map((g) => g.id);
+    setSelectedIds((cur) =>
+      todosMarcados ? cur.filter((id) => !idsPagina.includes(id)) : [...new Set([...cur, ...idsPagina])],
+    );
   }
 
   async function aprobarSeleccionados() {
-    const elegidos = pendientesVisibles.filter((g) => selectedIds.includes(g.id));
+    const elegidos = selectedPendientes;
     if (!elegidos.length || bulkBusy) return;
     if (rules?.requireNroViajeDelfosOnApprove) {
       const sinViaje = elegidos.filter((g) => !String(g.nroViajeDelfos || "").trim());
@@ -1537,7 +1548,7 @@ export function RendicionPanel() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((g) => (
+                {filasPagina.map((g) => (
                   <tr
                     key={g.id}
                     onClick={() => setDetalle(g)}
@@ -1631,6 +1642,46 @@ export function RendicionPanel() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {rows.length > POR_PAGINA && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+            <span>
+              {paginaActual * POR_PAGINA + 1}–{Math.min((paginaActual + 1) * POR_PAGINA, rows.length)} de {rows.length}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={paginaActual === 0}
+                onClick={() => setPagina(paginaActual - 1)}
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+              >
+                Anterior
+              </button>
+              {Array.from({ length: totalPaginas }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setPagina(i)}
+                  className={clsx(
+                    "flex h-7 w-7 items-center justify-center rounded-lg font-medium",
+                    i === paginaActual
+                      ? "bg-indigo-600 text-[#fff]"
+                      : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+                  )}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                type="button"
+                disabled={paginaActual >= totalPaginas - 1}
+                onClick={() => setPagina(paginaActual + 1)}
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+              >
+                Siguiente
+              </button>
+            </div>
           </div>
         )}
           </>
