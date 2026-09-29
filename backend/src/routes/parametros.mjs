@@ -69,6 +69,19 @@ function validateChofer(body, partial) {
   if (body.telefono !== undefined && body.telefono !== null) {
     body.telefono = normalizePhone(body.telefono) || null;
   }
+  const obsOk = new Set(["CHOFER PROPIO", "FLETERO", "ADMINISTRACION"]);
+  for (const key of ["cuenta_tasa", "cuenta_fasa"]) {
+    if (body[key] !== undefined) {
+      const s = String(body[key] ?? "").trim();
+      body[key] = s || null;
+    }
+  }
+  if (body.observacion !== undefined) {
+    const obs = String(body.observacion ?? "").trim().toUpperCase();
+    if (!obs) body.observacion = null;
+    else if (!obsOk.has(obs)) return "observacion inválida (CHOFER PROPIO | FLETERO | ADMINISTRACION)";
+    else body.observacion = obs;
+  }
   return null;
 }
 
