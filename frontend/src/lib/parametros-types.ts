@@ -8,10 +8,15 @@ export interface ParametroBase {
   updated_at?: string;
 }
 
+export type ChoferObservacion = "CHOFER PROPIO" | "FLETERO" | "ADMINISTRACION";
+
 export interface Chofer extends ParametroBase {
   nombre: string;
   telefono: string | null;
   documento: string | null;
+  cuenta_tasa?: string | null;
+  cuenta_fasa?: string | null;
+  observacion?: ChoferObservacion | null;
 }
 
 export type UnidadTipo = "tractor" | "acoplado";

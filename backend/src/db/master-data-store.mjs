@@ -129,6 +129,29 @@ export async function resolverChoferPorTelefono(telefono) {
   return null;
 }
 
+const OBSERVACIONES_CHOFER = new Set(["CHOFER PROPIO", "FLETERO", "ADMINISTRACION"]);
+
+function cuentaOrNull(value) {
+  const s = String(value ?? "").trim();
+  return s || null;
+}
+
+/** Campos de la planilla contable. Solo se aplican si vienen en el ítem. */
+function cuentasChofer(raw) {
+  const patch = {};
+  if (raw.cuenta_tasa !== undefined || raw.cuentaTasa !== undefined) {
+    patch.cuenta_tasa = cuentaOrNull(raw.cuenta_tasa ?? raw.cuentaTasa);
+  }
+  if (raw.cuenta_fasa !== undefined || raw.cuentaFasa !== undefined) {
+    patch.cuenta_fasa = cuentaOrNull(raw.cuenta_fasa ?? raw.cuentaFasa);
+  }
+  if (raw.observacion !== undefined || raw.tipo !== undefined) {
+    const obs = String(raw.observacion ?? raw.tipo ?? "").trim().toUpperCase();
+    patch.observacion = obs && OBSERVACIONES_CHOFER.has(obs) ? obs : null;
+  }
+  return patch;
+}
+
 /** Import masivo desde array (upsert por teléfono en telefono o documento/DNI) */
 export async function importChoferes(items, { tenant, replace = false } = {}) {
   const db = readDb();
@@ -142,6 +165,7 @@ export async function importChoferes(items, { tenant, replace = false } = {}) {
       db.choferes.filter((c) => c.tenant === tenant),
       phone,
     );
+    const cuentas = cuentasChofer(raw);
     if (existing) {
       Object.assign(
         existing,
@@ -150,6 +174,7 @@ export async function importChoferes(items, { tenant, replace = false } = {}) {
           telefono: phone || existing.telefono,
           documento: phone || existing.documento,
           activo: true,
+          ...cuentas,
         }),
       );
     } else {
@@ -161,6 +186,10 @@ export async function importChoferes(items, { tenant, replace = false } = {}) {
           telefono: phone || null,
           documento: phone || null,
           activo: true,
+          cuenta_tasa: null,
+          cuenta_fasa: null,
+          observacion: null,
+          ...cuentas,
         }),
       );
       created++;

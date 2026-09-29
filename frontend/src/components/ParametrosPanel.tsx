@@ -24,6 +24,7 @@ import {
 import { useConfirm } from "@/lib/confirm-context";
 import type {
   Chofer,
+  ChoferObservacion,
   Distancia,
   Localidad,
   ParametroTab,
@@ -178,7 +179,7 @@ export function ParametrosPanel() {
 
   const q = busqueda.trim();
   const choferesFiltrados = choferes.filter((r) =>
-    matchBusqueda(q, r.nombre, r.telefono, r.documento),
+    matchBusqueda(q, r.nombre, r.telefono, r.documento, r.cuenta_tasa, r.cuenta_fasa, r.observacion),
   );
   const unidadesFiltradas = unidades.filter((r) =>
     matchBusqueda(q, r.patente, r.unidad_interna, r.tipo === "tractor" ? "tractor chasis" : "semi acoplado"),
@@ -330,7 +331,7 @@ export function ParametrosPanel() {
         <Card>
           <SectionTitle>Choferes · {tenantLabel(tenant)}</SectionTitle>
           <p className="mb-3 text-xs text-[var(--text-faint)]">
-            Editá nombre o teléfono y pulsá <strong className="text-white">Guardar</strong> en esa fila.
+            Editá nombre, teléfono, cuentas o tipo y pulsá <strong className="text-white">Guardar</strong> en esa fila.
           </p>
           <form onSubmit={onAddChofer} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input className={inputCls} placeholder="Nombre completo" value={choferForm.nombre} onChange={(e) => setChoferForm((f) => ({ ...f, nombre: e.target.value }))} required />
@@ -342,14 +343,14 @@ export function ParametrosPanel() {
           <ParamBuscar
             value={busqueda}
             onChange={setBusqueda}
-            placeholder="Buscar por nombre o teléfono…"
+            placeholder="Buscar por nombre, teléfono, cuenta o tipo…"
             total={choferes.length}
             filtered={choferesFiltrados.length}
           />
           {loading ? (
             <p className="text-sm text-[var(--text-dim)]">Cargando…</p>
           ) : choferesFiltrados.length > 0 ? (
-            <ParamTable minWidth={720} headers={["Nombre", "Teléfono (DNI CRM)", ""]}>
+            <ParamTable minWidth={1100} headers={["Nombre", "Teléfono (DNI CRM)", "Cuenta TASA", "Cuenta FASA", "Tipo", ""]}>
               {choferesFiltrados.map((r) => (
                 <ChoferRow key={r.id} row={r} onReload={reload} onError={setErr} />
               ))}
@@ -624,6 +625,9 @@ function ChoferRow({
 }) {
   const [nombre, setNombre] = useState(row.nombre);
   const [telefono, setTelefono] = useState(row.documento || row.telefono || "");
+  const [cuentaTasa, setCuentaTasa] = useState(row.cuenta_tasa || "");
+  const [cuentaFasa, setCuentaFasa] = useState(row.cuenta_fasa || "");
+  const [observacion, setObservacion] = useState(row.observacion || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const confirm = useConfirm();
@@ -631,9 +635,17 @@ function ChoferRow({
   useEffect(() => {
     setNombre(row.nombre);
     setTelefono(row.documento || row.telefono || "");
-  }, [row.id, row.nombre, row.documento, row.telefono]);
+    setCuentaTasa(row.cuenta_tasa || "");
+    setCuentaFasa(row.cuenta_fasa || "");
+    setObservacion(row.observacion || "");
+  }, [row.id, row.nombre, row.documento, row.telefono, row.cuenta_tasa, row.cuenta_fasa, row.observacion]);
 
-  const dirty = nombre.trim() !== row.nombre || telefono.trim() !== (row.documento || row.telefono || "");
+  const dirty =
+    nombre.trim() !== row.nombre ||
+    telefono.trim() !== (row.documento || row.telefono || "") ||
+    cuentaTasa.trim() !== (row.cuenta_tasa || "") ||
+    cuentaFasa.trim() !== (row.cuenta_fasa || "") ||
+    observacion !== (row.observacion || "");
 
   async function save() {
     if (!nombre.trim()) {
@@ -644,7 +656,14 @@ function ChoferRow({
     setSaved(false);
     try {
       const tel = telefono.trim() || null;
-      await updateChofer(row.id, { nombre: nombre.trim(), telefono: tel, documento: tel });
+      await updateChofer(row.id, {
+        nombre: nombre.trim(),
+        telefono: tel,
+        documento: tel,
+        cuenta_tasa: cuentaTasa.trim() || null,
+        cuenta_fasa: cuentaFasa.trim() || null,
+        observacion: (observacion || null) as ChoferObservacion | null,
+      });
       setSaved(true);
       onReload();
       setTimeout(() => setSaved(false), 2000);
@@ -678,6 +697,20 @@ function ChoferRow({
       </td>
       <td className="px-3 py-2 align-middle">
         <input className={rowInputCls} value={telefono} placeholder="549…" onChange={(e) => setTelefono(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={cuentaTasa} placeholder="1.1.100.10…" onChange={(e) => setCuentaTasa(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <input className={rowInputCls} value={cuentaFasa} placeholder="1.1.100.10…" onChange={(e) => setCuentaFasa(e.target.value)} />
+      </td>
+      <td className="px-3 py-2 align-middle">
+        <select className={rowInputCls} value={observacion} onChange={(e) => setObservacion(e.target.value as ChoferObservacion | "")}>
+          <option value="">—</option>
+          <option value="CHOFER PROPIO">Chofer propio</option>
+          <option value="FLETERO">Fletero</option>
+          <option value="ADMINISTRACION">Administración</option>
+        </select>
       </td>
       <td className="px-3 py-2 align-middle">
         <RowActions dirty={dirty} saving={saving} saved={saved} onSave={save} onDelete={remove} />

@@ -24,10 +24,16 @@ CREATE TABLE IF NOT EXISTS choferes (
   nombre VARCHAR(120) NOT NULL,
   telefono VARCHAR(30),
   documento VARCHAR(20),
+  cuenta_tasa VARCHAR(40),
+  cuenta_fasa VARCHAR(40),
+  observacion VARCHAR(40),
   activo BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE choferes ADD COLUMN IF NOT EXISTS cuenta_tasa VARCHAR(40);
+ALTER TABLE choferes ADD COLUMN IF NOT EXISTS cuenta_fasa VARCHAR(40);
+ALTER TABLE choferes ADD COLUMN IF NOT EXISTS observacion VARCHAR(40);
 CREATE INDEX IF NOT EXISTS idx_choferes_tenant ON choferes(tenant);
 
 CREATE TABLE IF NOT EXISTS unidades (
