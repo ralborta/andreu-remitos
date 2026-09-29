@@ -48,6 +48,7 @@ import {
 import { clasificarDocumentoAndreu } from "../../../lib/documento-andreu.mjs";
 import {
   procesarHojaRutaWhatsApp,
+  continuarConfirmacionNumeroHoja,
   pareceHojaRuta,
   hojaRutaHabilitada,
 } from "../services/hoja-ruta-agent.mjs";
@@ -519,6 +520,20 @@ export default async function webhooksRoutes(fastify) {
 
       const texto = ev.message?.trim() || "";
       const convEarly = ev.from ? await convStore.getConversacion(ev.from) : null;
+
+      // El "sí", el "no" o el número de la hoja no pueden caer en destinos ni en peajes.
+      // Una foto nueva no es la respuesta: vuelve a entrar como otra hoja.
+      if (ev.from && convEarly?.hoja_numero_pendiente && texto && !ev.media?.url && !ev.location) {
+        const numOut = await continuarConfirmacionNumeroHoja({
+          telefono: ev.from,
+          texto,
+          nombre: ev.nombre,
+          log: request.log,
+        });
+        if (numOut) {
+          return respuestaWebhook({ ...numOut, received: true });
+        }
+      }
 
       // Destinos primero — cliente en validación no debe caer en flujo de remitos
       const destinoOut = await tryProcesarDestinos(ev, { texto, log: request.log });

@@ -244,6 +244,23 @@ export async function setCorinaClienteMarca(telefono, marca) {
   return conv;
 }
 
+/** Esperando que el chofer confirme el nº de viaje leído en la hoja de ruta. */
+export async function setHojaNumeroPendiente(telefono, payload) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (payload) conv.hoja_numero_pendiente = payload;
+  else delete conv.hoja_numero_pendiente;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function getHojaNumeroPendiente(telefono) {
+  const conv = await getConversacion(telefono);
+  return conv?.hoja_numero_pendiente ?? null;
+}
+
 /** Esperando foto de hoja de ruta (no debe caer en flujo remito/Corina). */
 export async function setEsperandoHojaRuta(telefono, esperando = true) {
   if (!telefono) return null;

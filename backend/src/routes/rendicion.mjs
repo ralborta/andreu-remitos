@@ -85,6 +85,7 @@ function mapHoja(row) {
     telefono: row.telefono,
     choferNombre: row.chofer_nombre,
     nroViajeDelfos: row.nro_viaje_delfos,
+    nroViajeConfirmadoChofer: Boolean(row.nro_viaje_confirmado_chofer),
     patente: row.patente,
     patenteSemi: row.patente_semi,
     fechaSalida: row.fecha_salida,

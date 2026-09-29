@@ -74,6 +74,7 @@ export async function crearHojaRuta(body = {}) {
     confianza: body.confianza != null ? Number(body.confianza) : null,
     fuente: body.fuente || null,
     estado: body.estado || "pendiente_revision",
+    nro_viaje_confirmado_chofer: Boolean(body.nro_viaje_confirmado_chofer),
     historial: [`${now} · Creada`],
     created_at: now,
     updated_at: now,
@@ -83,12 +84,33 @@ export async function crearHojaRuta(body = {}) {
   return row;
 }
 
+export async function actualizarHojaRuta(id, patch = {}) {
+  const rows = readAll();
+  const i = rows.findIndex((r) => r.id === id);
+  if (i < 0) return null;
+  const row = rows[i];
+  const now = new Date().toISOString();
+  if (patch.nro_viaje_delfos !== undefined) {
+    row.nro_viaje_delfos = normStr(patch.nro_viaje_delfos);
+  }
+  if (patch.estado) row.estado = String(patch.estado);
+  if (patch.nro_viaje_confirmado_chofer !== undefined) {
+    row.nro_viaje_confirmado_chofer = Boolean(patch.nro_viaje_confirmado_chofer);
+  }
+  if (patch.historial_push) {
+    row.historial = [...(row.historial ?? []), patch.historial_push];
+  }
+  row.updated_at = now;
+  writeAll(rows);
+  return row;
+}
+
 /** Hojas recientes del chofer para sugerir Nº Delfos al aprobar peajes. */
 export async function sugerirDesdeHojasRuta({ telefono, limit = 5 } = {}) {
   const phone = sanitizePhone(telefono);
   if (!phone) return [];
   const rows = (await listHojasRuta({ limit: 40, telefono: phone })).filter(
-    (r) => r.nro_viaje_delfos,
+    (r) => r.nro_viaje_delfos && r.nro_viaje_confirmado_chofer !== false,
   );
   return rows.slice(0, limit).map((r) => ({
     hojaId: r.id,
