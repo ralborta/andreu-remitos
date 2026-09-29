@@ -17,7 +17,6 @@ import {
   Activity,
   ChartColumn,
   Radio,
-  Navigation,
   Sparkles,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
@@ -113,20 +112,6 @@ export function Sidebar({
           >
             <Activity size={18} />
             Monitor
-          </Link>
-
-          <Link
-            href="/agentes/tracking"
-            onClick={onClose}
-            className={clsx(
-              "group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive("/agentes/tracking")
-                ? "bg-[var(--violet)]/15 text-white ring-1 ring-[var(--violet)]/40"
-                : "text-[var(--text-dim)] hover:bg-white/5 hover:text-white",
-            )}
-          >
-            <Navigation size={18} />
-            Tracking Express
           </Link>
 
           <Link
