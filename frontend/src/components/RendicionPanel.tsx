@@ -243,10 +243,16 @@ function GastoDetalleModal({
             )}
             {caso.viajeDocumento && (
               <div className="sm:col-span-2">
-                <Campo label="Viaje en documento (no confirmado)">
+                <Campo
+                  label={
+                    caso.viajeDocumentoConfirmadoChofer
+                      ? "Viaje en hoja de ruta (lo confirmó el chofer)"
+                      : "Viaje en documento (no confirmado)"
+                  }
+                >
                   <span className="text-amber-300">{caso.viajeDocumento}</span>
                   <span className="mt-1 block text-xs text-[var(--text-faint)]">
-                    Puede no ser el nº de Delfos — confirmar aparte.
+                    No es el nº de Delfos — la mesa lo confirma al aprobar.
                   </span>
                 </Campo>
               </div>

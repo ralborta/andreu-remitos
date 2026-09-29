@@ -597,6 +597,7 @@ export interface GastoRendicion {
   viajeRef: string | null;
   nroViajeDelfos?: string | null;
   viajeDocumento?: string | null;
+  viajeDocumentoConfirmadoChofer?: boolean;
   remitoRef?: string | null;
   remitoId?: string | null;
   patente?: string | null;

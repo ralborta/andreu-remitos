@@ -31,6 +31,7 @@ import {
 import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
 import {
   procesarGastoWhatsApp,
+  continuarConfirmacionViajeHoja,
   telefonoEsChoferRegistrado,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
@@ -60,7 +61,7 @@ import {
   extractCodigoReclamo,
   pareceConsultaEstadoReclamo,
 } from "../../../lib/reclamos.mjs";
-import { pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
+import { pareceHojaRuta, pareceRendicionGasto } from "../../../lib/rendicion-wa.mjs";
 import { pareceIncidenciaEnRuta } from "../../../lib/incidencias-wa.mjs";
 import * as destinosStore from "../db/destinos-store.mjs";
 import * as solViajesStore from "../db/viajes-solicitudes-store.mjs";
@@ -773,7 +774,7 @@ async function enrutarPorIntencion(ev, { texto, conv, log } = {}) {
 async function tryProcesarDestinos(ev, { texto, log, tieneFoto = false } = {}) {
   if (!ev.from) return null;
   // No robar mensajes de rendición, incidencias ni remitos (full IA / OCR)
-  if (pareceRendicionGasto(texto)) return null;
+  if (pareceRendicionGasto(texto) || pareceHojaRuta(texto)) return null;
   if (pareceIncidenciaEnRuta(texto)) return null;
   if (pareceQuiereRemito(texto)) return null;
 
@@ -1309,6 +1310,21 @@ export default async function webhooksRoutes(fastify) {
       const esFoto =
         Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
 
+      // Nº de viaje de la hoja de ruta: un "sí", un "no" o un número no pueden
+      // caer en POP, POD, destinos ni remito. Una foto nueva no es la respuesta.
+      const viajeHojaPendiente = convEarly?.rendicion_viaje_pendiente ?? null;
+      if (ev.from && viajeHojaPendiente && texto && !esFoto && !pareceQuiereRemito(texto)) {
+        const viajeOut = await continuarConfirmacionViajeHoja({
+          telefono: ev.from,
+          texto,
+          nombre: ev.nombre,
+          log: request.log,
+        });
+        if (viajeOut) {
+          return respuestaWebhook({ ...viajeOut, received: true });
+        }
+      }
+
       // Reclamo pendiente + foto/texto: ANTES de rendición/remito
       // (foto de producto dañado / equivocado no debe caer a OCR de remito)
       // EXCEPCIÓN: si el mensaje es claramente POP/POD, no dejar que un reclamo
@@ -1573,7 +1589,7 @@ export default async function webhooksRoutes(fastify) {
       const quiereRendicion =
         esChoferDb &&
         !pareceQuiereRemito(texto) &&
-        pareceRendicionGasto(texto);
+        (pareceRendicionGasto(texto) || pareceHojaRuta(texto));
 
       if (ev.from && quiereRendicion) {
         let imageBuffer = null;
@@ -1775,7 +1791,7 @@ export default async function webhooksRoutes(fastify) {
             }
           }
         }
-        if (pareceRendicionGasto(caption) && esChoferMedia) {
+        if ((pareceRendicionGasto(caption) || pareceHojaRuta(caption)) && esChoferMedia) {
           const gastoOut = await tryProcesarRendicion(ev, {
             texto: caption,
             log: request.log,

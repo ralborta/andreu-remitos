@@ -147,6 +147,8 @@ export async function crearGasto(body = {}) {
     nro_viaje_delfos: normStr(body.nro_viaje_delfos),
     /** Número de viaje que apareció en OCR/documento (puede NO ser Delfos). */
     viaje_documento: normStr(body.viaje_documento),
+    /** El chofer confirmó ese número en la hoja de ruta. No equivale al Delfos de mesa. */
+    viaje_documento_confirmado_chofer: Boolean(body.viaje_documento_confirmado_chofer),
     remito_ref: normStr(body.remito_ref || body.nro_remito || body.remito),
     remito_id: normStr(body.remito_id),
     patente: normStr(body.patente),
@@ -188,6 +190,7 @@ const PATCH_KEYS = [
   "viaje_ref",
   "nro_viaje_delfos",
   "viaje_documento",
+  "viaje_documento_confirmado_chofer",
   "remito_ref",
   "remito_id",
   "patente",
@@ -228,7 +231,7 @@ export async function actualizarGasto(id, patch = {}) {
         k === "cuit_proveedor"
       ) {
         row[k] = normStr(patch[k]);
-      } else if (k === "rae") {
+      } else if (k === "rae" || k === "viaje_documento_confirmado_chofer") {
         row[k] = Boolean(patch[k]);
       } else {
         row[k] = patch[k];

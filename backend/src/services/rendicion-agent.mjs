@@ -1,7 +1,12 @@
 import {
   interpretarGastoWhatsApp,
+  interpretarRespuestaViajeHoja,
+  mensajeConfirmarViajeHoja,
   mensajeConfirmacionGasto,
   mensajePedirFotoComprobante,
+  mensajePedirNumeroViajeHoja,
+  mensajeViajeHojaConfirmado,
+  pareceHojaRuta,
   pareceRendicionGasto,
 } from "../../../lib/rendicion-wa.mjs";
 import * as rendicionStore from "../db/rendicion-store.mjs";
@@ -66,7 +71,7 @@ export async function procesarGastoWhatsApp({
   const phone = sanitizePhone(telefono);
   const t = String(texto ?? "").trim();
   if (!phone) return null;
-  if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
+  if (!forzar && !imageBuffer && !pareceRendicionGasto(t) && !pareceHojaRuta(t)) return null;
 
   // Clientes / números no registrados: NUNCA crear gasto ni pedir comprobante de rendición.
   const chofer = await resolverChoferRendicion(phone);
@@ -132,6 +137,41 @@ export async function procesarGastoWhatsApp({
     log,
   });
 
+  const esHoja = pareceHojaRuta(t) || Boolean(interp.es_hoja_ruta);
+  if (esHoja) {
+    const detectado = interp.viaje_documento || null;
+    const gasto = await rendicionStore.crearGasto({
+      telefono: phone,
+      chofer_nombre: nombre || chofer.nombre || null,
+      categoria: "otro",
+      monto: null,
+      descripcion: interp.descripcion || "Hoja de ruta",
+      viaje_documento: detectado,
+      viaje_documento_confirmado_chofer: false,
+      nota_chofer: t || null,
+      texto_ocr: ocrTexto || interp.texto_ocr || null,
+      imagen_url: imagenPersistida || null,
+      estado: "borrador",
+    });
+    await convStore.setRendicionViajePendiente(phone, {
+      gasto_id: gasto.id,
+      fase: detectado ? "confirmar" : "escribir",
+      detectado,
+    });
+    const mensaje = mensajeConfirmarViajeHoja(detectado);
+    await enviar(phone, mensaje, { nombre, gasto_id: gasto.id });
+    log?.info?.(
+      { id: gasto.id, codigo: gasto.codigo, detectado },
+      "Rendición: hoja de ruta espera confirmación de viaje",
+    );
+    return {
+      flow: detectado ? "rendicion_confirmar_viaje" : "rendicion_pedir_viaje",
+      gasto,
+      mensaje,
+      message: mensaje,
+    };
+  }
+
   const gasto = await rendicionStore.crearGasto({
     telefono: phone,
     chofer_nombre: nombre || null,
@@ -169,6 +209,76 @@ export async function procesarGastoWhatsApp({
 
   return {
     flow: "rendicion_pendiente",
+    gasto,
+    mensaje,
+    message: mensaje,
+  };
+}
+
+/**
+ * Siguiente mensaje del chofer: confirma, corrige o dicta el nº de la hoja de ruta.
+ * No toca el nº Delfos: eso lo confirma la mesa al aprobar.
+ */
+export async function continuarConfirmacionViajeHoja({
+  telefono,
+  texto,
+  nombre,
+  log,
+} = {}) {
+  const phone = sanitizePhone(telefono);
+  const pendiente = phone ? await convStore.getRendicionViajePendiente(phone) : null;
+  if (!phone || !pendiente?.gasto_id) return null;
+
+  const t = String(texto ?? "").trim();
+  if (t) {
+    await convStore.appendMensaje(
+      phone,
+      { texto: t, tipo: "text", gasto_id: pendiente.gasto_id },
+      { dir: "in", from: "client", nombre, agente: "rendicion" },
+    );
+  }
+
+  const resp = interpretarRespuestaViajeHoja(t, pendiente.fase || "confirmar");
+  if (resp.accion === "pedir") {
+    await convStore.setRendicionViajePendiente(phone, {
+      ...pendiente,
+      fase: "escribir",
+    });
+    const mensaje = mensajePedirNumeroViajeHoja();
+    await enviar(phone, mensaje, { nombre, gasto_id: pendiente.gasto_id });
+    return { flow: "rendicion_corregir_viaje", mensaje, message: mensaje };
+  }
+
+  if (resp.accion === "repedir" || resp.accion === "repreguntar") {
+    const mensaje =
+      pendiente.fase === "escribir" || !pendiente.detectado
+        ? mensajeConfirmarViajeHoja(null)
+        : mensajeConfirmarViajeHoja(pendiente.detectado);
+    await enviar(phone, mensaje, { nombre, gasto_id: pendiente.gasto_id });
+    return { flow: "rendicion_repreguntar_viaje", mensaje, message: mensaje };
+  }
+
+  const numero = resp.accion === "guardar" ? resp.numero : pendiente.detectado;
+  if (!numero) {
+    const mensaje = mensajeConfirmarViajeHoja(null);
+    await convStore.setRendicionViajePendiente(phone, { ...pendiente, fase: "escribir" });
+    await enviar(phone, mensaje, { nombre, gasto_id: pendiente.gasto_id });
+    return { flow: "rendicion_pedir_viaje", mensaje, message: mensaje };
+  }
+
+  const gasto = await rendicionStore.actualizarGasto(pendiente.gasto_id, {
+    viaje_documento: numero,
+    viaje_documento_confirmado_chofer: true,
+    estado: "pendiente_aprobacion",
+    descripcion: "Hoja de ruta",
+    historial_push: `${new Date().toISOString()} · Chofer confirmó nº de viaje de la hoja de ruta: ${numero}`,
+  });
+  await convStore.setRendicionViajePendiente(phone, null);
+  const mensaje = mensajeViajeHojaConfirmado(numero);
+  await enviar(phone, mensaje, { nombre, gasto_id: pendiente.gasto_id });
+  log?.info?.({ id: pendiente.gasto_id, numero }, "Rendición: viaje de hoja confirmado por chofer");
+  return {
+    flow: "rendicion_viaje_confirmado",
     gasto,
     mensaje,
     message: mensaje,

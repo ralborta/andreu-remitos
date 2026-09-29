@@ -231,6 +231,23 @@ export async function clearCorreccionesPendientes(telefono) {
   return conv;
 }
 
+/** Esperando que el chofer confirme el nº de viaje de la hoja de ruta. */
+export async function setRendicionViajePendiente(telefono, payload) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (payload) conv.rendicion_viaje_pendiente = payload;
+  else delete conv.rendicion_viaje_pendiente;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function getRendicionViajePendiente(telefono) {
+  const conv = await getConversacion(telefono);
+  return conv?.rendicion_viaje_pendiente ?? null;
+}
+
 /** Cliente Corina elegido por el chofer (Cervecería | Eco de los Andes). */
 export async function setCorinaClienteMarca(telefono, marca) {
   if (!telefono) return null;

@@ -37,6 +37,7 @@ function mapGasto(row) {
     viajeRef: row.viaje_ref,
     nroViajeDelfos: row.nro_viaje_delfos || null,
     viajeDocumento: row.viaje_documento || null,
+    viajeDocumentoConfirmadoChofer: Boolean(row.viaje_documento_confirmado_chofer),
     remitoRef: row.remito_ref || null,
     remitoId: row.remito_id || null,
     patente: row.patente || null,
