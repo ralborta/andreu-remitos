@@ -69,9 +69,10 @@ export function DemoMap({ trips = DEMO_TRIPS }: { trips?: DemoTrip[] }) {
           [-34.6, -64.0],
           5,
         );
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-          attribution: "&copy; OpenStreetMap &copy; CARTO",
-          maxZoom: 18,
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
         }).addTo(map);
 
         const bounds: [number, number][] = [];

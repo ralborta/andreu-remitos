@@ -13,9 +13,9 @@ import {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Mapa real de flota (Carto dark / OSM).
- * No usamos Google Maps acá: la key del proyecto no sirve para Maps JS en el browser
- * (ApiNotActivated / billing). Leaflet + tiles oscuros dan el mismo UX con los puntos.
+ * Mapa real de flota con OpenStreetMap.
+ * CARTO imprime "API KEY REQUIRED" si no hay clave. Google Maps tampoco:
+ * la key del proyecto no sirve para Maps JS en el browser.
  */
 
 function loadLeaflet(): Promise<any> {
@@ -94,9 +94,10 @@ export function FleetMap() {
           attributionControl: true,
         }).setView([-34.6, -64.0], 8);
 
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-          attribution: "&copy; OpenStreetMap &copy; CARTO",
-          maxZoom: 18,
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
         }).addTo(map);
 
         // Solo la flota define el encuadre (no todas las ciudades, que forzaban zoom muy lejos).

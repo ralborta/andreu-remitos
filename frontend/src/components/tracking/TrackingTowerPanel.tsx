@@ -268,9 +268,10 @@ export function TrackingTowerPanel() {
           zoomControl: true,
           attributionControl: true,
         }).setView([-34.6, -58.4], 6);
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-          attribution: "&copy; OpenStreetMap &copy; CARTO",
-          maxZoom: 18,
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
         }).addTo(map);
         mapObjRef.current = map;
         setTimeout(() => map.invalidateSize(), 80);

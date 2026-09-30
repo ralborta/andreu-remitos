@@ -1,6 +1,6 @@
 /**
- * Mapa real Leaflet + CARTO Voyager (mismo estilo que el UI SOL / FleetMap).
- * Reemplaza los mocks Stitch con watermark "API KEY REQUIRED".
+ * Mapa real Leaflet + OpenStreetMap (mismo fondo que el UI SOL / FleetMap).
+ * CARTO Voyager imprime "API KEY REQUIRED" si no hay clave.
  */
 (function () {
   "use strict";
@@ -162,13 +162,11 @@
           attributionControl: true,
         }).setView([-34.6, -64.0], 5);
 
-        L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-          {
-            attribution: "&copy; OpenStreetMap &copy; CARTO",
-            maxZoom: 18,
-          },
-        ).addTo(map);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+        }).addTo(map);
 
         Object.keys(CIUDADES).forEach(function (name) {
           var p = CIUDADES[name];
