@@ -62,4 +62,34 @@ const yaBien = enriquecerBeraldiDesdeTexto(
 assert.equal(yaBien.km_inicial, "140270");
 assert.equal(yaBien.km_final, "140550");
 
+// Manuscrito con miles separados (espacio o punto) — caso real Beraldi / YPF
+const milesEspacio = extraerKmBeraldi(
+  "Km. Inicial 89 390 Km. Final 89 660 Hs. Motor Inicial 8270 Hs. Motor Final 8277",
+);
+assert.equal(milesEspacio.km_inicial, "89390");
+assert.equal(milesEspacio.km_final, "89660");
+assert.equal(milesEspacio.motor_inicial, "8270");
+assert.equal(milesEspacio.motor_final, "8277");
+
+const milesPunto = enriquecerBeraldiDesdeTexto(
+  {},
+  "Km. Inicial: 89.390 Km. Final: 89.660 Hs. Motor Final 3984",
+);
+assert.equal(milesPunto.km_inicial, "89390");
+assert.equal(milesPunto.km_final, "89660");
+
+const multilineaMiles = enriquecerBeraldiDesdeTexto(
+  {},
+  `Km Inicial
+89 390
+Hs. Motor Inicial
+8270
+Km Final
+89 660
+Hs. Motor Final
+8277`,
+);
+assert.equal(multilineaMiles.km_inicial, "89390");
+assert.equal(multilineaMiles.km_final, "89660");
+
 console.log("OK verify-beraldi-km");
