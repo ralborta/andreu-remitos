@@ -554,7 +554,9 @@ export default async function webhooksRoutes(fastify) {
           const msg =
             tipoResp === "remito"
               ? `Dale ✅ Mandame de nuevo la *foto del remito* (si está de costado, mejor enderezada).`
-              : `Dale ✅ Mandame de nuevo la *foto del ticket* (peaje / nafta).`;
+              : tipoResp === "hoja"
+                ? `Dale ✅ Mandame de nuevo la *foto de la hoja de ruta* (si está de costado, mejor enderezada).`
+                : `Dale ✅ Mandame de nuevo la *foto del ticket* (peaje / nafta).`;
           await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
           await convStore
             .appendMensaje(
@@ -688,6 +690,7 @@ export default async function webhooksRoutes(fastify) {
           // Preferencia explícita del chofer gana solo si el OCR no decide
           if (!tipoDoc && preferido === "remito") tipoDoc = "remito";
           if (!tipoDoc && preferido === "gasto") tipoDoc = "gasto";
+          if (!tipoDoc && preferido === "hoja") tipoDoc = "hoja";
 
           if (tipoDoc === "hoja" || (esperaHoja && !tipoDoc)) {
             const hojaImgOut = await tryProcesarHojaRuta(evMedia, {

@@ -287,7 +287,7 @@ export async function setDocumentoTipoPreferido(telefono, tipo) {
   if (!telefono) return null;
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, null);
-  if (tipo === "remito" || tipo === "gasto") {
+  if (tipo === "remito" || tipo === "gasto" || tipo === "hoja") {
     conv.documento_tipo_preferido = tipo;
     delete conv.documento_tipo_preguntado;
   } else {
@@ -301,7 +301,7 @@ export async function setDocumentoTipoPreferido(telefono, tipo) {
 
 export function getDocumentoTipoPreferido(conv) {
   const t = conv?.documento_tipo_preferido;
-  return t === "remito" || t === "gasto" ? t : null;
+  return t === "remito" || t === "gasto" || t === "hoja" ? t : null;
 }
 
 export async function setDocumentoTipoPreguntado(telefono, preguntado = true) {

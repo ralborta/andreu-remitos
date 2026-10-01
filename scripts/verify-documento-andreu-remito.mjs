@@ -55,6 +55,21 @@ assert.equal(captionVagoDocumento("comprobante"), true);
 assert.equal(captionVagoDocumento("peaje ruta 7"), false);
 assert.equal(interpretarRespuestaTipoDocumento("remito"), "remito");
 assert.equal(interpretarRespuestaTipoDocumento("ticket"), "gasto");
+assert.equal(interpretarRespuestaTipoDocumento("hoja"), "hoja");
 assert.match(mensajePreguntarTipoDocumento(), /remito/i);
+assert.match(mensajePreguntarTipoDocumento(), /hoja/i);
+
+// Hoja de ruta Andreu: no debe ir a remitos aunque tenga chofer/km
+const hojaAndreu = `
+ANDREU Hoja de Ruta
+Nro Viaje 49951923
+CHOFER: FORQUERA, RODOLFO
+PATENTE / TRACTOR: AH268SC
+SEMI: AH318WC
+Km Inicial 100000 Km Final 100280
+ANTICIPO
+`;
+assert.equal(clasificarDocumentoAndreu(hojaAndreu), "hoja", "hoja Andreu ≠ remito");
+assert.equal(pareceDocumentoRemito(hojaAndreu), false);
 
 console.log("OK verify-documento-andreu-remito");
