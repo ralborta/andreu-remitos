@@ -261,6 +261,46 @@ export async function getHojaNumeroPendiente(telefono) {
   return conv?.hoja_numero_pendiente ?? null;
 }
 
+/**
+ * Preferencia explícita del chofer tras foto dudosa: "remito" | "gasto".
+ * Sirve para la próxima foto aunque el OCR siga flojo (foto de costado).
+ */
+export async function setDocumentoTipoPreferido(telefono, tipo) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (tipo === "remito" || tipo === "gasto") {
+    conv.documento_tipo_preferido = tipo;
+    delete conv.documento_tipo_preguntado;
+  } else {
+    delete conv.documento_tipo_preferido;
+    delete conv.documento_tipo_preguntado;
+  }
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export function getDocumentoTipoPreferido(conv) {
+  const t = conv?.documento_tipo_preferido;
+  return t === "remito" || t === "gasto" ? t : null;
+}
+
+export async function setDocumentoTipoPreguntado(telefono, preguntado = true) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (preguntado) conv.documento_tipo_preguntado = true;
+  else delete conv.documento_tipo_preguntado;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export function convDocumentoTipoPreguntado(conv) {
+  return Boolean(conv?.documento_tipo_preguntado);
+}
+
 /** Esperando foto de hoja de ruta (no debe caer en flujo remito/Corina). */
 export async function setEsperandoHojaRuta(telefono, esperando = true) {
   if (!telefono) return null;

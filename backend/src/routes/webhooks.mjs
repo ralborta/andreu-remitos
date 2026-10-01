@@ -45,7 +45,12 @@ import {
   pareceNegacionCorta,
   mensajeCierreComprobantesRendicion,
 } from "../../../lib/rendicion-wa.mjs";
-import { clasificarDocumentoAndreu } from "../../../lib/documento-andreu.mjs";
+import {
+  clasificarDocumentoAndreu,
+  captionVagoDocumento,
+  mensajePreguntarTipoDocumento,
+  interpretarRespuestaTipoDocumento,
+} from "../../../lib/documento-andreu.mjs";
 import {
   procesarHojaRutaWhatsApp,
   continuarConfirmacionNumeroHoja,
@@ -535,6 +540,45 @@ export default async function webhooksRoutes(fastify) {
         }
       }
 
+      // Preferencia remito/ticket solo si el bot preguntó (foto dudosa)
+      if (
+        ev.from &&
+        texto &&
+        !ev.media?.url &&
+        !ev.location &&
+        convStore.convDocumentoTipoPreguntado(convEarly)
+      ) {
+        const tipoResp = interpretarRespuestaTipoDocumento(texto);
+        if (tipoResp) {
+          await convStore.setDocumentoTipoPreferido(ev.from, tipoResp);
+          const msg =
+            tipoResp === "remito"
+              ? `Dale ✅ Mandame de nuevo la *foto del remito* (si está de costado, mejor enderezada).`
+              : `Dale ✅ Mandame de nuevo la *foto del ticket* (peaje / nafta).`;
+          await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
+          await convStore
+            .appendMensaje(
+              ev.from,
+              { texto, tipo: "text" },
+              { dir: "in", from: "client", nombre: ev.nombre, agente: "router" },
+            )
+            .catch(() => {});
+          await convStore
+            .appendMensaje(
+              ev.from,
+              { texto: msg, tipo: "text" },
+              { dir: "out", from: "bot", agente: "router", nombre: ev.nombre },
+            )
+            .catch(() => {});
+          return respuestaWebhook({
+            flow: "documento_tipo_preferido",
+            preferido: tipoResp,
+            message: msg,
+            received: true,
+          });
+        }
+      }
+
       // Destinos primero — cliente en validación no debe caer en flujo de remitos
       const destinoOut = await tryProcesarDestinos(ev, { texto, log: request.log });
       if (destinoOut) {
@@ -632,12 +676,18 @@ export default async function webhooksRoutes(fastify) {
           const convMedia = ev.from ? await convStore.getConversacion(ev.from) : null;
           const esperaHoja =
             convStore.convEsperaHojaRuta(convMedia) || pareceHojaRuta(texto);
+          const nroViajeActivo = convStore.nroViajeDelfosActivo(convMedia);
           const esperaBoletas =
-            convStore.convEsperaComprobantesRendicion(convMedia) ||
+            (convStore.convEsperaComprobantesRendicion(convMedia) && Boolean(nroViajeActivo)) ||
             pareceRendicionGasto(texto);
+          const preferido = convStore.getDocumentoTipoPreferido(convMedia);
 
           // El papel manda: OCR antes de forzar rendición/hoja por sticky o caption
-          const { tipo: tipoDoc } = await clasificarFotoAndreu(buffer, filename, request.log);
+          let { tipo: tipoDoc } = await clasificarFotoAndreu(buffer, filename, request.log);
+
+          // Preferencia explícita del chofer gana solo si el OCR no decide
+          if (!tipoDoc && preferido === "remito") tipoDoc = "remito";
+          if (!tipoDoc && preferido === "gasto") tipoDoc = "gasto";
 
           if (tipoDoc === "hoja" || (esperaHoja && !tipoDoc)) {
             const hojaImgOut = await tryProcesarHojaRuta(evMedia, {
@@ -648,12 +698,14 @@ export default async function webhooksRoutes(fastify) {
               forzar: true,
             });
             if (hojaImgOut) {
+              if (ev.from) await convStore.setDocumentoTipoPreferido(ev.from, null);
               return respuestaWebhook({ ...hojaImgOut, received: true, routed_by: tipoDoc || "sticky_hoja" });
             }
           }
 
-          // Remito claro → no meter en rendición aunque haya sticky o digan "comprobante"
+          // Remito claro → no meter en rendición aunque digan "comprobante" o haya sticky
           if (tipoDoc === "remito") {
+            if (ev.from) await convStore.setDocumentoTipoPreferido(ev.from, null);
             // cae al flujo de remito más abajo
           } else if (tipoDoc === "gasto" || (esperaBoletas && !tipoDoc)) {
             const gastoImgOut = await tryProcesarRendicion(evMedia, {
@@ -664,12 +716,43 @@ export default async function webhooksRoutes(fastify) {
               forzar: true,
             });
             if (gastoImgOut) {
+              if (ev.from) await convStore.setDocumentoTipoPreferido(ev.from, null);
               return respuestaWebhook({
                 ...gastoImgOut,
                 received: true,
                 routed_by: tipoDoc || "sticky_gasto",
               });
             }
+          } else if (!tipoDoc && !esperaBoletas && captionVagoDocumento(texto)) {
+            // Foto dudosa sin viaje activo: no inventar rendición (caso remito Beraldi + YPF)
+            const msg = mensajePreguntarTipoDocumento();
+            if (ev.from) {
+              await convStore.setDocumentoTipoPreguntado(ev.from, true);
+              await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
+              await convStore
+                .appendMensaje(
+                  ev.from,
+                  {
+                    texto: texto || "[Foto]",
+                    tipo: "image",
+                    imagen_url: ev.media?.url || null,
+                  },
+                  { dir: "in", from: "client", nombre: ev.nombre, agente: "router" },
+                )
+                .catch(() => {});
+              await convStore
+                .appendMensaje(
+                  ev.from,
+                  { texto: msg, tipo: "text" },
+                  { dir: "out", from: "bot", agente: "router", nombre: ev.nombre },
+                )
+                .catch(() => {});
+            }
+            return respuestaWebhook({
+              flow: "documento_tipo_dudoso",
+              message: msg,
+              received: true,
+            });
           }
         }
 
