@@ -140,8 +140,16 @@ export function listConversaciones(params?: { tenant?: string; limit?: number })
   return api<ConversacionListItem[]>(`/api/conversaciones${qs ? `?${qs}` : ""}`);
 }
 
-export function getConversacion(telefono: string) {
-  return api<Conversacion>(`/api/conversaciones/${telefono}`);
+export function getConversacion(
+  telefono: string,
+  params?: { mensajesLimit?: number },
+) {
+  const q = new URLSearchParams();
+  if (params?.mensajesLimit) q.set("mensajes_limit", String(params.mensajesLimit));
+  const qs = q.toString();
+  return api<Conversacion>(
+    `/api/conversaciones/${telefono}${qs ? `?${qs}` : ""}`,
+  );
 }
 
 export function enviarMensajeConversacion(

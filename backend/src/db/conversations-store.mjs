@@ -138,36 +138,54 @@ export async function purgeContactosOcultos() {
   return removed;
 }
 
-export async function listConversaciones({ tenant, limit = 80 } = {}) {
-  await purgeContactosOcultos();
-  let rows = readAll();
+export async function listConversaciones({ tenant, limit = 50 } = {}) {
+  // No purge ni sync de remito acá: eso relee/escribe de más y frena la bandeja.
+  let rows = readAll().filter((c) => !esContactoOculto(c.telefono, c.nombre));
   rows.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
   const enriched = [];
   for (const row of rows) {
-    if (esContactoOculto(row.telefono, row.nombre)) continue;
-    const synced = (await syncTenantDesdeRemito(row)) ?? row;
-    const tenantEfectivo = synced.tenant ?? row.tenant;
-    if (tenant && tenantEfectivo !== tenant) continue;
-    const { mensajes, ...rest } = synced;
+    if (tenant && row.tenant !== tenant) continue;
+    const mensajes = Array.isArray(row.mensajes) ? row.mensajes : [];
+    const last = mensajes.at(-1) ?? null;
     enriched.push({
-      ...rest,
-      tenant: tenantEfectivo,
-      ultimo_mensaje: mensajes?.at(-1) ?? null,
-      total_mensajes: mensajes?.length ?? 0,
+      id: row.id ?? row.telefono,
+      telefono: row.telefono,
+      tenant: row.tenant ?? null,
+      nombre: row.nombre ?? null,
+      ultimo_remito_id: row.ultimo_remito_id ?? null,
+      bot_pausado: Boolean(row.bot_pausado),
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      ultimo_mensaje: last
+        ? {
+            id: last.id,
+            dir: last.dir,
+            from: last.from,
+            texto: last.texto != null ? String(last.texto).slice(0, 160) : null,
+            tipo: last.tipo ?? "text",
+            at: last.at,
+          }
+        : null,
+      total_mensajes: mensajes.length,
     });
     if (enriched.length >= limit) break;
   }
   return enriched;
 }
 
-export async function getConversacion(telefono) {
+export async function getConversacion(telefono, { mensajesLimit = null } = {}) {
   const phone = sanitizePhone(telefono);
   if (esContactoOculto(phone)) return null;
   const conv = readAll().find((c) => c.telefono === phone) ?? null;
   if (!conv) return null;
   if (esContactoOculto(conv.telefono, conv.nombre)) return null;
-  return syncTenantDesdeRemito(conv);
+  const synced = (await syncTenantDesdeRemito(conv)) ?? conv;
+  const lim = mensajesLimit != null ? Number(mensajesLimit) : null;
+  if (lim && Number.isFinite(lim) && lim > 0 && Array.isArray(synced.mensajes) && synced.mensajes.length > lim) {
+    return { ...synced, mensajes: synced.mensajes.slice(-lim) };
+  }
+  return synced;
 }
 
 /** Vincula el remito recién ingestado aunque falle el envío por WhatsApp. */
