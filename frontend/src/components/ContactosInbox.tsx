@@ -43,7 +43,7 @@ export function ContactosInbox() {
       const [data, ch] = await Promise.all([
         listConversaciones({
           tenant: filtroTenant || undefined,
-          limit: 200,
+          limit: 50,
         }),
         listChoferes(filtroTenant || undefined).catch(() => [] as Chofer[]),
       ]);
@@ -59,7 +59,7 @@ export function ContactosInbox() {
 
   const loadConv = useCallback(async (tel: string) => {
     try {
-      const c = await getConversacion(tel);
+      const c = await getConversacion(tel, { mensajesLimit: 80 });
       setConv(c);
       if (c.ultimo_remito_id) {
         const r = await getRemito(c.ultimo_remito_id).catch(() => null);

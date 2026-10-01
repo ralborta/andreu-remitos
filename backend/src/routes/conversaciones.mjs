@@ -6,22 +6,26 @@ import * as convStore from "../db/conversations-store.mjs";
 export default async function conversacionesRoutes(fastify) {
   fastify.get("/", async (request) => {
     const { tenant, limit } = request.query;
+    const lim = limit ? Math.min(parseInt(limit, 10) || 50, 200) : 50;
     const list = await convStore.listConversaciones({
       tenant: tenant || undefined,
-      limit: limit ? parseInt(limit, 10) : 80,
+      limit: lim,
     });
+    // Solo revisa pausa en los de esta página (no vuelve a leer todo el JSON).
     for (const c of list) {
-      if (c.bot_pausado) await syncBotPausa(c.telefono);
+      if (!c.bot_pausado) continue;
+      const synced = await syncBotPausa(c.telefono);
+      if (synced) c.bot_pausado = Boolean(synced.bot_pausado);
     }
-    return convStore.listConversaciones({
-      tenant: tenant || undefined,
-      limit: limit ? parseInt(limit, 10) : 80,
-    });
+    return list;
   });
 
   fastify.get("/:telefono", async (request, reply) => {
     const phone = sanitizePhone(request.params.telefono);
-    const conv = await syncBotPausa(phone);
+    const rawLim = request.query?.mensajes_limit ?? request.query?.mensajesLimit;
+    const mensajesLimit = rawLim != null ? Math.min(parseInt(rawLim, 10) || 80, 300) : 80;
+    await syncBotPausa(phone);
+    const conv = await convStore.getConversacion(phone, { mensajesLimit });
     if (!conv) return reply.code(404).send({ error: "Conversación no encontrada" });
     return conv;
   });
