@@ -64,11 +64,18 @@ export function imagenUrl(id: string) {
   return `${apiBase()}/api/remitos/${id}/imagen`;
 }
 
-export function listRemitos(params?: { tenant?: string; estado?: string; pendientes?: boolean; limit?: number }) {
+export function listRemitos(params?: {
+  tenant?: string;
+  estado?: string;
+  pendientes?: boolean;
+  desde?: string;
+  limit?: number;
+}) {
   const q = new URLSearchParams();
   if (params?.tenant) q.set("tenant", params.tenant);
   if (params?.estado) q.set("estado", params.estado);
   if (params?.pendientes) q.set("pendientes", "true");
+  if (params?.desde) q.set("desde", params.desde);
   if (params?.limit) q.set("limit", String(params.limit));
   const qs = q.toString();
   return api<RemitoRow[]>(`/api/remitos${qs ? `?${qs}` : ""}`);

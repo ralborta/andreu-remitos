@@ -28,12 +28,13 @@ export default async function remitosRoutes(fastify) {
   });
 
   fastify.get("/", async (request) => {
-    const { tenant, estado, pendientes, limit } = request.query;
+    const { tenant, estado, pendientes, desde, limit } = request.query;
     return listarRemitos({
       tenant,
       estado,
       pendientes,
-      limit: limit ? parseInt(limit, 10) : 50,
+      desde: desde || undefined,
+      limit: limit ? Math.min(parseInt(limit, 10) || 50, 5000) : 50,
     });
   });
 
