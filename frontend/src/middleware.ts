@@ -10,6 +10,7 @@ const PUBLIC_PREFIXES = [
   "/conexion-prueba",
   "/vincular-wa",
   "/tracking",
+  "/stitch",
 ];
 
 /** Hosts que solo sirven la pantalla de QR WhatsApp (URL externa para compartir). */
