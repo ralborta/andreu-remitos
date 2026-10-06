@@ -8,10 +8,10 @@ import { Topbar } from "./Topbar";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  // Home = HTML Stitch a pantalla completa (sin chrome propio)
-  const stitchHome = pathname === "/";
+  // Pantallas con HTML Stitch a pantalla completa (sin chrome propio)
+  const stitchFullBleed = pathname === "/" || pathname === "/monitor";
 
-  if (stitchHome) {
+  if (stitchFullBleed) {
     return <>{children}</>;
   }
 

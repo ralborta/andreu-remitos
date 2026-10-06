@@ -1,5 +1,11 @@
-import { MonitorPanel } from "@/components/MonitorPanel";
+import { StitchFrame } from "@/components/StitchFrame";
 
+/** Monitor de servicios: HTML Stitch Platform Redesign. */
 export default function MonitorPage() {
-  return <MonitorPanel />;
+  return (
+    <StitchFrame
+      src="/stitch/monitor-servicios.html"
+      title="Monitor de servicios — HTML Stitch"
+    />
+  );
 }
