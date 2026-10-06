@@ -35,7 +35,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-[var(--border)] bg-[var(--bg)]/90 px-4 backdrop-blur-xl lg:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-[var(--border-soft)] bg-[var(--bg)]/90 px-4 backdrop-blur-xl lg:px-6">
       <button
         onClick={onMenu}
         className="rounded-lg p-2 text-[var(--text-dim)] hover:bg-[var(--overlay-strong)] lg:hidden"
@@ -44,9 +44,14 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm text-[var(--text-dim)]">
-          Torre y agentes · consultas en Chat Central
-        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="truncate text-sm font-medium text-[var(--text-dim)]">
+            Torre de Control · flota, remitos y agentes
+          </p>
+          <span className="hidden shrink-0 rounded-full bg-[var(--violet)]/15 px-2 py-0.5 font-mono-label text-[10px] font-semibold uppercase text-[var(--violet)] sm:inline">
+            Borrador UI
+          </span>
+        </div>
       </div>
 
       <div className="ml-auto flex shrink-0 items-center justify-end gap-3">

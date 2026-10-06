@@ -1,26 +1,28 @@
 @import "tailwindcss";
 
-/* Tema claro por defecto (pedido Gisela 22/07): violeta suave + letras oscuras */
+/* Stitch · Platform Redesign Concept (Torre SOL) */
 :root {
-  --bg: #f4f0fb;
-  --bg-2: #ebe4f8;
+  --bg: #f8f9ff;
+  --bg-2: #eff4ff;
   --panel: #ffffff;
-  --panel-2: #f8f5ff;
-  --border: #d4c8ef;
-  --border-soft: #e4dcf5;
-  --text: #1e1433;
-  --text-dim: #4a3d6b;
-  --text-faint: #7a6d9a;
-  --violet: #7c3aed;
-  --violet-2: #6d28d9;
-  --violet-deep: #5b21b6;
-  --magenta: #c026d3;
-  --green: #16a34a;
-  --amber: #d97706;
-  --red: #dc2626;
-  --blue: #0284c7;
-  --overlay: rgba(30, 20, 51, 0.04);
-  --overlay-strong: rgba(30, 20, 51, 0.08);
+  --panel-2: #e5eeff;
+  --border: #c9c3d9;
+  --border-soft: #e2e8f0;
+  --text: #0b1c30;
+  --text-dim: #484456;
+  --text-faint: #797488;
+  --violet: #633bf3;
+  --violet-2: #4a0edc;
+  --violet-deep: #4600d7;
+  --magenta: #39b8fd;
+  --green: #00714d;
+  --amber: #f59e0b;
+  --red: #ba1a1a;
+  --blue: #006591;
+  --overlay: rgba(11, 28, 48, 0.04);
+  --overlay-strong: rgba(11, 28, 48, 0.08);
+  --shadow-card: 0 4px 20px -2px rgba(99, 59, 243, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-primary: 0 4px 12px rgba(99, 59, 243, 0.28);
 }
 
 html[data-theme="dark"] {
@@ -70,10 +72,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(900px 500px at 12% -5%, rgba(124, 58, 237, 0.1), transparent 60%),
-    radial-gradient(700px 500px at 100% 0%, rgba(192, 38, 211, 0.06), transparent 55%),
-    var(--bg);
+  background: var(--bg);
   background-attachment: fixed;
 }
 
@@ -112,8 +111,9 @@ html[data-theme="dark"] ::selection {
 
 .panel {
   background: var(--panel);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 html[data-theme="dark"] .panel {
@@ -131,8 +131,19 @@ html[data-theme="dark"] .panel {
   transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 .panel-hover:hover {
-  border-color: var(--violet);
-  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2), 0 12px 40px -12px rgba(124, 58, 237, 0.2);
+  border-color: rgba(99, 59, 243, 0.35);
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+}
+
+.nav-active {
+  background: var(--violet);
+  color: #e2daff !important;
+  box-shadow: var(--shadow-primary);
+}
+
+.hero-sol {
+  background: linear-gradient(135deg, #4a0edc 0%, #633bf3 45%, #39b8fd 120%);
+  box-shadow: var(--shadow-primary);
 }
 
 .grad-text {
@@ -235,8 +246,17 @@ html:not([data-theme="dark"]) .hover\:text-white:hover {
   color: var(--text) !important;
 }
 html:not([data-theme="dark"]) :is(button, a, .btn-primary)[class*="bg-[var(--violet)"]],
-html:not([data-theme="dark"]) :is(button, a).bg-\[var\(--violet\)\] {
+html:not([data-theme="dark"]) :is(button, a).bg-\[var\(--violet\)\],
+html:not([data-theme="dark"]) .nav-active,
+html:not([data-theme="dark"]) .hero-sol,
+html:not([data-theme="dark"]) .hero-sol .text-white {
   color: #fff !important;
+}
+html:not([data-theme="dark"]) .hero-sol .text-white\/80 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.font-mono-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 html:not([data-theme="dark"]) .bg-white\/5,
 html:not([data-theme="dark"]) .hover\:bg-white\/5:hover,

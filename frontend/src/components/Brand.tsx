@@ -83,10 +83,13 @@ export function Brand({
   className,
   size = "md",
   variant = "product",
+  onLight = false,
 }: {
   className?: string;
   size?: BrandSize;
   variant?: BrandVariant;
+  /** Texto oscuro del wordmark Empliados sobre fondos claros. */
+  onLight?: boolean;
 }) {
   if (variant === "company") {
     const cfg = COMPANY_CFG[size];
@@ -126,7 +129,7 @@ export function Brand({
 
   return (
     <span className={clsx("inline-flex min-w-0 items-center select-none", className)}>
-      <EmpliadosMark size={size} />
+      <EmpliadosMark size={size} onLight={onLight} />
     </span>
   );
 }

@@ -8,11 +8,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--bg)]">
       <Sidebar open={open} onClose={() => setOpen(false)} />
-      <div className="lg:pl-[264px]">
+      <div className="lg:pl-64">
         <Topbar onMenu={() => setOpen(true)} />
-        <main className="mx-auto max-w-[1400px] px-4 py-6 lg:px-8 lg:py-8">
+        <main className="mx-auto max-w-[1400px] px-4 py-5 lg:px-7 lg:py-6">
           {children}
         </main>
       </div>
