@@ -1,10 +1,11 @@
-import { Suspense } from "react";
-import { ContactosInbox } from "@/components/ContactosInbox";
+import { StitchFrame } from "@/components/StitchFrame";
 
+/** Contactos WhatsApp: HTML Stitch Platform Redesign. */
 export default function ContactosPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-[var(--text-dim)]">Cargando…</p>}>
-      <ContactosInbox />
-    </Suspense>
+    <StitchFrame
+      src="/stitch/whatsapp-contactos.html"
+      title="Contactos WhatsApp — HTML Stitch"
+    />
   );
 }

@@ -9,7 +9,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   // Pantallas con HTML Stitch a pantalla completa (sin chrome propio)
-  const stitchFullBleed = pathname === "/" || pathname === "/monitor";
+  const stitchFullBleed =
+    pathname === "/" || pathname === "/monitor" || pathname === "/contactos";
 
   if (stitchFullBleed) {
     return <>{children}</>;
