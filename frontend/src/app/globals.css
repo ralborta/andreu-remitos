@@ -256,7 +256,8 @@ html:not([data-theme="dark"]) .hero-sol .text-white\/80 {
   color: rgba(255, 255, 255, 0.85) !important;
 }
 .font-mono-label {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.02em;
 }
 html:not([data-theme="dark"]) .bg-white\/5,
 html:not([data-theme="dark"]) .hover\:bg-white\/5:hover,
