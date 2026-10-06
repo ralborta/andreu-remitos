@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  // Home = HTML Stitch a pantalla completa (sin chrome propio)
+  const stitchHome = pathname === "/";
+
+  if (stitchHome) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
