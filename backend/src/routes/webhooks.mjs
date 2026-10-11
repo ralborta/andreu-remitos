@@ -465,12 +465,33 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
 
 /** OCR + clasificar: remito / gasto / hoja. El papel manda sobre sticky/caption. */
 async function clasificarFotoAndreu(buffer, filename, log) {
-  if (!hojaRutaHabilitada() || !buffer?.length) return { tipo: null, ocrTxt: "" };
+  if (!buffer?.length) return { tipo: null, ocrTxt: "" };
+  // Sin hoja de ruta habilitada igual clasificamos remito vs gasto (Andreu prod).
   try {
     const { ocrDocumento } = await import("../../../lib/document-ai.mjs");
     const ocr = await ocrDocumento(buffer, filename || "doc.jpg");
     const ocrTxt = String(ocr?.texto || "");
-    const tipo = clasificarDocumentoAndreu(ocrTxt);
+    let tipo = clasificarDocumentoAndreu(ocrTxt);
+
+    // OCR corto: un segundo pase con extractor Beraldi (DocAI o OpenAI fallback)
+    if (!tipo && ocrTxt.length < 80 && process.env.DOCUMENT_AI_CUSTOM_BERALDI_ID) {
+      try {
+        const { procesarBeraldiFoundation } = await import("../../../lib/document-ai.mjs");
+        const b = await procesarBeraldiFoundation(buffer, filename || "doc.jpg");
+        const txtB = String(b?.texto || ocrTxt);
+        tipo = clasificarDocumentoAndreu(txtB) || (b?.entidades?.length ? "remito" : null);
+        if (tipo) {
+          log?.info?.(
+            { tipo, chars: txtB.length, motor: b?.motor },
+            "Clasificación Andreu vía Beraldi",
+          );
+          return { tipo, ocrTxt: txtB };
+        }
+      } catch (err2) {
+        log?.warn?.({ err: err2.message }, "Clasificación Beraldi secundario falló");
+      }
+    }
+
     log?.info?.(
       { tipo, chars: ocrTxt.length, preview: ocrTxt.slice(0, 100).replace(/\n/g, " ") },
       "Clasificación Andreu OCR",
@@ -480,6 +501,81 @@ async function clasificarFotoAndreu(buffer, filename, log) {
     log?.warn?.({ err: err.message }, "Clasificación Andreu OCR falló");
     return { tipo: null, ocrTxt: "" };
   }
+}
+
+/** Ingest remito desde buffer ya descargado (foto nueva o pendiente). */
+async function procesarBufferComoRemito(ev, buffer, filename, tenantCfg, log) {
+  const telefono = ev.from || null;
+  if (telefono) {
+    await syncBotPausa(telefono);
+    await convStore.appendMensaje(
+      telefono,
+      { texto: ev.message || "envía imagen", tipo: "image", imagen_url: ev.media?.url || null },
+      { tenant: tenantCfg, nombre: ev.nombre },
+    );
+  }
+
+  const convFoto = telefono ? await convStore.getConversacion(telefono) : null;
+  const pausado = !!convFoto?.bot_pausado;
+  const tenantFoto = tenantCfg ?? convFoto?.tenant;
+
+  if (tenantFoto === "corina" && telefono && !convFoto?.corina_cliente_marca) {
+    const msg = mensajeCorinaFaltaCliente();
+    if (!pausado) await notificarChofer(telefono, msg, { tenant: "corina", log });
+    return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
+  }
+
+  if (telefono && !pausado) {
+    await notificarChofer(telefono, mensajeProcesandoRemito(), {
+      tenant: tenantCfg,
+      log,
+    });
+  }
+
+  const sugerido = tenantFoto ?? tenantCfg ?? undefined;
+
+  const resultado = await ingestarRemito(buffer, {
+    filename,
+    telefono,
+    tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
+    tenantSugerido: sugerido,
+    corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
+  });
+
+  if (telefono) {
+    await convStore.setDocumentoTipoPreferido(telefono, null);
+    await convStore.setDocumentoFotoPendiente(telefono, null);
+  }
+
+  if (telefono && resultado.id) {
+    await convStore.setUltimoRemito(telefono, resultado.id, resultado.tenant);
+  }
+
+  const message = mensajeWhatsApp(resultado);
+
+  if (telefono && !pausado) {
+    await notificarChofer(telefono, message, {
+      tenant: resultado.tenant,
+      remito_id: resultado.id,
+      log,
+    });
+  } else if (telefono && resultado.id) {
+    await convStore.appendMensaje(
+      telefono,
+      { texto: message, tipo: "text", remito_id: resultado.id },
+      { tenant: resultado.tenant, remito_id: resultado.id, dir: "out", from: "bot" },
+    );
+  }
+
+  return respuestaWebhook({
+    message,
+    remito_id: resultado.id,
+    tenant: resultado.tenant,
+    estado: resultado.estado,
+    guia: resultado.lectura?.nro_guia ?? resultado.lectura?.nro_remito ?? null,
+    flow: resultado.estado === "bloqueado" ? "revision" : "ok",
+    bot_pausado: pausado,
+  });
 }
 
 export default async function webhooksRoutes(fastify) {
@@ -551,13 +647,6 @@ export default async function webhooksRoutes(fastify) {
         const tipoResp = interpretarRespuestaTipoDocumento(texto);
         if (tipoResp) {
           await convStore.setDocumentoTipoPreferido(ev.from, tipoResp);
-          const msg =
-            tipoResp === "remito"
-              ? `Dale ✅ Mandame de nuevo la *foto del remito* (si está de costado, mejor enderezada).`
-              : tipoResp === "hoja"
-                ? `Dale ✅ Mandame de nuevo la *foto de la hoja de ruta* (si está de costado, mejor enderezada).`
-                : `Dale ✅ Mandame de nuevo la *foto del ticket* (peaje / nafta).`;
-          await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
           await convStore
             .appendMensaje(
               ev.from,
@@ -565,13 +654,70 @@ export default async function webhooksRoutes(fastify) {
               { dir: "in", from: "client", nombre: ev.nombre, agente: "router" },
             )
             .catch(() => {});
-          await convStore
-            .appendMensaje(
-              ev.from,
-              { texto: msg, tipo: "text" },
-              { dir: "out", from: "bot", agente: "router", nombre: ev.nombre },
-            )
-            .catch(() => {});
+
+          const fotoPend = convStore.getDocumentoFotoPendiente(convEarly);
+          // Remito + foto ya guardada → procesar ya (sin pedir reenvío)
+          if (tipoResp === "remito" && fotoPend?.url) {
+            try {
+              const { buffer, mime, filename } = await downloadMedia(fotoPend.url);
+              const evPend = {
+                ...ev,
+                media: {
+                  url: fotoPend.url,
+                  mime_type: mime || fotoPend.mime,
+                  name: filename || fotoPend.filename || "remito.jpg",
+                },
+                message: "foto pendiente",
+              };
+              return await procesarBufferComoRemito(
+                evPend,
+                buffer,
+                filename || fotoPend.filename || "remito.jpg",
+                tenantCfg,
+                request.log,
+              );
+            } catch (err) {
+              request.log.warn({ err: err.message }, "Foto pendiente no se pudo reprocesar");
+            }
+          }
+
+          if (tipoResp === "hoja" && fotoPend?.url) {
+            try {
+              const { buffer, mime, filename } = await downloadMedia(fotoPend.url);
+              const hojaOut = await tryProcesarHojaRuta(
+                {
+                  ...ev,
+                  media: {
+                    url: fotoPend.url,
+                    mime_type: mime || fotoPend.mime,
+                    name: filename || fotoPend.filename,
+                  },
+                },
+                {
+                  texto: "hoja de ruta",
+                  log: request.log,
+                  imageBuffer: buffer,
+                  mime,
+                  forzar: true,
+                },
+              );
+              if (hojaOut) {
+                await convStore.setDocumentoTipoPreferido(ev.from, null);
+                await convStore.setDocumentoFotoPendiente(ev.from, null);
+                return respuestaWebhook({ ...hojaOut, received: true, routed_by: "preferido_hoja" });
+              }
+            } catch (err) {
+              request.log.warn({ err: err.message }, "Foto pendiente hoja falló");
+            }
+          }
+
+          const msg =
+            tipoResp === "remito"
+              ? `Dale ✅ Mandame de nuevo la *foto del remito* (si está de costado, mejor enderezada).`
+              : tipoResp === "hoja"
+                ? `Dale ✅ Mandame de nuevo la *foto de la hoja de ruta* (si está de costado, mejor enderezada).`
+                : `Dale ✅ Mandame de nuevo la *foto del ticket* (peaje / nafta).`;
+          await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
           return respuestaWebhook({
             flow: "documento_tipo_preferido",
             preferido: tipoResp,
@@ -728,10 +874,13 @@ export default async function webhooksRoutes(fastify) {
             }
           } else if (!tipoDoc && !esperaBoletas && captionVagoDocumento(texto)) {
             // Foto dudosa sin viaje activo: no inventar rendición (caso remito Beraldi + YPF)
-            const msg = mensajePreguntarTipoDocumento();
             if (ev.from) {
               await convStore.setDocumentoTipoPreguntado(ev.from, true);
-              await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
+              await convStore.setDocumentoFotoPendiente(ev.from, {
+                url: ev.media?.url || null,
+                filename,
+                mime,
+              });
               await convStore
                 .appendMensaje(
                   ev.from,
@@ -743,13 +892,12 @@ export default async function webhooksRoutes(fastify) {
                   { dir: "in", from: "client", nombre: ev.nombre, agente: "router" },
                 )
                 .catch(() => {});
-              await convStore
-                .appendMensaje(
-                  ev.from,
-                  { texto: msg, tipo: "text" },
-                  { dir: "out", from: "bot", agente: "router", nombre: ev.nombre },
-                )
-                .catch(() => {});
+            }
+            const msg = mensajePreguntarTipoDocumento({
+              tieneFotoPendiente: Boolean(ev.media?.url),
+            });
+            if (ev.from) {
+              await notificarChofer(ev.from, msg, { log: request.log, tenant: null }).catch(() => {});
             }
             return respuestaWebhook({
               flow: "documento_tipo_dudoso",
@@ -880,77 +1028,8 @@ export default async function webhooksRoutes(fastify) {
           }
           return respuestaWebhook({ message: hint, flow: "destinos_esperando_texto", destino_id: destinoPendiente.id });
         }
-        const telefono = ev.from || null;
-
-        if (ev.from) {
-          await syncBotPausa(ev.from);
-          await convStore.appendMensaje(
-            ev.from,
-            { texto: ev.message || "envía imagen", tipo: "image", imagen_url: ev.media.url },
-            { tenant: tenantCfg, nombre: ev.nombre },
-          );
-        }
-
-        const convFoto = ev.from ? await convStore.getConversacion(ev.from) : null;
-        const pausado = !!convFoto?.bot_pausado;
-        const tenantFoto = tenantCfg ?? convFoto?.tenant;
-
-        // Sticky hoja/gasto + OCR ya se resolvieron en el bloque de media Andreu.
-        // Si llegamos acá: remito (o sin clasificación).
-
-        // Corina: exigir Cervecería / Eco antes de OCR
-        if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
-          const msg = mensajeCorinaFaltaCliente();
-          if (!pausado) await notificarChofer(ev.from, msg, { tenant: "corina", log: request.log });
-          return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
-        }
-
-        if (ev.from && !pausado) {
-          await notificarChofer(ev.from, mensajeProcesandoRemito(), {
-            tenant: tenantCfg,
-            log: request.log,
-          });
-        }
-
-        // No forzar TSB/Beraldi/M&E por conversación previa: el papel manda.
-        // Solo Corina se fuerza (flujo de marca de cliente).
-        const resultado = await ingestarRemito(buffer, {
-          filename,
-          telefono,
-          tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
-          tenantSugerido: tenantFoto ?? tenantCfg ?? undefined,
-          corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
-        });
-
-        if (ev.from && resultado.id) {
-          await convStore.setUltimoRemito(ev.from, resultado.id, resultado.tenant);
-        }
-
-        const message = mensajeWhatsApp(resultado);
-
-        if (ev.from && !pausado) {
-          await notificarChofer(ev.from, message, {
-            tenant: resultado.tenant,
-            remito_id: resultado.id,
-            log: request.log,
-          });
-        } else if (ev.from && resultado.id) {
-          await convStore.appendMensaje(
-            ev.from,
-            { texto: message, tipo: "text", remito_id: resultado.id },
-            { tenant: resultado.tenant, remito_id: resultado.id, dir: "out", from: "bot" },
-          );
-        }
-
-        return respuestaWebhook({
-          message,
-          remito_id: resultado.id,
-          tenant: resultado.tenant,
-          estado: resultado.estado,
-          guia: resultado.lectura?.nro_guia ?? resultado.lectura?.nro_remito ?? null,
-          flow: resultado.estado === "bloqueado" ? "revision" : "ok",
-          bot_pausado: pausado,
-        });
+        // Sticky hoja/gasto + OCR ya se resolvieron arriba. Acá: remito (o sin clasificación).
+        return await procesarBufferComoRemito(ev, buffer, filename, tenantCfg, request.log);
       }
 
       if (!texto && !ev.media?.url && !ev.location) {
@@ -962,15 +1041,18 @@ export default async function webhooksRoutes(fastify) {
 
       return procesarTextoChofer(ev, tenantCfg, texto, request.log);
     } catch (err) {
-      request.log.error(err);
+      request.log.error({ err: err.message, stack: err.stack }, "webhook builderbot error");
       const destinoPendiente = ev.from
         ? await destinosStore.getDestinoPendientePorTelefono(ev.from)
         : null;
+      const billingDown = /PERMISSION_DENIED|billing/i.test(String(err?.message ?? ""));
       const errMsg = destinoPendiente
         ? "Hubo un problema al procesar tu respuesta sobre el destino. Probá de nuevo con calle, número y ciudad."
         : esEventoAudio(ev)
           ? mensajeAudioFallidoConfirmacion()
-          : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
+          : billingDown
+            ? "Estamos con un problema técnico leyendo documentos. Reintentá en unos minutos o avisá a mesa de control."
+            : "No pude leer el remito. Probá con mejor luz, sin sombras, y que se vea la guía completa.";
 
       if (ev.from) await syncBotPausa(ev.from);
       const pausadoErr = ev.from ? !!(await convStore.getConversacion(ev.from))?.bot_pausado : false;

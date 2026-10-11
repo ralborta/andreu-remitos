@@ -319,6 +319,38 @@ export function convDocumentoTipoPreguntado(conv) {
   return Boolean(conv?.documento_tipo_preguntado);
 }
 
+/**
+ * Foto dudosa pendiente de clasificar (URL del bot/BB).
+ * Al responder remito/hoja/ticket se puede reprocesar sin reenviar.
+ */
+export async function setDocumentoFotoPendiente(telefono, payload) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (payload?.url) {
+    conv.documento_foto_pendiente = {
+      url: String(payload.url),
+      filename: payload.filename || null,
+      mime: payload.mime || null,
+      at: new Date().toISOString(),
+    };
+  } else {
+    delete conv.documento_foto_pendiente;
+  }
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export function getDocumentoFotoPendiente(conv) {
+  const p = conv?.documento_foto_pendiente;
+  if (!p?.url) return null;
+  // TTL 2h — después pedimos foto nueva
+  const at = Date.parse(p.at || "");
+  if (Number.isFinite(at) && Date.now() - at > 2 * 60 * 60 * 1000) return null;
+  return p;
+}
+
 /** Esperando foto de hoja de ruta (no debe caer en flujo remito/Corina). */
 export async function setEsperandoHojaRuta(telefono, esperando = true) {
   if (!telefono) return null;

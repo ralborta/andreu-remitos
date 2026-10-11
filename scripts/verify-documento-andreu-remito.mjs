@@ -42,6 +42,20 @@ KM INICIAL 201909
 `;
 assert.equal(clasificarDocumentoAndreu(flojo), "remito", "formulario logístico = remito");
 
+// OCR típico: pierde la B de BERALDI; prefijo 00009
+const eraldi = `
+TRANSPORTES ERALDI S.A.
+N° 00009-00176982-1
+CLIENTE YPF S.A.
+TRACTOR AH860KF
+SEMI AG952QL
+CHOFER Villarreal
+UNIDAD 557
+`;
+assert.equal(clasificarDocumentoAndreu(eraldi), "remito", "ERALDI + 00009 = remito");
+
+assert.match(mensajePreguntarTipoDocumento({ tieneFotoPendiente: true }), /foto que ya mandaste/i);
+
 const ticketYpf = `
 YPF ESTACION DE SERVICIO
 TICKET
