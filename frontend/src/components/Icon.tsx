@@ -10,6 +10,10 @@ import {
   ChartColumnBig,
   Radio,
   Navigation,
+  Banknote,
+  Scale,
+  Megaphone,
+  Wallet,
   type LucideProps,
 } from "lucide-react";
 
@@ -25,6 +29,10 @@ const MAP = {
   ChartColumnBig,
   Radio,
   Navigation,
+  Banknote,
+  Scale,
+  Megaphone,
+  Wallet,
 } as const;
 
 export type IconName = keyof typeof MAP;

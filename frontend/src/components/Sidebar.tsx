@@ -20,6 +20,7 @@ import {
   Sparkles,
   LogOut,
   Truck,
+  Wallet,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -251,6 +252,14 @@ export function Sidebar({
                 </Link>
               );
             })}
+
+          <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+            Finanzas
+          </p>
+          <Link href="/finanzas" onClick={onClose} className={navClass(isActive("/finanzas"))}>
+            <Wallet size={18} />
+            Módulo de Finanzas
+          </Link>
 
           <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación

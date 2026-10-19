@@ -1436,3 +1436,70 @@ export function getTrackingMeta() {
   );
 }
 
+export type FacturaTipo = "pagar" | "cobrar";
+export type FacturaEstado = "leida" | "confirmada" | "abierta" | "saldada";
+
+export type FacturaPaso = {
+  at: string;
+  agente: string;
+  label: string;
+  confianza?: number | null;
+};
+
+export type FacturaFinanzas = {
+  id: string;
+  tipo: FacturaTipo;
+  origen: "pdf" | "sistema";
+  estado: string;
+  tipo_comprobante: string | null;
+  punto_venta: string | null;
+  numero: string | null;
+  fecha: string | null;
+  fecha_vto: string | null;
+  cuit_emisor: string | null;
+  razon_social: string | null;
+  cuit_receptor: string | null;
+  monto: number | null;
+  moneda: string | null;
+  cae: string | null;
+  confianza: number | null;
+  archivo_nombre?: string | null;
+  archivo_mime?: string | null;
+  ocr_disponible?: boolean;
+  pasos: FacturaPaso[];
+  created_at: string;
+  updated_at: string;
+};
+
+export function listFacturasFinanzas(params?: { tipo?: FacturaTipo; limit?: number }) {
+  const q = new URLSearchParams();
+  if (params?.tipo) q.set("tipo", params.tipo);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<FacturaFinanzas[]>(`/api/finanzas/facturas${qs ? `?${qs}` : ""}`);
+}
+
+export function getFacturaFinanzas(id: string) {
+  return api<FacturaFinanzas>(`/api/finanzas/facturas/${id}`);
+}
+
+export function facturaArchivoUrl(id: string) {
+  return `${apiBase()}/api/finanzas/facturas/${id}/archivo`;
+}
+
+export async function ingestFacturaPagar(file: File) {
+  const fd = new FormData();
+  fd.append("file", file);
+  return api<FacturaFinanzas>("/api/finanzas/facturas/ingest", {
+    method: "POST",
+    body: fd,
+  });
+}
+
+export function patchFacturaFinanzas(id: string, body: Partial<FacturaFinanzas>) {
+  return api<FacturaFinanzas>(`/api/finanzas/facturas/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
