@@ -231,6 +231,13 @@ function GastoDetalleModal({
             <Campo label="Chofer">
               <div>{caso.choferNombre || "—"}</div>
               <div className="text-xs text-[var(--text-faint)]">{caso.telefono || ""}</div>
+              {caso.origenCarga === "administracion" && (
+                <div className="mt-1 text-xs text-amber-300">
+                  Cargado por administración
+                  {caso.cargadoPorNombre ? ` (${caso.cargadoPorNombre})` : ""}
+                  . El chofer no fue avisado.
+                </div>
+              )}
             </Campo>
             <Campo label="Registrado">{fmtFecha(caso.createdAt)}</Campo>
             <Campo label="Proveedor">{caso.proveedor || "—"}</Campo>

@@ -32,7 +32,9 @@ import { procesarMensajeViajeWhatsApp } from "../services/viajes-agent.mjs";
 import {
   procesarGastoWhatsApp,
   continuarConfirmacionViajeHoja,
+  procesarCargaEncargadoRendicion,
   telefonoEsChoferRegistrado,
+  telefonoEsEncargadoRendicion,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
 import {
@@ -454,6 +456,29 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   if (!ev.from) return null;
   const t = String(texto ?? "").trim();
   if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
+
+  const esEncargado = await telefonoEsEncargadoRendicion(ev.from);
+  const pendingEncargado = await convStore.getRendicionEncargadoPendiente(ev.from);
+  if (esEncargado || pendingEncargado) {
+    try {
+      const out = await procesarCargaEncargadoRendicion({
+        telefono: ev.from,
+        texto: t,
+        nombre: ev.nombre,
+        imageBuffer,
+        mime,
+        imagenUrl: ev.media?.url || null,
+        log,
+      });
+      if (!out) return null;
+      return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+    } catch (err) {
+      log?.warn?.({ err: err.message, from: ev.from }, "rendicion encargado webhook error");
+      const msg = `Recibí el gasto de administración pero tuve un problema: ${err.message}. Probá de nuevo.`;
+      if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      return { flow: "rendicion_encargado_error", error: err.message, message: msg, received: true };
+    }
+  }
 
   // Gate duro: rendición = solo choferes en DB (Parámetros).
   if (!(await telefonoEsChoferRegistrado(ev.from))) {
@@ -1310,8 +1335,33 @@ export default async function webhooksRoutes(fastify) {
       const esFoto =
         Boolean(ev.media?.url) && !mediaEsAudio && !ev.location;
 
-      // Nº de viaje de la hoja de ruta: un "sí", un "no" o un número no pueden
-      // caer en POP, POD, destinos ni remito. Una foto nueva no es la respuesta.
+      const encargadoPendiente = convEarly?.rendicion_encargado_pendiente ?? null;
+      if (ev.from && encargadoPendiente && (texto || esFoto) && !pareceQuiereRemito(texto)) {
+        let imageBufferEnc = null;
+        let mimeEnc = ev.media?.mimetype || "image/jpeg";
+        if (esFoto && ev.media?.url) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            imageBufferEnc = dl?.buffer || null;
+            mimeEnc = dl?.mime || mimeEnc;
+          } catch (err) {
+            request.log.warn({ err: err.message }, "Rendición encargado: no pude bajar foto");
+          }
+        }
+        const encOut = await procesarCargaEncargadoRendicion({
+          telefono: ev.from,
+          texto,
+          nombre: ev.nombre,
+          imageBuffer: imageBufferEnc,
+          mime: mimeEnc,
+          imagenUrl: ev.media?.url || null,
+          log: request.log,
+        });
+        if (encOut) {
+          return respuestaWebhook({ ...encOut, received: true });
+        }
+      }
+
       const viajeHojaPendiente = convEarly?.rendicion_viaje_pendiente ?? null;
       if (ev.from && viajeHojaPendiente && texto && !esFoto && !pareceQuiereRemito(texto)) {
         const viajeOut = await continuarConfirmacionViajeHoja({
@@ -1586,10 +1636,15 @@ export default async function webhooksRoutes(fastify) {
       // Rendición ANTES de destinos/ETA — SOLO choferes registrados en DB.
       // Solo si el texto/caption habla de gasto. NUNCA robar fotos de remito
       // solo porque hay un destino/ETA activo (bug: remito iba a rendición).
+      const esEncargadoDb = ev.from
+        ? await telefonoEsEncargadoRendicion(ev.from)
+        : false;
       const quiereRendicion =
-        esChoferDb &&
+        (esChoferDb || esEncargadoDb) &&
         !pareceQuiereRemito(texto) &&
-        (pareceRendicionGasto(texto) || pareceHojaRuta(texto));
+        (pareceRendicionGasto(texto) ||
+          pareceHojaRuta(texto) ||
+          (esEncargadoDb && esFoto));
 
       if (ev.from && quiereRendicion) {
         let imageBuffer = null;
@@ -1776,6 +1831,9 @@ export default async function webhooksRoutes(fastify) {
         // Foto — POD (IA) o rendición (caption) SOLO choferes registrados
         const caption = texto || ev.message?.trim() || "";
         const esChoferMedia = await telefonoEsChoferRegistrado(ev.from);
+        const esEncargadoMedia = ev.from
+          ? await telefonoEsEncargadoRendicion(ev.from)
+          : false;
         if (esChoferMedia && caption && !pareceQuiereRemito(caption)) {
           const quierePod = await parecePod(caption, { log: request.log });
           if (quierePod) {
@@ -1791,7 +1849,10 @@ export default async function webhooksRoutes(fastify) {
             }
           }
         }
-        if ((pareceRendicionGasto(caption) || pareceHojaRuta(caption)) && esChoferMedia) {
+        if (
+          esEncargadoMedia ||
+          ((pareceRendicionGasto(caption) || pareceHojaRuta(caption)) && esChoferMedia)
+        ) {
           const gastoOut = await tryProcesarRendicion(ev, {
             texto: caption,
             log: request.log,

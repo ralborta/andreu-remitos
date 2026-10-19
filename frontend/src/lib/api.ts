@@ -617,6 +617,9 @@ export interface GastoRendicion {
   cuitProveedor?: string | null;
   telefono: string | null;
   choferNombre: string | null;
+  origenCarga?: "chofer" | "administracion" | string | null;
+  cargadoPorNombre?: string | null;
+  cargadoPorTelefono?: string | null;
   imagenUrl: string | null;
   notaChofer: string | null;
   textoOcr?: string | null;
