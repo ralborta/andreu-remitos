@@ -10,6 +10,7 @@ import {
   saveFacturaArchivo,
   updateFactura,
 } from "../db/finanzas-facturas-store.mjs";
+import { ensureFinanzasDemo } from "./finanzas-gestion.mjs";
 
 function paso(label, extra = {}) {
   return { at: new Date().toISOString(), agente: "facturas", label, ...extra };
@@ -26,6 +27,7 @@ async function ocrTextoSeguro(buffer, filename, log) {
 }
 
 export async function listarFacturasFinanzas(query) {
+  await ensureFinanzasDemo();
   return listFacturas(query);
 }
 

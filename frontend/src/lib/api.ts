@@ -1459,7 +1459,10 @@ export type FacturaFinanzas = {
   cuit_emisor: string | null;
   razon_social: string | null;
   cuit_receptor: string | null;
+  telefono?: string | null;
+  email?: string | null;
   monto: number | null;
+  monto_aplicado?: number | null;
   moneda: string | null;
   cae: string | null;
   confianza: number | null;
@@ -1469,6 +1472,29 @@ export type FacturaFinanzas = {
   pasos: FacturaPaso[];
   created_at: string;
   updated_at: string;
+};
+
+export type FinanzasResumen = {
+  facturas_pagar: number;
+  facturas_cobrar: number;
+  cartera_abierta: number;
+  cobradas: number;
+  cobros_pendientes: number;
+  cobros_aplicados: number;
+};
+
+export type CobroFinanzas = {
+  id: string;
+  origen: string;
+  estado: string;
+  monto: number;
+  moneda: string | null;
+  external_ref: string | null;
+  cuit: string | null;
+  factura_id: string | null;
+  factura_numero: string | null;
+  settled_at: string | null;
+  created_at: string;
 };
 
 export function listFacturasFinanzas(params?: { tipo?: FacturaTipo; limit?: number }) {
@@ -1500,6 +1526,51 @@ export function patchFacturaFinanzas(id: string, body: Partial<FacturaFinanzas>)
   return api<FacturaFinanzas>(`/api/finanzas/facturas/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),
+  });
+}
+
+export function getFinanzasResumen() {
+  return api<FinanzasResumen>("/api/finanzas/resumen");
+}
+
+export function listCobrosFinanzas(params?: { estado?: string; limit?: number }) {
+  const q = new URLSearchParams();
+  if (params?.estado) q.set("estado", params.estado);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return api<CobroFinanzas[]>(`/api/finanzas/cobros${qs ? `?${qs}` : ""}`);
+}
+
+export function registrarCobroPasarela(body: {
+  monto: number;
+  numero_factura?: string;
+  cuit?: string;
+  external_ref?: string;
+}) {
+  return api<CobroFinanzas>("/api/finanzas/pasarela", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function conciliarCobroFinanzas(cobroId: string, facturaId: string) {
+  return api<CobroFinanzas>(`/api/finanzas/cobros/${cobroId}/conciliar`, {
+    method: "POST",
+    body: JSON.stringify({ factura_id: facturaId }),
+  });
+}
+
+export function comunicarFacturaFinanzas(
+  id: string,
+  body?: { canal?: "whatsapp" | "email"; mensaje?: string },
+) {
+  return api<{
+    factura: FacturaFinanzas;
+    envio: { ok: boolean; canal?: string; error?: string; telefono?: string };
+    mensaje: string;
+  }>(`/api/finanzas/facturas/${id}/comunicar`, {
+    method: "POST",
+    body: JSON.stringify(body || {}),
   });
 }
 

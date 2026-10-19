@@ -6,6 +6,9 @@ import { AgentIcon } from "@/components/Icon";
 import { PageHeader, StatusBadge, Card, SectionTitle, KpiCard, Pill } from "@/components/ui";
 import { FlowSteps } from "@/components/FlowSteps";
 import { FacturasFinanzasPanel } from "@/components/FacturasFinanzasPanel";
+import { CobranzasFinanzasPanel } from "@/components/CobranzasFinanzasPanel";
+import { ConciliacionFinanzasPanel } from "@/components/ConciliacionFinanzasPanel";
+import { ComunicacionFinanzasPanel } from "@/components/ComunicacionFinanzasPanel";
 
 export function generateStaticParams() {
   return financeAgents.map((a) => ({ slug: a.slug }));
@@ -48,17 +51,10 @@ export default async function FinanzasAgentPage({
         ))}
       </div>
 
-      {slug === "facturas" ? (
-        <FacturasFinanzasPanel />
-      ) : (
-        <Card>
-          <SectionTitle>Próximo corte</SectionTitle>
-          <p className="text-sm leading-relaxed text-[var(--text-dim)]">
-            Este agente ya está definido. Ahora está el de Facturas. Cobranzas, conciliación (pasarela API) y
-            comunicación se arman después, solo sobre facturas a cobrar.
-          </p>
-        </Card>
-      )}
+      {slug === "facturas" && <FacturasFinanzasPanel />}
+      {slug === "cobranzas" && <CobranzasFinanzasPanel />}
+      {slug === "conciliacion" && <ConciliacionFinanzasPanel />}
+      {slug === "comunicacion" && <ComunicacionFinanzasPanel />}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
