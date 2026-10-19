@@ -123,10 +123,7 @@ export function Sidebar({
           </Link>
           <Link href="/contactos" onClick={onClose} className={navClass(isActive("/contactos"))}>
             <MessageCircle size={18} />
-            <span className="flex-1">WhatsApp</span>
-            <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
-              Nuevo
-            </span>
+            WhatsApp
           </Link>
           {admin && (
             <Link href="/backoffice" onClick={onClose} className={navClass(isActive("/backoffice"))}>
@@ -258,7 +255,10 @@ export function Sidebar({
           </p>
           <Link href="/finanzas" onClick={onClose} className={navClass(isActive("/finanzas"))}>
             <Wallet size={18} />
-            Módulo de Finanzas
+            <span className="flex-1">Módulo de Finanzas</span>
+            <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
+              Nuevo
+            </span>
           </Link>
 
           <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
