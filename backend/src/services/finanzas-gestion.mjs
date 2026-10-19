@@ -10,6 +10,7 @@ import {
   updateFactura,
 } from "../db/finanzas-facturas-store.mjs";
 import {
+  ensureSeedCobrosDemo,
   findCobroByExternalRef,
   finanzasCobroId,
   getCobro,
@@ -41,6 +42,7 @@ function estadoCobrar(f) {
 
 export async function ensureFinanzasDemo() {
   await ensureSeedFacturasCobrar();
+  await ensureSeedCobrosDemo();
 }
 
 export async function resumenFinanzas() {

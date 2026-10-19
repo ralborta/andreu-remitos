@@ -50,6 +50,42 @@ export async function insertCobro(row) {
   return saved;
 }
 
+const DEMO_COBRO_IDS = ["COB-SYS-0001"];
+
+function isoAtOffset(days, hours = 14) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(hours, 20, 0, 0);
+  return d.toISOString();
+}
+
+/** Mismo ejemplo que MYE B-0008-00004410: cobro de pasarela aún sin imputar. */
+export async function ensureSeedCobrosDemo() {
+  const now = new Date().toISOString();
+  const settled = isoAtOffset(-1, 14);
+  const seed = [
+    {
+      id: "COB-SYS-0001",
+      origen: "pasarela",
+      estado: "pendiente",
+      monto: 312400,
+      moneda: "ARS",
+      external_ref: "PAS-MYE-4410",
+      cuit: "30-73333333-5",
+      factura_id: null,
+      factura_numero: "B-0008-00004410",
+      settled_at: settled,
+      metadata: { cliente: "MYE Cargas", nota: "Transferencia Cucuru / demo SOL" },
+      created_at: settled,
+      updated_at: now,
+    },
+  ];
+  const rows = readAll();
+  if (rows.some((r) => r.id === "COB-SYS-0001")) return false;
+  writeAll([...seed, ...rows]);
+  return true;
+}
+
 export async function updateCobro(id, patch) {
   const rows = readAll();
   const i = rows.findIndex((r) => r.id === id);

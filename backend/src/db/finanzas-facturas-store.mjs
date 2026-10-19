@@ -117,11 +117,22 @@ function isoDateOffset(days) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Demo SOL: facturas a cobrar que “vinieron por sistema”. */
+function isoAtOffset(days, hours = 10) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(hours, 0, 0, 0);
+  return d.toISOString();
+}
+
+const DEMO_COBRAR_IDS = ["FAC-SYS-0001", "FAC-SYS-0002", "FAC-SYS-0003"];
+
+/**
+ * Demo SOL: misma historia en Facturas (a cobrar), Cobranzas, Conciliación y Comunicación.
+ * No siembra facturas a pagar: esas solo entran por PDF real.
+ */
 export async function ensureSeedFacturasCobrar() {
-  const rows = readAll();
-  if (rows.some((r) => r.tipo === "cobrar")) return false;
   const now = new Date().toISOString();
+  const emitida = isoAtOffset(-20, 9);
   const seed = [
     {
       id: "FAC-SYS-0001",
@@ -135,16 +146,30 @@ export async function ensureSeedFacturasCobrar() {
       fecha_vto: isoDateOffset(-5),
       cuit_emisor: "30-71111111-2",
       razon_social: "TSB Logística S.A.",
-      cuit_receptor: "30-70000000-4",
+      cuit_receptor: "30-71757543-4",
       telefono: "5492615551001",
-      email: "cobranzas.tsb@example.com",
+      email: "cobranzas@tsb.example",
       monto: 1482500,
       monto_aplicado: 0,
       moneda: "ARS",
       cae: null,
       confianza: 1,
-      pasos: [{ at: now, agente: "facturas", label: "Emitida por sistema" }],
-      created_at: now,
+      pasos: [
+        { at: emitida, agente: "facturas", label: "Emitida por sistema · flete TSB Mendoza–CABA" },
+        {
+          at: isoAtOffset(-2, 11),
+          agente: "comunicacion",
+          label: "WhatsApp a TSB: recordatorio factura A-0003-00018421 vencida · saldo $1.482.500",
+          canal: "whatsapp",
+          ok: true,
+        },
+        {
+          at: isoAtOffset(-2, 16),
+          agente: "cobranzas",
+          label: "Promesa de pago para hoy (mesa)",
+        },
+      ],
+      created_at: emitida,
       updated_at: now,
     },
     {
@@ -159,7 +184,7 @@ export async function ensureSeedFacturasCobrar() {
       fecha_vto: isoDateOffset(4),
       cuit_emisor: "30-72222222-9",
       razon_social: "Beraldi Transportes",
-      cuit_receptor: "30-70000000-4",
+      cuit_receptor: "30-71757543-4",
       telefono: "5492615551002",
       email: "admin@beraldi.example",
       monto: 890000,
@@ -167,8 +192,14 @@ export async function ensureSeedFacturasCobrar() {
       moneda: "ARS",
       cae: null,
       confianza: 1,
-      pasos: [{ at: now, agente: "facturas", label: "Emitida por sistema" }],
-      created_at: now,
+      pasos: [
+        {
+          at: isoAtOffset(-8, 9),
+          agente: "facturas",
+          label: "Emitida por sistema · flete Beraldi Cuyo",
+        },
+      ],
+      created_at: isoAtOffset(-8, 9),
       updated_at: now,
     },
     {
@@ -179,11 +210,11 @@ export async function ensureSeedFacturasCobrar() {
       tipo_comprobante: "B",
       punto_venta: "0008",
       numero: "B-0008-00004410",
-      fecha: isoDateOffset(-35),
-      fecha_vto: isoDateOffset(-12),
+      fecha: isoDateOffset(-18),
+      fecha_vto: isoDateOffset(-3),
       cuit_emisor: "30-73333333-5",
       razon_social: "MYE Cargas",
-      cuit_receptor: "30-70000000-4",
+      cuit_receptor: "30-71757543-4",
       telefono: "5492615551003",
       email: "pagos@mye.example",
       monto: 312400,
@@ -191,11 +222,30 @@ export async function ensureSeedFacturasCobrar() {
       moneda: "ARS",
       cae: null,
       confianza: 1,
-      pasos: [{ at: now, agente: "facturas", label: "Emitida por sistema" }],
-      created_at: now,
+      pasos: [
+        {
+          at: isoAtOffset(-18, 9),
+          agente: "facturas",
+          label: "Emitida por sistema · flete MYE Rosario",
+        },
+        {
+          at: isoAtOffset(-1, 14),
+          agente: "conciliacion",
+          label: "Pasarela avisó $312.400 ref PAS-MYE-4410 — pendiente de imputar",
+          cobro_id: "COB-SYS-0001",
+        },
+      ],
+      created_at: isoAtOffset(-18, 9),
       updated_at: now,
     },
   ];
-  writeAll([...seed, ...rows]);
+  const rows = readAll();
+  const demo = new Set(DEMO_COBRAR_IDS);
+  const have = rows.filter((r) => demo.has(r.id));
+  const tsb = have.find((r) => r.id === "FAC-SYS-0001");
+  const needsStory = have.length < 3 || (tsb && (tsb.pasos || []).length < 2);
+  if (have.length === 3 && !needsStory) return false;
+  const others = rows.filter((r) => !demo.has(r.id));
+  writeAll([...seed, ...others]);
   return true;
 }
