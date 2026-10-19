@@ -338,6 +338,8 @@ export function ParametrosPanel() {
           <SectionTitle>Choferes · {tenantLabel(tenant)}</SectionTitle>
           <p className="mb-3 text-xs text-[var(--text-faint)]">
             Editá nombre, teléfono, cuentas o tipo y pulsá <strong className="text-white">Guardar</strong> en esa fila.
+            Encargados / supervisores: tipo <strong className="text-white">Administración</strong>. Ese WhatsApp
+            carga gastos a nombre de un chofer y un viaje; no es rendición de chofer.
           </p>
           <form onSubmit={onAddChofer} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input className={inputCls} placeholder="Nombre completo" value={choferForm.nombre} onChange={(e) => setChoferForm((f) => ({ ...f, nombre: e.target.value }))} required />

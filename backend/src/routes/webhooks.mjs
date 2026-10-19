@@ -34,7 +34,9 @@ import {
   procesarGastoWhatsApp,
   asignarViajeRendicionWhatsApp,
   procesarPendientesRendicionWhatsApp,
+  procesarCargaEncargadoRendicion,
   telefonoEsChoferRegistrado,
+  telefonoEsEncargadoRendicion,
   mensajeRendicionSoloChoferes,
 } from "../services/rendicion-agent.mjs";
 import {
@@ -428,6 +430,29 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
   if (!forzar && !imageBuffer && !pareceRendicionGasto(t)) return null;
   if (!forzar && imageBuffer && !pareceRendicionGasto(t)) return null;
 
+  const esEncargado = await telefonoEsEncargadoRendicion(ev.from);
+  const pendingEncargado = await convStore.getRendicionEncargadoPendiente(ev.from);
+  if (esEncargado || pendingEncargado) {
+    try {
+      const out = await procesarCargaEncargadoRendicion({
+        telefono: ev.from,
+        texto: t,
+        nombre: ev.nombre,
+        imageBuffer,
+        mime,
+        imagenUrl: ev.media?.url || null,
+        log,
+      });
+      if (!out) return null;
+      return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
+    } catch (err) {
+      log?.warn?.({ err: err.message, from: ev.from }, "rendicion encargado webhook error");
+      const msg = `Recibí el gasto de administración pero tuve un problema: ${err.message}. Probá de nuevo.`;
+      if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
+      return { flow: "rendicion_encargado_error", error: err.message, message: msg, received: true };
+    }
+  }
+
   if (!(await telefonoEsChoferRegistrado(ev.from))) {
     log?.info?.({ from: ev.from }, "Rendición omitida: no es chofer registrado");
     const msg = mensajeRendicionSoloChoferes();
@@ -621,6 +646,34 @@ export default async function webhooksRoutes(fastify) {
 
       const texto = ev.message?.trim() || "";
       const convEarly = ev.from ? await convStore.getConversacion(ev.from) : null;
+
+      const encargadoPendiente = convEarly?.rendicion_encargado_pendiente ?? null;
+      const tieneFotoEncargado = Boolean(ev.media?.url) && !esEventoAudio(ev);
+      if (ev.from && encargadoPendiente && (texto || tieneFotoEncargado)) {
+        let imageBufferEnc = null;
+        let mimeEnc = ev.media?.mimetype || ev.media?.mime_type || "image/jpeg";
+        if (tieneFotoEncargado && ev.media?.url) {
+          try {
+            const dl = await downloadMedia(ev.media.url);
+            imageBufferEnc = dl?.buffer || null;
+            mimeEnc = dl?.mime || mimeEnc;
+          } catch (err) {
+            request.log.warn({ err: err.message }, "Rendición encargado: no pude bajar foto");
+          }
+        }
+        const encOut = await procesarCargaEncargadoRendicion({
+          telefono: ev.from,
+          texto,
+          nombre: ev.nombre,
+          imageBuffer: imageBufferEnc,
+          mime: mimeEnc,
+          imagenUrl: ev.media?.url || null,
+          log: request.log,
+        });
+        if (encOut) {
+          return respuestaWebhook({ ...encOut, received: true });
+        }
+      }
 
       // El "sí", el "no" o el número de la hoja no pueden caer en destinos ni en peajes.
       // Una foto nueva no es la respuesta: vuelve a entrar como otra hoja.
@@ -852,11 +905,14 @@ export default async function webhooksRoutes(fastify) {
             }
           }
 
+          const esEncargadoMedia = ev.from ? await telefonoEsEncargadoRendicion(ev.from) : false;
+
           // Remito claro → no meter en rendición aunque digan "comprobante" o haya sticky
-          if (tipoDoc === "remito") {
+          // Encargados de Administración sí cargan factura/boleta por este canal.
+          if (tipoDoc === "remito" && !esEncargadoMedia) {
             if (ev.from) await convStore.setDocumentoTipoPreferido(ev.from, null);
             // cae al flujo de remito más abajo
-          } else if (tipoDoc === "gasto" || (esperaBoletas && !tipoDoc)) {
+          } else if (tipoDoc === "gasto" || (esperaBoletas && !tipoDoc) || esEncargadoMedia) {
             const gastoImgOut = await tryProcesarRendicion(evMedia, {
               texto: texto || "comprobante",
               log: request.log,

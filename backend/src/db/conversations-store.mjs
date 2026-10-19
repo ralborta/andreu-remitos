@@ -249,6 +249,23 @@ export async function clearCorreccionesPendientes(telefono) {
   return conv;
 }
 
+/** Carga de gasto por encargado (Parámetros → Choferes → Administración). */
+export async function setRendicionEncargadoPendiente(telefono, payload) {
+  if (!telefono) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, null);
+  if (payload) conv.rendicion_encargado_pendiente = payload;
+  else delete conv.rendicion_encargado_pendiente;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
+export async function getRendicionEncargadoPendiente(telefono) {
+  const conv = await getConversacion(telefono);
+  return conv?.rendicion_encargado_pendiente ?? null;
+}
+
 /** Cliente Corina elegido por el chofer (Cervecería | Eco de los Andes). */
 export async function setCorinaClienteMarca(telefono, marca) {
   if (!telefono) return null;

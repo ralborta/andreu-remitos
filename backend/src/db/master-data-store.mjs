@@ -94,12 +94,24 @@ export async function deleteItem(name, id) {
   return true;
 }
 
+/** WhatsApp manda 549261…; en maestros a veces está 261… */
+export function phonesMatch(a, b) {
+  const x = normalizePhone(a);
+  const y = normalizePhone(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  const shorter = x.length <= y.length ? x : y;
+  const longer = x.length > y.length ? x : y;
+  if (shorter.length < 8) return false;
+  return longer.endsWith(shorter);
+}
+
 export function findChoferByPhone(choferes, telefono) {
   const tel = normalizePhone(telefono);
   if (!tel) return null;
   return (
     choferes.find(
-      (c) => normalizePhone(c.telefono) === tel || normalizePhone(c.documento) === tel,
+      (c) => phonesMatch(c.telefono, tel) || phonesMatch(c.documento, tel),
     ) ?? null
   );
 }

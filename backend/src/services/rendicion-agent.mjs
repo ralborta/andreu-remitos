@@ -24,12 +24,27 @@ import { sanitizePhone } from "../../../lib/builderbot-webhook.mjs";
 import * as convStore from "../db/conversations-store.mjs";
 import * as master from "../db/master-data-store.mjs";
 import { persistChatMedia } from "./chat-media.mjs";
+import { findChoferPorNombre } from "../../../lib/maestros-match.mjs";
 
-/** Choferes registrados en Parámetros / maestros. */
+function esAdministracion(chofer) {
+  return String(chofer?.observacion || "").toUpperCase() === "ADMINISTRACION";
+}
+
+/** Encargados / supervisores en Parámetros → Choferes → tipo Administración. */
+export async function telefonoEsEncargadoRendicion(telefono) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return false;
+  const row = await master.resolverChoferPorTelefono(phone);
+  return Boolean(row && esAdministracion(row));
+}
+
+/** Choferes registrados en Parámetros / maestros (no Administración). */
 export async function telefonoEsChoferRegistrado(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return false;
-  return Boolean(await master.resolverChoferPorTelefono(phone));
+  const row = await master.resolverChoferPorTelefono(phone);
+  if (row && esAdministracion(row)) return false;
+  return Boolean(row);
 }
 
 export function mensajeRendicionSoloChoferes() {
@@ -42,7 +57,9 @@ export function mensajeRendicionSoloChoferes() {
 async function resolverChoferRendicion(telefono) {
   const phone = sanitizePhone(telefono);
   if (!phone) return null;
-  return master.resolverChoferPorTelefono(phone);
+  const row = await master.resolverChoferPorTelefono(phone);
+  if (row && esAdministracion(row)) return null;
+  return row;
 }
 
 async function enviar(phone, mensaje, meta = {}) {
@@ -480,6 +497,206 @@ export async function procesarGastoWhatsApp({
 
   return {
     flow: "rendicion_pendiente",
+    gasto,
+    mensaje,
+    message: mensaje,
+  };
+}
+
+function mensajeEncargadoInicio() {
+  return (
+    `Esta línea es de *administración*: el gasto no queda a tu nombre.\n\n` +
+    `Mandame la *foto del ticket* (si no la mandaste) y el *nº de viaje* y el *nombre del chofer*.\n` +
+    `No le avisamos al chofer.`
+  );
+}
+
+function mensajeEncargadoPedirViaje() {
+  return `¿Cuál es el *nº de viaje* de este gasto?`;
+}
+
+function mensajeEncargadoPedirChofer() {
+  return `¿A *qué chofer* lo imputamos? (nombre, como en Parámetros)`;
+}
+
+function mensajeEncargadoListo(gasto) {
+  const viaje = gasto.nro_viaje_delfos || gasto.viaje_ref || "—";
+  return (
+    `Listo. Dejé el gasto *${gasto.codigo}* pendiente de aprobación:\n` +
+    `• Chofer: *${gasto.chofer_nombre || "—"}*\n` +
+    `• Viaje: *${viaje}*\n` +
+    `• Importe: ${gasto.monto != null ? `$${gasto.monto}` : "a revisar"}\n\n` +
+    `El chofer *no* recibe aviso.`
+  );
+}
+
+async function choferesParaImputar() {
+  const rows = await master.listCollection("choferes", { activo: true });
+  return rows.filter((c) => !esAdministracion(c));
+}
+
+async function persistirFotoEncargado({ imageBuffer, mime, imagenUrl }) {
+  let url = imagenUrl || null;
+  if (imageBuffer?.length) {
+    const saved = persistChatMedia(imageBuffer, mime || "image/jpeg");
+    if (saved?.publicUrl) url = saved.publicUrl;
+  }
+  return url;
+}
+
+/**
+ * Carga de gasto por encargado (teléfono Administración).
+ * Imputa a un chofer + nº de viaje. No notifica al chofer.
+ */
+export async function procesarCargaEncargadoRendicion({
+  telefono,
+  texto,
+  nombre,
+  imageBuffer,
+  mime,
+  imagenUrl,
+  log,
+} = {}) {
+  const phone = sanitizePhone(telefono);
+  if (!phone) return null;
+  const t = String(texto ?? "").trim();
+  const pending = (await convStore.getRendicionEncargadoPendiente(phone)) || {
+    fase: "recolectar",
+    nro_viaje: null,
+    chofer_nombre: null,
+    chofer_telefono: null,
+    imagen_url: null,
+  };
+
+  if (t || imageBuffer || imagenUrl) {
+    await convStore.appendMensaje(
+      phone,
+      {
+        texto: t || "[Comprobante de gasto · administración]",
+        tipo: imageBuffer || imagenUrl ? "image" : "text",
+        imagen_url: imagenUrl || null,
+      },
+      { dir: "in", from: "client", nombre, agente: "rendicion" },
+    );
+  }
+
+  if (imageBuffer?.length || imagenUrl) {
+    pending.imagen_url = await persistirFotoEncargado({ imageBuffer, mime, imagenUrl });
+  }
+
+  const pareceCancelar = /^(cancel|cancelá|cancelar|olvidate|no)$/i.test(t);
+  if (pareceCancelar) {
+    await convStore.setRendicionEncargadoPendiente(phone, null);
+    const msg = `Ok, cancelé la carga por administración.`;
+    await enviar(phone, msg, { nombre });
+    return { flow: "rendicion_encargado_cancelado", mensaje: msg, message: msg };
+  }
+
+  if (!pending.nro_viaje) {
+    const nro = t.replace(/[^\d]/g, "");
+    if (nro.length >= 3 && !imageBuffer) {
+      pending.nro_viaje = nro;
+    } else if (!pending.imagen_url) {
+      const msg = mensajeEncargadoInicio();
+      await convStore.setRendicionEncargadoPendiente(phone, pending);
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_encargado_inicio", mensaje: msg, message: msg };
+    } else if (!nro || nro.length < 3) {
+      pending.fase = "viaje";
+      await convStore.setRendicionEncargadoPendiente(phone, pending);
+      const msg = mensajeEncargadoPedirViaje();
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_encargado_viaje", mensaje: msg, message: msg };
+    } else {
+      pending.nro_viaje = nro;
+    }
+  }
+
+  if (!pending.chofer_nombre) {
+    const candidatos = await choferesParaImputar();
+    const match = t && !/^\d+$/.test(t) ? findChoferPorNombre(candidatos, t) : null;
+    if (match) {
+      pending.chofer_nombre = match.nombre;
+      pending.chofer_telefono = match.telefono || match.documento || null;
+    } else if (t && t.length >= 3 && !/^\d+$/.test(t) && pending.nro_viaje && t.replace(/[^\d]/g, "") !== pending.nro_viaje) {
+      pending.chofer_nombre = t;
+    } else {
+      pending.fase = "chofer";
+      await convStore.setRendicionEncargadoPendiente(phone, pending);
+      const msg = mensajeEncargadoPedirChofer();
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_encargado_chofer", mensaje: msg, message: msg };
+    }
+  }
+
+  if (!pending.imagen_url) {
+    pending.fase = "foto";
+    await convStore.setRendicionEncargadoPendiente(phone, pending);
+    const msg = `Dale, ahora mandame la *foto del ticket* para imputarlo a *${pending.chofer_nombre}* · viaje *${pending.nro_viaje}*.`;
+    await enviar(phone, msg, { nombre });
+    return { flow: "rendicion_encargado_foto", mensaje: msg, message: msg };
+  }
+
+  let ocrTexto = null;
+  let interp = {};
+  if (imageBuffer?.length) {
+    try {
+      const { ocrDocumento } = await import("../../../lib/document-ai.mjs");
+      const ocr = await ocrDocumento(imageBuffer, "gasto.jpg");
+      ocrTexto = String(ocr?.texto || "").trim() || null;
+    } catch (err) {
+      log?.warn?.({ err: err.message }, "Rendición encargado OCR falló");
+    }
+    interp =
+      (await interpretarGastoWhatsApp({
+        texto: t,
+        imageBuffer,
+        mime,
+        ocrTexto,
+        log,
+      })) || {};
+  }
+
+  const gasto = await rendicionStore.crearGasto({
+    telefono: sanitizePhone(pending.chofer_telefono) || null,
+    chofer_nombre: pending.chofer_nombre,
+    nro_viaje_delfos: pending.nro_viaje,
+    viaje_ref: pending.nro_viaje,
+    categoria: interp.categoria,
+    monto: interp.monto,
+    proveedor: interp.proveedor,
+    fecha_comprobante: interp.fecha_comprobante,
+    descripcion: interp.descripcion,
+    punto_venta: interp.punto_venta,
+    nro_t: interp.nro_t,
+    iva_pct: interp.iva_pct,
+    rae: interp.rae,
+    monto_rae: interp.monto_rae,
+    cuit_proveedor: interp.cuit_proveedor,
+    nota_chofer: t || null,
+    texto_ocr: ocrTexto || interp.texto_ocr || null,
+    imagen_url: pending.imagen_url,
+    estado: "pendiente_aprobacion",
+    origen_carga: "administracion",
+    cargado_por_telefono: phone,
+    cargado_por_nombre: nombre || null,
+  });
+
+  await convStore.setRendicionEncargadoPendiente(phone, null);
+  const mensaje = mensajeEncargadoListo(gasto);
+  await enviar(phone, mensaje, { nombre, gasto_id: gasto.id });
+  log?.info?.(
+    {
+      id: gasto.id,
+      codigo: gasto.codigo,
+      chofer: gasto.chofer_nombre,
+      viaje: gasto.nro_viaje_delfos,
+      por: phone,
+    },
+    "Rendición: gasto cargado por administración",
+  );
+  return {
+    flow: "rendicion_encargado_pendiente_aprobacion",
     gasto,
     mensaje,
     message: mensaje,
