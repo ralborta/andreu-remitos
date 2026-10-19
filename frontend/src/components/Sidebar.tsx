@@ -60,11 +60,17 @@ export function Sidebar({
     pathname === "/agentes/remitos" ||
     pathname.startsWith("/agentes/remitos/");
   const [remitosExpanded, setRemitosExpanded] = useState(remitosSectionOpen);
+  const finanzasSectionOpen = pathname === "/finanzas" || pathname.startsWith("/finanzas/");
+  const [finanzasExpanded, setFinanzasExpanded] = useState(finanzasSectionOpen);
   const activeTenants = REMITO_TENANTS.filter((t) => t.active);
 
   useEffect(() => {
     if (remitosSectionOpen) setRemitosExpanded(true);
   }, [remitosSectionOpen]);
+
+  useEffect(() => {
+    if (finanzasSectionOpen) setFinanzasExpanded(true);
+  }, [finanzasSectionOpen]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -253,13 +259,51 @@ export function Sidebar({
           <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Finanzas
           </p>
-          <Link href="/finanzas" onClick={onClose} className={navClass(isActive("/finanzas"))}>
-            <Wallet size={18} />
-            <span className="flex-1">Módulo de Finanzas</span>
-            <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
-              Nuevo
-            </span>
-          </Link>
+          <div className="mb-0.5">
+            <button
+              type="button"
+              onClick={() => setFinanzasExpanded((v) => !v)}
+              className={clsx(navClass(finanzasSectionOpen), "w-full")}
+            >
+              <Wallet size={18} />
+              <span className="flex-1 text-left">Módulo de Finanzas</span>
+              <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
+                Nuevo
+              </span>
+              <ChevronDown
+                size={14}
+                className={clsx("shrink-0 transition-transform", finanzasExpanded && "rotate-180")}
+              />
+            </button>
+            {finanzasExpanded && (
+              <div className="ml-4 mt-0.5 border-l border-[var(--border)] pl-2">
+                {[
+                  ["/finanzas", "Dashboard"],
+                  ["/finanzas/facturas", "Facturas"],
+                  ["/finanzas/cobranzas", "Cobranzas"],
+                  ["/finanzas/conciliacion", "Conciliación"],
+                  ["/finanzas/comunicacion", "Comunicación"],
+                ].map(([href, label]) => {
+                  const active = href === "/finanzas" ? pathname === "/finanzas" : pathname.startsWith(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={onClose}
+                      className={clsx(
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                        active
+                          ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
+                          : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Operación

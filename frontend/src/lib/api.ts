@@ -1481,6 +1481,10 @@ export type FinanzasResumen = {
   facturas_pagar: number;
   facturas_cobrar: number;
   cartera_abierta: number;
+  cobrado: number;
+  pendiente_conciliar: number;
+  vencidas: number;
+  eficiencia: number;
   cobradas: number;
   cobros_pendientes: number;
   cobros_aplicados: number;

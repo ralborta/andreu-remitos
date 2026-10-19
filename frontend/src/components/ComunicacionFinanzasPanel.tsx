@@ -6,8 +6,8 @@ import {
   listFacturasFinanzas,
   type FacturaFinanzas,
 } from "@/lib/api";
-import { moneyAR, saldoFactura } from "@/lib/finanzas-format";
-import { Card, SectionTitle } from "@/components/ui";
+import { estadoCobranza, moneyAR, saldoFactura } from "@/lib/finanzas-format";
+import { EstadoCobranzaPill } from "@/components/finanzas/EstadoCobranzaPill";
 
 export function ComunicacionFinanzasPanel() {
   const [rows, setRows] = useState<FacturaFinanzas[]>([]);
@@ -21,7 +21,7 @@ export function ComunicacionFinanzasPanel() {
     const data = await listFacturasFinanzas({ tipo: "cobrar", limit: 200 });
     const abiertas = data.filter((f) => saldoFactura(f.monto, f.monto_aplicado) > 0);
     setRows(abiertas);
-    setSelected((prev) => abiertas.find((f) => f.id === prev?.id) || null);
+    setSelected((prev) => abiertas.find((f) => f.id === prev?.id) || abiertas[0] || null);
   }, []);
 
   useEffect(() => {
@@ -40,6 +40,7 @@ export function ComunicacionFinanzasPanel() {
       });
       setSelected(out.factura);
       setRows((prev) => prev.map((r) => (r.id === out.factura.id ? out.factura : r)));
+      setMensaje("");
       if (out.envio.ok) setOk("WhatsApp enviado y paso registrado.");
       else setOk(`Paso registrado. El envío no salió: ${out.envio.error || "sin canal"}`);
     } catch (err) {
@@ -50,75 +51,91 @@ export function ComunicacionFinanzasPanel() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card>
-        <SectionTitle>Clientes a contactar</SectionTitle>
-        <p className="mb-3 text-sm text-[var(--text-dim)]">
-          WhatsApp de cobranza, no de choferes. Cada envío queda como paso en la factura.
-        </p>
-        {rows.length === 0 ? (
-          <p className="text-sm text-[var(--text-dim)]">No hay saldos abiertos.</p>
-        ) : (
-          <ul className="space-y-1">
-            {rows.map((r) => (
-              <li key={r.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelected(r);
-                    setOk(null);
-                    setError(null);
-                  }}
-                  className={`w-full rounded-lg px-3 py-2 text-left text-sm ${
-                    selected?.id === r.id ? "bg-[var(--violet)]/20 text-white" : "hover:bg-white/5 text-[var(--text)]"
-                  }`}
-                >
-                  <span className="font-medium">{r.razon_social}</span>
-                  <span className="ml-2 font-mono text-xs text-[var(--text-faint)]">{r.numero}</span>
-                  <span className="ml-2 text-xs">{moneyAR(saldoFactura(r.monto, r.monto_aplicado))}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-      <Card>
-        <SectionTitle>Mensaje</SectionTitle>
-        {!selected ? (
-          <p className="text-sm text-[var(--text-dim)]">Elegí un cliente.</p>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-[var(--text-dim)]">
-              {selected.razon_social} · {selected.telefono || "sin teléfono"} · vto {selected.fecha_vto || "—"}
-            </p>
-            <textarea
-              className="min-h-28 w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
-              placeholder="Vacío = el agente arma el recordatorio"
-              value={mensaje}
-              onChange={(e) => setMensaje(e.target.value)}
-            />
-            {error && <p className="text-sm text-[var(--red)]">{error}</p>}
-            {ok && <p className="text-sm text-[var(--green)]">{ok}</p>}
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void enviar()}
-              className="w-full rounded-xl bg-[var(--violet)] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {busy ? "Enviando…" : "Contactar por WhatsApp"}
-            </button>
-            {(selected.pasos || []).length > 0 && (
-              <ol className="space-y-1.5 pt-2">
-                {selected.pasos.map((p, i) => (
-                  <li key={`${p.at}-${i}`} className="text-xs text-[var(--text-dim)]">
-                    {i + 1}. {p.label}
-                  </li>
-                ))}
-              </ol>
-            )}
+    <div className="space-y-4">
+      <div>
+        <h1 className="font-[var(--font-display)] text-2xl font-bold text-white">Comunicación</h1>
+        <p className="mt-1 text-sm text-[var(--text-dim)]">WhatsApp de cobranza. Cada envío queda como paso.</p>
+      </div>
+      <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] lg:grid-cols-[280px_1fr]">
+        <div className="border-b border-[var(--border)] lg:border-b-0 lg:border-r">
+          <div className="border-b border-[var(--border)] px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-faint)]">WhatsApp</p>
+            <p className="text-xs text-[var(--text-dim)]">Chats activos</p>
           </div>
-        )}
-      </Card>
+          {rows.length === 0 ? (
+            <p className="p-4 text-sm text-[var(--text-dim)]">No hay saldos abiertos.</p>
+          ) : (
+            <ul>
+              {rows.map((r) => {
+                const st = estadoCobranza(r);
+                return (
+                  <li key={r.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelected(r);
+                        setOk(null);
+                        setError(null);
+                      }}
+                      className={`w-full border-b border-[var(--border)] px-4 py-3 text-left ${
+                        selected?.id === r.id ? "bg-[var(--violet)]/15" : "hover:bg-white/5"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-sm font-medium text-white">{r.razon_social}</span>
+                        <EstadoCobranzaPill tone={st.tone}>{st.label}</EstadoCobranzaPill>
+                      </div>
+                      <div className="mt-1 truncate text-xs text-[var(--text-faint)]">
+                        {r.numero} · {moneyAR(saldoFactura(r.monto, r.monto_aplicado))}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+        <div className="flex min-h-[420px] flex-col p-4">
+          {!selected ? (
+            <p className="text-sm text-[var(--text-dim)]">Elegí un cliente.</p>
+          ) : (
+            <>
+              <div className="border-b border-[var(--border)] pb-3">
+                <p className="font-medium text-white">{selected.razon_social}</p>
+                <p className="text-xs text-[var(--text-dim)]">
+                  {selected.telefono || "sin teléfono"} · vto {selected.fecha_vto || "—"} · {selected.numero}
+                </p>
+              </div>
+              <div className="flex-1 space-y-2 overflow-y-auto py-3">
+                {(selected.pasos || []).map((p, i) => (
+                  <div key={`${p.at}-${i}`} className="rounded-lg bg-white/5 px-3 py-2 text-sm text-[var(--text)]">
+                    {p.label}
+                    <div className="mt-1 text-[11px] text-[var(--text-faint)]">
+                      {p.at ? new Date(p.at).toLocaleString("es-AR") : ""}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <textarea
+                className="min-h-20 w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
+                placeholder="Vacío = el agente arma el recordatorio"
+                value={mensaje}
+                onChange={(e) => setMensaje(e.target.value)}
+              />
+              {error && <p className="mt-2 text-sm text-[var(--red)]">{error}</p>}
+              {ok && <p className="mt-2 text-sm text-[var(--green)]">{ok}</p>}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void enviar()}
+                className="mt-3 w-full rounded-xl bg-[var(--violet)] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {busy ? "Enviando…" : "Enviar WhatsApp"}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

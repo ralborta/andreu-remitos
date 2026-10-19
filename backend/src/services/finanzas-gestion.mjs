@@ -52,13 +52,24 @@ export async function resumenFinanzas() {
   const cobrar = todas.filter((f) => f.tipo === "cobrar");
   const cobros = await listCobros({ limit: 500 });
   const cartera = cobrar.reduce((s, f) => s + saldoDe(f), 0);
+  const aplicados = cobros.filter((c) => c.estado === "aplicado");
+  const pendientes = cobros.filter((c) => c.estado !== "aplicado");
+  const cobrado = aplicados.reduce((s, c) => s + Number(c.monto || 0), 0);
+  const pendienteConciliar = pendientes.reduce((s, c) => s + Number(c.monto || 0), 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const vencidas = cobrar.filter((f) => saldoDe(f) > 0 && f.fecha_vto && f.fecha_vto < today).length;
+  const denom = cobrado + cartera;
   return {
     facturas_pagar: pagar.length,
     facturas_cobrar: cobrar.length,
     cartera_abierta: cartera,
+    cobrado,
+    pendiente_conciliar: pendienteConciliar,
+    vencidas,
+    eficiencia: denom > 0 ? Math.round((cobrado / denom) * 100) : 0,
     cobradas: cobrar.filter((f) => estadoCobrar(f) === "saldada").length,
-    cobros_pendientes: cobros.filter((c) => c.estado !== "aplicado").length,
-    cobros_aplicados: cobros.filter((c) => c.estado === "aplicado").length,
+    cobros_pendientes: pendientes.length,
+    cobros_aplicados: aplicados.length,
   };
 }
 
@@ -200,13 +211,14 @@ export async function comunicarFactura(id, { canal = "whatsapp", mensaje } = {})
   if (ch === "whatsapp") {
     const phone = String(fac.telefono || "").replace(/\D/g, "");
     if (phone.length < 9) {
-      throw new Error("La factura no tiene teléfono de cliente");
-    }
-    try {
-      await sendWhatsAppMessage({ number: phone, message: text });
-      envio = { ok: true, canal: "whatsapp", telefono: phone };
-    } catch (err) {
-      envio = { ok: false, canal: "whatsapp", error: err.message };
+      envio = { ok: false, canal: "whatsapp", error: "sin teléfono de cliente" };
+    } else {
+      try {
+        await sendWhatsAppMessage({ number: phone, message: text });
+        envio = { ok: true, canal: "whatsapp", telefono: phone };
+      } catch (err) {
+        envio = { ok: false, canal: "whatsapp", error: err.message };
+      }
     }
   } else {
     envio = { ok: false, canal: "email", error: "Email todavía no está conectado" };
