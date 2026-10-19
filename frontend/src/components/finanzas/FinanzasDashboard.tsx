@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getFinanzasResumen, listFacturasFinanzas, type FacturaFinanzas, type FinanzasResumen } from "@/lib/api";
 import { antiguedadLabel, estadoCobranza, moneyAR, saldoFactura } from "@/lib/finanzas-format";
@@ -11,6 +11,7 @@ export function FinanzasDashboard() {
   const [rows, setRows] = useState<FacturaFinanzas[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [estado, setEstado] = useState("all");
 
   useEffect(() => {
     let cancelled = false;
@@ -28,196 +29,212 @@ export function FinanzasDashboard() {
     };
   }, []);
 
-  const visibles = rows.filter((r) => {
-    if (!q.trim()) return true;
-    const hay = `${r.numero} ${r.razon_social}`.toLowerCase();
-    return hay.includes(q.trim().toLowerCase());
-  });
+  const visibles = useMemo(() => {
+    return rows.filter((r) => {
+      const st = estadoCobranza(r);
+      if (estado !== "all" && st.label !== estado) return false;
+      if (!q.trim()) return true;
+      return `${r.numero} ${r.razon_social}`.toLowerCase().includes(q.trim().toLowerCase());
+    });
+  }, [rows, q, estado]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="font-[var(--font-display)] text-2xl font-bold text-white">Dashboard de Cobranzas</h1>
-          <p className="mt-1 text-sm text-[var(--text-dim)]">Resumen operativo. Las a pagar se leen en Facturas.</p>
+          <h1 className="text-2xl font-bold text-white">Dashboard de Cobranzas</h1>
+          <p className="mt-0.5 text-sm text-[var(--text-dim)]">Resumen operativo en tiempo real</p>
         </div>
         <div className="flex gap-2">
           <Link
-            href="/finanzas/conciliacion"
-            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--panel-2)]"
+            href="/finanzas/ingresos"
+            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
           >
-            Conciliar
+            Exportar
           </Link>
           <Link
-            href="/finanzas/comunicacion"
+            href="/finanzas/conciliacion"
             className="rounded-lg bg-[var(--violet)] px-3 py-2 text-sm font-semibold text-white"
           >
-            Contactar
+            Nuevo Cobro
           </Link>
         </div>
       </div>
 
-      {error && <p className="text-sm text-[var(--red)]">{error}</p>}
+      {error && <p className="mb-4 text-sm text-[var(--red)]">{error}</p>}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi
-          label="Deuda pendiente"
-          value={moneyAR(resumen?.cartera_abierta)}
-          hint={`${resumen?.facturas_cobrar ?? "—"} facturas a cobrar`}
-        />
-        <Kpi
-          label="Vencidas"
-          value={String(resumen?.vencidas ?? "—")}
-          hint="Saldo abierto pasado de vto"
-        />
-        <Kpi
-          label="Eficiencia de cobro"
-          value={resumen ? `${resumen.eficiencia}%` : "—"}
-          hint="Cobrado vs cartera + cobrado"
-        />
-        <Kpi
-          label="Depósitos a conciliar"
-          value={moneyAR(resumen?.pendiente_conciliar)}
-          hint={`${resumen?.cobros_pendientes ?? 0} avisos de pasarela`}
-          href="/finanzas/conciliacion"
-        />
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Kpi title="Monto Total Cobrado" value={moneyAR(resumen?.cobrado)} accent="bg-emerald-100" />
+        <Kpi title="Deuda Pendiente" value={moneyAR(resumen?.cartera_abierta)} accent="bg-red-100" />
+        <Kpi title="Eficiencia de Cobro" value={resumen ? `${resumen.eficiencia}%` : "—"} accent="bg-blue-100" />
+        <Kpi title="Depósitos pendientes" value={String(resumen?.cobros_pendientes ?? "—")} accent="bg-amber-100" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="panel p-5 lg:col-span-8">
-          <h2 className="text-sm font-semibold text-white">Cobros bancarios</h2>
-          <p className="mt-2 text-sm text-[var(--text-dim)]">
-            El dinero entra por la pasarela. Si hay pendientes de imputar, se gestionan en Conciliación.
-            Las facturas a pagar no se concilian acá.
-          </p>
-          <div className="mt-4 flex flex-col gap-2">
-            <Link
-              href="/finanzas/conciliacion"
-              className="flex items-center justify-between rounded-lg border border-[var(--border)] px-3 py-2.5 text-sm hover:border-[var(--violet)]/50"
-            >
-              Ver transferencias
-              <span className="text-[var(--violet-2)]">→</span>
-            </Link>
-            <Link
-              href="/finanzas/facturas"
-              className="flex items-center justify-between rounded-lg border border-[var(--border)] px-3 py-2.5 text-sm hover:border-[var(--violet)]/50"
-            >
-              Bandeja de facturas
-              <span className="text-[var(--violet-2)]">→</span>
-            </Link>
-          </div>
-        </div>
-        <div className="panel p-5 lg:col-span-4">
-          <h2 className="text-sm font-semibold text-white">A pagar (PDF)</h2>
-          <p className="mt-2 text-2xl font-bold text-white">{resumen?.facturas_pagar ?? 0}</p>
-          <p className="mt-1 text-sm text-[var(--text-dim)]">
-            Solo entran subiendo el PDF del proveedor. No hay alta en blanco.
-          </p>
-          <Link href="/finanzas/facturas" className="mt-3 inline-block text-sm font-medium text-[var(--violet-2)]">
-            Cargar PDF
-          </Link>
-        </div>
+      <div className="mb-8 max-w-sm">
+        <Link href="/finanzas/echeques" className="block">
+          <Kpi title="E-cheques pendientes de liquidación" value="0" accent="bg-violet-100" />
+        </Link>
+        <p className="mt-2 px-1 text-xs text-[var(--text-dim)]">
+          Vista dedicada a e-cheques; no incluye transferencias CVU.
+        </p>
       </div>
 
-      <div className="panel overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-white">Cobranzas pendientes</h2>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="panel overflow-hidden lg:col-span-2">
+          <div className="border-b border-[var(--border)] p-4">
+            <h2 className="text-base font-semibold text-white">Cobranzas Pendientes</h2>
             <p className="text-xs text-[var(--text-dim)]">Facturas abiertas y por vencer</p>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar..."
+                className="h-9 flex-1 rounded-lg border border-[var(--border)] bg-white/5 px-3 text-sm text-white"
+              />
+              <select
+                value={estado}
+                onChange={(e) => setEstado(e.target.value)}
+                className="h-9 rounded-lg border border-[var(--border)] bg-white/5 px-2 text-sm text-white"
+              >
+                <option value="all">Todos los estados</option>
+                <option value="Por vencer">Por vencer</option>
+                <option value="Vencido">Vencido</option>
+                <option value="Parcial">Parcial</option>
+              </select>
+            </div>
           </div>
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar cliente…"
-            className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-1.5 text-sm text-white sm:w-56"
-          />
+          {visibles.length === 0 ? (
+            <p className="p-8 text-center text-sm text-[var(--text-dim)]">
+              {error ? "No se pudieron cargar las facturas." : "No hay facturas pendientes"}
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead>
+                  <tr className="bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+                    <th className="px-4 py-3">Factura</th>
+                    <th className="px-4 py-3">Cliente</th>
+                    <th className="px-4 py-3">Monto</th>
+                    <th className="px-4 py-3">Vencimiento</th>
+                    <th className="px-4 py-3">Antigüedad</th>
+                    <th className="px-4 py-3">Estado</th>
+                    <th className="px-4 py-3">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibles.map((r) => {
+                    const st = estadoCobranza(r);
+                    return (
+                      <tr key={r.id} className="border-t border-[var(--border)] hover:bg-white/[0.03]">
+                        <td className="px-4 py-2.5 font-mono font-medium">{r.numero}</td>
+                        <td className="px-4 py-2.5">
+                          <div className="font-medium text-white">{r.razon_social}</div>
+                          {r.cuit_emisor && (
+                            <div className="text-xs text-[var(--text-faint)]">CUIT: {r.cuit_emisor}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 font-mono font-semibold">
+                          {moneyAR(saldoFactura(r.monto, r.monto_aplicado), r.moneda || "ARS")}
+                        </td>
+                        <td className="px-4 py-2.5">{r.fecha_vto || "—"}</td>
+                        <td className={`px-4 py-2.5 ${st.tone === "bad" ? "text-[var(--red)]" : "text-[var(--text-dim)]"}`}>
+                          {st.tone === "bad" ? antiguedadLabel(r.fecha_vto) : "Al día"}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <EstadoCobranzaPill tone={st.tone}>{st.label}</EstadoCobranzaPill>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <Link href="/finanzas/facturas" className="mr-2 text-xs text-[var(--violet-2)]">
+                            Ver
+                          </Link>
+                          <Link href="/finanzas/comunicacion" className="text-xs text-[var(--text-dim)]">
+                            {st.label === "Vencido" ? "Llamar" : "Recordar"}
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="border-t border-[var(--border)] px-6 py-3 text-xs text-[var(--text-dim)]">
+            Mostrando {visibles.length} resultados
+          </div>
         </div>
-        {visibles.length === 0 ? (
-          <p className="p-4 text-sm text-[var(--text-dim)]">
-            {error ? "Sin datos." : "No hay saldos abiertos."}
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="text-[11px] uppercase tracking-wider text-[var(--text-faint)]">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Factura</th>
-                  <th className="px-4 py-3 font-medium">Cliente</th>
-                  <th className="px-4 py-3 font-medium">Monto</th>
-                  <th className="px-4 py-3 font-medium">Vencimiento</th>
-                  <th className="px-4 py-3 font-medium">Antigüedad</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 text-right font-medium">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibles.map((r) => {
-                  const st = estadoCobranza(r);
-                  return (
-                    <tr key={r.id} className="border-t border-[var(--border)] hover:bg-white/[0.03]">
-                      <td className="px-4 py-2.5 font-mono text-[var(--violet-2)]">{r.numero}</td>
-                      <td className="px-4 py-2.5 text-white">{r.razon_social}</td>
-                      <td className="px-4 py-2.5 tabular text-white">
-                        {moneyAR(saldoFactura(r.monto, r.monto_aplicado), r.moneda || "ARS")}
-                      </td>
-                      <td className="px-4 py-2.5 text-[var(--text-dim)]">{r.fecha_vto || "—"}</td>
-                      <td
-                        className={`px-4 py-2.5 ${st.tone === "bad" ? "text-[var(--red)]" : st.tone === "warn" ? "text-[#f59e0b]" : "text-[var(--text-dim)]"}`}
-                      >
-                        {antiguedadLabel(r.fecha_vto)}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <EstadoCobranzaPill tone={st.tone}>{st.label}</EstadoCobranzaPill>
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        <Link
-                          href="/finanzas/comunicacion"
-                          className="text-xs font-semibold text-[var(--violet-2)] hover:underline"
-                        >
-                          Contactar
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+
+        <div className="space-y-6">
+          <div className="panel p-0">
+            <div className="border-b border-[var(--border)] p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-semibold text-white">Cobros bancarios</h2>
+                  <p className="text-xs text-[var(--text-dim)]">Transferencias y conciliación</p>
+                </div>
+                <Link href="/finanzas/ingresos" className="text-xs font-medium text-[var(--violet-2)]">
+                  Ver transferencias
+                </Link>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="mb-4 text-sm text-[var(--text-dim)]">
+                Los depósitos bancarios aparecen en{" "}
+                <Link href="/finanzas/ingresos" className="font-medium text-[var(--violet-2)]">
+                  Transferencias
+                </Link>
+                . Si hay pendientes de liquidación, gestionalos en{" "}
+                <Link href="/finanzas/conciliacion" className="font-medium text-[var(--violet-2)]">
+                  Conciliación
+                </Link>
+                .
+              </p>
+              <div className="flex gap-2">
+                <Link href="/finanzas/ingresos" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm">
+                  Transferencias
+                </Link>
+                <Link href="/finanzas/conciliacion" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm">
+                  Conciliación
+                </Link>
+              </div>
+            </div>
           </div>
-        )}
-        <div className="border-t border-[var(--border)] p-3 text-center">
-          <Link href="/finanzas/facturas" className="text-sm font-medium text-[var(--violet-2)] hover:underline">
-            Ver todas las facturas
-          </Link>
+          <div className="panel p-0">
+            <div className="border-b border-[var(--border)] p-4">
+              <h2 className="text-base font-semibold text-white">Rendimiento Mensual</h2>
+              <p className="text-xs text-[var(--text-dim)]">Cobranzas de los últimos 6 meses</p>
+            </div>
+            <div className="flex h-48 items-end justify-between gap-2 p-6">
+              {["Ene", "Feb", "Mar", "Abr", "May", "Jun"].map((month, index) => {
+                const heights = [45, 52, 48, 60, 55, 70];
+                return (
+                  <div key={month} className="flex flex-1 flex-col items-center gap-2">
+                    <div
+                      className="w-full rounded-sm bg-[var(--violet)]/80"
+                      style={{ height: `${heights[index]}%` }}
+                    />
+                    <span className="text-xs text-[var(--text-dim)]">{month}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function Kpi({
-  label,
-  value,
-  hint,
-  href,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  href?: string;
-}) {
-  const inner = (
-    <>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">{label}</p>
-      <p className="mt-2 font-[var(--font-display)] text-2xl font-bold text-white">{value}</p>
-      <p className="mt-1 text-xs text-[var(--text-dim)]">{hint}</p>
-    </>
+function Kpi({ title, value, accent }: { title: string; value: string; accent: string }) {
+  return (
+    <div className="panel p-5">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-dim)]">{title}</p>
+          <p className="font-mono text-2xl font-bold text-white">{value}</p>
+        </div>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accent}`} />
+      </div>
+      <div className={`mt-4 h-0.5 w-full rounded-full ${accent}`} />
+    </div>
   );
-  if (href) {
-    return (
-      <Link href={href} className="panel panel-hover block p-4">
-        {inner}
-      </Link>
-    );
-  }
-  return <div className="panel p-4">{inner}</div>;
 }

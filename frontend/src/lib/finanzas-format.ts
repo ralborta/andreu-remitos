@@ -30,12 +30,14 @@ export function estadoCobranza(row: {
 }) {
   const saldo = saldoFactura(row.monto, row.monto_aplicado);
   if (saldo <= 0.009 || row.estado === "saldada") {
-    return { label: "Saldada", tone: "ok" as const };
+    return { label: "Pagada", tone: "ok" as const };
+  }
+  if (Number(row.monto_aplicado || 0) > 0) {
+    return { label: "Parcial", tone: "info" as const };
   }
   const days = diasVencimiento(row.fecha_vto);
-  if (days != null && days > 0) return { label: "Vencida", tone: "bad" as const };
-  if (days != null && days >= -7) return { label: "Riesgo", tone: "warn" as const };
-  return { label: "Al día", tone: "ok" as const };
+  if (days != null && days > 0) return { label: "Vencido", tone: "bad" as const };
+  return { label: "Por vencer", tone: "warn" as const };
 }
 
 export function antiguedadLabel(fechaVto?: string | null) {

@@ -1,25 +1,15 @@
-import { notFound } from "next/navigation";
-import { financeAgents, getFinanceAgent } from "@/lib/finance-agents";
-import { FacturasFinanzasPanel } from "@/components/FacturasFinanzasPanel";
-import { CobranzasFinanzasPanel } from "@/components/CobranzasFinanzasPanel";
-import { ConciliacionFinanzasPanel } from "@/components/ConciliacionFinanzasPanel";
-import { ComunicacionFinanzasPanel } from "@/components/ComunicacionFinanzasPanel";
+import { notFound, redirect } from "next/navigation";
 
-export function generateStaticParams() {
-  return financeAgents.map((a) => ({ slug: a.slug }));
-}
+const ALIAS: Record<string, string> = {
+  cobranzas: "/finanzas/ingresos",
+  facturas: "/finanzas/facturas",
+  conciliacion: "/finanzas/conciliacion",
+  comunicacion: "/finanzas/comunicacion",
+};
 
-export default async function FinanzasAgentPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!getFinanceAgent(slug)) notFound();
-
-  if (slug === "facturas") return <FacturasFinanzasPanel />;
-  if (slug === "cobranzas") return <CobranzasFinanzasPanel />;
-  if (slug === "conciliacion") return <ConciliacionFinanzasPanel />;
-  if (slug === "comunicacion") return <ComunicacionFinanzasPanel />;
+  const dest = ALIAS[slug];
+  if (dest) redirect(dest);
   notFound();
 }

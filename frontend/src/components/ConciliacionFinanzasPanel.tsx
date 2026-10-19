@@ -87,8 +87,8 @@ export function ConciliacionFinanzasPanel() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="font-[var(--font-display)] text-2xl font-bold text-white">Cobros y conciliación</h1>
-        <p className="mt-1 text-sm text-[var(--text-dim)]">
+        <h1 className="text-2xl font-bold text-white">Conciliación de Cobros</h1>
+        <p className="mt-0.5 text-sm text-[var(--text-dim)]">
           Emparejá avisos de la pasarela con facturas a cobrar.
         </p>
       </div>

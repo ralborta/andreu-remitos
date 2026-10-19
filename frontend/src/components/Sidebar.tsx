@@ -280,9 +280,10 @@ export function Sidebar({
                 {[
                   ["/finanzas", "Dashboard"],
                   ["/finanzas/facturas", "Facturas"],
-                  ["/finanzas/cobranzas", "Cobranzas"],
+                  ["/finanzas/clientes", "Clientes"],
+                  ["/finanzas/ingresos", "Ingresos"],
                   ["/finanzas/conciliacion", "Conciliación"],
-                  ["/finanzas/comunicacion", "Comunicación"],
+                  ["/finanzas/comunicacion", "Enviar Mensaje"],
                 ].map(([href, label]) => {
                   const active = href === "/finanzas" ? pathname === "/finanzas" : pathname.startsWith(href);
                   return (
