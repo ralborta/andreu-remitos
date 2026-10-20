@@ -70,15 +70,6 @@ export function FinanzasDashboard() {
         <Kpi title="Depósitos pendientes" value={String(resumen?.cobros_pendientes ?? "—")} accent="bg-amber-100" />
       </div>
 
-      <div className="mb-8 max-w-sm">
-        <Link href="/finanzas/echeques" className="block">
-          <Kpi title="E-cheques pendientes de liquidación" value="0" accent="bg-violet-100" />
-        </Link>
-        <p className="mt-2 px-1 text-xs text-[var(--text-dim)]">
-          Vista dedicada a e-cheques; no incluye transferencias CVU.
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="panel overflow-hidden lg:col-span-2">
           <div className="border-b border-[var(--border)] p-4">
@@ -144,7 +135,7 @@ export function FinanzasDashboard() {
                           <EstadoCobranzaPill tone={st.tone}>{st.label}</EstadoCobranzaPill>
                         </td>
                         <td className="px-4 py-2.5">
-                          <Link href="/finanzas/facturas" className="mr-2 text-xs text-[var(--violet-2)]">
+                          <Link href="/finanzas/facturas/cobranzas" className="mr-2 text-xs text-[var(--violet-2)]">
                             Ver
                           </Link>
                           <Link href="/finanzas/comunicacion" className="text-xs text-[var(--text-dim)]">
@@ -171,31 +162,22 @@ export function FinanzasDashboard() {
                   <h2 className="text-base font-semibold text-white">Cobros bancarios</h2>
                   <p className="text-xs text-[var(--text-dim)]">Transferencias y conciliación</p>
                 </div>
-                <Link href="/finanzas/ingresos" className="text-xs font-medium text-[var(--violet-2)]">
-                  Ver transferencias
+                <Link href="/finanzas/conciliacion" className="text-xs font-medium text-[var(--violet-2)]">
+                  Ver conciliación
                 </Link>
               </div>
             </div>
             <div className="p-6">
               <p className="mb-4 text-sm text-[var(--text-dim)]">
-                Los depósitos bancarios aparecen en{" "}
-                <Link href="/finanzas/ingresos" className="font-medium text-[var(--violet-2)]">
-                  Transferencias
-                </Link>
-                . Si hay pendientes de liquidación, gestionalos en{" "}
+                Los depósitos de la pasarela se imputan en{" "}
                 <Link href="/finanzas/conciliacion" className="font-medium text-[var(--violet-2)]">
                   Conciliación
                 </Link>
                 .
               </p>
-              <div className="flex gap-2">
-                <Link href="/finanzas/ingresos" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm">
-                  Transferencias
-                </Link>
-                <Link href="/finanzas/conciliacion" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm">
-                  Conciliación
-                </Link>
-              </div>
+              <Link href="/finanzas/conciliacion" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm">
+                Ir a conciliación
+              </Link>
             </div>
           </div>
           <div className="panel p-0">

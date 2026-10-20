@@ -1,8 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 
 const ALIAS: Record<string, string> = {
-  cobranzas: "/finanzas/ingresos",
-  facturas: "/finanzas/facturas",
+  cobranzas: "/finanzas/facturas/cobranzas",
+  pagos: "/finanzas/facturas/pagos",
+  facturas: "/finanzas/facturas/cobranzas",
   conciliacion: "/finanzas/conciliacion",
   comunicacion: "/finanzas/comunicacion",
 };

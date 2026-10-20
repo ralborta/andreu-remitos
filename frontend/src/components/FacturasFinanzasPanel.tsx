@@ -11,7 +11,7 @@ import {
 import { estadoCobranza, moneyAR } from "@/lib/finanzas-format";
 import { EstadoCobranzaPill } from "@/components/finanzas/EstadoCobranzaPill";
 
-export function FacturasFinanzasPanel() {
+export function FacturasFinanzasPanel({ modo }: { modo: "pagar" | "cobrar" }) {
   const [rows, setRows] = useState<FacturaFinanzas[]>([]);
   const [q, setQ] = useState("");
   const [estado, setEstado] = useState("all");
@@ -25,13 +25,13 @@ export function FacturasFinanzasPanel() {
     setLoading(true);
     setError(null);
     try {
-      setRows(await listFacturasFinanzas({ limit: 200 }));
+      setRows(await listFacturasFinanzas({ tipo: modo, limit: 200 }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar las facturas");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [modo]);
 
   useEffect(() => {
     void load();
@@ -101,29 +101,37 @@ export function FacturasFinanzasPanel() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Facturas</h1>
-          <p className="mt-0.5 text-sm text-[var(--text-dim)]">Gestión y seguimiento de todas las facturas</p>
+          <h1 className="text-2xl font-bold text-white">{modo === "pagar" ? "Pagos" : "Cobranzas"}</h1>
+          <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+            {modo === "pagar"
+              ? "Facturas a pagar: se cargan con el PDF del proveedor"
+              : "Facturas a cobrar: entran por sistema"}
+          </p>
         </div>
-        <label className="cursor-pointer rounded-lg bg-[var(--violet)] px-4 py-2 text-sm font-semibold text-white">
-          <input
-            type="file"
-            accept="application/pdf,image/jpeg,image/png,image/webp"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => {
-              void onFiles(e.target.files);
-              e.target.value = "";
-            }}
-          />
-          {uploading ? "Subiendo…" : "Cargar factura"}
-        </label>
+        {modo === "pagar" && (
+          <label className="cursor-pointer rounded-lg bg-[var(--violet)] px-4 py-2 text-sm font-semibold text-white">
+            <input
+              type="file"
+              accept="application/pdf,image/jpeg,image/png,image/webp"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                void onFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            {uploading ? "Subiendo…" : "Cargar factura"}
+          </label>
+        )}
       </div>
 
       {error && <p className="mb-4 text-sm text-[var(--red)]">{error}</p>}
 
       <div className="panel overflow-hidden">
         <div className="border-b border-[var(--border)] p-4">
-          <h2 className="mb-3 text-base font-semibold text-white">Todas las Facturas</h2>
+          <h2 className="mb-3 text-base font-semibold text-white">
+            {modo === "pagar" ? "Facturas a pagar" : "Todas las Facturas"}
+          </h2>
           <div className="flex flex-col gap-3 sm:flex-row">
             <input
               value={q}

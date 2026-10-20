@@ -8,6 +8,29 @@ import {
 } from "@/lib/api";
 import { moneyAR, saldoFactura } from "@/lib/finanzas-format";
 
+const TEMPLATES = {
+  whatsapp: {
+    "Recordatorio corto":
+      "Hola {nombre}, te recordamos la factura {numero}. Saldo {monto}, vence {vto}. ¿Me confirmás el pago?",
+    "Factura vencida":
+      "Hola {nombre}, la factura {numero} está vencida. Saldo {monto}. Contanos para regularizar.",
+  },
+  email: {
+    "Recordatorio de pago":
+      "Estimado/a {nombre},\n\nLe recordamos la factura {numero} con saldo {monto}, vencimiento {vto}.\n\nSaludos.",
+    "Factura vencida":
+      "Estimado/a {nombre},\n\nLa factura {numero} se encuentra vencida. Saldo {monto}.\n\nSaludos.",
+  },
+} as const;
+
+function fill(tpl: string, f: FacturaFinanzas) {
+  return tpl
+    .replaceAll("{nombre}", f.razon_social || "")
+    .replaceAll("{numero}", f.numero || "")
+    .replaceAll("{monto}", moneyAR(saldoFactura(f.monto, f.monto_aplicado), f.moneda || "ARS"))
+    .replaceAll("{vto}", f.fecha_vto || "sin vencimiento");
+}
+
 export function ComunicacionFinanzasPanel() {
   const [rows, setRows] = useState<FacturaFinanzas[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -30,7 +53,7 @@ export function ComunicacionFinanzasPanel() {
   const visibles = useMemo(
     () =>
       rows.filter((r) =>
-        `${r.razon_social} ${r.numero}`.toLowerCase().includes(q.trim().toLowerCase()),
+        `${r.razon_social} ${r.numero} ${r.telefono}`.toLowerCase().includes(q.trim().toLowerCase()),
       ),
     [rows, q],
   );
@@ -42,6 +65,11 @@ export function ComunicacionFinanzasPanel() {
       else next.add(id);
       return next;
     });
+  }
+
+  function selectAll() {
+    if (selected.size === visibles.length) setSelected(new Set());
+    else setSelected(new Set(visibles.map((r) => r.id)));
   }
 
   async function enviar() {
@@ -56,15 +84,14 @@ export function ComunicacionFinanzasPanel() {
     let fail = 0;
     try {
       for (const id of selected) {
-        const out = await comunicarFacturaFinanzas(id, {
-          canal,
-          mensaje: mensaje || undefined,
-        });
+        const fac = rows.find((r) => r.id === id);
+        const text = fac && mensaje ? fill(mensaje, fac) : mensaje || undefined;
+        const out = await comunicarFacturaFinanzas(id, { canal, mensaje: text });
         if (out.envio.ok) okCount += 1;
         else fail += 1;
       }
       await load();
-      setOk(`${okCount} enviados. ${fail} con aviso (paso igual registrado).`);
+      setOk(`${okCount} enviados. ${fail} con aviso (el paso quedó registrado).`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo enviar");
     } finally {
@@ -72,36 +99,68 @@ export function ComunicacionFinanzasPanel() {
     }
   }
 
+  const tpls = TEMPLATES[canal];
+
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Enviar Mensaje</h1>
-        <p className="mt-0.5 text-sm text-[var(--text-dim)]">
-          Seleccioná clientes y mandá WhatsApp o email de cobranza
+        <h1 className="text-2xl font-bold text-white">Enviar Mensajes</h1>
+        <p className="mt-1 text-sm text-[var(--text-dim)]">
+          Comunicate con los clientes por WhatsApp o email, como en Constanza
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="panel overflow-hidden">
-          <div className="border-b border-[var(--border)] p-4">
+
+      <div className="mb-4 flex gap-2">
+        {(["whatsapp", "email"] as const).map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => {
+              setCanal(c);
+              setMensaje("");
+            }}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+              canal === c ? "bg-[var(--violet)] text-white" : "border border-[var(--border)] text-[var(--text-dim)]"
+            }`}
+          >
+            {c === "whatsapp" ? "WhatsApp" : "Email"}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="panel overflow-hidden lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-[var(--border)] p-4">
+            <div>
+              <h2 className="text-base font-semibold text-white">Seleccionar Clientes</h2>
+              <p className="text-xs text-[var(--text-dim)]">Quiénes reciben el mensaje</p>
+            </div>
+            <button type="button" onClick={selectAll} className="text-xs text-[var(--violet-2)]">
+              {selected.size === visibles.length ? "Deseleccionar todos" : "Seleccionar todos"}
+            </button>
+          </div>
+          <div className="p-4">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar cliente..."
+              placeholder="Buscar por nombre, factura o teléfono..."
               className="h-9 w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 text-sm text-white"
             />
           </div>
-          <ul>
+          <ul className="max-h-[520px] overflow-y-auto">
             {visibles.map((r) => (
-              <li key={r.id} className="border-b border-[var(--border)]">
-                <label className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(r.id)}
-                    onChange={() => toggle(r.id)}
-                  />
-                  <span className="flex-1">
-                    <span className="font-medium text-white">{r.razon_social}</span>
-                    <span className="ml-2 font-mono text-xs text-[var(--text-faint)]">{r.numero}</span>
+              <li key={r.id}>
+                <label
+                  className={`flex cursor-pointer items-center gap-3 border-t border-[var(--border)] px-4 py-3 text-sm ${
+                    selected.has(r.id) ? "bg-[var(--violet)]/15" : "hover:bg-white/5"
+                  }`}
+                >
+                  <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggle(r.id)} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium text-white">{r.razon_social}</span>
+                    <span className="text-xs text-[var(--text-faint)]">
+                      {r.numero} · {r.telefono || "sin teléfono"}
+                    </span>
                   </span>
                   <span className="tabular">{moneyAR(saldoFactura(r.monto, r.monto_aplicado))}</span>
                 </label>
@@ -109,24 +168,28 @@ export function ComunicacionFinanzasPanel() {
             ))}
           </ul>
         </div>
+
         <div className="panel space-y-3 p-5">
-          <label className="block text-sm">
-            <span className="mb-1 block text-[11px] uppercase text-[var(--text-faint)]">Canal</span>
-            <select
-              value={canal}
-              onChange={(e) => setCanal(e.target.value as "whatsapp" | "email")}
-              className="w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
-            >
-              <option value="whatsapp">WhatsApp</option>
-              <option value="email">Email</option>
-            </select>
-          </label>
+          <h2 className="text-sm font-semibold text-white">Mensaje</h2>
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(tpls).map(([name, tpl]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setMensaje(tpl)}
+                className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[11px] text-[var(--text-dim)] hover:text-white"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
           <textarea
-            className="min-h-32 w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
-            placeholder="Vacío = el agente arma el recordatorio"
+            className="min-h-40 w-full rounded-lg border border-[var(--border)] bg-white/5 px-3 py-2 text-sm text-white"
+            placeholder="Plantilla o texto. {nombre} {numero} {monto} {vto}"
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
           />
+          <p className="text-[11px] text-[var(--text-faint)]">{mensaje.length} caracteres</p>
           {error && <p className="text-sm text-[var(--red)]">{error}</p>}
           {ok && <p className="text-sm text-[var(--green)]">{ok}</p>}
           <button

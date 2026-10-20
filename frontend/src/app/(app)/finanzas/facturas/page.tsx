@@ -1,5 +1,5 @@
-import { FacturasFinanzasPanel } from "@/components/FacturasFinanzasPanel";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <FacturasFinanzasPanel />;
+  redirect("/finanzas/facturas/cobranzas");
 }

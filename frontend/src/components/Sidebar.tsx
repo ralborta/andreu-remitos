@@ -279,9 +279,8 @@ export function Sidebar({
               <div className="ml-4 mt-0.5 border-l border-[var(--border)] pl-2">
                 {[
                   ["/finanzas", "Dashboard"],
-                  ["/finanzas/facturas", "Facturas"],
-                  ["/finanzas/clientes", "Clientes"],
-                  ["/finanzas/ingresos", "Ingresos"],
+                  ["/finanzas/facturas/pagos", "Pagos"],
+                  ["/finanzas/facturas/cobranzas", "Cobranzas"],
                   ["/finanzas/conciliacion", "Conciliación"],
                   ["/finanzas/comunicacion", "Enviar Mensaje"],
                 ].map(([href, label]) => {

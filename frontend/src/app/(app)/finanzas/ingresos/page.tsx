@@ -1,5 +1,5 @@
-import { IngresosFinanzasPanel } from "@/components/finanzas/IngresosFinanzasPanel";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <IngresosFinanzasPanel />;
+  redirect("/finanzas/conciliacion");
 }

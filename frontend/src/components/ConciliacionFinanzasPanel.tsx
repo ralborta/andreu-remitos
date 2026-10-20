@@ -86,25 +86,40 @@ export function ConciliacionFinanzasPanel() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Conciliación de Cobros</h1>
-        <p className="mt-0.5 text-sm text-[var(--text-dim)]">
-          Emparejá avisos de la pasarela con facturas a cobrar.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Conciliación de Cobros</h1>
+          <p className="mt-0.5 text-sm text-[var(--text-dim)]">
+            Liquidación e imputación de cobros de la pasarela contra facturas a cobrar
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
+        >
+          Actualizar
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="panel p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Ingresos</p>
-          <p className="mt-2 text-2xl font-bold text-white">{moneyAR(ingreso)}</p>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 p-4 text-white">
+          <p className="text-xs font-medium text-white/90">Pendientes</p>
+          <p className="mt-1 text-2xl font-bold">{pendientes.length}</p>
+          <p className="text-sm text-white/80">{moneyAR(pendientes.reduce((s, c) => s + Number(c.monto || 0), 0))}</p>
         </div>
-        <div className="panel p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Pendientes</p>
-          <p className="mt-2 text-2xl font-bold text-[#f59e0b]">{pendientes.length}</p>
+        <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 text-white">
+          <p className="text-xs font-medium text-white/90">Conciliados</p>
+          <p className="mt-1 text-2xl font-bold">{aplicados.length}</p>
+          <p className="text-sm text-white/80">{moneyAR(aplicados.reduce((s, c) => s + Number(c.monto || 0), 0))}</p>
         </div>
-        <div className="panel p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Conciliados</p>
-          <p className="mt-2 text-2xl font-bold text-white">{aplicados.length}</p>
+        <div className="rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 p-4 text-white">
+          <p className="text-xs font-medium text-white/90">Facturas abiertas</p>
+          <p className="mt-1 text-2xl font-bold">{abiertas.length}</p>
+        </div>
+        <div className="rounded-xl bg-gradient-to-br from-[var(--violet)] to-fuchsia-700 p-4 text-white">
+          <p className="text-xs font-medium text-white/90">Total ingresos</p>
+          <p className="mt-1 text-2xl font-bold">{moneyAR(ingreso)}</p>
         </div>
       </div>
 
