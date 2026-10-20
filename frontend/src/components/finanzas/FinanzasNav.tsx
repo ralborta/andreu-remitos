@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ArrowUpRight,
   ArrowDownLeft,
+  Users,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -68,6 +69,7 @@ export function FinanzasNav() {
       <nav className="space-y-0.5">
         <Label>Operaciones</Label>
         <Item href="/finanzas" label="Dashboard" icon={LayoutDashboard} exact />
+        <Item href="/finanzas/clientes" label="Clientes" icon={Users} />
 
         <button
           type="button"
