@@ -280,8 +280,8 @@ export function Sidebar({
                 {[
                   ["/finanzas", "Dashboard"],
                   ["/finanzas/clientes", "Clientes"],
-                  ["/finanzas/facturas/pagos", "Pagos"],
-                  ["/finanzas/facturas/cobranzas", "Cobranzas"],
+                  ["/finanzas/facturas/pagos", "Facturas"],
+                  ["/finanzas/facturas/cobranzas", "Cobranza"],
                   ["/finanzas/conciliacion", "Conciliación"],
                   ["/finanzas/comunicacion", "Enviar Mensaje"],
                 ].map(([href, label]) => {

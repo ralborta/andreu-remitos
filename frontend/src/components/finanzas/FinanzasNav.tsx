@@ -2,18 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import {
-  LayoutDashboard,
-  FileText,
-  Scale,
-  Send,
-  ChevronDown,
-  ChevronRight,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Users,
-} from "lucide-react";
+import { LayoutDashboard, FileText, Scale, Send, Users, Banknote } from "lucide-react";
 import clsx from "clsx";
 
 function Item({
@@ -52,14 +41,6 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export function FinanzasNav() {
-  const pathname = usePathname();
-  const facturasOpenPath = pathname.startsWith("/finanzas/facturas");
-  const [facturasOpen, setFacturasOpen] = useState(facturasOpenPath);
-
-  if (facturasOpenPath && !facturasOpen) {
-    setFacturasOpen(true);
-  }
-
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--panel)] px-2 py-3">
       <div className="mb-2 px-3 py-2">
@@ -70,29 +51,8 @@ export function FinanzasNav() {
         <Label>Operaciones</Label>
         <Item href="/finanzas" label="Dashboard" icon={LayoutDashboard} exact />
         <Item href="/finanzas/clientes" label="Clientes" icon={Users} />
-
-        <button
-          type="button"
-          onClick={() => setFacturasOpen((v) => !v)}
-          className={clsx(
-            "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium",
-            facturasOpenPath
-              ? "bg-[var(--violet)]/80 text-white"
-              : "text-[var(--text-dim)] hover:bg-white/10 hover:text-white",
-          )}
-        >
-          <span className="flex items-center gap-3">
-            <FileText size={16} />
-            Facturas
-          </span>
-          {facturasOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </button>
-        {facturasOpen && (
-          <div className="ml-2 space-y-0.5 border-l border-[var(--border)] pl-2">
-            <Item href="/finanzas/facturas/pagos" label="Pagos" icon={ArrowUpRight} />
-            <Item href="/finanzas/facturas/cobranzas" label="Cobranzas" icon={ArrowDownLeft} />
-          </div>
-        )}
+        <Item href="/finanzas/facturas/pagos" label="Facturas" icon={FileText} />
+        <Item href="/finanzas/facturas/cobranzas" label="Cobranza" icon={Banknote} />
 
         <Label>Cobros</Label>
         <Item href="/finanzas/conciliacion" label="Conciliación" icon={Scale} />
