@@ -4,32 +4,25 @@
     "monitor": "/monitor",
     "monitor de servicios": "/monitor",
     "whatsapp": "/contactos",
-    "métricas": "/backoffice",
     "metricas": "/backoffice",
-    "gestión de viajes": "/agentes/viajes",
     "gestion de viajes": "/agentes/viajes",
     "tracking express": "/agentes/tracking",
     "remitos": "/agentes/remitos",
     "destinos": "/agentes/destinos",
     "incidencias": "/agentes/incidencias",
-    "rendición": "/agentes/rendicion",
     "rendicion": "/agentes/rendicion",
     "eta": "/agentes/eta",
     "pop/pod": "/agentes/pod",
     "reclamos": "/agentes/reclamos",
-    "analítica": "/agentes/analitica",
     "analitica": "/agentes/analitica",
     "chat central": "/agentes/commander",
     "finanzas": "/finanzas",
-    "módulo de finanzas": "/finanzas",
     "modulo de finanzas": "/finanzas",
     "clientes": "/finanzas/clientes",
     "facturas": "/finanzas/facturas/pagos",
     "cobranza": "/finanzas/facturas/cobranzas",
-    "conciliación": "/finanzas/conciliacion",
     "conciliacion": "/finanzas/conciliacion",
     "enviar mensaje": "/finanzas/comunicacion",
-    "configuración": "/parametros",
     "configuracion": "/parametros",
   };
 
@@ -93,7 +86,7 @@
 
     var anal = null;
     document.querySelectorAll("a").forEach(function (a) {
-      if (labelOf(a) === "analitica" || labelOf(a) === "analítica") anal = a;
+      if (labelOf(a) === "analitica") anal = a;
     });
 
     var aside = document.querySelector("aside");
