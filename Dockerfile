@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-10-20 auth-open-temp
+# cache-bust 2026-10-19 finanzas-constanza
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
