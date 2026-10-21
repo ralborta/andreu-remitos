@@ -26,6 +26,11 @@ function hostName(request: NextRequest) {
   return request.headers.get("host")?.split(":")[0]?.toLowerCase() ?? "";
 }
 
+/** Sin login hasta el 21/10/2026 23:59 ART. No importar lib/auth.mjs (Edge). */
+function authTemporarilyOpen() {
+  return Date.now() < Date.parse("2026-10-22T03:00:00.000Z");
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = hostName(request);
@@ -56,9 +61,16 @@ export function middleware(request: NextRequest) {
   }
 
   if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    if (pathname.startsWith("/login") && request.cookies.get(SESSION_COOKIE)?.value) {
+    if (
+      pathname.startsWith("/login") &&
+      (authTemporarilyOpen() || request.cookies.get(SESSION_COOKIE)?.value)
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+    return NextResponse.next();
+  }
+
+  if (authTemporarilyOpen()) {
     return NextResponse.next();
   }
 

@@ -2,11 +2,26 @@ import {
   canDeleteRemitos,
   canMutateParametros,
   extractSessionToken,
+  isAuthTemporarilyOpen,
   isPublicApiPath,
   verifySessionToken,
 } from "../../../lib/auth.mjs";
 import { extractApiKey, verifyExternalApiKey } from "../../../lib/api-keys.mjs";
-import { getUserById, toPublicUser } from "../db/users-store.mjs";
+import { getUserById, getUserByUsername, toPublicUser } from "../db/users-store.mjs";
+
+async function guestOpenUser() {
+  const demo = await getUserByUsername("demo");
+  if (demo && demo.activo !== false) return toPublicUser(demo);
+  const admin = await getUserByUsername("admin");
+  if (admin && admin.activo !== false) return toPublicUser(admin);
+  return {
+    id: "guest-open",
+    username: "demo",
+    nombre: "Demo SOL",
+    rol: "administrador",
+    activo: true,
+  };
+}
 
 /** Hook global: valida JWT en rutas /api/* (excepto públicas / API key v1). */
 export async function registerAuthGuard(app) {
@@ -39,6 +54,10 @@ export async function registerAuthGuard(app) {
 
     const token = extractSessionToken(request);
     if (!token) {
+      if (isAuthTemporarilyOpen()) {
+        request.user = await guestOpenUser();
+        return;
+      }
       return reply.code(401).send({ error: "No autenticado" });
     }
 

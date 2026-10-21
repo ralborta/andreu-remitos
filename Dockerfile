@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# cache-bust 2026-08-24 webhook-strip-mensaje
+# cache-bust 2026-10-20 auth-open-temp sol.nivel41.com
 WORKDIR /app
 
 COPY backend/package.json backend/package-lock.json ./backend/
