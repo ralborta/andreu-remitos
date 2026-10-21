@@ -1,6 +1,5 @@
-import { StitchTorreFrame } from "@/components/StitchTorreFrame";
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
-/** Home del borrador: HTML literal de Stitch Platform Redesign Concept. */
 export default function DashboardPage() {
-  return <StitchTorreFrame />;
+  return <StitchRedesignFrame path="/" />;
 }

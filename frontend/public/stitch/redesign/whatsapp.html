@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empliados - WhatsApp Contactos</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script data-purpose="tailwind-config" id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              navy: '#0f172a',
+              blue: '#2563eb',
+              lightBlue: '#eff6ff',
+              emerald: '#10b981',
+              coral: '#ef4444',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-enhancements">
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<meta content="web_standard" name="shell-type"/>
+</head>
+<body class="min-h-full bg-[#f8f9fc] text-slate-800 antialiased flex flex-col">
+<!-- BEGIN: TopBar -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40" data-purpose="top-navigation">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4">
+<!-- Logo e Isotipo Empliados -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm font-bold text-lg tracking-tight">
+<i class="fa-solid fa-shapes text-sm text-blue-400"></i>
+</div>
+<span class="font-extrabold text-xl text-slate-900 tracking-tight">Empliados</span>
+</div>
+<!-- Buscador Central Alargado -->
+<div class="flex-1 max-w-xl mx-2 md:mx-6">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">
+<i class="fa-solid fa-magnifying-glass"></i>
+</div>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-full text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-inner" data-purpose="global-search" placeholder="Buscar remito, chofer o patente..." type="text"/>
+</div>
+</div>
+<!-- Acciones a la Derecha (Estado, Notificaciones y Perfil) -->
+<div class="flex items-center gap-3 sm:gap-4 shrink-0">
+<!-- Indicador de Sistemas Activos -->
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Campana de Alertas con Badge 5 -->
+<button aria-label="Notificaciones" class="relative p-2 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">
+<i class="fa-regular fa-bell text-lg"></i>
+<span class="absolute top-1 right-1 px-1.5 py-0.2 bg-red-500 text-white text-[10px] font-bold rounded-full ring-2 ring-white">5</span>
+</button>
+<!-- Píldora de Perfil de Usuario -->
+<div class="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-slate-100 hover:bg-slate-200/70 rounded-full border border-slate-200/80 cursor-pointer transition">
+<div class="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100">
+              GD
+            </div>
+<span class="text-xs font-semibold text-slate-800 hidden md:inline">Gonzalo Demo</span>
+<i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden md:inline"></i>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainHorizontalNavigation -->
+<nav class="bg-white border-b border-slate-200 shadow-sm" data-purpose="primary-and-sub-navigation">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<!-- Fila 1: Pestañas Principales (WhatsApp activa con píldora oscura de referencia) -->
+<div class="flex items-center gap-2 pt-3 pb-2.5 overflow-x-auto no-scrollbar">
+<!-- Torre de Control -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-tower-broadcast text-slate-400"></i>
+          Torre de Control
+        </a>
+<!-- Monitor -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-heart-pulse text-emerald-500"></i>
+          Monitor
+        </a>
+<!-- WhatsApp (ACTIVA) -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold bg-slate-900 text-white shadow-sm transition whitespace-nowrap" href="#">
+<i class="fa-brands fa-whatsapp text-emerald-400"></i>
+          WhatsApp
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">Nuevo</span>
+</a>
+<!-- Métricas -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-chart-line text-slate-400"></i>
+          Métricas
+        </a>
+</div>
+<!-- Fila 2: Sub-navegación Agentes y Operación -->
+<div class="flex items-center gap-1 sm:gap-2 py-2 overflow-x-auto text-xs text-slate-500 border-t border-slate-100 no-scrollbar">
+<span class="font-bold text-slate-400 tracking-wider text-[11px] uppercase pr-2 flex items-center gap-1 shrink-0">
+<i class="fa-solid fa-robot text-slate-400"></i> AGENTES
+        </span>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-truck-moving text-slate-400 mr-1"></i>Gestión de Viajes
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-location-crosshairs text-slate-400 mr-1"></i>Tracking Express
+        </a>
+<div class="relative shrink-0 group">
+<button class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 font-medium inline-flex items-center gap-1 transition">
+<i class="fa-solid fa-file-invoice text-slate-400 mr-1"></i>Remitos <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+</button>
+</div>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-map-pin text-slate-400 mr-1"></i>Destinos
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>Incidencias
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-receipt text-slate-400 mr-1"></i>Rendición
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-clock text-slate-400 mr-1"></i>ETA
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-camera text-slate-400 mr-1"></i>POP/POD
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-headset text-slate-400 mr-1"></i>Reclamos
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-chart-pie text-slate-400 mr-1"></i>Analítica
+        </a>
+</div>
+</div>
+</nav>
+<!-- END: MainHorizontalNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-4">
+<!-- ENCABEZADO DE SECCIÓN CONTACTOS / WHATSAPP -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
+<div class="flex items-start sm:items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">forum</span>
+</div>
+<div>
+<div class="flex items-center gap-2 flex-wrap">
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Contactos</h1>
+<span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] tracking-wider uppercase border border-slate-200">Central Omnicanal</span>
+</div>
+<p class="text-xs sm:text-sm text-slate-500 mt-0.5">WhatsApp con choferes — respondé desde acá con contexto operativo en tiempo real.</p>
+</div>
+</div>
+<!-- Acciones de cabecera -->
+<div class="flex items-center gap-2.5 self-start md:self-auto">
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-xs font-semibold transition active:scale-95" type="button">
+<i class="fa-solid fa-rotate text-xs text-slate-400"></i>
+<span>Actualizar</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-amber-700 hover:bg-amber-50 shadow-sm text-xs font-semibold transition active:scale-95" type="button">
+<i class="fa-solid fa-circle-pause text-xs text-amber-500"></i>
+<span>Pausar todos los bots</span>
+</button>
+</div>
+</header>
+<!-- PESTAÑAS DE FILTRO RÁPIDAS -->
+<div class="flex items-center gap-2 pb-1 overflow-x-auto no-scrollbar">
+<button class="px-3.5 py-1.5 rounded-full bg-slate-900 text-white font-semibold text-xs shadow-sm whitespace-nowrap transition" type="button">
+        Todos (28)
+      </button>
+<button class="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
+        TransitOne (6)
+      </button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        Sin leer (3)
+      </button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+        Incidencias abiertas (4)
+      </button>
+</div>
+<!-- WORKSPACE PRINCIPAL: 3 COLUMNAS OPERATIVAS -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+<!-- COLUMNA 1: LISTADO DE CHOFERES / CHATS (3 cols ~320px) -->
+<aside class="lg:col-span-3 bg-white rounded-xl border border-slate-200/90 shadow-sm flex flex-col overflow-hidden h-[740px]">
+<!-- Buscador de choferes integrado -->
+<div class="p-3 bg-slate-50/70 border-b border-slate-200/80">
+<div class="relative">
+<span class="material-symbols-outlined absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-[18px] pointer-events-none">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition shadow-inner" placeholder="Buscar chofer o teléfono..." type="text"/>
+</div>
+</div>
+<!-- Feed de contactos -->
+<div class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
+<!-- Contacto 1: ACTIVO Raúl Alborta -->
+<article class="p-2.5 rounded-lg bg-blue-50/70 border border-blue-200/90 flex items-start gap-2.5 cursor-pointer shadow-xs relative transition">
+<div class="w-1 absolute inset-y-2 left-1 bg-blue-600 rounded-full"></div>
+<div class="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0 ml-1">
+              RA
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-bold text-xs text-slate-900 truncate">Raúl Alborta</span>
+<span class="text-[11px] font-medium text-slate-500 whitespace-nowrap">19:15</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 font-semibold text-[10px]">TransitOne</span>
+<span class="font-mono text-[11px] text-slate-400 truncate">+54 91133788190</span>
+</div>
+<p class="text-xs text-slate-800 truncate mt-1 font-semibold">che negfo como venis?</p>
+</div>
+</article>
+<!-- Contacto 2: Juan Domínguez -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              JD
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Juan Domínguez</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">10:14</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="font-mono text-[11px] text-slate-400 truncate">+54 91167890123</span>
+</div>
+<div class="flex items-center gap-1 text-slate-500 text-xs truncate mt-1">
+<i class="fa-solid fa-check-double text-[11px] text-blue-500"></i>
+<span class="truncate">Tu caso RC-20260909-00...</span>
+</div>
+</div>
+</article>
+<!-- Contacto 3: Walter Benítez -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              WB
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Walter Benítez</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">Ayer</span>
+</div>
+<span class="font-mono text-[11px] text-slate-400 block mt-0.5">+54 91177889900</span>
+<div class="flex items-center gap-1 text-slate-500 text-xs truncate mt-1">
+<i class="fa-solid fa-check-double text-[11px] text-blue-500"></i>
+<span class="truncate">Tu gasto RG-20260901...</span>
+</div>
+</div>
+</article>
+<!-- Contacto 4: Miguel Sosa -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              MS
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Miguel Sosa</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">Ayer</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="px-1.5 py-0.2 rounded bg-red-100 text-red-700 font-semibold text-[10px]">Incidencia</span>
+<span class="font-mono text-[11px] text-slate-400 truncate">+54 91156789012</span>
+</div>
+<p class="text-xs text-slate-500 truncate mt-1">Tu caso *RC-20260909-00...*</p>
+</div>
+</article>
+<!-- Contacto 5: Pablo Cardozo -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              PC
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Pablo Cardozo</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">24/8</span>
+</div>
+<span class="font-mono text-[11px] text-slate-400 block mt-0.5">+54 91190123456</span>
+<p class="text-xs text-slate-500 truncate mt-1">Seguimos trabajando en tu cas...</p>
+</div>
+</article>
+<!-- Contacto 6: Roberto Quiroga -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              RQ
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Roberto Quiroga</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">22/8</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 font-semibold text-[10px]">TransitOne</span>
+<span class="font-mono text-[11px] text-slate-400 truncate">+54 91144556677</span>
+</div>
+<p class="text-xs text-slate-500 truncate mt-1">Tu incidencia *INC-20260909-...</p>
+</div>
+</article>
+<!-- Contacto 7: Héctor Maldonado -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              HM
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Héctor Maldonado</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">20/8</span>
+</div>
+<span class="font-mono text-[11px] text-slate-400 block mt-0.5">+54 91188991122</span>
+<p class="text-xs text-slate-500 truncate mt-1">Confirmación de entrega recibida.</p>
+</div>
+</article>
+<!-- Contacto 8: Sergio Ferreyra -->
+<article class="p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-start gap-2.5 cursor-pointer transition">
+<div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              SF
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-semibold text-xs text-slate-800 truncate">Sergio Ferreyra</span>
+<span class="text-[11px] text-slate-400 whitespace-nowrap">18/8</span>
+</div>
+<span class="font-mono text-[11px] text-slate-400 block mt-0.5">+54 91122334455</span>
+<p class="text-xs text-slate-500 truncate mt-1">Foto de remito enviada a validación.</p>
+</div>
+</article>
+</div>
+</aside>
+<!-- COLUMNA 2: CONVERSACIÓN DE WHATSAPP (PANEL CENTRAL 6 cols) -->
+<section class="lg:col-span-6 bg-white rounded-xl border border-slate-200/90 shadow-sm flex flex-col h-[740px] overflow-hidden">
+<!-- Header del chat -->
+<div class="p-3.5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between gap-3 shrink-0">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center shadow-xs">
+                RA
+              </div>
+<span class="w-2.5 h-2.5 bg-emerald-500 rounded-full absolute bottom-0 right-0 ring-2 ring-white"></span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<h2 class="font-bold text-sm text-slate-900 truncate">Raúl Alborta</h2>
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] tracking-wider uppercase border border-emerald-200">WhatsApp</span>
+</div>
+<p class="text-xs text-slate-500 truncate">
+<span class="font-mono text-slate-600">+54 9 11 3378-8190</span> • <span class="text-emerald-600 font-medium">En línea</span> • <span class="font-medium text-slate-700">Viaje VJ-24817 (Córdoba → CABA)</span>
+</p>
+</div>
+</div>
+<!-- Botones de acción rápida -->
+<div class="flex items-center gap-1.5 shrink-0">
+<button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Llamada telefónica">
+<i class="fa-solid fa-phone text-[11px] text-slate-500 mr-1"></i>
+<span class="hidden sm:inline">Llamar</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Ficha técnica de chofer">
+<i class="fa-solid fa-user text-[11px] text-slate-500 mr-1"></i>
+<span class="hidden sm:inline">Ver chofer</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Pausar bot para este chofer">
+<i class="fa-solid fa-circle-pause text-[11px] text-amber-500 mr-1"></i>
+<span class="hidden sm:inline">Pausar bot</span>
+</button>
+</div>
+</div>
+<!-- Historial de mensajes -->
+<div class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#f5f7fb] custom-scroll">
+<!-- Separador de fecha -->
+<div class="flex justify-center my-1">
+<span class="px-3 py-1 rounded-full bg-slate-200/80 text-slate-600 font-bold text-[10px] tracking-wider uppercase shadow-2xs">
+              26 de Agosto, 2026
+            </span>
+</div>
+<!-- Globo 1: Enviado / Sistema Automático -->
+<div class="flex flex-col items-end">
+<div class="max-w-[85%] bg-white border border-slate-200/90 text-slate-800 rounded-2xl rounded-tr-xs p-3 shadow-xs space-y-1">
+<p class="text-xs">Abrí el enlace para confirmar y empezar:</p>
+<a class="font-mono text-[11px] text-blue-600 break-all underline hover:text-blue-800 block" href="https://sol.nivel41.com/tracking/t/jiSpWAiGweI-Y8k80e4G16uRHzjUbHSh2qvbslwAPIO" target="_blank">
+                https://sol.nivel41.com/tracking/t/jiSpWAiGweI-Y8k80e4G16uRHzjUbHSh2qvbslwAPIO
+              </a>
+<div class="flex items-center justify-end gap-1 text-[11px] text-slate-400 pt-0.5">
+<span>06:37 p. m.</span>
+<i class="fa-solid fa-check-double text-[11px] text-blue-500"></i>
+</div>
+</div>
+</div>
+<!-- Globo 2: Sistema Automático con tag -->
+<div class="flex flex-col items-end">
+<div class="max-w-[85%] bg-white border border-slate-200/90 text-slate-800 rounded-2xl rounded-tr-xs p-3 shadow-xs space-y-1.5">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.2 rounded bg-blue-50 border border-blue-200 text-blue-700 font-bold text-[10px] uppercase">Agente Automático</span>
+</div>
+<p class="text-xs leading-relaxed">
+                Hola, <span class="font-bold">Raúl Alborta</span>. Recordatorio: el viaje <span class="font-mono font-bold text-slate-900 bg-slate-100 px-1 py-0.2 rounded">VJ-20260821-001</span> todavía no tiene seguimiento activo.
+              </p>
+<p class="text-xs">Abrí el enlace para confirmar y empezar:</p>
+<a class="font-mono text-[11px] text-blue-600 break-all underline hover:text-blue-800 block" href="https://sol.nivel41.com/tracking/t/jiSpWAiGweI-Y8k80e4G16uRHzjUbHSh2qvbslwAPIO" target="_blank">
+                https://sol.nivel41.com/tracking/t/jiSpWAiGweI-Y8k80e4G16uRHzjUbHSh2qvbslwAPIO
+              </a>
+<div class="flex items-center justify-end gap-1 text-[11px] text-slate-400 pt-0.5">
+<span>07:07 p. m.</span>
+<i class="fa-solid fa-check-double text-[11px] text-blue-500"></i>
+</div>
+</div>
+</div>
+<!-- Globo 3: Mensaje recibido del Chofer -->
+<div class="flex flex-col items-start">
+<div class="max-w-[80%] bg-emerald-50/80 border border-emerald-200/80 text-slate-900 rounded-2xl rounded-tl-xs p-3 shadow-xs space-y-1">
+<span class="font-bold text-[10px] text-emerald-800 uppercase tracking-wider block">Raúl Alborta</span>
+<p class="text-xs font-semibold text-slate-900">che negfo como venis?</p>
+<div class="flex items-center justify-end text-[11px] text-slate-400 pt-0.5">
+<span>07:15 p. m.</span>
+</div>
+</div>
+</div>
+<!-- Globo 4: Respuesta Despacho Humano -->
+<div class="flex flex-col items-end">
+<div class="max-w-[85%] bg-white border border-slate-200/90 text-slate-800 rounded-2xl rounded-tr-xs p-3 shadow-xs space-y-1">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-bold text-[10px] uppercase">Gonzalo Demo (Despacho)</span>
+</div>
+<p class="text-xs leading-relaxed">
+                Hola Raúl, estamos coordinando la descarga en el depósito de CABA. En 15 min te confirmamos el ingreso a la dársena.
+              </p>
+<div class="flex items-center justify-end gap-1 text-[11px] text-slate-400 pt-0.5">
+<span>07:18 p. m.</span>
+<span class="text-blue-600 font-medium">Leído</span>
+<i class="fa-solid fa-check-double text-[11px] text-blue-500"></i>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Barra de Input del Chat -->
+<footer class="p-3 bg-white border-t border-slate-200 flex flex-col gap-2 shrink-0">
+<!-- Opciones y Atajos rápidos en píldoras -->
+<div class="flex flex-wrap items-center justify-between gap-2">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input class="w-4 h-4 rounded text-blue-600 focus:ring-0 border-slate-300 cursor-pointer" type="checkbox"/>
+<span class="text-xs text-slate-600 font-medium">Nota interna (no se envía a WhatsApp)</span>
+</label>
+<div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+<button class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
+                [Solicitar ubicación]
+              </button>
+<button class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
+                [Pedir foto remito]
+              </button>
+<button class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
+                [Aviso demora]
+              </button>
+</div>
+</div>
+<!-- Formulario de escritura -->
+<form class="flex items-center gap-2" onsubmit="event.preventDefault();">
+<button class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition" title="Adjuntar documento o imagen" type="button">
+<i class="fa-solid fa-paperclip text-sm"></i>
+</button>
+<input class="flex-1 py-2 px-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 transition shadow-inner" placeholder="Escribí al chofer por WhatsApp..." type="text"/>
+<button class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition" title="Insertar emoji" type="button">
+<i class="fa-regular fa-face-smile text-sm"></i>
+</button>
+<button class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition" title="Grabar nota de audio" type="button">
+<i class="fa-solid fa-microphone text-sm"></i>
+</button>
+<button class="w-9 h-9 rounded-lg bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center shadow-sm transition active:scale-95" title="Enviar mensaje" type="submit">
+<i class="fa-solid fa-paper-plane text-xs"></i>
+</button>
+</form>
+</footer>
+</section>
+<!-- COLUMNA 3: CONTEXTO OPERATIVO Y REMITO VINCULADO (PANEL DERECHO 3 cols) -->
+<aside class="lg:col-span-3 bg-white rounded-xl border border-slate-200/90 shadow-sm p-4 flex flex-col gap-4">
+<!-- Título de sección -->
+<div>
+<h3 class="font-bold text-sm text-slate-900 leading-tight">Último Remito • Contexto</h3>
+<p class="text-xs text-slate-500">Sincronizado con Torre de Control</p>
+</div>
+<!-- Pestañas contextuales -->
+<div class="flex items-center gap-1 p-1 bg-slate-100 rounded-lg text-[10px] font-bold">
+<button class="flex-1 py-1.5 text-center bg-white rounded-md text-slate-900 shadow-xs uppercase font-extrabold" type="button">
+            Remito
+          </button>
+<button class="flex-1 py-1.5 text-center text-slate-500 hover:text-slate-800 uppercase transition" type="button">
+            Viaje
+          </button>
+<button class="flex-1 py-1.5 text-center text-slate-500 hover:text-slate-800 uppercase transition" type="button">
+            Historial
+          </button>
+</div>
+<!-- Tarjeta de Estado del Remito Activo -->
+<section class="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-3">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+<i class="fa-solid fa-file-invoice text-sm"></i>
+</div>
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Documento Activo</span>
+<span class="font-mono text-sm font-bold text-slate-900">#REM-98214</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px] uppercase">
+              POP/POD
+            </span>
+</div>
+<div class="p-2.5 rounded-lg bg-white border border-slate-200/80 space-y-2 shadow-2xs">
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Estado</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+<span class="text-xs text-amber-700 font-bold">Pendiente de foto conforme</span>
+</div>
+</div>
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cliente • Tránsito</span>
+<p class="text-xs text-slate-800 font-medium">Arcor S.A. • Córdoba → CABA</p>
+</div>
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Unidad • Patente</span>
+<p class="text-xs text-slate-800">Scania R450 • <span class="font-mono font-bold text-slate-900">AB 123 CD</span></p>
+</div>
+<div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Mercadería</span>
+<p class="text-xs text-slate-800">Alimentos perecederos (18 pallets)</p>
+</div>
+</div>
+<!-- Acciones directas sobre remito -->
+<div class="flex flex-col gap-1.5 pt-1">
+<button class="w-full py-1.5 px-3 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold shadow-xs transition active:scale-95 text-center" type="button">
+              Ver remito digital
+            </button>
+<button class="w-full py-1.5 px-3 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold shadow-xs transition text-center" type="button">
+              Asignar nuevo remito
+            </button>
+<button class="w-full py-1.5 px-3 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-semibold transition text-center" type="button">
+              Reportar incidencia rápida
+            </button>
+</div>
+</section>
+<!-- Tarjeta de Performance del Conductor -->
+<section class="space-y-1.5">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Performance del Conductor</span>
+<div class="grid grid-cols-3 gap-2">
+<div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-center">
+<span class="text-[10px] font-bold text-slate-400 uppercase block">Viajes</span>
+<span class="text-base font-extrabold text-slate-900 block mt-0.5">42</span>
+</div>
+<div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-center">
+<span class="text-[10px] font-bold text-slate-400 uppercase block">SLA</span>
+<span class="text-base font-extrabold text-blue-600 block mt-0.5">96.8%</span>
+</div>
+<div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-center">
+<span class="text-[10px] font-bold text-slate-400 uppercase block">Score</span>
+<span class="text-base font-extrabold text-slate-900 block mt-0.5">4.9<span class="text-[10px] text-slate-400 font-normal">/5</span></span>
+</div>
+</div>
+</section>
+<!-- Tarjeta de Última Posición GPS -->
+<section class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Última Posición GPS</span>
+<span class="font-mono text-[11px] text-blue-600 font-semibold">Hace 4 min</span>
+</div>
+<div class="w-full h-28 bg-cover bg-center rounded-lg shadow-inner relative flex items-end p-2 border border-slate-200" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBaRUZLuHcAsu9XD59quTuMuSq95qyOeWKzPjk3lGEnWlvc_v56NSoFvWLgH0e7HToDjIwQQOQBAW5rD7aDnMKFfa_rcOVdrWMvDYKVmivz_XYdG57innAN71HfGycemIaOz8GZamG58W025IsJRmtRAixZb-vMGKqpcpjl9oGsVpcuqSGG68xElEaabkugFuZ1kAIdGLjGhG8HmlbCicqEyGh38xXxvYaBUVQGAfISNvP1W4hMBy_N')">
+<div class="px-2 py-1 bg-white/95 backdrop-blur rounded text-slate-800 text-[10px] font-medium flex items-center gap-1.5 shadow-sm border border-slate-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>RN 9 km 280 • 74 km/h • Próximo a Rosario</span>
+</div>
+</div>
+</section>
+</aside>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="bg-white border-t border-slate-200 mt-12 py-5 text-xs text-slate-500" data-purpose="site-footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-800">Empliados © 2026</span>
+<span>• Torre y agentes · consultas en Chat Central</span>
+</div>
+<div class="flex items-center gap-4 text-slate-500">
+<span class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Monitor SOL Activo
+        </span>
+<a class="hover:text-slate-900 transition" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-900 transition" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

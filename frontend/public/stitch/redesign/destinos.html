@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmación de Destinos - Empliados</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#16a34a',
+              600: '#15803d',
+              700: '#166534',
+            },
+            slate: {
+              850: '#151e2e',
+              900: '#0f172a',
+              950: '#090d16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#f8fafc]">
+
+  <!-- HEADER PRINCIPAL INSTITUCIONAL -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
+      <!-- Logo y Marca Empliados -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xl shadow-sm shadow-indigo-200">
+          E
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-extrabold tracking-tight text-slate-900 leading-tight">Empliados</span>
+        </div>
+      </div>
+
+      <!-- Buscador Global Centralizado -->
+      <div class="flex-1 max-w-2xl relative">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          placeholder="Buscar remito, chofer o patente..." 
+          class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all"
+        >
+      </div>
+
+      <!-- Estado del Sistema, Notificaciones y Usuario -->
+      <div class="flex items-center gap-4">
+        <!-- Badge Sistemas Activos -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Sistemas activos</span>
+        </div>
+
+        <!-- Notificaciones -->
+        <button class="relative p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">5</span>
+        </button>
+
+        <!-- Separador -->
+        <div class="h-6 w-px bg-slate-200"></div>
+
+        <!-- Perfil Usuario -->
+        <div class="flex items-center gap-3 pl-1 cursor-pointer group">
+          <div class="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
+            GD
+          </div>
+          <div class="hidden md:flex flex-col text-left">
+            <span class="text-xs font-bold text-slate-800 leading-tight">Gonzalo Demo</span>
+            <span class="text-[11px] text-slate-500 font-medium leading-tight">Administrador</span>
+          </div>
+          <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVEGACIÓN SUPERIOR HORIZONTAL: NIVEL 1 -->
+    <div class="border-t border-slate-100 bg-white">
+      <div class="max-w-[1600px] mx-auto px-6 flex items-center gap-2 h-12 overflow-x-auto custom-scrollbar">
+        <!-- Torre de Control -->
+        <a href="#" class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+          Torre de Control
+        </a>
+
+        <!-- Monitor -->
+        <a href="#" class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          Monitor
+        </a>
+
+        <!-- WhatsApp -->
+        <a href="#" class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          </svg>
+          WhatsApp
+          <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-emerald-100 text-emerald-700 tracking-wider">Nuevo</span>
+        </a>
+
+        <!-- Métricas -->
+        <a href="#" class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          Métricas
+        </a>
+      </div>
+    </div>
+
+    <!-- NAVEGACIÓN SUPERIOR HORIZONTAL: NIVEL 2 (SUB-BARRA DE AGENTES) -->
+    <div class="border-t border-slate-200 bg-[#f8fafc] px-6 py-2 shadow-inner">
+      <div class="max-w-[1600px] mx-auto flex items-center gap-1.5 overflow-x-auto custom-scrollbar text-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-2 flex items-center gap-1">
+          AGENTES
+          <span class="text-slate-300">|</span>
+        </span>
+
+        <!-- Gestión de Viajes -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          Gestión de Viajes
+        </a>
+
+        <!-- Tracking Express -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          Tracking Express
+        </a>
+
+        <!-- Remitos -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap flex items-center gap-1">
+          Remitos
+          <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </a>
+
+        <!-- DESTINOS (OPCIÓN ACTIVA) -->
+        <a href="#" class="px-3 py-1.5 font-bold text-white bg-slate-900 rounded-md shadow-sm transition-colors whitespace-nowrap flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          Destinos
+        </a>
+
+        <!-- Incidencias -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          Incidencias
+        </a>
+
+        <!-- Rendición -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          Rendición
+        </a>
+
+        <!-- ETA -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          ETA
+        </a>
+
+        <!-- POP/POD -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          POP/POD
+        </a>
+
+        <!-- Reclamos -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          Reclamos
+        </a>
+
+        <!-- Analítica -->
+        <a href="#" class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap">
+          Analítica
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL: AGENTE DE CONFIRMACIÓN DE DESTINOS -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6 space-y-6">
+
+    <!-- CABECERA DEL AGENTE: TÍTULO, ESTADO Y ACCIONES -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Confirmación de Destinos</h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Operativo
+          </span>
+        </div>
+        <p class="text-sm text-slate-500 font-medium mt-1">
+          Validación de direcciones y coordinación para entregas cortas
+        </p>
+      </div>
+
+      <!-- Acciones de Cabecera -->
+      <div class="flex items-center gap-3">
+        <button class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Sincronizar TMS / Google Maps
+        </button>
+        <button class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Validar nueva dirección
+        </button>
+      </div>
+    </div>
+
+    <!-- TARJETAS DE INDICADORES (KPIS) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- KPI 1 -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Destinos validados hoy</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">138</span>
+          <span class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            ↑ +19% vs ayer
+          </span>
+        </div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Direcciones corregidas</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">24</span>
+          <span class="text-xs font-semibold text-slate-400">
+            Ajustadas por Google Maps
+          </span>
+        </div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Precisión de geocodeo</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">98,6%</span>
+          <span class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            ↑ +0,9%
+          </span>
+        </div>
+      </div>
+
+      <!-- KPI 4: Tiempo medio de confirmación -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Confirmación cliente</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">4,2 min</span>
+          <span class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            ⚡ Rápido por WA
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN OPERATIVA: FORMULARIO VALIDAR DESTINO (WHATSAPP REAL) + MAPA/GEOCODEO -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Panel de Formulario: Validar Destino — WhatsApp Real -->
+      <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Validar destino — WhatsApp real</h2>
+                <p class="text-xs text-slate-500 font-medium">Coordinación automática de entrega con cliente y chofer</p>
+              </div>
+            </div>
+
+            <!-- Botón Sync y Pestañas Dirección / Coordenadas -->
+            <div class="flex items-center gap-2">
+              <button class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors">
+                <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Sync
+              </button>
+              <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold">
+                <button class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-xs">Dirección</button>
+                <button class="px-2.5 py-1 text-slate-600 hover:text-slate-900">Coordenadas</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campos del formulario -->
+          <form class="space-y-4">
+            <!-- Dirección a validar -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Dirección de entrega *</span>
+                <span class="text-[11px] font-medium text-slate-400">Formato calle, altura, localidad, provincia</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  value="Av. Corrientes 3450, Almagro, CABA" 
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  placeholder="Ej: Av. Córdoba 1200, Rosario"
+                >
+                <span class="absolute right-3 top-2.5 text-emerald-600 flex items-center gap-1 text-xs font-semibold">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Geocodificado
+                </span>
+              </div>
+            </div>
+
+            <!-- Cliente / Tenant -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Cliente destinatario *
+              </label>
+              <input 
+                type="text" 
+                value="Distribuidora Almagro SRL (Contacto: Martín R.)" 
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                placeholder="Nombre de la empresa o receptor"
+              >
+            </div>
+
+            <!-- Fila doble: WhatsApp Cliente y WhatsApp Chofer -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                  <span>WhatsApp cliente *</span>
+                  <span class="text-rose-500 font-bold">•</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-semibold">+54 9 11</span>
+                  <input 
+                    type="text" 
+                    value="5824-9921" 
+                    class="w-full pl-20 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    placeholder="11 2345-6789"
+                  >
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                  <span>WhatsApp chofer *</span>
+                  <span class="text-rose-500 font-bold">•</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-semibold">+54 9 11</span>
+                  <input 
+                    type="text" 
+                    value="3378-8190 (Raúl Alborta)" 
+                    class="w-full pl-20 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    placeholder="11 9876-5432"
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Nota obligatoria fidedigna -->
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-2.5 text-xs text-slate-600">
+              <svg class="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>
+                <strong class="text-slate-800">Obligatorio:</strong> cuando el cliente confirma la dirección exacta en WhatsApp, el sistema le despacha inmediatamente el destino verificado y link de mapa en vivo al chofer asignado.
+              </span>
+            </div>
+          </form>
+        </div>
+
+        <!-- Botón de acción principal -->
+        <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Google Maps Geocoding API activo</span>
+          </div>
+          <button class="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm shadow-emerald-200 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            Geocodificar y enviar WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel de Mapa y Vista Previa de Geocodificación -->
+      <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Punto Georreferenciado</h3>
+            </div>
+            <span class="text-xs font-semibold text-slate-500">Lat: -34.6037 | Lng: -58.4116</span>
+          </div>
+
+          <!-- Mapa Interactivo Mockup con diseño estilizado -->
+          <div class="relative w-full h-48 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+            <svg class="w-full h-full object-cover" viewBox="0 0 500 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Fondo del mapa con tonos suaves -->
+              <rect width="500" height="240" fill="#f1f5f9"/>
+              <!-- Calles y avenidas -->
+              <path d="M0 60 H500" stroke="#e2e8f0" stroke-width="8"/>
+              <path d="M0 140 H500" stroke="#e2e8f0" stroke-width="12"/>
+              <path d="M0 200 H500" stroke="#e2e8f0" stroke-width="6"/>
+              <path d="M120 0 V240" stroke="#e2e8f0" stroke-width="10"/>
+              <path d="M260 0 V240" stroke="#cbd5e1" stroke-width="14"/>
+              <path d="M390 0 V240" stroke="#e2e8f0" stroke-width="8"/>
+              
+              <!-- Áreas verdes / manzanas -->
+              <rect x="135" y="75" width="110" height="50" rx="4" fill="#dcfce7" opacity="0.6"/>
+              <rect x="280" y="155" width="95" height="35" rx="4" fill="#f8fafc"/>
+              <rect x="25" y="75" width="80" height="50" rx="4" fill="#f8fafc"/>
+              <rect x="280" y="75" width="95" height="50" rx="4" fill="#f8fafc"/>
+
+              <!-- Marcador de Destino Principal -->
+              <circle cx="260" cy="140" r="24" fill="#10b981" fill-opacity="0.2"/>
+              <circle cx="260" cy="140" r="14" fill="#10b981" fill-opacity="0.4"/>
+              <circle cx="260" cy="140" r="7" fill="#047857"/>
+
+              <!-- Recorrido de entrega aproximado -->
+              <path d="M120 60 L260 60 L260 140" stroke="#047857" stroke-width="3" stroke-dasharray="4 4"/>
+              <circle cx="120" cy="60" r="5" fill="#3b82f6"/>
+            </svg>
+
+            <!-- Card flotante sobre el mapa -->
+            <div class="absolute bottom-2.5 left-2.5 right-2.5 bg-white/95 backdrop-blur-xs p-2.5 rounded-lg border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                  ✓
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-800 leading-tight">Av. Corrientes 3450</p>
+                  <p class="text-[10px] text-slate-500">Almagro, CABA • Confianza: 99.4%</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Coincidencia exacta
+              </span>
+            </div>
+          </div>
+
+          <!-- Detalles de confirmación -->
+          <div class="mt-3.5 space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Mensaje automático WhatsApp:</span>
+              <span class="font-semibold text-slate-700">Listo para despacho</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Plantilla oficial:</span>
+              <span class="font-semibold text-slate-700">confirmacion_destino_v2</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-500">Viaje vinculado:</span>
+              <span class="font-bold text-indigo-600">VJ-20261014-001 (Pepsi)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+          <span>Fuente: Google Places & Geocoding API</span>
+          <span>© OpenStreetMap</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLA EN VIVO DE VALIDACIONES (TABLA FIDEDIGNA) -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <!-- Encabezado de la tabla -->
+      <div class="p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+          <h2 class="text-base font-extrabold text-slate-900 tracking-tight">
+            Cola en vivo de Validaciones (5 en gestión)
+          </h2>
+          <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+            Actualización cada 10s
+          </span>
+        </div>
+
+        <!-- Filtros y buscador de la cola -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div class="relative">
+            <input 
+              type="text" 
+              placeholder="Buscar por cliente, dirección o chofer..." 
+              class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+
+          <select class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none">
+            <option>Todos los estados</option>
+            <option>Confirmados</option>
+            <option>Pendientes de WhatsApp</option>
+            <option>En revisión geográfica</option>
+          </select>
+
+          <button class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de Registros -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50/75 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+              <th class="py-3 px-4">ID Destino</th>
+              <th class="py-3 px-4">Viaje / Cliente</th>
+              <th class="py-3 px-4">Dirección Original</th>
+              <th class="py-3 px-4">Ubicación Geocodificada</th>
+              <th class="py-3 px-4">Contacto WhatsApp</th>
+              <th class="py-3 px-4">Estado Validación</th>
+              <th class="py-3 px-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
+            <!-- Fila 1 -->
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-slate-900">
+                #DST-40182
+                <span class="block text-[10px] text-slate-400 font-normal">Hace 3 min</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900">Pepsi (CABA Central)</div>
+                <div class="text-[11px] text-indigo-600 font-semibold">VJ-20261014-001</div>
+              </td>
+              <td class="py-3.5 px-4">
+                Av. Corrientes 3450
+                <span class="block text-[10px] text-slate-400">Almagro</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Av. Corrientes 3450, C1193AAP, CABA
+                </div>
+                <span class="text-[10px] text-slate-400">Google Maps Match (100%)</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div>+54 9 11 5824-9921</div>
+                <span class="text-[10px] text-slate-400">Chofer: Raúl Alborta</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Confirmado por cliente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 font-semibold text-xs transition-colors">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 2 -->
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-slate-900">
+                #DST-40181
+                <span class="block text-[10px] text-slate-400 font-normal">Hace 12 min</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900">Distribuidora Norte SA</div>
+                <div class="text-[11px] text-indigo-600 font-semibold">VJ-20260909-001</div>
+              </td>
+              <td class="py-3.5 px-4">
+                Ruta 9 km 412 (depósito 3)
+                <span class="block text-[10px] text-slate-400">Córdoba</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  RN9 Km 412, X5900 Bell Ville, Cba
+                </div>
+                <span class="text-[10px] text-slate-400">Ajustado por Geocodificador</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div>+54 9 11 3378-8190</div>
+                <span class="text-[10px] text-slate-400">Chofer: Walter Benítez</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Esperando respuesta WA
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 font-semibold text-xs transition-colors">
+                  Reenviar
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 3 -->
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-slate-900">
+                #DST-40180
+                <span class="block text-[10px] text-slate-400 font-normal">Hace 26 min</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900">Alimentos del Sur</div>
+                <div class="text-[11px] text-indigo-600 font-semibold">VJ-20260909-002</div>
+              </td>
+              <td class="py-3.5 px-4">
+                Calle 50 y Ruta 11
+                <span class="block text-[10px] text-slate-400">Mar del Plata</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-1.5 text-blue-700 font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  Calle 50 & RP11, B7600 Mar del Plata
+                </div>
+                <span class="text-[10px] text-slate-400">Google Maps Geocoded</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div>+54 9 11 9110-1234</div>
+                <span class="text-[10px] text-slate-400">Chofer: Carlos Páez</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                  Enviado al chofer
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 font-semibold text-xs transition-colors">
+                  Ver link
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 4 -->
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-slate-900">
+                #DST-40179
+                <span class="block text-[10px] text-slate-400 font-normal">Hace 45 min</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900">Arcor S.A.</div>
+                <div class="text-[11px] text-indigo-600 font-semibold">VJ-20260909-004</div>
+              </td>
+              <td class="py-3.5 px-4">
+                Parque Industrial Arroyito
+                <span class="block text-[10px] text-slate-400">Arroyito, Cba</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Planta Arcor Arroyito, X2434 Córdoba
+                </div>
+                <span class="text-[10px] text-slate-400">Punto de entrega habitual</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div>+54 9 11 3416-8911</div>
+                <span class="text-[10px] text-slate-400">Chofer: Miguel Sosa</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Confirmado por cliente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 font-semibold text-xs transition-colors">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 5 -->
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-slate-900">
+                #DST-40178
+                <span class="block text-[10px] text-slate-400 font-normal">Hace 1 h</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900">Cervecería Quilmes</div>
+                <div class="text-[11px] text-indigo-600 font-semibold">VJ-20260909-005</div>
+              </td>
+              <td class="py-3.5 px-4">
+                Planta Zárate Acceso Norte
+                <span class="block text-[10px] text-slate-400">Zárate, Bs As</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Ruta 193 Km 3, B2800 Zárate
+                </div>
+                <span class="text-[10px] text-slate-400">Geocodificado exitoso</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <div>+54 9 11 9116-7890</div>
+                <span class="text-[10px] text-slate-400">Chofer: Juan Domínguez</span>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Confirmado por cliente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 font-semibold text-xs transition-colors">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer de tabla con paginación -->
+      <div class="p-4 bg-slate-50/50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+        <span>Mostrando 5 de 138 validaciones realizadas hoy</span>
+        <div class="flex items-center gap-2">
+          <button class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-400 cursor-not-allowed">Anterior</button>
+          <span class="px-2 font-bold text-slate-700">1</span>
+          <button class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100">Siguiente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASISTENTE INTELIGENTE EMBEBIDO («¿QUÉ NECESITÁS SABER DE DESTINOS?») -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Destinos?</h2>
+            <p class="text-xs text-slate-500">Consulto destinos reales (confirmación / validación de entrega). Respuestas generadas con datos reales de Destinos.</p>
+          </div>
+        </div>
+        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          Destinos en vivo
+        </span>
+      </div>
+
+      <!-- Sugerencias clickeables fidedignas -->
+      <div class="flex flex-wrap items-center gap-2 pt-1">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">SUGERENCIAS:</span>
+        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
+          ¿cuántos destinos hay?
+        </button>
+        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
+          ¿cuántos están pendientes?
+        </button>
+        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
+          mostrame los últimos
+        </button>
+        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
+          resumen por estado
+        </button>
+      </div>
+
+      <!-- Input de Consulta en lenguaje natural -->
+      <div class="relative">
+        <input 
+          type="text" 
+          placeholder="Preguntá algo sobre Destinos... (ej: '¿Cuál es el estado de validación del viaje VJ-20261014-001?')" 
+          class="w-full pl-4 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all shadow-xs"
+        >
+        <button class="absolute right-2 top-2 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+          <span>Enviar</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </div>
+
+      <!-- Guía y Reglas de Consulta fidedignas -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div class="p-3 bg-slate-50/70 border border-slate-200/80 rounded-lg text-xs">
+          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+            Conteos
+          </h4>
+          <ul class="text-slate-600 space-y-0.5">
+            <li>• Totales de destinos procesados</li>
+            <li>• Por estado (confirmado / en espera)</li>
+            <li>• Pendientes de confirmación WhatsApp</li>
+          </ul>
+        </div>
+
+        <div class="p-3 bg-slate-50/70 border border-slate-200/80 rounded-lg text-xs">
+          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Listados
+          </h4>
+          <ul class="text-slate-600 space-y-0.5">
+            <li>• Últimos destinos validados</li>
+            <li>• Buscar por cliente o dirección</li>
+            <li>• Entregas geocodificadas con corrección</li>
+          </ul>
+        </div>
+
+        <div class="p-3 bg-slate-50/70 border border-slate-200/80 rounded-lg text-xs">
+          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            Regla de Operación
+          </h4>
+          <p class="text-slate-600 leading-relaxed">
+            <strong class="text-slate-700">Solo consulta:</strong> En esta fase el chat no aprueba, rechaza ni envía WhatsApp. Esas tareas se ejecutan desde el panel interactivo superior.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARQUITECTURA Y FUNCIONAMIENTO DEL AGENTE (DOCUMENTACIÓN E INGENIERÍA) -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+      <div class="border-b border-slate-200 pb-4">
+        <h2 class="text-lg font-extrabold text-slate-900 tracking-tight">Arquitectura y Funcionamiento del Agente</h2>
+        <p class="text-xs text-slate-500 font-medium">Operativa multimodal de validación de direcciones con Google Maps y coordinación automática por WhatsApp</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Columna 1: ¿Qué hace el Agente? -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-indigo-50 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+            <h3 class="text-sm font-extrabold text-slate-900">¿Qué hace el Agente?</h3>
+          </div>
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] uppercase">Agente Activo</span>
+            </div>
+            <p class="leading-relaxed">
+              Para viajes cortos o entregas tipo delivery, recibe una dirección o coordenadas, valida la ubicación con Google Maps, confirma el destino con el cliente y luego envía la ubicación final al chofer.
+            </p>
+            <p class="text-slate-500 leading-relaxed">
+              Resuelve ambigüedades en alturas de calle, intersecciones complejas y parques industriales antes del arribo del tractor o camioneta.
+            </p>
+          </div>
+        </div>
+
+        <!-- Columna 2: Beneficios Clave -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 font-bold text-xs flex items-center justify-center">2</span>
+            <h3 class="text-sm font-extrabold text-slate-900">Beneficios Clave</h3>
+          </div>
+          <div class="space-y-2.5">
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-2.5 text-xs text-slate-700">
+              <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              <div>
+                <strong class="block text-slate-900">Menos errores de entrega</strong>
+                <span class="text-slate-500">Elimina paradas en ubicaciones incorrectas o inaccesibles para carga pesada.</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-2.5 text-xs text-slate-700">
+              <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              <div>
+                <strong class="block text-slate-900">Menos llamadas manuales</strong>
+                <span class="text-slate-500">El bot de WhatsApp interactúa con el cliente final para confirmar horario y puerta.</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-2.5 text-xs text-slate-700">
+              <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              <div>
+                <strong class="block text-slate-900">Destino validado y geolocalizado</strong>
+                <span class="text-slate-500">Link directo de navegación para Google Maps o Waze enviado al móvil del chofer.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 3: Flujo Operativo (6 Pasos) -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center">3</span>
+            <h3 class="text-sm font-extrabold text-slate-900">Flujo Operativo (Paso a Paso)</h3>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center gap-2.5 p-2 bg-slate-50 rounded border border-slate-100">
+              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">1</span>
+              <span class="font-medium text-slate-700">Pedido o viaje corto asignado</span>
+            </div>
+            <div class="flex items-center gap-2.5 p-2 bg-slate-50 rounded border border-slate-100">
+              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">2</span>
+              <span class="font-medium text-slate-700">Recepción de dirección o coordenadas</span>
+            </div>
+            <div class="flex items-center gap-2.5 p-2 bg-slate-50 rounded border border-slate-100">
+              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">3</span>
+              <span class="font-medium text-slate-700">Validación en Google Maps</span>
+            </div>
+            <div class="flex items-center gap-2.5 p-2 bg-slate-50 rounded border border-slate-100">
+              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">4</span>
+              <span class="font-medium text-slate-700">Confirmación del destino con el cliente</span>
+            </div>
+            <div class="flex items-center gap-2.5 p-2 bg-slate-50 rounded border border-slate-100">
+              <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">5</span>
+              <span class="font-medium text-slate-700">Generación de punto final y link de mapa</span>
+            </div>
+            <div class="flex items-center gap-2.5 p-2 bg-slate-50 rounded border border-slate-100">
+              <span class="w-5 h-5 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px]">6</span>
+              <span class="font-bold text-slate-900">Envío al chofer y actualización del TMS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canales e Integraciones & Dependencias -->
+      <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+        <div class="flex items-center gap-3">
+          <span class="font-bold text-slate-500 uppercase tracking-wider text-[11px]">Canales e integraciones:</span>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded bg-slate-100 font-semibold text-slate-700 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              Google Maps
+            </span>
+            <span class="px-2.5 py-1 rounded bg-slate-100 font-semibold text-slate-700 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
+              WhatsApp
+            </span>
+            <span class="px-2.5 py-1 rounded bg-slate-100 font-semibold text-slate-700">TMS</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-slate-500 uppercase tracking-wider text-[11px]">Se comunica con:</span>
+          <span class="text-slate-500 italic">No tiene integraciones con otros agentes configuradas actualmente.</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER INSTITUCIONAL COMPLETO -->
+  <footer class="bg-white border-t border-slate-200 mt-10 py-5">
+    <div class="max-w-[1600px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-700">Empliados © 2026</span>
+        <span>•</span>
+        <span>Torre y agentes · consultas en <a href="#" class="text-indigo-600 hover:underline font-semibold">Chat Central</a></span>
+      </div>
+
+      <div class="flex items-center gap-5 font-medium">
+        <div class="flex items-center gap-1.5 text-emerald-600 font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Monitor SOL Activo</span>
+        </div>
+        <a href="#" class="hover:text-slate-800 transition-colors">Soporte Técnico</a>
+        <a href="#" class="hover:text-slate-800 transition-colors">Salas Demo</a>
+      </div>
+    </div>
+  </footer>
+
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body>
+</html>

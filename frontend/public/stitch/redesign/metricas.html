@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empliados - Backoffice y Métricas Operativas</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-full font-sans text-slate-800 bg-[#f8fafc] flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+<!-- BEGIN: MainHeader -->
+<header class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm" data-purpose="top-navigation-shell">
+<!-- Top Bar: Brand, Search & User Info -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4">
+<!-- Logo Area -->
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-emerald-400 flex items-center justify-center shadow-md shadow-blue-500/20 text-white font-extrabold text-lg tracking-tighter">
+<span>E</span>
+</div>
+<span class="text-xl font-extrabold tracking-tight text-slate-900">Empliados</span>
+</div>
+<!-- Global Search Bar -->
+<div class="flex-1 max-w-lg hidden md:block" data-purpose="global-search">
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<i class="fa-solid fa-magnifying-glass text-sm"></i>
+</span>
+<input class="w-full pl-10 pr-4 py-2 text-xs md:text-sm bg-slate-100/80 border border-slate-200/80 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white placeholder:text-slate-400 text-slate-700 transition" placeholder="Buscar remito, chofer o patente..." type="text"/>
+</div>
+</div>
+<!-- Status & Profile -->
+<div class="flex items-center gap-3 md:gap-5">
+<!-- Live Status Indicator -->
+<div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200 text-xs font-semibold">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span>Sistemas activos</span>
+</div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition">
+<i class="fa-regular fa-bell text-base"></i>
+<span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">5</span>
+</button>
+<!-- User Menu Avatar -->
+<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer">
+<div class="h-8 w-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100 shadow-sm">
+              GD
+            </div>
+<div class="hidden lg:flex flex-col text-left">
+<span class="text-xs font-bold text-slate-800 leading-tight">Gonzalo Demo</span>
+<span class="text-[10px] text-slate-400">Administrador</span>
+</div>
+<i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-0.5"></i>
+</div>
+</div>
+</div>
+</div>
+<!-- Navigation Level 1: Primary Module Tabs -->
+<div class="border-t border-slate-100 bg-white">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav aria-label="Primary Navigation" class="flex items-center gap-2 py-2 overflow-x-auto">
+<!-- Torre de Control -->
+<a class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-tower-broadcast text-slate-400"></i>
+            Torre de Control
+          </a>
+<!-- Monitor -->
+<a class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-desktop text-slate-400"></i>
+            Monitor
+          </a>
+<!-- WhatsApp Agent -->
+<a class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-brands fa-whatsapp text-emerald-500"></i>
+<span>WhatsApp</span>
+<span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Nuevo</span>
+</a>
+<!-- Métricas (ACTIVE TAB) -->
+<a aria-current="page" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-chart-column text-blue-400"></i>
+            Métricas
+          </a>
+</nav>
+</div>
+</div>
+<!-- Navigation Level 2: Sub-bar of Operations & Agents -->
+<div class="bg-slate-50 border-t border-slate-200/80">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center gap-3 py-2 overflow-x-auto text-[11px] font-medium text-slate-600" data-purpose="agents-subnavigation">
+<span class="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 pr-2 border-r border-slate-300">
+            AGENTES
+          </span>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-truck text-slate-400 text-xs"></i> Gestión de Viajes</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-location-crosshairs text-slate-400 text-xs"></i> Tracking Express</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-regular fa-file-lines text-slate-400 text-xs"></i> Remitos <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i></a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-map-pin text-slate-400 text-xs"></i> Destinos</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-triangle-exclamation text-slate-400 text-xs"></i> Incidencias</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-receipt text-slate-400 text-xs"></i> Rendición</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-regular fa-clock text-slate-400 text-xs"></i> ETA</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-camera text-slate-400 text-xs"></i> POP/POD</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-headset text-slate-400 text-xs"></i> Reclamos</a>
+<a class="flex items-center gap-1.5 hover:text-blue-600 whitespace-nowrap px-1.5 py-1 transition" href="#"><i class="fa-solid fa-chart-line text-slate-400 text-xs"></i> Analítica</a>
+</div>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8" data-purpose="metrics-dashboard">
+<!-- Title & Summary Header -->
+<section class="space-y-4" data-purpose="section-header">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div class="flex items-start sm:items-center gap-3">
+<div class="p-2.5 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-sm">
+<i class="fa-solid fa-layer-group text-xl"></i>
+</div>
+<div>
+<h1 class="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Backoffice y métricas operativas</h1>
+<p class="text-xs md:text-sm text-slate-500 font-medium">Cada agente deja evidencia, estados y datos medibles para la operación en tiempo real</p>
+</div>
+</div>
+<div class="flex items-center gap-2 self-start sm:self-auto">
+<span class="inline-flex items-center gap-1.5 text-xs text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs font-semibold">
+<i class="fa-regular fa-clock text-slate-400"></i> Actualizado hace 2 min
+          </span>
+</div>
+</div>
+<!-- 6 Primary Status Summary Cards -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+<!-- Estados de Viaje -->
+<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold mb-1">
+<span>Estados de viaje</span>
+<i class="fa-solid fa-route text-slate-300"></i>
+</div>
+<div class="text-xl font-extrabold text-slate-900">26 <span class="text-xs font-normal text-slate-500">en gestión</span></div>
+</div>
+<div class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">pendiente</span>
+<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">en curso</span>
+<span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">cerrado</span>
+</div>
+</div>
+<!-- Documentación -->
+<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold mb-1">
+<span>Documentación</span>
+<i class="fa-regular fa-file-lines text-slate-300"></i>
+</div>
+<div class="text-xl font-extrabold text-slate-900">412 <span class="text-xs font-normal text-slate-500">remitos hoy</span></div>
+</div>
+<div class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">recibidos</span>
+<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">legibilidad</span>
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">diferencias</span>
+</div>
+</div>
+<!-- Incidencias -->
+<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold mb-1">
+<span>Incidencias</span>
+<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+</div>
+<div class="text-xl font-extrabold text-slate-900">52 <span class="text-xs font-normal text-slate-500">eventos</span></div>
+</div>
+<div class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">paradas</span>
+<span class="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded">desvíos</span>
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">demoras</span>
+</div>
+</div>
+<!-- Rendición -->
+<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold mb-1">
+<span>Rendición</span>
+<i class="fa-solid fa-receipt text-slate-300"></i>
+</div>
+<div class="text-xl font-extrabold text-slate-900">486 <span class="text-xs font-normal text-slate-500">del mes</span></div>
+</div>
+<div class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">gastos</span>
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">comprobantes</span>
+<span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">aprobación</span>
+</div>
+</div>
+<!-- Experiencia -->
+<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold mb-1">
+<span>Experiencia</span>
+<i class="fa-solid fa-heart-pulse text-slate-300"></i>
+</div>
+<div class="text-xl font-extrabold text-slate-900">618 <span class="text-xs font-normal text-slate-500">notificaciones</span></div>
+</div>
+<div class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">reclamos</span>
+<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">respuesta</span>
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">resolución</span>
+</div>
+</div>
+<!-- Performance -->
+<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold mb-1">
+<span>Performance</span>
+<i class="fa-solid fa-trophy text-emerald-500"></i>
+</div>
+<div class="text-xl font-extrabold text-slate-900">95,1% <span class="text-xs font-normal text-slate-500">SLA</span></div>
+</div>
+<div class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+<span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">cumplimiento</span>
+<span class="bg-slate-100 px-1.5 py-0.5 rounded">alertas</span>
+</div>
+</div>
+</div>
+<!-- 4 Strategic Impact KPIs -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+<div class="text-xs font-medium text-slate-500">Productividad operativa</div>
+<div class="mt-1 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">+41%</span>
+<span class="text-xs font-semibold text-emerald-600 flex items-center gap-0.5">
+<i class="fa-solid fa-arrow-trend-up"></i> vs. base manual
+            </span>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+<div class="text-xs font-medium text-slate-500">Carga manual evitada</div>
+<div class="mt-1 flex items-baseline gap-2">
+<span class="text-2xl font-black text-blue-600">-68%</span>
+<span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">Automático</span>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+<div class="text-xs font-medium text-slate-500">Tiempo de resolución</div>
+<div class="mt-1 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">5,8 h</span>
+<span class="text-xs font-semibold text-emerald-600 flex items-center gap-0.5">
+<i class="fa-solid fa-arrow-down"></i> -42%
+            </span>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+<div class="text-xs font-medium text-slate-500">Cumplimiento documental</div>
+<div class="mt-1 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">98,7%</span>
+<span class="text-xs font-semibold text-emerald-600 flex items-center gap-0.5">
+<i class="fa-solid fa-arrow-up"></i> +4,6%
+            </span>
+</div>
+</div>
+</div>
+</section>
+<!-- BEGIN: AnalyticsCharts -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-5" data-purpose="analytics-charts">
+<!-- Chart 1: Viajes por Día -->
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500">VIAJES POR DÍA</h3>
+<span class="text-xs text-slate-400">Evolución semanal consolidada</span>
+</div>
+<span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">Pico: 118</span>
+</div>
+<!-- Line/Area Chart SVG Graphic -->
+<div class="py-4">
+<svg class="w-full h-32 overflow-visible" viewbox="0 0 320 120">
+<defs>
+<lineargradient id="blueGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="320" y1="20" y2="20"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="320" y1="60" y2="60"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="320" y1="100" y2="100"></line>
+<!-- Area Fill -->
+<polygon fill="url(#blueGradient)" points="10,100 10,75 55,68 105,35 155,25 210,45 260,80 310,65 310,100"></polygon>
+<!-- Path Stroke -->
+<path d="M 10 75 Q 35 70, 55 68 T 105 35 T 155 25 T 210 45 T 260 80 T 310 65" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="3"></path>
+<!-- Marker Points -->
+<circle cx="155" cy="25" fill="#2563eb" r="4.5" stroke="#ffffff" stroke-width="2"></circle>
+<circle cx="210" cy="45" fill="#2563eb" r="3.5" stroke="#ffffff" stroke-width="1.5"></circle>
+</svg>
+<div class="flex justify-between text-[11px] font-semibold text-slate-400 mt-2 px-1">
+<span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+</div>
+</div>
+</div>
+<!-- Chart 2: SLA por Zona -->
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500">SLA POR ZONA</h3>
+<span class="text-xs text-slate-400">Rendimiento por región geográfica</span>
+</div>
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Promedio 95%</span>
+</div>
+<div class="space-y-3 py-3">
+<div>
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-600">AMBA</span>
+<span class="text-slate-900 font-bold">97%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2.5">
+<div class="bg-blue-600 h-2.5 rounded-full" style="width: 97%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-600">Centro</span>
+<span class="text-slate-900 font-bold">95%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2.5">
+<div class="bg-indigo-600 h-2.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-600">Cuyo</span>
+<span class="text-slate-900 font-bold">93%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2.5">
+<div class="bg-emerald-500 h-2.5 rounded-full" style="width: 93%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-600">Patagonia</span>
+<span class="text-slate-900 font-bold">91%</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2.5">
+<div class="bg-amber-500 h-2.5 rounded-full" style="width: 91%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Chart 3: Incidencias por Tipo -->
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500">INCIDENCIAS POR TIPO</h3>
+<span class="text-xs text-slate-400">Distribución de eventos activos</span>
+</div>
+</div>
+<div class="flex items-center justify-center gap-6 py-2">
+<!-- Donut SVG -->
+<div class="relative w-28 h-28 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<!-- Background Circle -->
+<path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4.5"></path>
+<!-- Segment 1: Demoras (Blue) 50% -->
+<path class="text-blue-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="50, 100" stroke-width="4.5"></path>
+<!-- Segment 2: Mecánica (Amber) 25% -->
+<path class="text-amber-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="25, 100" stroke-dashoffset="-50" stroke-width="4.5"></path>
+<!-- Segment 3: Documental (Emerald) 15% -->
+<path class="text-emerald-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="15, 100" stroke-dashoffset="-75" stroke-width="4.5"></path>
+<!-- Segment 4: Otros (Rose) 10% -->
+<path class="text-rose-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="10, 100" stroke-dashoffset="-90" stroke-width="4.5"></path>
+</svg>
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="text-lg font-black text-slate-800 leading-none">140</span>
+<span class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">eventos</span>
+</div>
+</div>
+<!-- Donut Legend -->
+<div class="space-y-1.5 text-xs">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+<span class="text-slate-600 font-medium">Demoras (50%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span class="text-slate-600 font-medium">Mecánica (25%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span class="text-slate-600 font-medium">Documentos (15%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+<span class="text-slate-600 font-medium">Otros (10%)</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AnalyticsCharts -->
+<!-- BEGIN: TripsManagementSection -->
+<section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden" data-purpose="trips-section">
+<!-- Card Header & Actions -->
+<div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2.5">
+<h2 class="text-lg font-extrabold text-slate-900">Gestión de Viajes</h2>
+<span class="p-1 px-2 rounded bg-purple-50 text-purple-700 text-xs font-bold">13 viajes</span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Configura y administra los horarios y disponibilidad de tu flota</p>
+</div>
+<div class="flex items-center gap-3">
+<!-- Notification Icon for Trips -->
+<button class="p-2 text-slate-400 hover:text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50 transition">
+<i class="fa-regular fa-bell"></i>
+</button>
+<!-- New Trip Button -->
+<button class="inline-flex items-center gap-2 px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold transition shadow-sm shadow-purple-500/20">
+<i class="fa-solid fa-plus"></i>
+<span>Nuevo Viaje</span>
+</button>
+</div>
+</div>
+<!-- Navigation Tabs inside Section -->
+<div class="px-5 pt-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+<div class="flex gap-4">
+<button class="pb-3 border-b-2 border-purple-700 text-purple-700 text-xs font-extrabold">Viajes</button>
+<button class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 text-xs font-semibold">Tracking Express</button>
+<button class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 text-xs font-semibold">Choferes</button>
+<button class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 text-xs font-semibold">Camiones</button>
+</div>
+<span class="text-[11px] text-slate-400 italic hidden sm:inline">Quedan grabados al confirmar reserva por WhatsApp</span>
+</div>
+<!-- Table: Viajes Registrados -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/80">
+<th class="py-3 px-4">Viaje</th>
+<th class="py-3 px-4">Fecha / Hora</th>
+<th class="py-3 px-4">Cliente</th>
+<th class="py-3 px-4">Ruta</th>
+<th class="py-3 px-4">Carga</th>
+<th class="py-3 px-4">Chofer</th>
+<th class="py-3 px-4">Unidad</th>
+<th class="py-3 px-4 text-center">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50/80 transition group cursor-pointer">
+<td class="py-3 px-4 font-bold text-blue-600 group-hover:underline">VJ-20261014-001</td>
+<td class="py-3 px-4 text-slate-600">15/10/2026 - 08:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Pepsi</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-medium text-slate-800">Molino Cañuelas</span> → Córdoba</td>
+<td class="py-3 px-4 text-slate-600">7 clientes</td>
+<td class="py-3 px-4 text-slate-400 italic">—</td>
+<td class="py-3 px-4 text-slate-400 italic">—</td>
+<td class="py-3 px-4 text-center">
+<span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600">Sin asignar</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition group cursor-pointer">
+<td class="py-3 px-4 font-bold text-blue-600 group-hover:underline">VJ-20260909-001</td>
+<td class="py-3 px-4 text-slate-600">09/09/2026 - 08:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Distribuidora Norte SA</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-medium text-slate-800">Mendoza</span> → Av. Libertador Km 412, CABA</td>
+<td class="py-3 px-4 text-slate-600">1.2 t carga general</td>
+<td class="py-3 px-4 font-medium text-slate-800">Pereyra, Juan C.</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-mono bg-slate-100 px-1 py-0.5 rounded text-[10px]">AE123CD</span></td>
+<td class="py-3 px-4 text-center">
+<span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">En curso</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition group cursor-pointer">
+<td class="py-3 px-4 font-bold text-blue-600 group-hover:underline">VJ-20260909-002</td>
+<td class="py-3 px-4 text-slate-600">08/09/2026 - 09:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Alimentos del Sur</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-medium text-slate-800">Tigre, BA</span> → Ruta 9 Km 412, Córdoba</td>
+<td class="py-3 px-4 text-slate-600">1.5 t carga general</td>
+<td class="py-3 px-4 font-medium text-slate-800">Gómez, Martín</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-mono bg-slate-100 px-1 py-0.5 rounded text-[10px]">AF654KL</span></td>
+<td class="py-3 px-4 text-center">
+<span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">En curso</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition group cursor-pointer">
+<td class="py-3 px-4 font-bold text-blue-600 group-hover:underline">VJ-20260909-003</td>
+<td class="py-3 px-4 text-slate-600">07/09/2026 - 10:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Ferretería Central</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-medium text-slate-800">Planta Zárate</span> → Calle 50, La Plata</td>
+<td class="py-3 px-4 text-slate-600">1.8 t carga general</td>
+<td class="py-3 px-4 font-medium text-slate-800">Fernández, Diego</td>
+<td class="py-3 px-4 text-slate-600"><span class="font-mono bg-slate-100 px-1 py-0.5 rounded text-[10px]">AH789OP</span></td>
+<td class="py-3 px-4 text-center">
+<span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Entregado</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Embedded Assistant for Trips -->
+<div class="p-4 bg-slate-50 border-t border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4" data-purpose="chat-trips-embedded">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+<i class="fa-solid fa-sparkles"></i>
+</div>
+<div>
+<div class="text-xs font-bold text-slate-800">¿Qué necesitás saber de Viajes?</div>
+<div class="text-[11px] text-slate-500">Consulta viajes reales, demoras en ETA o incidencias por chofer</div>
+</div>
+</div>
+<!-- Suggestion Pills -->
+<div class="flex flex-wrap gap-1.5 text-xs">
+<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">¿Cuántos viajes tenemos?</button>
+<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">¿Cuántos están activos?</button>
+<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">¿Cuáles van a Córdoba?</button>
+<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">Últimos 10</button>
+</div>
+<!-- Quick Input -->
+<div class="relative w-full md:w-64">
+<input class="w-full text-xs rounded-lg border-slate-200 bg-white pr-8 pl-3 py-1.5 focus:border-purple-600 focus:ring-purple-600 text-slate-700" placeholder="Preguntá algo sobre Viajes..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-800">
+<i class="fa-solid fa-paper-plane text-xs"></i>
+</button>
+</div>
+</div>
+</section>
+<!-- END: TripsManagementSection -->
+<!-- BEGIN: RoadIncidentsSection -->
+<section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden" data-purpose="incidents-section">
+<!-- Section Header & Filter Pills -->
+<div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-lg font-extrabold text-slate-900">Incidencias en ruta</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">17 activas</span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Click en un caso para ver el resumen · Agente pregunta al chofer · Demoras de Destinos</p>
+</div>
+<!-- Filter Tags -->
+<div class="flex items-center flex-wrap gap-1.5 text-xs">
+<button class="px-3 py-1.5 rounded-lg bg-purple-700 text-white font-bold shadow-xs">Abiertas</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Nuevas</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Esperando causa</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">En gestión</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Resueltas</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Todos</button>
+<button class="p-1.5 px-2.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition ml-1" title="Actualizar">
+<i class="fa-solid fa-rotate-right text-xs"></i>
+</button>
+</div>
+</div>
+<!-- Incidents Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/80">
+<th class="py-3 px-4">Incidencia</th>
+<th class="py-3 px-4">Chofer</th>
+<th class="py-3 px-4">Tipo</th>
+<th class="py-3 px-4">Causa</th>
+<th class="py-3 px-4">Origen</th>
+<th class="py-3 px-4 text-center">Criticidad</th>
+<th class="py-3 px-4 text-center">Estado</th>
+<th class="py-3 px-4 text-center">SLA</th>
+<th class="py-3 px-4 text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 transition">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">INC-20260909-0002-DE</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Gómez, Martín</div>
+<div class="text-[10px] text-slate-400">5491156617788</div>
+</td>
+<td class="py-3 px-4 font-medium text-slate-700">Demora</td>
+<td class="py-3 px-4 text-slate-600 max-w-xs truncate" title="Espera en playa de carga sin autorización">Espera en playa de carga - s...</td>
+<td class="py-3 px-4 text-slate-500"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold">Chofer</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En gestión</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 transition">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">INC-20260909-0003-DE</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Fernández, Diego</div>
+<div class="text-[10px] text-slate-400">5491166778899</div>
+</td>
+<td class="py-3 px-4 font-medium text-slate-700">Demora</td>
+<td class="py-3 px-4 text-slate-600 max-w-xs truncate">Tráfico pesado en Acceso N...</td>
+<td class="py-3 px-4 text-slate-500"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold">Chofer</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En gestión</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 transition">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">INC-20260909-0005-DE</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Sosa, Luis</div>
+<div class="text-[10px] text-slate-400">5491188990011</div>
+</td>
+<td class="py-3 px-4 font-medium text-slate-700">Demora</td>
+<td class="py-3 px-4 text-slate-600 max-w-xs truncate">Lluvia intensa - velocidad red...</td>
+<td class="py-3 px-4 text-slate-500"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold">Chofer</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Alta</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En gestión</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 transition">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">INC-20260909-0006-DE</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Benítez, Nora</div>
+<div class="text-[10px] text-slate-400">5491199001122</div>
+</td>
+<td class="py-3 px-4 font-medium text-slate-700">Demora</td>
+<td class="py-3 px-4 text-slate-600 max-w-xs truncate">Desvío por corte de ruta en P...</td>
+<td class="py-3 px-4 text-slate-500"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold">Chofer</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Alta</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En gestión</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/80 transition">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">INC-20260909-0007-DE</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Pereyra, Juan C.</div>
+<div class="text-[10px] text-slate-400">5491144556677</div>
+</td>
+<td class="py-3 px-4 font-medium text-slate-700">Demora</td>
+<td class="py-3 px-4 text-slate-600 max-w-xs truncate">Cliente sin personal de recep...</td>
+<td class="py-3 px-4 text-slate-500"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold">Chofer</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En gestión</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-slate-50/80 transition">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">INC-20260909-0050-PI</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Pereyra, Juan C.</div>
+<div class="text-[10px] text-slate-400">5491144556677</div>
+</td>
+<td class="py-3 px-4 font-medium text-amber-700 font-semibold">Pinchazo / llanta</td>
+<td class="py-3 px-4 text-slate-600 max-w-xs truncate">Pinchazo rueda trasera dere...</td>
+<td class="py-3 px-4 text-slate-500"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold">Chofer</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En gestión</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Incident Section Summary Bar -->
+<div class="px-5 py-3 bg-slate-50 border-t border-slate-200/80 flex flex-wrap items-center justify-between text-xs font-semibold gap-3">
+<div class="flex items-center gap-4 text-slate-600">
+<span>Abiertas: <strong class="text-slate-900">8</strong></span>
+<span>Nuevas: <strong class="text-blue-600">2</strong></span>
+<span>Escaladas: <strong class="text-rose-600">2</strong></span>
+<span>Resueltas hoy: <strong class="text-emerald-600">10</strong></span>
+</div>
+<div class="text-[11px] text-slate-400">
+          Protocolo automático WhatsApp activado para desvíos &gt; 30 min
+        </div>
+</div>
+</section>
+<!-- END: RoadIncidentsSection -->
+<!-- BEGIN: CustomerClaimsSection -->
+<section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden" data-purpose="claims-section">
+<!-- Card Header -->
+<div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-lg font-extrabold text-slate-900">Reclamos en gestión</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">IA Activa</span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Clientes por WhatsApp · diálogo 100% IA · click en la fila para ver detalle del chat</p>
+</div>
+<!-- Filter Tags -->
+<div class="flex items-center flex-wrap gap-1.5 text-xs">
+<button class="px-3 py-1.5 rounded-lg bg-purple-700 text-white font-bold shadow-xs">Abiertos</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Nuevos</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">En proceso</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Escalados</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Resueltos</button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Todos</button>
+<button class="p-1.5 px-2.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition ml-1">
+<i class="fa-solid fa-arrows-rotate text-xs"></i>
+</button>
+</div>
+</div>
+<!-- Reclamos Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200/80">
+<th class="py-3 px-4">Reclamo</th>
+<th class="py-3 px-4">Cliente</th>
+<th class="py-3 px-4">Viaje</th>
+<th class="py-3 px-4">Motivo</th>
+<th class="py-3 px-4 text-center">Canal</th>
+<th class="py-3 px-4 text-center">Criticidad</th>
+<th class="py-3 px-4 text-center">Estado</th>
+<th class="py-3 px-4 text-center">SLA</th>
+<th class="py-3 px-4 text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Reclamo 1 -->
+<tr class="hover:bg-slate-50/80 transition cursor-pointer">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">RC-20260909-0008-RT</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Construcciones Río SRL</div>
+<div class="text-[10px] text-slate-400">5491189012345</div>
+</td>
+<td class="py-3 px-4 text-blue-600 font-medium">VJ-20260909-008</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-800">Demora en entrega</div>
+<div class="text-[10px] text-slate-500 truncate max-w-xs">La entrega prometida para las 10:00 aún no llega...</div>
+</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+<i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </span>
+</td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Alta</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Escalado</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-[10px] font-bold transition">Tomar</button>
+<button class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold transition"><i class="fa-solid fa-check"></i></button>
+</div>
+</td>
+</tr>
+<!-- Reclamo 2 -->
+<tr class="hover:bg-slate-50/80 transition cursor-pointer">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">RC-20260909-0009-FA</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Farmacéutica Belgrano</div>
+<div class="text-[10px] text-slate-400">5491190123456</div>
+</td>
+<td class="py-3 px-4 text-blue-600 font-medium">VJ-20260909-009</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-800">Faltante</div>
+<div class="text-[10px] text-slate-500 truncate max-w-xs">Faltaron 3 cajas del pedido según remito digital...</div>
+</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+<i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </span>
+</td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En proceso</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-[10px] font-bold transition">Escalar</button>
+<button class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold transition"><i class="fa-solid fa-check"></i></button>
+</div>
+</td>
+</tr>
+<!-- Reclamo 3 -->
+<tr class="hover:bg-slate-50/80 transition cursor-pointer">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">RC-20260909-0010-PD</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Agroinsumos Litoral</div>
+<div class="text-[10px] text-slate-400">5491101234567</div>
+</td>
+<td class="py-3 px-4 text-blue-600 font-medium">VJ-20260909-010</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-800">Producto dañado / avería</div>
+<div class="text-[10px] text-slate-500 truncate max-w-xs">Mercadería golpeada en una esquina de la tarima...</div>
+</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+<i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </span>
+</td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Baja</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En proceso</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Reclamo 4 -->
+<tr class="hover:bg-slate-50/80 transition cursor-pointer">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">RC-20260909-0012-RT</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Alimentos del Sur</div>
+<div class="text-[10px] text-slate-400">5491123456789</div>
+</td>
+<td class="py-3 px-4 text-blue-600 font-medium">VJ-20260909-002</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-800">Demora en entrega</div>
+<div class="text-[10px] text-slate-500">Consulta de estado por arribo tardío</div>
+</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+<i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </span>
+</td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">Nuevo</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-[10px] font-bold transition">Tomar</button>
+<button class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold transition"><i class="fa-solid fa-check"></i></button>
+</div>
+</td>
+</tr>
+<!-- Reclamo 5 -->
+<tr class="hover:bg-slate-50/80 transition cursor-pointer">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">RC-20260909-0013-PE</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Ferretería Central</div>
+<div class="text-[10px] text-slate-400">5491134567890</div>
+</td>
+<td class="py-3 px-4 text-blue-600 font-medium">VJ-20260909-003</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-800">Producto equivocado</div>
+<div class="text-[10px] text-slate-500">Llegó un SKU distinto al solicitado en orden</div>
+</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+<i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </span>
+</td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Baja</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">En proceso</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+<!-- Reclamo 6 -->
+<tr class="hover:bg-slate-50/80 transition cursor-pointer">
+<td class="py-3 px-4 font-mono font-bold text-slate-800">RC-20260909-0014-FA</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Logística Pampeana</div>
+<div class="text-[10px] text-slate-400">5491145678901</div>
+</td>
+<td class="py-3 px-4 text-blue-600 font-medium">VJ-20260909-004</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-800">Faltante</div>
+<div class="text-[10px] text-slate-500">Faltan bultos en remito de descarga</div>
+</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+<i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </span>
+</td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Media</span></td>
+<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Escalado</span></td>
+<td class="py-3 px-4 text-center text-amber-600 font-semibold text-[11px]">Por vencer</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition flex items-center gap-1 ml-auto">
+<i class="fa-solid fa-check text-[10px]"></i> OK
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: CustomerClaimsSection -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-500" data-purpose="page-footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-800">Empliados</span>
+<span>© 2026 · Torre y agentes · consultas en Chat Central</span>
+</div>
+<div class="flex items-center gap-4 text-[11px]">
+<span class="flex items-center gap-1.5 text-emerald-600 font-semibold">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+          Monitor SOL Activo
+        </span>
+<a class="hover:text-blue-600 transition" href="#">Soporte Técnico</a>
+<a class="hover:text-blue-600 transition" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

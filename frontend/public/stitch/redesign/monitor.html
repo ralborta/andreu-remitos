@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empliados - Monitor de Servicios</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#0f172a',
+              blue: '#2563eb',
+              lightBlue: '#eff6ff',
+              emerald: '#10b981',
+              coral: '#ef4444',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-enhancements">
+    /* Subtle custom scrollbar and pulsing ring animations */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-full bg-[#f8f9fc] text-slate-800 antialiased flex flex-col">
+<!-- BEGIN: TopBar -->
+<!-- Encabezado superior idéntico a la referencia -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40" data-purpose="top-navigation">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-4">
+<!-- Logo de Marca -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm font-bold text-lg tracking-tight">
+<i class="fa-solid fa-shapes text-sm text-blue-400"></i>
+</div>
+<span class="font-extrabold text-xl text-slate-900 tracking-tight">Empliados</span>
+</div>
+<!-- Buscador Central Alargado -->
+<div class="flex-1 max-w-xl mx-2 md:mx-6">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">
+<i class="fa-solid fa-magnifying-glass"></i>
+</div>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-full text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-inner" data-purpose="global-search" placeholder="Buscar remito, chofer o patente..." type="text"/>
+</div>
+</div>
+<!-- Acciones a la Derecha (Estado, Notificaciones y Perfil) -->
+<div class="flex items-center gap-3 sm:gap-4 shrink-0">
+<!-- Indicador de Sistemas Activos -->
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Campana de Alertas con Badge -->
+<button aria-label="Notificaciones" class="relative p-2 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">
+<i class="fa-regular fa-bell text-lg"></i>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
+</button>
+<!-- Píldora de Perfil de Usuario -->
+<div class="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-slate-100 hover:bg-slate-200/70 rounded-full border border-slate-200/80 cursor-pointer transition">
+<div class="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100">
+              GD
+            </div>
+<span class="text-xs font-semibold text-slate-800 hidden md:inline">Gonzalo Demo</span>
+<i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden md:inline"></i>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainHorizontalNavigation -->
+<!-- Pestañas horizontales principales y subnavegación de agentes -->
+<nav class="bg-white border-b border-slate-200 shadow-sm" data-purpose="primary-and-sub-navigation">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<!-- Fila 1: Pestañas Principales Tipo Cápsula -->
+<div class="flex items-center gap-2 pt-3 pb-2.5 overflow-x-auto custom-scroll no-scrollbar">
+<!-- Torre de Control -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-tower-broadcast text-slate-400"></i>
+          Torre de Control
+        </a>
+<!-- Monitor (Activo con fondo oscuro sólido) -->
+<a aria-current="page" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold bg-slate-900 text-white shadow-sm whitespace-nowrap" href="#">
+<i class="fa-solid fa-heart-pulse text-emerald-400"></i>
+          Monitor
+        </a>
+<!-- WhatsApp -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-brands fa-whatsapp text-emerald-500"></i>
+          WhatsApp
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Nuevo</span>
+</a>
+<!-- Métricas -->
+<a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap" href="#">
+<i class="fa-solid fa-chart-line text-slate-400"></i>
+          Métricas
+        </a>
+</div>
+<!-- Fila 2: Sub-navegación Agentes y Operación -->
+<div class="flex items-center gap-1 sm:gap-2 py-2 overflow-x-auto text-xs text-slate-500 border-t border-slate-100 custom-scroll">
+<span class="font-bold text-slate-400 tracking-wider text-[11px] uppercase pr-2 flex items-center gap-1 shrink-0">
+<i class="fa-solid fa-robot text-slate-400"></i> Agentes
+        </span>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-truck-moving text-slate-400 mr-1"></i>Gestión de Viajes
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-location-crosshairs text-slate-400 mr-1"></i>Tracking Express
+        </a>
+<div class="relative shrink-0 group">
+<button class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 font-medium inline-flex items-center gap-1 transition">
+<i class="fa-solid fa-file-invoice text-slate-400 mr-1"></i>Remitos <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+</button>
+</div>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-map-pin text-slate-400 mr-1"></i>Destinos
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>Incidencias
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-receipt text-slate-400 mr-1"></i>Rendición
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-clock text-slate-400 mr-1"></i>ETA
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-camera text-slate-400 mr-1"></i>POP/POD
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-handshake-angle text-slate-400 mr-1"></i>Reclamos
+        </a>
+<a class="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 shrink-0 font-medium transition" href="#">
+<i class="fa-solid fa-chart-pie text-slate-400 mr-1"></i>Analítica
+        </a>
+</div>
+</div>
+</nav>
+<!-- END: MainHorizontalNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+<!-- BEGIN: HeaderSection -->
+<!-- Título de Sección, Fecha y Botones de Acción -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2" data-purpose="page-title-banner">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Monitor de Servicios</h1>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            8 agentes en línea
+          </span>
+</div>
+<p class="text-sm text-slate-500 mt-1 flex items-center gap-2">
+<span><i class="fa-regular fa-clock text-slate-400"></i> Chequeo cada 15s · infraestructura + estado de agentes</span>
+<span class="hidden sm:inline text-slate-300">•</span>
+<span class="hidden sm:inline font-medium text-slate-600">Martes 12 de marzo de 2026 - 10:25:25 p. m.</span>
+</p>
+</div>
+<!-- Botones de Acción -->
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-lg border border-slate-200 shadow-sm hover:border-slate-300 transition" title="Refrescar estado de servicios" type="button">
+<i class="fa-solid fa-rotate text-blue-600"></i>
+          Actualizar
+        </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition" type="button">
+<i class="fa-regular fa-bell"></i>
+          Activar alertas
+        </button>
+</div>
+</div>
+<!-- END: HeaderSection -->
+<!-- BEGIN: InfrastructureWarningBanner -->
+<!-- Banner de Alerta Crítica y Panel de Conexión QR -->
+<section class="bg-gradient-to-r from-red-50 via-red-50/50 to-amber-50/40 border border-red-200 rounded-2xl p-4 sm:p-5 shadow-sm" data-purpose="critical-alert">
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+<!-- Mensaje de Alerta -->
+<div class="flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center text-red-600 shrink-0 shadow-sm">
+<i class="fa-solid fa-triangle-exclamation text-lg"></i>
+</div>
+<div>
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="text-sm sm:text-base font-bold text-red-900">Atención — hay servicios caídos</h2>
+<span class="text-xs bg-red-200/70 text-red-800 px-2 py-0.5 rounded font-mono font-medium">Último chequeo: 10:25:25 p. m.</span>
+</div>
+<ul class="mt-2 text-xs sm:text-sm text-red-800/90 space-y-1">
+<li class="flex items-start gap-1.5 font-medium">
+<span class="text-red-500 font-bold">→</span> WhatsApp desconectado — usá «Mostrar QR» abajo o abrí el monitor del bot.
+              </li>
+<li class="flex items-start gap-1.5 text-slate-600">
+<span class="text-amber-500 font-bold">→</span> Baileys reconecta solo ante cortes de red; si la sesión expiró, escaneá el código QR.
+              </li>
+</ul>
+</div>
+</div>
+<!-- Mini Panel Lateral: Vincular WhatsApp con QR -->
+<div class="w-full lg:w-auto flex items-center justify-between lg:justify-end gap-3 bg-white/90 p-3 rounded-xl border border-red-200/80 shadow-xs">
+<div class="text-left">
+<p class="text-xs font-bold text-slate-800">Sesión WhatsApp</p>
+<p class="text-[11px] text-slate-500">Reanudar gateway Baileys</p>
+</div>
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow transition" type="button">
+<i class="fa-solid fa-qrcode text-sm"></i>
+            Mostrar QR
+          </button>
+</div>
+</div>
+</section>
+<!-- END: InfrastructureWarningBanner -->
+<!-- BEGIN: InfrastructureHealthGrid -->
+<!-- Grilla de Tarjetas de Salud de Infraestructura -->
+<section data-purpose="infrastructure-metrics">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-extrabold tracking-wider text-slate-500 uppercase flex items-center gap-2">
+<i class="fa-solid fa-server text-blue-600"></i> Infraestructura Base
+        </h3>
+<span class="text-xs text-slate-400 font-medium">Latencia media global: 14 ms</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Tarjeta 1: API SOL -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-sm hover:shadow-md transition">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-slate-500">Servicio</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> OK
+            </span>
+</div>
+<p class="text-base font-bold text-slate-900 mt-2">API SOL</p>
+<p class="text-xs text-slate-500">Núcleo REST operacional</p>
+<div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+<span class="text-slate-400">Latencia</span>
+<span class="font-bold font-mono text-emerald-600">12 ms</span>
+</div>
+</div>
+<!-- Tarjeta 2: Bot Baileys (HTTP) -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-sm hover:shadow-md transition">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-slate-500">Servicio</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> OK
+            </span>
+</div>
+<p class="text-base font-bold text-slate-900 mt-2">Bot Baileys (HTTP)</p>
+<p class="text-xs text-slate-500">Pasarela de mensajería</p>
+<div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+<span class="text-slate-400">Latencia</span>
+<span class="font-bold font-mono text-emerald-600">6 ms</span>
+</div>
+</div>
+<!-- Tarjeta 3: WhatsApp (CAÍDO) -->
+<div class="bg-red-50/50 rounded-xl border-2 border-red-300 p-4 shadow-sm relative overflow-hidden">
+<div class="absolute -right-6 -bottom-6 opacity-10 text-red-600 text-6xl">
+<i class="fa-brands fa-whatsapp"></i>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold text-red-700">Conexión Externa</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-700 animate-pulse border border-red-200">
+<span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> CAÍDO
+            </span>
+</div>
+<p class="text-base font-bold text-red-950 mt-2">WhatsApp</p>
+<p class="text-xs text-red-700 font-medium">Sesión cerrada o en timeout</p>
+<div class="mt-3 pt-3 border-t border-red-200 flex items-center justify-between text-xs">
+<span class="text-red-600">Error 401 Socket</span>
+<a class="font-bold text-red-700 hover:text-red-900 underline inline-flex items-center gap-1" href="#">
+              Detalle <i class="fa-solid fa-arrow-right text-[10px]"></i>
+</a>
+</div>
+</div>
+<!-- Tarjeta 4: Webhook Agentes -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-sm hover:shadow-md transition">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-slate-500">Ingesta</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> OK
+            </span>
+</div>
+<p class="text-base font-bold text-slate-900 mt-2">Webhook agentes</p>
+<p class="text-xs text-slate-500">Ingesta de eventos 100%</p>
+<div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+<span class="text-slate-400">Latencia</span>
+<span class="font-bold font-mono text-emerald-600">24 ms</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: InfrastructureHealthGrid -->
+<!-- BEGIN: AgentsSection -->
+<!-- Estado General y Grilla de los 11 Agentes -->
+<section class="space-y-4" data-purpose="agents-section">
+<!-- Barra Superior de Contadores y Leyenda explicativa -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h2 class="text-base font-bold text-slate-900">Agentes Involucrados</h2>
+<p class="text-xs text-slate-500">Monitoreo de colas, estados de ejecución y conectividad de workers</p>
+</div>
+<!-- Contadores tipo Píldoras -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Activo -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Activo <span class="bg-emerald-600 text-white rounded px-1.5 py-0.2 text-[10px]">2</span>
+</div>
+<!-- En espera -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs font-bold text-blue-700">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            En espera <span class="bg-blue-600 text-white rounded px-1.5 py-0.2 text-[10px]">2</span>
+</div>
+<!-- En hold -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-xs font-bold text-amber-700">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            En hold <span class="bg-amber-600 text-white rounded px-1.5 py-0.2 text-[10px]">0</span>
+</div>
+<!-- Offline -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            Offline <span class="bg-slate-500 text-white rounded px-1.5 py-0.2 text-[10px]">7</span>
+</div>
+</div>
+</div>
+<!-- Leyenda Explicativa de Estados -->
+<div class="text-[11px] text-slate-500 bg-slate-100/70 border border-slate-200 rounded-lg px-3.5 py-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+<span class="font-semibold text-slate-700">Glosario de estados:</span>
+<span><strong class="text-emerald-700">• Activo</strong> = con cola o procesando</span>
+<span><strong class="text-blue-700">• En espera</strong> = online sin trabajo</span>
+<span><strong class="text-amber-700">• En hold</strong> = espera humana / cliente / chofer</span>
+<span><strong class="text-slate-600">• Offline</strong> = desconectado</span>
+</div>
+<!-- Grilla de los 11 Agentes -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-purpose="agents-grid">
+<!-- Agente 1: Chat Central Commander -->
+<div class="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-4 shadow-sm transition hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-comments"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 leading-tight">Chat Central</h4>
+<p class="text-[11px] text-slate-400">Chat Central Commander</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
+              En espera
+            </span>
+</div>
+<p class="text-xs text-slate-600 mt-3">Listo para consultas de mesa · Online, sin trabajo pendiente</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Cola actual: <strong class="text-slate-700">0</strong></span>
+<a class="text-blue-600 font-semibold hover:underline" href="#">Abrir agente →</a>
+</div>
+</div>
+<!-- Agente 2: Gestión de Viajes -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-truck"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">Gestión de Viajes</h4>
+<p class="text-[11px] text-slate-400">Agente de Gestión de Viajes</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Última sync: <strong class="text-slate-600">Hace 12 min</strong></span>
+<span class="text-slate-400">En espera de socket</span>
+</div>
+</div>
+<!-- Agente 3: Tracking Express -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-location-dot"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">Tracking Express</h4>
+<p class="text-[11px] text-slate-400">SOL Tracking Express</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Tokens consumidos: <strong class="text-slate-600">3.4k</strong></span>
+<span class="text-slate-400">En pausa</span>
+</div>
+</div>
+<!-- Agente 4: Remitos -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-receipt"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">Remitos</h4>
+<p class="text-[11px] text-slate-400">Agente de Remitos OCR</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Procesados hoy: <strong class="text-slate-600">518</strong></span>
+<span class="text-slate-400">OCR idle</span>
+</div>
+</div>
+<!-- Agente 5: Confirmación de Destinos -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-map-location-dot"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">Destinos</h4>
+<p class="text-[11px] text-slate-400">Confirmación de Destinos</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Destinos activos: <strong class="text-slate-600">26</strong></span>
+<span class="text-slate-400">Sin conexión</span>
+</div>
+</div>
+<!-- Agente 6: Gestión de Incidencias (ACTIVO) -->
+<div class="bg-gradient-to-br from-emerald-50/50 to-white border-2 border-emerald-400 rounded-xl p-4 shadow-sm relative transition hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+<i class="fa-solid fa-bolt"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 leading-tight">Incidencias</h4>
+<p class="text-[11px] text-emerald-800 font-medium">Gestión de Incidencias</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span> ACTIVO
+            </span>
+</div>
+<p class="text-xs text-slate-700 font-semibold mt-3">17 incidencias abiertas · Procesando o con cola en curso</p>
+<div class="mt-3 pt-2.5 border-t border-emerald-100 flex items-center justify-between text-[11px]">
+<span class="text-red-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 2 críticas</span>
+<a class="text-emerald-700 font-bold hover:underline" href="#">Gestionar cola →</a>
+</div>
+</div>
+<!-- Agente 7: Rendición de Viajes -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-money-bill-transfer"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">Rendición</h4>
+<p class="text-[11px] text-slate-400">Rendición de Viajes</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Auditoría: <strong class="text-slate-600">Al día</strong></span>
+<span class="text-slate-400">Inactivo</span>
+</div>
+</div>
+<!-- Agente 8: ETA y Notificación Proactiva -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-hourglass-half"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">ETA Proactivo</h4>
+<p class="text-[11px] text-slate-400">ETA y Notificación Proactiva</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Precisión SLA: <strong class="text-slate-600">94.2%</strong></span>
+<span class="text-slate-400">En espera</span>
+</div>
+</div>
+<!-- Agente 9: POP / POD (Evidencias de Transporte) -->
+<div class="bg-white/90 border border-slate-200/90 rounded-xl p-4 shadow-sm opacity-90 hover:opacity-100 transition">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-signature"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 leading-tight">POP / POD</h4>
+<p class="text-[11px] text-slate-400">Evidencias de Transporte</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              Offline
+            </span>
+</div>
+<p class="text-xs text-rose-600/90 mt-3 font-medium">WhatsApp desconectado · No desplegado / sin señal</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Fotos recibidas: <strong class="text-slate-600">89</strong></span>
+<span class="text-slate-400">Sin recepción</span>
+</div>
+</div>
+<!-- Agente 10: Reclamos Logísticos -->
+<div class="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-4 shadow-sm transition hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-headset"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 leading-tight">Reclamos</h4>
+<p class="text-[11px] text-slate-400">Reclamos Logísticos</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
+              En espera
+            </span>
+</div>
+<p class="text-xs text-slate-600 mt-3">Monitoreo de tickets activo · 0 pendientes en cola</p>
+<div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-400">Tickets resueltos hoy: <strong class="text-slate-700">14</strong></span>
+<a class="text-blue-600 font-semibold hover:underline" href="#">Ver tickets →</a>
+</div>
+</div>
+<!-- Agente 11: Analítica de Performance (ACTIVO) -->
+<div class="bg-gradient-to-br from-emerald-50/50 to-white border-2 border-emerald-400 rounded-xl p-4 shadow-sm relative transition hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+<i class="fa-solid fa-chart-simple"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 leading-tight">Analítica</h4>
+<p class="text-[11px] text-emerald-800 font-medium">Analítica de Performance</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span> ACTIVO
+            </span>
+</div>
+<p class="text-xs text-slate-700 font-semibold mt-3">Dashboard y agregación BigQuery en ejecución</p>
+<div class="mt-3 pt-2.5 border-t border-emerald-100 flex items-center justify-between text-[11px]">
+<span class="text-slate-500 font-medium">Pipeline: <strong class="text-emerald-700">Streaming</strong></span>
+<a class="text-emerald-700 font-bold hover:underline" href="#">Ver tableros →</a>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AgentsSection -->
+<!-- BEGIN: AuditAndEventsLog -->
+<!-- Sección de Auditoría y Eventos Recientes con Estilo Tabla/Timeline -->
+<section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4" data-purpose="audit-event-log">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+<div>
+<h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+<i class="fa-solid fa-list-check text-blue-600"></i> Eventos recientes (esta sesión)
+          </h3>
+<p class="text-xs text-slate-500">Dejá esta pestaña abierta para recibir alertas si algo cae.</p>
+</div>
+<div class="text-xs text-slate-400 flex items-center gap-1.5">
+<i class="fa-solid fa-shield-halved text-emerald-500"></i> Auditoría viva con firma de tiempo
+        </div>
+</div>
+<!-- Tabla Responsive de Auditoría -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs text-slate-600" id="events-table">
+<thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-[10px] tracking-wider border-y border-slate-200/80">
+<tr>
+<th class="py-2.5 px-3" scope="col">Hora</th>
+<th class="py-2.5 px-3" scope="col">Servicio / Módulo</th>
+<th class="py-2.5 px-3" scope="col">Detalle del Evento</th>
+<th class="py-2.5 px-3 text-right" scope="col">Severidad</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-medium">
+<!-- Evento 1 -->
+<tr class="hover:bg-red-50/40 transition">
+<td class="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">10:25:25 p. m.</td>
+<td class="py-3 px-3 font-bold text-slate-900 flex items-center gap-1.5">
+<i class="fa-brands fa-whatsapp text-red-500"></i> WhatsApp
+              </td>
+<td class="py-3 px-3 text-red-700 font-medium">
+                Desconexión detectada (<span class="font-mono text-xs">SocketClosed: Connection terminated by remote host</span>)
+              </td>
+<td class="py-3 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">
+<i class="fa-solid fa-circle-exclamation text-[9px]"></i> Alta
+                </span>
+</td>
+</tr>
+<!-- Evento 2 -->
+<tr class="hover:bg-slate-50 transition">
+<td class="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">10:24:10 p. m.</td>
+<td class="py-3 px-3 font-bold text-slate-800 flex items-center gap-1.5">
+<i class="fa-solid fa-cube text-blue-500"></i> Bot Baileys
+              </td>
+<td class="py-3 px-3 text-slate-600">
+                Health check HTTP exitoso (<span class="font-mono text-emerald-600 font-semibold">6 ms</span>) · Daemon respondiendo
+              </td>
+<td class="py-3 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700">
+                  Info
+                </span>
+</td>
+</tr>
+<!-- Evento 3 -->
+<tr class="hover:bg-amber-50/40 transition">
+<td class="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">10:20:02 p. m.</td>
+<td class="py-3 px-3 font-bold text-slate-800 flex items-center gap-1.5">
+<i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Incidencias
+              </td>
+<td class="py-3 px-3 text-slate-700">
+                Nueva incidencia asignada automáticamente: <span class="font-mono font-bold text-slate-900">#INC-2026-908</span> (Demora en descarga)
+              </td>
+<td class="py-3 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+<i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Advertencia
+                </span>
+</td>
+</tr>
+<!-- Evento 4 -->
+<tr class="hover:bg-emerald-50/30 transition">
+<td class="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">10:15:40 p. m.</td>
+<td class="py-3 px-3 font-bold text-slate-800 flex items-center gap-1.5">
+<i class="fa-solid fa-network-wired text-emerald-500"></i> API SOL
+              </td>
+<td class="py-3 px-3 text-slate-600">
+                Latencia normalizada por debajo de 15ms. Pool de conexiones PostgreSQL saludable (12/50 activas).
+              </td>
+<td class="py-3 px-3 text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+<i class="fa-solid fa-check text-[9px]"></i> OK
+                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: AuditAndEventsLog -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-500" data-purpose="site-footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-800">Empliados © 2026</span>
+<span>• Torre y agentes · consultas en Chat Central</span>
+</div>
+<div class="flex items-center gap-4 text-slate-400">
+<span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Monitor SOL Activo
+        </span>
+<a class="hover:text-slate-800 transition" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-800 transition" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

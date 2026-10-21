@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f4f6fb]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empliados - Agente de Gestión de Viajes</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            },
+            navy: {
+              800: '#0f172a',
+              900: '#0a0f1d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Barra de desplazamiento estética para contenedores con scroll horizontal */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-full font-sans text-slate-800 antialiased flex flex-col bg-[#f4f6fb]">
+<!-- BEGIN: TopHeader -->
+<header class="sticky top-0 z-50 bg-white border-b border-slate-200/90 shadow-xs" data-purpose="global-header">
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+<!-- Brand Logo Container -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-700 to-indigo-500 flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-display font-bold text-xl tracking-tight">
+          E
+        </div>
+<span class="font-display font-bold text-xl tracking-tight text-slate-900">Empliados</span>
+</div>
+<!-- Search Bar -->
+<div class="flex-1 max-w-xl mx-4 hidden md:block">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors" placeholder="Buscar remito, chofer o patente..." type="search"/>
+</div>
+</div>
+<!-- Right Header Status & Profile Controls -->
+<div class="flex items-center gap-4 shrink-0">
+<!-- Live System Status Badge -->
+<div class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100/80 text-emerald-700 text-xs font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Sistemas activos
+        </div>
+<!-- Notification Bell -->
+<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center">5</span>
+</button>
+<div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+<!-- User Profile Pill -->
+<button class="flex items-center gap-2.5 p-1 pl-1.5 pr-2 rounded-lg hover:bg-slate-100 transition-colors text-left" title="Perfil de usuario">
+<div class="w-8 h-8 rounded-full bg-brand-600 text-white font-medium text-xs flex items-center justify-center shadow-xs">
+            GD
+          </div>
+<div class="hidden lg:block">
+<p class="text-xs font-semibold text-slate-800 leading-tight">Gonzalo Demo</p>
+<p class="text-[11px] text-slate-500 leading-tight">Administrador</p>
+</div>
+<svg class="w-3.5 h-3.5 text-slate-400 hidden lg:block" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: DoubleLevelNavigation -->
+<nav class="bg-white border-b border-slate-200/90 shrink-0" data-purpose="main-navigation">
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+<!-- Level 1: Primary Module Tabs -->
+<div class="flex items-center gap-1 sm:gap-2 pt-2 border-b border-slate-100 text-sm overflow-x-auto no-scrollbar">
+<!-- Torre de Control -->
+<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Torre de Control
+        </a>
+<!-- Monitor -->
+<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Monitor
+        </a>
+<!-- WhatsApp -->
+<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
+<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          WhatsApp
+          <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Nuevo</span>
+</a>
+<!-- Métricas -->
+<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Métricas
+        </a>
+</div>
+<!-- Level 2: Agents Sub-navigation Strip -->
+<div class="flex items-center gap-2 py-2.5 overflow-x-auto text-xs font-medium no-scrollbar">
+<span class="text-slate-400 font-bold uppercase tracking-wider text-[11px] pr-1 select-none">Agentes |</span>
+<!-- Active Tab: Gestión de Viajes -->
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white font-semibold shadow-xs" href="#">
+<svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Gestión de Viajes</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5"></span>
+</a>
+<!-- Other Agent Links -->
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Tracking Express</a>
+<div class="relative inline-flex items-center">
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors inline-flex items-center gap-1" href="#">
+            Remitos
+            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+</div>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Destinos</a>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Incidencias</a>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Rendición</a>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">ETA</a>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">POP/POD</a>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Reclamos</a>
+<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Analítica</a>
+</div>
+</div>
+</nav>
+<!-- END: DoubleLevelNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6" data-purpose="travel-management-page">
+<!-- BEGIN: AgentOperationalHeader -->
+<section class="flex flex-col md:flex-row md:items-center justify-between gap-4" data-purpose="agent-header">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-2xl font-bold font-display text-slate-900 tracking-tight">Agente de Gestión de Viajes</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Operativo
+          </span>
+</div>
+<p class="text-sm text-slate-500 mt-1">Configura y administra los horarios y disponibilidad de tu flota</p>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center gap-2.5 flex-wrap">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-50 transition-colors">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Sincronizar TMS
+        </button>
+<button class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Nueva conversación con agente
+        </button>
+</div>
+</section>
+<!-- END: AgentOperationalHeader -->
+<!-- BEGIN: KeyMetricsSection -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-purpose="kpi-cards">
+<!-- KPI 1 -->
+<div class="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+<span>Viajes coordinados hoy</span>
+<span class="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-3xl font-display font-bold text-slate-900">97</span>
+<span class="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+<svg class="w-3.5 h-3.5 mr-0.5" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" fill-rule="evenodd"></path>
+</svg>
+            +14%
+          </span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+<span>Uso de flota</span>
+<span class="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-3xl font-display font-bold text-slate-900">91%</span>
+<span class="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+<svg class="w-3.5 h-3.5 mr-0.5" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" fill-rule="evenodd"></path>
+</svg>
+            +8 pts
+          </span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+<span>Tiempo de asignación</span>
+<span class="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-3xl font-display font-bold text-slate-900">3,6 min</span>
+<span class="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md" title="Reducción positiva de tiempo">
+<svg class="w-3.5 h-3.5 mr-0.5 rotate-180" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" fill-rule="evenodd"></path>
+</svg>
+            -63%
+          </span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+<span>Disponibilidad de tractores</span>
+<span class="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-2xl font-display font-bold text-slate-900">18 <span class="text-sm font-normal text-slate-500">unidades</span></span>
+<span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">4 en taller</span>
+</div>
+</div>
+</section>
+<!-- END: KeyMetricsSection -->
+<!-- BEGIN: MainTableAndFilterSection -->
+<section class="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden" data-purpose="trips-section">
+<!-- Top Bar: View Tabs and Controls -->
+<div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<!-- View Switching Tabs -->
+<div class="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-lg w-fit text-xs font-semibold">
+<button class="px-3.5 py-1.5 bg-white text-slate-900 rounded-md shadow-2xs">Viajes</button>
+<button class="px-3.5 py-1.5 text-slate-600 hover:text-slate-900 rounded-md transition-colors">Tracking Express</button>
+<button class="px-3.5 py-1.5 text-slate-600 hover:text-slate-900 rounded-md transition-colors">Choferes</button>
+<button class="px-3.5 py-1.5 text-slate-600 hover:text-slate-900 rounded-md transition-colors">Camiones</button>
+</div>
+<!-- Filter Controls & New Trip Action -->
+<div class="flex items-center gap-2.5 flex-wrap">
+<!-- Search in Table -->
+<div class="relative min-w-[200px]">
+<input class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Buscar en viajes..." type="text"/>
+<svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Status Dropdown Filter -->
+<select class="text-xs py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+<option>Estado: Todos</option>
+<option>Sin asignar</option>
+<option>En curso</option>
+<option>Entregado</option>
+</select>
+<!-- Date Dropdown Filter -->
+<select class="text-xs py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+<option>Fecha: Hoy</option>
+<option>Esta semana</option>
+<option>Este mes</option>
+</select>
+<!-- New Trip Primary Button -->
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Nuevo Viaje
+          </button>
+</div>
+</div>
+<!-- Explanatory note strip -->
+<div class="px-5 py-2.5 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
+<span class="flex items-center gap-1.5">
+<svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Click en un viaje para ver el detalle. Quedan grabados al confirmar la reserva por WhatsApp.
+        </span>
+<span class="font-semibold text-slate-700">13 viajes en curso / programados</span>
+</div>
+<!-- Interactive Trips Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-900 text-slate-200 uppercase tracking-wider text-[11px] font-semibold">
+<th class="py-3 px-4" scope="col">Viaje</th>
+<th class="py-3 px-4" scope="col">Fecha / Hora</th>
+<th class="py-3 px-4" scope="col">Cliente</th>
+<th class="py-3 px-4" scope="col">Ruta</th>
+<th class="py-3 px-4" scope="col">Carga</th>
+<th class="py-3 px-4" scope="col">Chofer</th>
+<th class="py-3 px-4" scope="col">Unidad</th>
+<th class="py-3 px-4" scope="col">Estado</th>
+<th class="py-3 px-4 text-center" scope="col">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+<td class="py-3 px-4 font-mono font-semibold text-indigo-600">VJ-20261014-001</td>
+<td class="py-3 px-4 text-slate-500 whitespace-nowrap">15/10/2026 - 08:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Pepsi</td>
+<td class="py-3 px-4 text-slate-600">Molino Cañuelas <span class="text-slate-400">→</span> Córdoba</td>
+<td class="py-3 px-4 text-slate-500">7 clientes</td>
+<td class="py-3 px-4 text-slate-900">Pereyra Juan C.</td>
+<td class="py-3 px-4 font-mono text-slate-600">AE123CD</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                  En curso
+                </span>
+</td>
+<td class="py-3 px-4 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>
+<button class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.941-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.42-.099.825zm-3.4-12.416C5.666 2 2 5.666 2 12.029c0 1.802.43 3.559 1.25 5.132L2 22l4.981-1.209a10.024 10.024 0 005.044 1.238h.005C18.39 22 22 18.334 22 12.029 22 5.666 18.39 2 12.023 2z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+<td class="py-3 px-4 font-mono font-semibold text-indigo-600">VJ-20260909-001</td>
+<td class="py-3 px-4 text-slate-500 whitespace-nowrap">09/09/2026 - 08:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Distribuidora Norte SA</td>
+<td class="py-3 px-4 text-slate-600">Mendoza <span class="text-slate-400">→</span> Av. Libertador Km 412 CABA</td>
+<td class="py-3 px-4 text-slate-500">1.2 t carga general</td>
+<td class="py-3 px-4 text-slate-900">Gómez Martín</td>
+<td class="py-3 px-4 font-mono text-slate-600">AF654KL</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                  Entregado
+                </span>
+</td>
+<td class="py-3 px-4 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>
+<button class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.941-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.42-.099.825zm-3.4-12.416C5.666 2 2 5.666 2 12.029c0 1.802.43 3.559 1.25 5.132L2 22l4.981-1.209a10.024 10.024 0 005.044 1.238h.005C18.39 22 22 18.334 22 12.029 22 5.666 18.39 2 12.023 2z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+<td class="py-3 px-4 font-mono font-semibold text-indigo-600">VJ-20260909-002</td>
+<td class="py-3 px-4 text-slate-500 whitespace-nowrap">09/09/2026 - 09:30</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Alimentos del Sur</td>
+<td class="py-3 px-4 text-slate-600">Tigre, BA <span class="text-slate-400">→</span> Ruta 9 Km 412 Córdoba</td>
+<td class="py-3 px-4 text-slate-500">1.5 t carga general</td>
+<td class="py-3 px-4 text-slate-900">Fernández Diego</td>
+<td class="py-3 px-4 font-mono text-slate-600">AH789OP</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                  En curso
+                </span>
+</td>
+<td class="py-3 px-4 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>
+<button class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.941-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.42-.099.825zm-3.4-12.416C5.666 2 2 5.666 2 12.029c0 1.802.43 3.559 1.25 5.132L2 22l4.981-1.209a10.024 10.024 0 005.044 1.238h.005C18.39 22 22 18.334 22 12.029 22 5.666 18.39 2 12.023 2z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+<td class="py-3 px-4 font-mono font-semibold text-indigo-600">VJ-20260909-003</td>
+<td class="py-3 px-4 text-slate-500 whitespace-nowrap">09/09/2026 - 11:15</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Ferretería Central</td>
+<td class="py-3 px-4 text-slate-600">Planta Zárate <span class="text-slate-400">→</span> Calle 50 La Plata</td>
+<td class="py-3 px-4 text-slate-500">1.8 t carga general</td>
+<td class="py-3 px-4 text-slate-400 italic">Sin asignar</td>
+<td class="py-3 px-4 font-mono text-slate-400">--</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                  Sin asignar
+                </span>
+</td>
+<td class="py-3 px-4 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded font-semibold text-[11px] transition-colors">Asignar</button>
+<button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+<td class="py-3 px-4 font-mono font-semibold text-indigo-600">VJ-20260909-004</td>
+<td class="py-3 px-4 text-slate-500 whitespace-nowrap">09/09/2026 - 14:00</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Arcor S.A.</td>
+<td class="py-3 px-4 text-slate-600">Arroyito, Cba <span class="text-slate-400">→</span> Rosario Centro</td>
+<td class="py-3 px-4 text-slate-500"> Palletizado 4.2 t</td>
+<td class="py-3 px-4 text-slate-900">Suárez Roberto</td>
+<td class="py-3 px-4 font-mono text-slate-600">AG432TT</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                  En curso
+                </span>
+</td>
+<td class="py-3 px-4 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>
+<button class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.941-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.42-.099.825zm-3.4-12.416C5.666 2 2 5.666 2 12.029c0 1.802.43 3.559 1.25 5.132L2 22l4.981-1.209a10.024 10.024 0 005.044 1.238h.005C18.39 22 22 18.334 22 12.029 22 5.666 18.39 2 12.023 2z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
+<td class="py-3 px-4 font-mono font-semibold text-indigo-600">VJ-20260909-005</td>
+<td class="py-3 px-4 text-slate-500 whitespace-nowrap">09/09/2026 - 16:30</td>
+<td class="py-3 px-4 font-semibold text-slate-900">Cervecería Quilmes</td>
+<td class="py-3 px-4 text-slate-600">Zárate <span class="text-slate-400">→</span> Mar del Plata</td>
+<td class="py-3 px-4 text-slate-500">Envases retornables</td>
+<td class="py-3 px-4 text-slate-900">Domínguez Juan</td>
+<td class="py-3 px-4 font-mono text-slate-600">AD551WW</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                  Entregado
+                </span>
+</td>
+<td class="py-3 px-4 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>
+<button class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.941-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.42-.099.825zm-3.4-12.416C5.666 2 2 5.666 2 12.029c0 1.802.43 3.559 1.25 5.132L2 22l4.981-1.209a10.024 10.024 0 005.044 1.238h.005C18.39 22 22 18.334 22 12.029 22 5.666 18.39 2 12.023 2z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: MainTableAndFilterSection -->
+<!-- BEGIN: EmbeddedAgentAssistant -->
+<section class="bg-white rounded-xl border border-slate-200/90 shadow-xs p-6" data-purpose="embedded-ai-assistant">
+<div class="max-w-3xl mx-auto text-center space-y-4">
+<!-- Assistant Icon & Header -->
+<div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 ring-8 ring-indigo-50/50">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h2 class="text-xl font-bold font-display text-slate-900">¿Qué necesitás saber de Viajes?</h2>
+<p class="text-xs text-slate-500 max-w-xl mx-auto mt-1 leading-relaxed">
+            Consulto viajes reales. Demoras se ven en ETA/Incidencias (no hay estado demorado aquí). Las respuestas se generan con datos reales de Viajes.
+          </p>
+</div>
+<!-- Quick Query Suggestion Chips -->
+<div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+<button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+            ¿Cuántos viajes tenemos?
+          </button>
+<button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+            ¿Cuántos están activos?
+          </button>
+<button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+            ¿Cuáles van a Córdoba?
+          </button>
+<button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+            Últimos 10
+          </button>
+</div>
+<!-- Natural Language Input Container -->
+<div class="relative max-w-2xl mx-auto pt-2">
+<div class="relative flex items-center">
+<input class="w-full py-3.5 pl-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-2xs" placeholder="Preguntá algo sobre Viajes..." type="text"/>
+<button class="absolute right-2 p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-xs" title="Enviar consulta">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Query Guidance Categorized Badges -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-left pt-4 border-t border-slate-100 text-xs">
+<div class="p-3 bg-slate-50/70 rounded-lg border border-slate-100">
+<p class="font-semibold text-slate-800 mb-1 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Conteos
+            </p>
+<p class="text-slate-500 text-[11px] leading-relaxed">¿Cuántos viajes hay?, ¿Cuántos activos?, ¿Cuántos creados hoy?</p>
+</div>
+<div class="p-3 bg-slate-50/70 rounded-lg border border-slate-100">
+<p class="font-semibold text-slate-800 mb-1 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Listados
+            </p>
+<p class="text-slate-500 text-[11px] leading-relaxed">¿Cuáles son?, ¿Qué viajes van a Córdoba?, Últimos N</p>
+</div>
+<div class="p-3 bg-slate-50/70 rounded-lg border border-slate-100">
+<p class="font-semibold text-slate-800 mb-1 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Detalle y Seguimiento
+            </p>
+<p class="text-slate-500 text-[11px] leading-relaxed">¿Qué chofer / tractor tiene este viaje?, Estado de remito</p>
+</div>
+</div>
+</div>
+</section>
+<!-- END: EmbeddedAgentAssistant -->
+<!-- BEGIN: AgentArchitectureSection -->
+<section class="bg-white rounded-xl border border-slate-200/90 shadow-xs p-6" data-purpose="agent-architecture">
+<div class="border-b border-slate-100 pb-4 mb-6">
+<h3 class="font-display font-bold text-lg text-slate-900">Arquitectura y Funcionamiento del Agente</h3>
+<p class="text-xs text-slate-500 mt-0.5">Operativa automática de coordinación multimodal con validación y TMS</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Column 1: Qué hace -->
+<div class="space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">1</div>
+<h4 class="font-bold text-sm text-slate-900">¿Qué hace el Agente?</h4>
+</div>
+<div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed space-y-2">
+<p class="font-medium text-slate-800">Agente activo y autónomo.</p>
+<p>Recibe solicitudes de transporte por distintos canales, principalmente email y WhatsApp.</p>
+<p>Valida la información, consulta disponibilidad de camiones y capacidad, confirma el viaje, lo registra en el TMS y coordina con el chofer asignado.</p>
+<p class="text-indigo-600 font-medium">Se comunica proactivamente con el agente de ETA (compromiso de llegada) y con Incidencias ante cualquier evento en ruta.</p>
+</div>
+</div>
+<!-- Column 2: Beneficios -->
+<div class="space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">2</div>
+<h4 class="font-bold text-sm text-slate-900">Beneficios Clave</h4>
+</div>
+<div class="space-y-2.5">
+<div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+<svg class="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<div>
+<p class="text-xs font-bold text-slate-800">Menos coordinación manual</p>
+<p class="text-[11px] text-slate-500">Elimina el intercambio constante de mensajes y planillas duplicadas.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+<svg class="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<div>
+<p class="text-xs font-bold text-slate-800">Mejor uso de flota</p>
+<p class="text-[11px] text-slate-500">Optimiza los tractores disponibles y evita viajes en vacío.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+<svg class="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<div>
+<p class="text-xs font-bold text-slate-800">Carga ordenada en el TMS</p>
+<p class="text-[11px] text-slate-500">Estructuración y trazabilidad en el software de gestión en segundos.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+<svg class="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<div>
+<p class="text-xs font-bold text-slate-800">ETA alineado con el viaje</p>
+<p class="text-[11px] text-slate-500">Sincronización en tiempo real con ventanas horarias del cliente.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 3: Flujo Operativo (Timeline 1-8) -->
+<div class="space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">3</div>
+<h4 class="font-bold text-sm text-slate-900">Flujo Operativo (Paso a Paso)</h4>
+</div>
+<div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-2.5">
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+<span class="text-slate-700">Solicitud por email o WhatsApp</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+<span class="text-slate-700">Interpretación y validación de datos</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+<span class="text-slate-700">Consulta de agenda, disponibilidad y capacidad</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">4</span>
+<span class="text-slate-700">Confirmación del viaje</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">5</span>
+<span class="text-slate-700">Registro en el TMS</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">6</span>
+<span class="text-slate-700">Asignación del chofer</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">7</span>
+<span class="text-slate-700">Aviso al agente ETA (compromiso de llegada)</span>
+</div>
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">8</span>
+<span class="text-slate-700 font-semibold text-slate-900">Coordinación y seguimiento continuo</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Integrations Footer Strip -->
+<div class="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-slate-700">Canales e integraciones:</span>
+<span class="px-2.5 py-1 bg-slate-100 rounded-md text-slate-600 font-medium">Email</span>
+<span class="px-2.5 py-1 bg-slate-100 rounded-md text-slate-600 font-medium">WhatsApp</span>
+<span class="px-2.5 py-1 bg-slate-100 rounded-md text-slate-600 font-medium">TMS</span>
+<span class="px-2.5 py-1 bg-slate-100 rounded-md text-slate-600 font-medium">Agente ETA</span>
+</div>
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-slate-700">Se comunica con:</span>
+<a class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-md transition-colors" href="#">ETA</a>
+<a class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-md transition-colors" href="#">Incidencias</a>
+<a class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-md transition-colors" href="#">POP/POD</a>
+<a class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-md transition-colors" href="#">Tracking Express</a>
+</div>
+</div>
+</section>
+<!-- END: AgentArchitectureSection -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: UnifiedFooter -->
+<footer class="mt-auto bg-white border-t border-slate-200/90 py-4" data-purpose="unified-footer">
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+<div>
+<p>Empliados © 2026 • Torre y agentes · consultas en <a class="text-indigo-600 font-medium hover:underline" href="#">Chat Central</a></p>
+</div>
+<div class="flex items-center gap-4">
+<span class="inline-flex items-center gap-1.5 text-slate-600">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Monitor SOL Activo
+        </span>
+<span class="text-slate-300">|</span>
+<a class="hover:text-slate-800 transition-colors" href="#">Soporte Técnico</a>
+<span class="text-slate-300">|</span>
+<a class="hover:text-slate-800 transition-colors" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+<!-- END: UnifiedFooter -->
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

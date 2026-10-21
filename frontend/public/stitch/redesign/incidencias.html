@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Confirmación de Destinos - Empliados</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts: Plus Jakarta Sans & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#16a34a',
+              600: '#15803d',
+              700: '#166534',
+            },
+            slate: {
+              850: '#151e2e',
+              900: '#0f172a',
+              950: '#090d16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+<meta content="web_standard" name="shell-type"/></head>
+<body class="min-h-screen flex flex-col bg-[#f8fafc]">
+<!-- HEADER PRINCIPAL INSTITUCIONAL -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+<div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
+<!-- Logo y Marca Empliados -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xl shadow-sm shadow-indigo-200">
+          E
+        </div>
+<div class="flex flex-col">
+<span class="text-xl font-extrabold tracking-tight text-slate-900 leading-tight">Empliados</span>
+</div>
+</div>
+<!-- Buscador Global Centralizado -->
+<div class="flex-1 max-w-2xl relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all" placeholder="Buscar remito, chofer o patente..." type="text"/>
+</div>
+<!-- Estado del Sistema, Notificaciones y Usuario -->
+<div class="flex items-center gap-4">
+<!-- Badge Sistemas Activos -->
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Notificaciones -->
+<button class="relative p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">5</span>
+</button>
+<!-- Separador -->
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Perfil Usuario -->
+<div class="flex items-center gap-3 pl-1 cursor-pointer group">
+<div class="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
+            GD
+          </div>
+<div class="hidden md:flex flex-col text-left">
+<span class="text-xs font-bold text-slate-800 leading-tight">Gonzalo Demo</span>
+<span class="text-[11px] text-slate-500 font-medium leading-tight">Administrador</span>
+</div>
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- NAVEGACIÓN SUPERIOR HORIZONTAL: NIVEL 1 -->
+<div class="border-t border-slate-100 bg-white">
+<div class="max-w-[1600px] mx-auto px-6 flex items-center gap-2 h-12 overflow-x-auto custom-scrollbar">
+<!-- Torre de Control -->
+<a class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Torre de Control
+        </a>
+<!-- Monitor -->
+<a class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Monitor
+        </a>
+<!-- WhatsApp -->
+<a class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          WhatsApp
+          <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-emerald-100 text-emerald-700 tracking-wider">Nuevo</span>
+</a>
+<!-- Métricas -->
+<a class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Métricas
+        </a>
+</div>
+</div>
+<!-- NAVEGACIÓN SUPERIOR HORIZONTAL: NIVEL 2 (SUB-BARRA DE AGENTES) -->
+<div class="border-t border-slate-200 bg-[#f8fafc] px-6 py-2 shadow-inner">
+<div class="max-w-[1600px] mx-auto flex items-center gap-1.5 overflow-x-auto custom-scrollbar text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-2 flex items-center gap-1">
+          AGENTES
+          <span class="text-slate-300">|</span>
+</span>
+<!-- Gestión de Viajes -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          Gestión de Viajes
+        </a>
+<!-- Tracking Express -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          Tracking Express
+        </a>
+<!-- Remitos -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap flex items-center gap-1" href="#">
+          Remitos
+          <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+<!-- DESTINOS (OPCIÓN ACTIVA) -->
+<a class="px-3 py-1.5 font-bold text-white bg-slate-900 rounded-md shadow-sm transition-colors whitespace-nowrap flex items-center gap-1.5" href="#">
+<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Destinos
+        </a>
+<!-- Incidencias -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          Incidencias
+        </a>
+<!-- Rendición -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          Rendición
+        </a>
+<!-- ETA -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          ETA
+        </a>
+<!-- POP/POD -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          POP/POD
+        </a>
+<!-- Reclamos -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          Reclamos
+        </a>
+<!-- Analítica -->
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-white rounded-md transition-colors whitespace-nowrap" href="#">
+          Analítica
+        </a>
+</div>
+</div>
+</header>
+<!-- CONTENIDO PRINCIPAL: AGENTE DE CONFIRMACIÓN DE DESTINOS -->
+<main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6 space-y-6"><div class="flex flex-col w-full">
+<!-- ENCABEZADO DE SECCIÓN PRINCIPAL -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-background tracking-tight">Gestión de Incidencias</h1>
+<span class="px-2 py-0.5 rounded-full text-label-caps font-label-caps bg-surface-variant text-on-secondary-container">Beta</span>
+<span class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-md font-label-md bg-emerald-50 text-emerald-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Operativo</span>
+</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Detección telemática, consulta autónoma y clasificación de eventos en ruta y paradas no programadas con IA.
+      </p>
+</div>
+<div class="flex items-center gap-3 self-start md:self-auto">
+<button class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-lg text-label-lg shadow-sm hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-secondary text-lg">sync</span>
+<span>Sincronizar eventos / GPS</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg shadow-sm hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-lg">add_alert</span>
+<span>+ Reportar incidencia manual</span>
+</button>
+</div>
+</div>
+<!-- SECCIÓN 1: KPIS PRINCIPALES (4 TARJETAS CON ELEVACIÓN MODERNA) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<!-- KPI 1: HERO AZUL COBALTO -->
+<div class="relative overflow-hidden rounded-2xl bg-secondary text-on-primary p-5 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-caps text-label-caps text-secondary-fixed opacity-90 uppercase">Eventos detectados hoy</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest/15 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-fixed text-lg">bolt</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between">
+<div>
+<div class="font-metric-stat text-metric-stat font-bold tracking-tight">52</div>
+<div class="flex items-center gap-1 mt-1 font-label-md text-label-md text-secondary-fixed">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+13% vs ayer</span>
+</div>
+</div>
+<div class="w-12 h-12 relative flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-lowest/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-surface-container-lowest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="75, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<span class="absolute font-label-caps text-[10px]">75%</span>
+</div>
+</div>
+</div>
+<!-- KPI 2: CAUSA DECLARADA -->
+<div class="rounded-2xl bg-surface-container-lowest p-5 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Causa declarada</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div>
+<div class="font-metric-stat text-metric-stat text-on-surface font-bold">94%</div>
+<div class="flex items-center justify-between mt-1">
+<span class="font-label-md text-label-md text-emerald-600 font-semibold">+13 pts vs promedio</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">WhatsApp validado</span>
+</div>
+</div>
+</div>
+<!-- KPI 3: TIEMPO DE RESPUESTA -->
+<div class="rounded-2xl bg-surface-container-lowest p-5 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Tiempo de respuesta</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">timer</span>
+</div>
+</div>
+<div>
+<div class="font-metric-stat text-metric-stat text-on-surface font-bold">2,8 <span class="text-sm font-normal text-on-surface-variant">min</span></div>
+<div class="flex items-center justify-between mt-1">
+<span class="font-label-md text-label-md text-emerald-600 font-semibold">-68% vs manual</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">IA autónoma</span>
+</div>
+</div>
+</div>
+<!-- KPI 4: CRITICIDAD ALTA -->
+<div class="rounded-2xl bg-surface-container-lowest p-5 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-caps text-label-caps text-error uppercase">Criticidad Alta</span>
+<div class="w-8 h-8 rounded-lg bg-error-container text-error flex items-center justify-center">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-stat text-metric-stat text-error font-bold">2</span>
+<span class="font-label-md text-label-md text-on-surface-variant">activas en ruta</span>
+</div>
+<p class="font-body-sm text-body-sm text-error mt-1 truncate">Requieren asignación inmediata de soporte</p>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 2: FILTROS RÁPIDOS POR ESTADO -->
+<div class="flex items-center gap-2 overflow-x-auto pb-4 mb-2">
+<button class="px-4 py-2 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-2 shadow-sm whitespace-nowrap">
+<span>Abiertas</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-lowest/20 font-bold text-xs">17</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all whitespace-nowrap shadow-sm">
+<span>Nuevas</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-bold text-xs">3</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all whitespace-nowrap shadow-sm">
+<span>Esperando causa</span>
+<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs">6</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-error-container text-on-error-container font-label-md text-label-md flex items-center gap-2 hover:opacity-90 transition-all whitespace-nowrap shadow-sm">
+<span class="material-symbols-outlined text-sm">error</span>
+<span>Criticidad alta</span>
+<span class="px-2 py-0.5 rounded-full bg-error text-on-error font-bold text-xs">2</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all whitespace-nowrap shadow-sm">
+<span>En gestión</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-bold text-xs">5</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-low transition-all whitespace-nowrap shadow-sm">
+<span>Resueltas hoy</span>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">10</span>
+</button>
+</div>
+<!-- SECCIÓN 3: MÓDULO INTERACTIVO DE DETECCIÓN DE PARADA EN RUTA & RADAR IA -->
+<div class="rounded-2xl bg-surface-container-lowest shadow-sm p-6 mb-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-6">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">explore</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Detección de Parada en Ruta — Disparo WhatsApp IA</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Elegí punto + chofer de Viajes → WhatsApp automático "¿por qué estás parado?". Si no responde en 5 min, repregunta y escala.
+        </p>
+</div>
+<span class="mt-2 md:mt-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-caps font-label-caps bg-emerald-50 text-emerald-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+        Automatización ACTIVA (v3.2)
+      </span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- COLUMNA IZQUIERDA: CONFIGURACIÓN Y SIMULADOR DE CHAT -->
+<div class="lg:col-span-6 flex flex-col justify-between space-y-4">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">1. Puntos GPS de parada detectados (simulación)</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-secondary text-on-primary text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-sm">location_on</span>
+              Panamericana km 35
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface text-xs font-medium hover:bg-surface-container transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">near_me</span>
+              Acceso Ezeiza
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface text-xs font-medium hover:bg-surface-container transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">near_me</span>
+              Puerto Madero
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface text-xs font-medium hover:bg-surface-container transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">near_me</span>
+              Pacheco
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface text-xs font-medium hover:bg-surface-container transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">near_me</span>
+              Acceso Luján
+            </button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-1.5">2. Chofer y Unidad (Viaje Activo)</label>
+<div class="p-2.5 rounded-xl bg-surface-container-low text-xs flex items-center justify-between">
+<div class="truncate">
+<span class="font-bold text-on-surface block">Gómez, Martín</span>
+<span class="text-on-surface-variant font-code-table text-[11px]">Scania R450 · AB 123 CD · Pepsi</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-1.5">3. Tipo de evento sugerido</label>
+<div class="p-2.5 rounded-xl bg-surface-container-low text-xs flex items-center justify-between">
+<span class="font-semibold text-on-surface">Parada no prevista (+15 min)</span>
+<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">Sin geocerca</span>
+</div>
+</div>
+</div>
+<!-- BURBUJA DE WHATSAPP OFICIAL DE LA GUÍA -->
+<div class="p-4 rounded-xl bg-[#eef7ee] space-y-3">
+<div class="flex items-center justify-between text-xs text-emerald-800 font-semibold">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+              Vista previa: Disparo IA por WhatsApp
+            </span>
+<span class="font-code-table text-[11px] text-emerald-700">Canal: Operaciones Empliados</span>
+</div>
+<div class="bg-surface-container-lowest p-3.5 rounded-xl rounded-tl-none shadow-sm space-y-2">
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+              Hola <span class="font-bold">Martín</span>, detectamos que tu unidad <span class="font-code-table font-semibold">Scania R450</span> está detenida en <span class="font-bold">Panamericana km 35</span> hace 18 min. ¿Nos confirmás la causa de la parada?
+            </p>
+<div class="space-y-1 font-body-sm text-body-sm text-on-surface-variant text-[11px] bg-surface-container-low p-2 rounded-lg">
+<div>1️⃣ Tránsito intenso o corte de calzada</div>
+<div>2️⃣ Falla mecánica / problema de neumático</div>
+<div>3️⃣ Descanso o comida reglamentaria</div>
+<div>4️⃣ Otro motivo operativo</div>
+</div>
+<div class="flex items-center justify-between text-[10px] text-on-surface-variant pt-1">
+<span>IA responderá y actualizará el agente de ETA</span>
+<span>14:32 ✓✓</span>
+</div>
+</div>
+<div class="flex items-center justify-between gap-3 pt-1">
+<button class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-sm transition-all">
+<span class="material-symbols-outlined text-sm">send</span>
+              Ubicar y enviar consulta por WhatsApp
+            </button>
+<button class="px-3 py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant text-xs font-semibold shadow-sm transition-all">
+              Modificar regla
+            </button>
+</div>
+</div>
+</div>
+<!-- COLUMNA DERECHA: RADAR TELEMÁTICO & MAPA MODERNO -->
+<div class="lg:col-span-6 flex flex-col justify-between rounded-xl bg-slate-900 text-on-primary p-5 relative overflow-hidden shadow-inner">
+<!-- HEADER DEL MONITOR RADAR -->
+<div class="flex items-center justify-between z-10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-rose-300 font-bold">Unidad Detenida: Scania R450</span>
+</div>
+<span class="font-code-table text-xs text-slate-400">Lat: -34.4250 · Lng: -58.5798</span>
+</div>
+<!-- CENTRO DEL RADAR VISUAL SIMULADO -->
+<div class="relative py-12 flex items-center justify-center z-10">
+<div class="absolute w-44 h-44 rounded-full border border-slate-700/60 animate-pulse"></div>
+<div class="absolute w-28 h-28 rounded-full border border-rose-500/30"></div>
+<div class="relative z-20 flex flex-col items-center">
+<div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shadow-lg shadow-rose-900/40">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<span class="mt-2 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-200">
+              Panamericana Km 35 (Ramal Campana)
+            </span>
+</div>
+</div>
+<!-- TELEMETRÍA EN TIEMPO REAL -->
+<div class="grid grid-cols-3 sm:grid-cols-5 gap-2 z-10 pt-4 border-t border-slate-800/80">
+<div class="bg-slate-800/60 p-2 rounded-lg text-center">
+<span class="text-[10px] text-slate-400 block uppercase">Detenido</span>
+<span class="font-bold text-amber-400 text-xs">18 min</span>
+</div>
+<div class="bg-slate-800/60 p-2 rounded-lg text-center">
+<span class="text-[10px] text-slate-400 block uppercase">Velocidad</span>
+<span class="font-bold text-slate-200 text-xs">0 km/h</span>
+</div>
+<div class="bg-slate-800/60 p-2 rounded-lg text-center">
+<span class="text-[10px] text-slate-400 block uppercase">Motor</span>
+<span class="font-bold text-rose-400 text-xs">Apagado</span>
+</div>
+<div class="bg-slate-800/60 p-2 rounded-lg text-center">
+<span class="text-[10px] text-slate-400 block uppercase">Batería</span>
+<span class="font-bold text-slate-200 text-xs">84%</span>
+</div>
+<div class="bg-slate-800/60 p-2 rounded-lg text-center col-span-3 sm:col-span-1">
+<span class="text-[10px] text-slate-400 block uppercase">Señal 4G</span>
+<span class="font-bold text-emerald-400 text-xs">-72 dBm</span>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-[11px] text-slate-400 z-10">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            Esperando confirmación chofer por WhatsApp
+          </span>
+<span class="text-slate-300 font-code-table">4m restantes antes de repregunta</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 4: TABLA DE INCIDENCIAS EN RUTA REGISTRADAS -->
+<div class="rounded-2xl bg-surface-container-lowest shadow-sm overflow-hidden mb-8">
+<div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">assignment_late</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Incidencias en Ruta Registradas</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Monitoreo continuo de eventos clasificados automáticamente y reportes de destino.
+        </p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<input class="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-surface-container-low text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-secondary w-64" placeholder="Buscar por chofer, viaje o causa..." type="text"/>
+<span class="material-symbols-outlined text-on-surface-variant text-sm absolute left-2.5 top-2">search</span>
+</div>
+<button class="p-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="p-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-sm">refresh</span>
+</button>
+</div>
+</div>
+<!-- TABLA RESPONSIVA -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low font-label-caps text-label-caps text-on-surface-variant uppercase">
+<th class="py-3 px-4">ID Incidencia</th>
+<th class="py-3 px-4">Chofer &amp; Móvil</th>
+<th class="py-3 px-4">Viaje / Cliente</th>
+<th class="py-3 px-4">Tipo</th>
+<th class="py-3 px-4">Causa Declarada</th>
+<th class="py-3 px-4">Origen</th>
+<th class="py-3 px-4">Criticidad</th>
+<th class="py-3 px-4">Estado</th>
+<th class="py-3 px-4">SLA</th>
+<th class="py-3 px-4 text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low font-body-sm text-body-sm text-on-surface">
+<!-- FILA 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4 font-code-table font-semibold text-secondary">INC-20260909-0002-DE</td>
+<td class="py-3.5 px-4">
+<div class="font-bold text-on-surface">Gómez, Martín</div>
+<div class="text-[11px] text-on-surface-variant font-code-table">+54 9 11 4455-2231</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium">VJ-20260909-001</div>
+<div class="text-[11px] text-on-surface-variant">PepsiCo Central</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                Demora en ruta
+              </span>
+</td>
+<td class="py-3.5 px-4 max-w-xs truncate" title="Corte piquete en Panamericana Km 35">
+              Corte por piquete en Ramal Campana
+            </td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-secondary">gps_fixed</span> Sensor GPS
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">MEDIA</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                En gestión
+              </span>
+</td>
+<td class="py-3.5 px-4 font-code-table text-xs text-emerald-600 font-semibold">12m restantes</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface" title="Ver chat WhatsApp">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+</button>
+<button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:opacity-90">
+                  Resolver
+                </button>
+</div>
+</td>
+</tr>
+<!-- FILA 2: CRITICIDAD ALTA -->
+<tr class="hover:bg-surface-container-low/50 transition-colors bg-error-container/20">
+<td class="py-3.5 px-4 font-code-table font-semibold text-error">INC-20260909-0003-DE</td>
+<td class="py-3.5 px-4">
+<div class="font-bold text-on-surface">Fernández, Diego</div>
+<div class="text-[11px] text-on-surface-variant font-code-table">+54 9 11 8899-1122</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium">VJ-20260909-004</div>
+<div class="text-[11px] text-on-surface-variant">Alimentos del Sur</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
+                Anomalía Mecánica
+              </span>
+</td>
+<td class="py-3.5 px-4 max-w-xs truncate" title="Rotura de manguera de freno en peaje">
+              Rotura manguera de freno en peaje
+            </td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-emerald-600">phone_android</span> Chofer WA
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-error text-on-error">ALTA</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
+                Esperando auxilio
+              </span>
+</td>
+<td class="py-3.5 px-4 font-code-table text-xs text-error font-bold">VENCE EN 2m</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface" title="Ver chat WhatsApp">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+</button>
+<button class="px-2.5 py-1 rounded-lg bg-error text-on-error text-xs font-bold hover:opacity-90">
+                  Asignar Móvil
+                </button>
+</div>
+</td>
+</tr>
+<!-- FILA 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4 font-code-table font-semibold text-secondary">INC-20260909-0005-DE</td>
+<td class="py-3.5 px-4">
+<div class="font-bold text-on-surface">Sosa, Luis</div>
+<div class="text-[11px] text-on-surface-variant font-code-table">+54 9 11 3322-1144</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium">VJ-20260909-012</div>
+<div class="text-[11px] text-on-surface-variant">Arcor Directo</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                Desvío de ruta
+              </span>
+</td>
+<td class="py-3.5 px-4 max-w-xs truncate" title="Obras viales en bypass RN 9">
+              Obras viales en bypass RN 9
+            </td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-secondary">gps_fixed</span> Sensor GPS
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-surface-container text-on-surface">BAJA</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                Ruta alternativa
+              </span>
+</td>
+<td class="py-3.5 px-4 font-code-table text-xs text-emerald-600 font-semibold">28m restantes</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+</button>
+<button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:opacity-90">
+                  Resolver
+                </button>
+</div>
+</td>
+</tr>
+<!-- FILA 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4 font-code-table font-semibold text-secondary">INC-20260909-0006-DE</td>
+<td class="py-3.5 px-4">
+<div class="font-bold text-on-surface">Benítez, Nora</div>
+<div class="text-[11px] text-on-surface-variant font-code-table">+54 9 11 6677-8899</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium">VJ-20260909-015</div>
+<div class="text-[11px] text-on-surface-variant">Cervecería Quilmes</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
+                Espera en playa
+              </span>
+</td>
+<td class="py-3.5 px-4 max-w-xs truncate" title="Falta de darsena asignada en centro de distribución">
+              Falta de darsena en CD Zárate
+            </td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-purple-600">domain</span> Destinos
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">MEDIA</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Esperando respuesta
+              </span>
+</td>
+<td class="py-3.5 px-4 font-code-table text-xs text-amber-600 font-semibold">14m restantes</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+</button>
+<button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:opacity-90">
+                  Resolver
+                </button>
+</div>
+</td>
+</tr>
+<!-- FILA 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4 font-code-table font-semibold text-secondary">INC-20260909-0007-DE</td>
+<td class="py-3.5 px-4">
+<div class="font-bold text-on-surface">Pereyra, Juan C.</div>
+<div class="text-[11px] text-on-surface-variant font-code-table">+54 9 11 5566-7788</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium">VJ-20260909-019</div>
+<div class="text-[11px] text-on-surface-variant">Unilever Pilar</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">
+                Clima adverso
+              </span>
+</td>
+<td class="py-3.5 px-4 max-w-xs truncate" title="Niebla severa con visibilidad menor a 50m">
+              Niebla severa en RN 8 (visibilidad 40m)
+            </td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-secondary">gps_fixed</span> Sensor GPS
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-surface-container text-on-surface">BAJA</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                Monitoreo activo
+              </span>
+</td>
+<td class="py-3.5 px-4 font-code-table text-xs text-emerald-600 font-semibold">45m restantes</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+</button>
+<button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:opacity-90">
+                  Resolver
+                </button>
+</div>
+</td>
+</tr>
+<!-- FILA 6 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-4 font-code-table font-semibold text-secondary">INC-20260909-0050-PI</td>
+<td class="py-3.5 px-4">
+<div class="font-bold text-on-surface">Mansilla, Roberto</div>
+<div class="text-[11px] text-on-surface-variant font-code-table">+54 9 11 9988-3322</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium">VJ-20260909-022</div>
+<div class="text-[11px] text-on-surface-variant">Molinos Río de la Plata</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                Pinchazo / Llanta
+              </span>
+</td>
+<td class="py-3.5 px-4 max-w-xs truncate" title="Cambio de neumático en gomería de servicio">
+              Cambio de auxilio en gomería YPF
+            </td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-emerald-600">phone_android</span> Chofer WA
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">MEDIA</span>
+</td>
+<td class="py-3.5 px-4">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                Autogestión chofer
+              </span>
+</td>
+<td class="py-3.5 px-4 font-code-table text-xs text-emerald-600 font-semibold">18m restantes</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+</button>
+<button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:opacity-90">
+                  Resolver
+                </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- PAGINACIÓN -->
+<div class="p-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant">
+<div>Mostrando <span class="font-bold text-on-surface">6</span> de <span class="font-bold text-on-surface">17</span> incidencias activas</div>
+<div class="flex items-center gap-1">
+<button class="px-3 py-1 rounded-lg bg-surface-container-lowest text-on-surface font-semibold shadow-sm">1</button>
+<button class="px-3 py-1 rounded-lg hover:bg-surface-container text-on-surface-variant">2</button>
+<button class="px-3 py-1 rounded-lg hover:bg-surface-container text-on-surface-variant">3</button>
+<button class="px-3 py-1 rounded-lg hover:bg-surface-container text-on-surface-variant flex items-center gap-0.5">
+<span>Siguiente</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 5: ASISTENTE INTELIGENTE DE CONSULTA "¿QUÉ NECESITÁS SABER DE INCIDENCIAS?" -->
+<div class="rounded-2xl bg-slate-900 text-on-primary p-6 md:p-8 mb-8 shadow-sm">
+<div class="max-w-4xl mx-auto flex flex-col items-center text-center space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-slate-300">Incidencias en vivo · Solo consulta</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-white font-bold tracking-tight">
+        ¿Qué necesitás saber de Incidencias?
+      </h2>
+<p class="font-body-md text-body-md text-slate-300 max-w-xl">
+        Consultá datos reales del módulo Incidencias. Respuestas generadas al instante con telemetría en vivo y validación de choferes.
+      </p>
+<!-- BARRA DE INPUT INTERACTIVA -->
+<div class="w-full max-w-2xl relative my-2">
+<input class="w-full pl-5 pr-28 py-3.5 bg-slate-800/80 rounded-2xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary transition-all" placeholder="Preguntá sobre demoras, causas, choferes o viajes parados..." type="text"/>
+<button class="absolute right-2 top-2 px-4 py-2 bg-secondary hover:bg-secondary/90 text-on-primary rounded-xl font-label-md text-label-md transition-all shadow-sm flex items-center gap-1">
+<span>Consultar</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+<!-- CHIPS DE CONSULTA SUGERIDA -->
+<div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+<span class="text-xs text-slate-400 mr-1">Sugerencias rápidas:</span>
+<button class="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 transition-colors">
+          ¿cuántas incidencias abiertas hay?
+        </button>
+<button class="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 transition-colors">
+          ¿cuáles son demoras?
+        </button>
+<button class="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 transition-colors">
+          mostrame las recientes
+        </button>
+<button class="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 transition-colors">
+          ¿cuántas se crearon hoy?
+        </button>
+</div>
+</div>
+<!-- 3 COLUMNAS EXPLICATIVAS DEL CHAT ASISTENTE -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-8 border-t border-slate-800/80 text-left">
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-slate-200 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-secondary text-lg">format_list_numbered</span>
+<span>Conteos y Métricas</span>
+</div>
+<p class="text-xs text-slate-400 leading-relaxed">
+          Consultá totales en tiempo real: incidencias abiertas, resueltas en el turno, demoras activas y desglose por clientes.
+        </p>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-slate-200 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-secondary text-lg">category</span>
+<span>Listados Clasificados</span>
+</div>
+<p class="text-xs text-slate-400 leading-relaxed">
+          Filtrá al instante por tipo de evento (mecánico, clima, piquete, descarga), por chofer o por identificador de viaje.
+        </p>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-slate-200 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-secondary text-lg">timeline</span>
+<span>Detalle y Trazabilidad</span>
+</div>
+<p class="text-xs text-slate-400 leading-relaxed">
+          Conocé la causa exacta declarada por el chofer vía WhatsApp y los minutos restantes para el cálculo del nuevo ETA.
+        </p>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 6: ARQUITECTURA Y FUNCIONAMIENTO DEL AGENTE (BLOQUE OPERATIVO) -->
+<div class="rounded-2xl bg-surface-container-lowest shadow-sm p-6 mb-8">
+<div class="mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">schema</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Arquitectura del Agente de Incidencias</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+        Procesamiento continuo de eventos en ruta, validación conversacional y sincronización logística multi-agente.
+      </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- PANEL 1: QUÉ HACE -->
+<div class="p-5 rounded-xl bg-surface-container-low space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-variant flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-base">psychology</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">¿Qué hace el Agente?</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          El agente detecta de forma autónoma cuándo un camión está detenido fuera de su geocerca y le consulta por WhatsApp la causa. El chofer responde en lenguaje natural o mediante botones, la IA clasifica el evento y crea el ticket.
+        </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Además, las demoras registradas por el agente de <span class="font-semibold text-on-surface">Destinos</span> impactan automáticamente en este panel para una resolución unificada.
+        </p>
+</div>
+<!-- PANEL 2: BENEFICIOS -->
+<div class="p-5 rounded-xl bg-surface-container-low space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+<span class="material-symbols-outlined text-base">verified</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">Beneficios Operativos</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600 mt-0.5">check</span>
+<span>Reacción inmediata: detección de paradas en menos de 3 minutos.</span>
+</div>
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600 mt-0.5">check</span>
+<span>Trazabilidad completa con registro de audios y textos de choferes.</span>
+</div>
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600 mt-0.5">check</span>
+<span>Autoreporte: el chofer puede anticipar incidencias desde su móvil.</span>
+</div>
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-sm text-emerald-600 mt-0.5">check</span>
+<span>Sincronización automática de nuevo ETA para clientes finales.</span>
+</div>
+</div>
+</div>
+<!-- PANEL 3: INTEGRACIONES ACTIVAS -->
+<div class="p-5 rounded-xl bg-surface-container-low space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+<span class="material-symbols-outlined text-base">hub</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">Canales e Interconexión</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-xs">
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+<span class="font-medium text-on-surface">WhatsApp API</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-secondary">update</span>
+<span class="font-medium text-on-surface">Agente ETA</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-secondary">pin_drop</span>
+<span class="font-medium text-on-surface">Destinos</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-secondary">local_shipping</span>
+<span class="font-medium text-on-surface">Gestión Viajes</span>
+</div>
+</div>
+<div class="text-[11px] text-on-surface-variant pt-1">
+          Intercambia estado y telemetría en tiempo real con la Torre de Control y la flota activa.
+        </div>
+</div>
+</div>
+<!-- FLUJO OPERATIVO SECUENCIAL EN 7 PASOS -->
+<div class="mt-6 pt-6 border-t border-surface-container-low">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant block mb-4">
+        Flujo Operativo Secuencial
+      </span>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center mb-2">1</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Detección</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Sistema telemático detecta parada prolongada.</p>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center mb-2">2</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Disparo IA</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Agente consulta al chofer vía WhatsApp.</p>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center mb-2">3</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Respuesta</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Chofer informa motivo (audio o texto).</p>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center mb-2">4</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Clasificación</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Modelo IA asigna tipo y severidad.</p>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center mb-2">5</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Apertura Caso</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Genera ID ticket INC-xxxx en panel.</p>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center mb-2">6</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Sincro ETA</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Recalcula arribo y notifica cliente.</p>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low relative">
+<div class="w-6 h-6 rounded-full bg-emerald-600 text-on-primary font-bold text-xs flex items-center justify-center mb-2">7</div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Resolución</p>
+<p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Operaciones o chofer cierran el caso.</p>
+</div>
+</div>
+</div>
+</div>
+</div></main>
+<!-- FOOTER INSTITUCIONAL COMPLETO -->
+<footer class="bg-white border-t border-slate-200 mt-10 py-5">
+<div class="max-w-[1600px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-700">Empliados © 2026</span>
+<span>•</span>
+<span>Torre y agentes · consultas en <a class="text-indigo-600 hover:underline font-semibold" href="#">Chat Central</a></span>
+</div>
+<div class="flex items-center gap-5 font-medium">
+<div class="flex items-center gap-1.5 text-emerald-600 font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>Monitor SOL Activo</span>
+</div>
+<a class="hover:text-slate-800 transition-colors" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-800 transition-colors" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

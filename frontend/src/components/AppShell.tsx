@@ -4,13 +4,13 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { isStitchRedesignPath } from "@/lib/stitch-redesign";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   // Pantallas con HTML Stitch a pantalla completa (sin chrome propio)
-  const stitchFullBleed =
-    pathname === "/" || pathname === "/monitor" || pathname === "/contactos";
+  const stitchFullBleed = isStitchRedesignPath(pathname);
 
   if (stitchFullBleed) {
     return <>{children}</>;

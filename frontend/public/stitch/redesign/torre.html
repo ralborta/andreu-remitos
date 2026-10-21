@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Torre de Control - Empliados</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              500: '#15803d',
+              600: '#166534',
+              700: '#14532d',
+              800: '#064e3b',
+              900: '#022c22',
+            },
+            surface: {
+              DEFAULT: '#ffffff',
+              subtle: '#f8fafc',
+              border: '#e2e8f0',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Custom Styles for Leaflet & Map Custom Styling -->
+<style data-purpose="custom-layout">
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<style data-purpose="charts-and-map">
+    /* Map stylized vector styling */
+    .map-container {
+      background: radial-gradient(circle at 50% 40%, #eef6f3 0%, #e2ece7 100%);
+      position: relative;
+    }
+    .route-line {
+      stroke-dasharray: 4, 4;
+      animation: dash 30s linear infinite;
+    }
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -100;
+      }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 bg-[#f8fafc]">
+<!-- BEGIN: TopBar -->
+<header class="h-14 bg-white border-b border-slate-200 sticky top-0 z-40 flex items-center justify-between px-4 lg:px-6">
+<div class="flex items-center space-x-6">
+<!-- Logo Empliados -->
+<div class="flex items-center space-x-2">
+<div class="w-7 h-7 rounded-lg bg-emerald-700 flex items-center justify-center text-white shadow-sm">
+<i class="w-4 h-4 text-emerald-100" data-lucide="layers"></i>
+</div>
+<span class="text-xl font-bold tracking-tight text-emerald-900">Empliados</span>
+</div>
+<!-- Breadcrumbs -->
+<nav class="hidden md:flex items-center text-xs text-slate-500 space-x-2 border-l border-slate-200 pl-4">
+<span class="hover:text-slate-700 cursor-pointer">Operación</span>
+<i class="w-3.5 h-3.5 text-slate-400" data-lucide="chevron-right"></i>
+<span class="font-semibold text-slate-900">Torre de Control</span>
+</nav>
+</div>
+<!-- Search input -->
+<div class="flex-1 max-w-md mx-6 hidden sm:block">
+<div class="relative">
+<i class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" data-lucide="search"></i>
+<input class="w-full text-xs pl-10 pr-4 py-1.5 rounded-full border border-slate-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 placeholder-slate-400 bg-slate-50 transition" placeholder="Buscar viajes, choferes, clientes, remitos..." type="text"/>
+</div>
+</div>
+<!-- User actions & state -->
+<div class="flex items-center space-x-4">
+<div class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+        Sistemas activos
+      </div>
+<!-- Notifications -->
+<button class="relative p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-full transition" title="Notificaciones">
+<i class="w-4 h-4" data-lucide="bell"></i>
+<span class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-[10px] font-bold text-white rounded-full flex items-center justify-center border-2 border-white">
+          5
+        </span>
+</button>
+<!-- User avatar & identity -->
+<div class="flex items-center space-x-2 pl-2 border-l border-slate-200">
+<div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold">
+          GD
+        </div>
+<div class="hidden lg:flex flex-col text-left">
+<span class="text-xs font-semibold leading-tight text-slate-800">Gonzalo Demo</span>
+<span class="text-[10px] text-slate-500 leading-tight">Administrador</span>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-60 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between overflow-y-auto custom-scrollbar flex-shrink-0">
+<div class="py-4 space-y-6">
+<!-- Section: Operación -->
+<div>
+<h3 class="px-5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Operación</h3>
+<nav class="space-y-0.5 px-3">
+<a class="flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg bg-emerald-50 text-emerald-800 group" href="#">
+<div class="flex items-center space-x-2.5">
+<i class="w-4 h-4 text-emerald-700" data-lucide="layout-dashboard"></i>
+<span class="font-semibold">Torre de Control</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="monitor"></i>
+<span>Monitor</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<div class="flex items-center space-x-2.5">
+<i class="w-4 h-4 text-slate-400" data-lucide="message-square"></i>
+<span>WhatsApp</span>
+</div>
+<span class="px-1.5 py-0.5 text-[9px] font-semibold bg-emerald-100 text-emerald-800 rounded">Nuevo</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="bar-chart-2"></i>
+<span>Métricas</span>
+</a>
+</nav>
+</div>
+<!-- Section: Agentes -->
+<div>
+<div class="px-5 flex items-center justify-between mb-2">
+<h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Agentes</h3>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<nav class="space-y-0.5 px-3">
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="truck"></i>
+<span>Gestión de Viajes</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="send"></i>
+<span>Tracking Express</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<div class="flex items-center space-x-2.5">
+<i class="w-4 h-4 text-slate-400" data-lucide="file-text"></i>
+<span>Remitos</span>
+</div>
+<i class="w-3.5 h-3.5 text-slate-400" data-lucide="chevron-down"></i>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="map-pin"></i>
+<span>Destinos</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="alert-triangle"></i>
+<span>Incidencias</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="receipt"></i>
+<span>Rendición</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="clock"></i>
+<span>ETA</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="package-check"></i>
+<span>POP/POD</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="message-circle"></i>
+<span>Reclamos</span>
+</a>
+<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="#">
+<i class="w-4 h-4 text-slate-400 mr-2.5" data-lucide="line-chart"></i>
+<span>Analítica</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3 border-t border-slate-200">
+<div class="flex items-center justify-between p-2 rounded-lg bg-slate-50">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-xs font-medium text-slate-700">8 agentes en línea</span>
+</div>
+<button class="text-slate-400 hover:text-slate-600" title="Cerrar sesión">
+<i class="w-4 h-4" data-lucide="log-out"></i>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContentScrollableArea -->
+<main class="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 space-y-6">
+<!-- Page Title -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Torre de Control</h1>
+<p class="text-xs text-slate-500 mt-0.5">Operación logística en tiempo real · agentes, flota, documentación y SLA</p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center text-xs text-slate-500 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
+<i class="w-3.5 h-3.5 mr-1.5 text-emerald-600 animate-spin" data-lucide="refresh-cw"></i>
+            Actualizado hace 15s
+          </span>
+</div>
+</div>
+<!-- BEGIN: KeyMetricsCards -->
+<section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5" data-purpose="metrics-row">
+<!-- Metric 1: Viajes Activos -->
+<div class="bg-white rounded-xl p-4 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between text-slate-400 mb-2">
+<span class="text-xs font-medium text-slate-500">Viajes activos</span>
+<i class="w-4 h-4 text-slate-400" data-lucide="truck"></i>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-bold text-slate-900">15</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">de 26 en gestión</p>
+</div>
+<!-- Metric 2: Entregas Hoy -->
+<div class="bg-white rounded-xl p-4 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between text-slate-400 mb-2">
+<span class="text-xs font-medium text-slate-500">Entregas hoy</span>
+<i class="w-4 h-4 text-slate-400" data-lucide="package"></i>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-bold text-slate-900">296</span>
+<span class="inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded">
+              +16%
+            </span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">vs. ayer</p>
+</div>
+<!-- Metric 3: Remitos -->
+<div class="bg-white rounded-xl p-4 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between text-slate-400 mb-2">
+<span class="text-xs font-medium text-slate-500">Remitos</span>
+<i class="w-4 h-4 text-slate-400" data-lucide="file-text"></i>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-bold text-slate-900">518</span>
+</div>
+<p class="text-[11px] text-slate-500 font-medium mt-1">97,1% lectura auto</p>
+</div>
+<!-- Metric 4: SLA -->
+<div class="bg-white rounded-xl p-4 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between text-slate-400 mb-2">
+<span class="text-xs font-medium text-slate-500">SLA de entrega</span>
+<i class="w-4 h-4 text-emerald-600" data-lucide="gauge"></i>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-bold text-emerald-700">94,2%</span>
+<span class="text-[11px] font-semibold text-emerald-600">+2,4 pts</span>
+</div>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 94.2%"></div>
+</div>
+</div>
+<!-- Metric 5: Incidencias -->
+<div class="bg-white rounded-xl p-4 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] col-span-2 md:col-span-1">
+<div class="flex items-center justify-between text-slate-400 mb-2">
+<span class="text-xs font-medium text-slate-500">Incidencias</span>
+<i class="w-4 h-4 text-amber-500" data-lucide="alert-circle"></i>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-bold text-slate-900">7</span>
+<span class="inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 bg-rose-50 rounded">
+              2 críticas
+            </span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">5 en seguimiento</p>
+</div>
+</section>
+<!-- END: KeyMetricsCards -->
+<!-- BEGIN: InteractiveMapAndChat -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5" data-purpose="map-and-chat">
+<!-- Map Container (7/8 columns on desktop) -->
+<div class="lg:col-span-8 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col relative h-[470px]">
+<!-- Map Top Header Overlay -->
+<div class="absolute top-3 left-3 z-10 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200/80 shadow-sm flex items-center space-x-3 text-xs">
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span class="text-slate-700 font-medium">15 en curso</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span class="text-slate-700 font-medium">3 demorados</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+<span class="text-slate-700 font-medium">1 detenido</span>
+</div>
+</div>
+<!-- Stylized Interactive Vector Map -->
+<div class="w-full h-full map-container relative overflow-hidden flex items-center justify-center">
+<svg class="w-full h-full object-cover" viewbox="0 0 800 500">
+<defs>
+<lineargradient id="routeGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#10b981" stop-opacity="0.6"></stop>
+<stop offset="100%" stop-color="#059669" stop-opacity="0.9"></stop>
+</lineargradient>
+<filter height="140%" id="shadow" width="140%" x="-20%" y="-20%">
+<fedropshadow dx="0" dy="1" flood-opacity="0.15" stddeviation="2"></fedropshadow>
+</filter>
+</defs>
+<!-- Map Background Landmass (Argentina stylized silhouette simplified) -->
+<path d="M 330,20 L 370,30 L 440,70 L 430,120 L 450,150 L 410,210 L 420,250 L 400,290 L 380,360 L 350,420 L 320,480 L 300,470 L 310,400 L 290,320 L 270,240 L 280,140 L 310,80 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"></path>
+<!-- Neighbor outlines -->
+<!-- Chile -->
+<path d="M 270,100 L 280,140 L 270,240 L 290,320 L 270,440" fill="none" stroke="#e2e8f0" stroke-dasharray="2,2" stroke-width="1"></path>
+<text fill="#94a3b8" font-size="12" font-weight="600" letter-spacing="2" x="240" y="240">CHILE</text>
+<!-- Uruguay & Brazil indicator -->
+<text fill="#94a3b8" font-size="11" font-weight="600" x="470" y="270">URUGUAY</text>
+<text fill="#94a3b8" font-size="11" font-weight="600" x="460" y="110">BRASIL</text>
+<text fill="#64748b" font-size="16" font-weight="700" letter-spacing="4" opacity="0.3" x="350" y="300">ARGENTINA</text>
+<!-- Route Connecting Lines -->
+<!-- Cordoba - Rosario - CABA -->
+<line class="route-line" stroke="#10b981" stroke-width="2.5" x1="370" x2="425" y1="220" y2="245"></line>
+<line class="route-line" stroke="#10b981" stroke-width="2.5" x1="425" x2="455" y1="245" y2="280"></line>
+<!-- Zarate - Mar del Plata -->
+<line stroke="#f59e0b" stroke-dasharray="4,4" stroke-width="2" x1="445" x2="465" y1="265" y2="340"></line>
+<!-- Bahia Blanca - Neuquen -->
+<line stroke="#10b981" stroke-width="2.5" x1="395" x2="330" y1="345" y2="335"></line>
+<!-- Rosario - Tucuman -->
+<line class="route-line" stroke="#10b981" stroke-width="2.5" x1="425" x2="350" y1="245" y2="130"></line>
+<!-- CABA - Santa Fe -->
+<line stroke="#10b981" stroke-width="2.5" x1="455" x2="420" y1="280" y2="210"></line>
+<!-- Mendoza - CABA -->
+<line stroke="#10b981" stroke-dasharray="3,3" stroke-width="2.5" x1="310" x2="455" y1="250" y2="280"></line>
+<!-- City Nodes & Hubs -->
+<!-- Salta / Jujuy -->
+<circle cx="340" cy="90" fill="#64748b" r="3"></circle>
+<text fill="#475569" font-size="9" font-weight="500" x="348" y="93">Salta</text>
+<!-- Tucuman -->
+<circle cx="350" cy="130" fill="#64748b" r="3.5"></circle>
+<text fill="#475569" font-size="9" font-weight="500" x="358" y="133">Tucumán</text>
+<!-- Córdoba -->
+<circle cx="370" cy="220" fill="#047857" r="4.5"></circle>
+<text fill="#0f172a" font-size="10" font-weight="600" x="345" y="210">Córdoba</text>
+<!-- Santa Fe -->
+<circle cx="420" cy="210" fill="#047857" r="4"></circle>
+<text fill="#0f172a" font-size="9" font-weight="500" x="428" y="212">Santa Fe</text>
+<!-- Rosario -->
+<circle cx="425" cy="245" fill="#047857" r="4.5"></circle>
+<text fill="#0f172a" font-size="10" font-weight="600" x="435" y="248">Rosario</text>
+<!-- Mendoza -->
+<circle cx="310" cy="250" fill="#047857" r="4"></circle>
+<text fill="#0f172a" font-size="9" font-weight="500" x="270" y="255">Mendoza</text>
+<!-- CABA / Buenos Aires -->
+<circle cx="455" cy="280" fill="#065f46" r="5.5"></circle>
+<text fill="#0f172a" font-size="11" font-weight="700" x="465" y="285">Buenos Aires</text>
+<!-- Bahía Blanca -->
+<circle cx="395" cy="345" fill="#047857" r="4"></circle>
+<text fill="#0f172a" font-size="9" font-weight="500" x="403" y="348">Bahía Blanca</text>
+<!-- Neuquén -->
+<circle cx="330" cy="335" fill="#64748b" r="3.5"></circle>
+<text fill="#475569" font-size="9" font-weight="500" x="290" y="340">Neuquén</text>
+<!-- Mar del Plata -->
+<circle cx="465" cy="340" fill="#64748b" r="3.5"></circle>
+<text fill="#475569" font-size="9" font-weight="500" x="473" y="343">Mar del Plata</text>
+<!-- Live Fleet Truck Markers -->
+<!-- Truck 1 (Near Rosario - Green) -->
+<g class="cursor-pointer" filter="url(#shadow)" transform="translate(415, 235)">
+<circle cx="10" cy="10" fill="#10b981" r="11" stroke="#ffffff" stroke-width="2"></circle>
+<path d="M6 10 L8 7 L12 7 L14 10 L14 12 L6 12 Z M7 13 A1 1 0 0 1 9 13 M11 13 A1 1 0 0 1 13 13" fill="#ffffff"></path>
+</g>
+<!-- Truck 2 (Near Zárate - Demorado Yellow) -->
+<g class="cursor-pointer" filter="url(#shadow)" transform="translate(438, 258)">
+<circle cx="10" cy="10" fill="#f59e0b" r="11" stroke="#ffffff" stroke-width="2"></circle>
+<path d="M6 10 L8 7 L12 7 L14 10 L14 12 L6 12 Z M7 13 A1 1 0 0 1 9 13 M11 13 A1 1 0 0 1 13 13" fill="#ffffff"></path>
+</g>
+<!-- Truck 3 (Near Córdoba - Green) -->
+<g filter="url(#shadow)" transform="translate(360, 205)">
+<circle cx="10" cy="10" fill="#10b981" r="11" stroke="#ffffff" stroke-width="2"></circle>
+<path d="M6 10 L8 7 L12 7 L14 10 L14 12 L6 12 Z" fill="#ffffff"></path>
+</g>
+<!-- Truck 4 (Near Santa Fe - Detenido Red) -->
+<g filter="url(#shadow)" transform="translate(410, 195)">
+<circle cx="10" cy="10" fill="#ef4444" r="11" stroke="#ffffff" stroke-width="2"></circle>
+<path d="M6 10 L8 7 L12 7 L14 10 L14 12 L6 12 Z" fill="#ffffff"></path>
+</g>
+<!-- Truck 5 (Near Mendoza - Orange) -->
+<g filter="url(#shadow)" transform="translate(315, 235)">
+<circle cx="10" cy="10" fill="#f59e0b" r="10" stroke="#ffffff" stroke-width="2"></circle>
+</g>
+<!-- Truck 6 (Near Bahía Blanca - Green) -->
+<g filter="url(#shadow)" transform="translate(385, 335)">
+<circle cx="10" cy="10" fill="#10b981" r="10" stroke="#ffffff" stroke-width="2"></circle>
+</g>
+</svg>
+<!-- Map Controls Overlay (Zoom + scale) -->
+<div class="absolute bottom-3 left-3 flex flex-col space-y-1.5 z-10">
+<div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+<button class="p-1.5 text-slate-600 hover:bg-slate-50 transition border-b border-slate-100" title="Zoom in">
+<i class="w-3.5 h-3.5" data-lucide="plus"></i>
+</button>
+<button class="p-1.5 text-slate-600 hover:bg-slate-50 transition" title="Zoom out">
+<i class="w-3.5 h-3.5" data-lucide="minus"></i>
+</button>
+</div>
+<div class="bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm text-[10px] text-slate-500 font-mono">
+                200 km
+              </div>
+</div>
+<!-- Fullscreen map toggle -->
+<div class="absolute bottom-3 right-3 z-10">
+<button class="bg-white p-1.5 rounded-md border border-slate-200 shadow-sm text-slate-600 hover:text-slate-900" title="Pantalla completa">
+<i class="w-3.5 h-3.5" data-lucide="maximize-2"></i>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Side: Chat Central Panel -->
+<div class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-[470px]">
+<!-- Chat Header -->
+<div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<h2 class="text-sm font-bold text-slate-900">Chat Central</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></span>
+                En línea
+              </span>
+</div>
+<div class="flex items-center space-x-1 text-slate-400">
+<button class="p-1 hover:text-slate-600 rounded" title="Más opciones">
+<i class="w-4 h-4" data-lucide="more-horizontal"></i>
+</button>
+<button class="p-1 hover:text-slate-600 rounded" title="Minimizar">
+<i class="w-4 h-4" data-lucide="minus"></i>
+</button>
+</div>
+</div>
+<!-- Chat Body: Prompt & Quick Prompts -->
+<div class="flex-1 p-4 overflow-y-auto custom-scrollbar flex flex-col justify-between">
+<div>
+<div class="text-center my-4">
+<div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-2">
+<i class="w-5 h-5" data-lucide="sparkles"></i>
+</div>
+<h3 class="text-sm font-semibold text-slate-800">¿Qué necesitás saber de la operación?</h3>
+<p class="text-[11px] text-slate-400 mt-0.5">Respuestas automáticas procesadas con datos en vivo.</p>
+</div>
+<!-- Quick Action Pills/Buttons -->
+<div class="space-y-2 mt-4">
+<button class="w-full flex items-center justify-between p-2.5 rounded-lg border border-slate-200/80 hover:border-emerald-500 hover:bg-emerald-50/50 transition group text-left">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-md bg-slate-100 group-hover:bg-emerald-100 text-slate-600 group-hover:text-emerald-700 flex items-center justify-center transition">
+<i class="w-3.5 h-3.5" data-lucide="truck"></i>
+</div>
+<span class="text-xs font-medium text-slate-700 group-hover:text-slate-900">Camiones por salir</span>
+</div>
+<i class="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" data-lucide="chevron-right"></i>
+</button>
+<button class="w-full flex items-center justify-between p-2.5 rounded-lg border border-slate-200/80 hover:border-rose-400 hover:bg-rose-50/50 transition group text-left">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-md bg-slate-100 group-hover:bg-rose-100 text-slate-600 group-hover:text-rose-700 flex items-center justify-center transition">
+<i class="w-3.5 h-3.5" data-lucide="alert-triangle"></i>
+</div>
+<span class="text-xs font-medium text-slate-700 group-hover:text-slate-900">Incidencias abiertas</span>
+</div>
+<i class="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600" data-lucide="chevron-right"></i>
+</button>
+<button class="w-full flex items-center justify-between p-2.5 rounded-lg border border-slate-200/80 hover:border-amber-400 hover:bg-amber-50/50 transition group text-left">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-md bg-slate-100 group-hover:bg-amber-100 text-slate-600 group-hover:text-amber-700 flex items-center justify-center transition">
+<i class="w-3.5 h-3.5" data-lucide="clock"></i>
+</div>
+<span class="text-xs font-medium text-slate-700 group-hover:text-slate-900">Camiones con demora</span>
+</div>
+<i class="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600" data-lucide="chevron-right"></i>
+</button>
+<button class="w-full flex items-center justify-between p-2.5 rounded-lg border border-slate-200/80 hover:border-emerald-500 hover:bg-emerald-50/50 transition group text-left">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-md bg-slate-100 group-hover:bg-emerald-100 text-slate-600 group-hover:text-emerald-700 flex items-center justify-center transition">
+<i class="w-3.5 h-3.5" data-lucide="list-checks"></i>
+</div>
+<span class="text-xs font-medium text-slate-700 group-hover:text-slate-900">Viajes pendientes</span>
+</div>
+<i class="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" data-lucide="chevron-right"></i>
+</button>
+</div>
+</div>
+<!-- Auxiliary Links -->
+<div class="flex items-center justify-between pt-3 text-[11px] text-slate-500 border-t border-slate-100 mt-2">
+<button class="flex items-center space-x-1 hover:text-slate-800">
+<i class="w-3 h-3" data-lucide="plus-circle"></i>
+<span>Nueva conversación</span>
+</button>
+<button class="flex items-center space-x-1 hover:text-slate-800">
+<i class="w-3 h-3" data-lucide="history"></i>
+<span>Historial</span>
+</button>
+</div>
+</div>
+<!-- Chat Input -->
+<div class="p-3 border-t border-slate-200 bg-slate-50/60">
+<div class="flex items-center space-x-2">
+<input class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 placeholder-slate-400" placeholder="Escribí tu consulta..." type="text"/>
+<button class="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-lg transition shadow-sm" title="Enviar">
+<i class="w-4 h-4" data-lucide="send"></i>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- END: InteractiveMapAndChat -->
+<!-- BEGIN: AgentActivityGrid -->
+<section class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm" data-purpose="agent-activity-stream">
+<div class="flex items-center justify-between mb-3.5">
+<div class="flex items-center space-x-2">
+<h2 class="text-sm font-bold text-slate-900">Actividad de agentes</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></span>
+              En tiempo real
+            </span>
+</div>
+<a class="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center" href="#">
+            Ver todas <i class="w-3 h-3 ml-0.5" data-lucide="chevron-right"></i>
+</a>
+</div>
+<!-- 6 Real Agent Activity Cards in Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+<!-- Event 1: Reclamo -->
+<div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50/50 transition">
+<span class="text-[11px] font-mono text-slate-400 pt-0.5">10:24</span>
+<div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
+<i class="w-4 h-4" data-lucide="alert-circle"></i>
+</div>
+<div class="min-w-0 flex-1">
+<p class="text-[10px] font-semibold text-rose-700 uppercase tracking-wider">Incidencias</p>
+<h4 class="text-xs font-bold text-slate-900 truncate">Reclamo recibido</h4>
+<p class="text-[11px] text-slate-500 truncate">VJ-24820 · Cervecería Quilmes</p>
+</div>
+</div>
+<!-- Event 2: WhatsApp -->
+<div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50/50 transition">
+<span class="text-[11px] font-mono text-slate-400 pt-0.5">10:18</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+<i class="w-4 h-4" data-lucide="message-square"></i>
+</div>
+<div class="min-w-0 flex-1">
+<p class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Remitos</p>
+<h4 class="text-xs font-bold text-slate-900 truncate">Remito recibido por WhatsApp</h4>
+<p class="text-[11px] text-slate-500 truncate">VJ-24817 · Arcor S.A.</p>
+</div>
+</div>
+<!-- Event 3: Diferencia de bultos -->
+<div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50/50 transition">
+<span class="text-[11px] font-mono text-slate-400 pt-0.5">09:55</span>
+<div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+<i class="w-4 h-4" data-lucide="package"></i>
+</div>
+<div class="min-w-0 flex-1">
+<p class="text-[10px] font-semibold text-purple-700 uppercase tracking-wider">Operación</p>
+<h4 class="text-xs font-bold text-slate-900 truncate">Diferencia de bultos</h4>
+<p class="text-[11px] text-slate-500 truncate">VJ-24823 · YPF Distribución</p>
+</div>
+</div>
+<!-- Event 4: Destino Validado -->
+<div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50/50 transition">
+<span class="text-[11px] font-mono text-slate-400 pt-0.5">09:42</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+<i class="w-4 h-4" data-lucide="map-pin"></i>
+</div>
+<div class="min-w-0 flex-1">
+<p class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Destinos</p>
+<h4 class="text-xs font-bold text-slate-900 truncate">Destino validado</h4>
+<p class="text-[11px] text-slate-500 truncate">VJ-24826 · Molinos Río de la Plata</p>
+</div>
+</div>
+<!-- Event 5: Comprobante clasificado -->
+<div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50/50 transition">
+<span class="text-[11px] font-mono text-slate-400 pt-0.5">09:28</span>
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+<i class="w-4 h-4" data-lucide="file-check"></i>
+</div>
+<div class="min-w-0 flex-1">
+<p class="text-[10px] font-semibold text-blue-700 uppercase tracking-wider">Documentación</p>
+<h4 class="text-xs font-bold text-slate-900 truncate">Comprobante clasificado</h4>
+<p class="text-[11px] text-slate-500 truncate">VJ-24831 · Acindar Grupo</p>
+</div>
+</div>
+<!-- Event 6: Evento resuelto -->
+<div class="flex items-start space-x-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50/50 transition">
+<span class="text-[11px] font-mono text-slate-400 pt-0.5">09:15</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+<i class="w-4 h-4" data-lucide="check-circle-2"></i>
+</div>
+<div class="min-w-0 flex-1">
+<p class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Operación</p>
+<h4 class="text-xs font-bold text-slate-900 truncate">Evento resuelto</h4>
+<p class="text-[11px] text-slate-500 truncate">VJ-24838 · Frigorífico La Pampa</p>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AgentActivityGrid -->
+<!-- BEGIN: ActiveTripsTable -->
+<section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden" data-purpose="active-trips-table-container">
+<!-- Table Control Toolbar -->
+<div class="p-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div>
+<h2 class="text-sm font-bold text-slate-900">Viajes en gestión</h2>
+<p class="text-[11px] text-slate-400">Seguimiento en tiempo real de choferes, rutas y avance</p>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<!-- Search input -->
+<div class="relative min-w-[200px]">
+<i class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" data-lucide="search"></i>
+<input class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 placeholder-slate-400 bg-white" placeholder="Buscar por viaje, cliente o chofer..." type="text"/>
+</div>
+<!-- Filter Status -->
+<select class="text-xs border border-slate-200 rounded-lg py-1.5 pl-2.5 pr-8 bg-white text-slate-600 focus:border-emerald-600 focus:ring-emerald-600">
+<option>Todos los estados</option>
+<option>En curso</option>
+<option>Detenido</option>
+<option>Entregado</option>
+<option>Pendiente</option>
+</select>
+<!-- Filter Day -->
+<select class="text-xs border border-slate-200 rounded-lg py-1.5 pl-2.5 pr-8 bg-white text-slate-600 focus:border-emerald-600 focus:ring-emerald-600">
+<option>Hoy</option>
+<option>Ayer</option>
+<option>Últimos 7 días</option>
+</select>
+<button class="text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-3 py-1.5 transition">
+              Ver todos
+            </button>
+</div>
+</div>
+<!-- Table Element -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+<th class="py-3 px-4">Viaje</th>
+<th class="py-3 px-4">Cliente</th>
+<th class="py-3 px-4">Ruta</th>
+<th class="py-3 px-4">Chofer</th>
+<th class="py-3 px-4">Estado</th>
+<th class="py-3 px-4">Avance</th>
+<th class="py-3 px-4 text-right">ETA</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24817</td>
+<td class="py-3 px-4 font-medium text-slate-800">Arcor S.A.</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Córdoba</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>CABA</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">CP</span>
+<span>Carlos Páez</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    En curso
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 68%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">68%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-800 font-medium">14:35</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/70 transition bg-rose-50/20">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24820</td>
+<td class="py-3 px-4 font-medium text-slate-800">Cervecería Quilmes</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+<span>Zárate</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>Mar del Plata</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">JD</span>
+<span>Juan Domínguez</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                    Detenido
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-rose-500 h-2 rounded-full" style="width: 41%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">41%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-800 font-medium">16:10</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24823</td>
+<td class="py-3 px-4 font-medium text-slate-800">YPF Distribución</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Bahía Blanca</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>Neuquén</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">WB</span>
+<span>Walter Benítez</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    En curso
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 33%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">33%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-800 font-medium">18:40</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24826</td>
+<td class="py-3 px-4 font-medium text-slate-800">Molinos Río de la Plata</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Rosario</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>Tucumán</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">MS</span>
+<span>Miguel Sosa</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    En curso
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 54%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">54%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-800 font-medium">21:05</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24829</td>
+<td class="py-3 px-4 font-medium text-slate-800">La Serenísima</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>CABA</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>Santa Fe</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">PC</span>
+<span>Pablo Cardozo</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Entregado
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 100%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">100%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-400">—</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24831</td>
+<td class="py-3 px-4 font-medium text-slate-800">Acindar Grupo</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>San Nicolás</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>Córdoba</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">RQ</span>
+<span>Roberto Quiroga</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    En curso
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 77%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">77%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-800 font-medium">13:50</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24834</td>
+<td class="py-3 px-4 font-medium text-slate-800">Coca-Cola Andina</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+<span>Mendoza</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>CABA</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">HM</span>
+<span>Héctor Maldonado</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                    Pendiente
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-slate-300 h-2 rounded-full" style="width: 0%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">0%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-400">—</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-slate-50/70 transition">
+<td class="py-3 px-4 font-mono font-medium text-slate-900">VJ-24836</td>
+<td class="py-3 px-4 font-medium text-slate-800">Frigorífico La Pampa</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-1.5 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Mar del Plata</span>
+<i class="w-3 h-3 text-slate-400" data-lucide="arrow-right"></i>
+<span>CABA</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center justify-center">SF</span>
+<span>Sergio Ferreyra</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    En curso
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center space-x-2">
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 88%"></div>
+</div>
+<span class="text-[11px] font-mono text-slate-500">88%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-slate-800 font-medium">12:25</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: ActiveTripsTable -->
+<!-- BEGIN: OperationAnalyticsSection -->
+<section class="space-y-3" data-purpose="operation-analytics">
+<!-- Section Header -->
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-sm font-bold text-slate-900">Rendimiento de la operación</h2>
+<p class="text-[11px] text-slate-400">Métricas acumuladas y distribución por zonas geográficas</p>
+</div>
+<div class="flex items-center space-x-2">
+<button class="inline-flex items-center text-xs text-slate-600 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm hover:bg-slate-50">
+<i class="w-3.5 h-3.5 mr-1.5 text-slate-400" data-lucide="calendar"></i>
+              Últimos 7 días
+              <i class="w-3 h-3 ml-1 text-slate-400" data-lucide="chevron-down"></i>
+</button>
+</div>
+</div>
+<!-- 3 Analytic Blocks -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Block 1: Trend Line (Viajes por día) -->
+<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-bold text-slate-900">Viajes por día</h3>
+<div class="flex items-center space-x-3 text-[10px]">
+<span class="flex items-center text-emerald-800">
+<span class="w-2 h-2 rounded-full bg-emerald-700 mr-1"></span> Gestionados
+                  </span>
+<span class="flex items-center text-emerald-500">
+<span class="w-2 h-2 rounded-full bg-emerald-400 mr-1"></span> Entregados
+                  </span>
+</div>
+</div>
+<!-- Vector SVG Chart -->
+<div class="h-44 w-full pt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 320 140">
+<!-- Grid horizontal lines -->
+<line stroke="#f1f5f9" stroke-width="1" x1="25" x2="310" y1="20" y2="20"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="25" x2="310" y1="55" y2="55"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="25" x2="310" y1="90" y2="90"></line>
+<line stroke="#e2e8f0" stroke-width="1" x1="25" x2="310" y1="125" y2="125"></line>
+<!-- Y-Axis labels -->
+<text fill="#94a3b8" font-size="8" x="5" y="24">40</text>
+<text fill="#94a3b8" font-size="8" x="5" y="59">30</text>
+<text fill="#94a3b8" font-size="8" x="5" y="94">20</text>
+<text fill="#94a3b8" font-size="8" x="5" y="128">0</text>
+<!-- Gradient Shading under lower line -->
+<defs>
+<lineargradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#10b981" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#10b981" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Filled area -->
+<path d="M 30,105 L 75,90 L 120,95 L 165,75 L 210,85 L 255,70 L 300,75 L 300,125 L 30,125 Z" fill="url(#chartGrad)"></path>
+<!-- Trend Line 2: Entregados (Light green) -->
+<polyline fill="none" points="30,105 75,90 120,95 165,75 210,85 255,70 300,75" stroke="#34d399" stroke-width="2"></polyline>
+<!-- Trend Line 1: Gestionados (Dark emerald) -->
+<polyline fill="none" points="30,85 75,70 120,75 165,50 210,65 255,45 300,50" stroke="#047857" stroke-width="2.5"></polyline>
+<!-- Key points -->
+<circle cx="165" cy="50" fill="#047857" r="3"></circle>
+<circle cx="255" cy="45" fill="#047857" r="3"></circle>
+<circle cx="165" cy="75" fill="#34d399" r="2.5"></circle>
+<circle cx="255" cy="70" fill="#34d399" r="2.5"></circle>
+</svg>
+</div>
+</div>
+<!-- X-Axis Days -->
+<div class="flex justify-between text-[10px] text-slate-400 px-6 pt-1 border-t border-slate-100">
+<span>Lun</span>
+<span>Mar</span>
+<span>Mié</span>
+<span>Jue</span>
+<span>Vie</span>
+<span>Sáb</span>
+<span>Dom</span>
+</div>
+</div>
+<!-- Block 2: Donut Chart (Incidencias por tipo) -->
+<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+<h3 class="text-xs font-bold text-slate-900 mb-2">Incidencias por tipo</h3>
+<div class="flex items-center justify-around py-2">
+<!-- Donut Graphic -->
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-32 h-32 transform -rotate-90" viewbox="0 0 36 36">
+<!-- Background ring -->
+<path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.8"></path>
+<!-- Segment 1: Red (Demoras/Críticas) -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ef4444" stroke-dasharray="27, 100" stroke-dashoffset="0" stroke-width="4.2"></path>
+<!-- Segment 2: Orange/Amber (Ruta) -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f59e0b" stroke-dasharray="22, 100" stroke-dashoffset="-27" stroke-width="4.2"></path>
+<!-- Segment 3: Emerald (Mecánicas) -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-dasharray="20, 100" stroke-dashoffset="-49" stroke-width="4.2"></path>
+<!-- Segment 4: Blue (Doc) -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#0ea5e9" stroke-dasharray="18, 100" stroke-dashoffset="-69" stroke-width="4.2"></path>
+<!-- Segment 5: Purple (Otros) -->
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#a855f7" stroke-dasharray="13, 100" stroke-dashoffset="-87" stroke-width="4.2"></path>
+</svg>
+<!-- Central text -->
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="text-xl font-bold text-slate-900 leading-none">140</span>
+<span class="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">eventos</span>
+</div>
+</div>
+<!-- Legend Breakdown -->
+<div class="space-y-1 text-[11px] text-slate-600">
+<div class="flex items-center justify-between space-x-3">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-rose-500 mr-1.5"></span>Demora cliente</span>
+<span class="font-mono font-semibold text-slate-900">38</span>
+</div>
+<div class="flex items-center justify-between space-x-3">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Corte de ruta</span>
+<span class="font-mono font-semibold text-slate-900">24</span>
+</div>
+<div class="flex items-center justify-between space-x-3">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>Mecánica</span>
+<span class="font-mono font-semibold text-slate-900">22</span>
+</div>
+<div class="flex items-center justify-between space-x-3">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-sky-500 mr-1.5"></span>Faltante remito</span>
+<span class="font-mono font-semibold text-slate-900">18</span>
+</div>
+<div class="flex items-center justify-between space-x-3">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Rechazo parcial</span>
+<span class="font-mono font-semibold text-slate-900">16</span>
+</div>
+<div class="flex items-center justify-between space-x-3">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-slate-300 mr-1.5"></span>Otros</span>
+<span class="font-mono font-semibold text-slate-900">22</span>
+</div>
+</div>
+</div>
+<p class="text-[10px] text-center text-slate-400 pt-2 border-t border-slate-100">89% resueltas dentro de SLA estándar</p>
+</div>
+<!-- Block 3: Regional SLA Horizontal Bars -->
+<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-xs font-bold text-slate-900">SLA por zona</h3>
+<span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Meta: 92%</span>
+</div>
+<div class="space-y-2.5 my-auto py-1">
+<!-- AMBA -->
+<div>
+<div class="flex justify-between text-[11px] mb-1">
+<span class="font-medium text-slate-700">AMBA</span>
+<span class="font-mono font-bold text-slate-900">97%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-700 h-2 rounded-full" style="width: 97%"></div>
+</div>
+</div>
+<!-- Centro -->
+<div>
+<div class="flex justify-between text-[11px] mb-1">
+<span class="font-medium text-slate-700">Centro</span>
+<span class="font-mono font-bold text-slate-900">95%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-700 h-2 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<!-- Litoral -->
+<div>
+<div class="flex justify-between text-[11px] mb-1">
+<span class="font-medium text-slate-700">Litoral</span>
+<span class="font-mono font-bold text-slate-900">93%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 93%"></div>
+</div>
+</div>
+<!-- Cuyo -->
+<div>
+<div class="flex justify-between text-[11px] mb-1">
+<span class="font-medium text-slate-700">Cuyo</span>
+<span class="font-mono font-bold text-amber-600">91%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-2 rounded-full" style="width: 91%"></div>
+</div>
+</div>
+<!-- NOA -->
+<div>
+<div class="flex justify-between text-[11px] mb-1">
+<span class="font-medium text-slate-700">NOA</span>
+<span class="font-mono font-bold text-rose-600">88%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-rose-500 h-2 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<!-- Patagonia -->
+<div>
+<div class="flex justify-between text-[11px] mb-1">
+<span class="font-medium text-slate-700">Patagonia</span>
+<span class="font-mono font-bold text-slate-900">92%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+</div>
+<p class="text-[10px] text-slate-400 text-center pt-2 border-t border-slate-100">
+              NOA afectado por cortes temporales en Ruta 9
+            </p>
+</div>
+</div>
+</section>
+<!-- END: OperationAnalyticsSection -->
+<!-- Footer Note -->
+<footer class="pt-4 pb-2 border-t border-slate-200 text-center text-xs text-slate-400">
+<p>© 2026 Empliados Logística Inteligente · Torre de Control Operativa</p>
+</footer>
+</main>
+<!-- END: MainContentScrollableArea -->
+</div>
+<!-- Lucide Script Initialization -->
+<script data-purpose="icon-initialization">
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+  </script>
+
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

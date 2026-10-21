@@ -8,6 +8,8 @@ import { PageHeader, StatusBadge, Card, SectionTitle, KpiCard, Pill } from "@/co
 import { FlowSteps } from "@/components/FlowSteps";
 import { WhatsAppChat } from "@/components/WhatsAppChat";
 import { AgentData } from "@/components/AgentData";
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
+import { stitchRedesignFor } from "@/lib/stitch-redesign";
 
 export function generateStaticParams() {
   return agents.map((a) => ({ slug: a.slug }));
@@ -21,6 +23,11 @@ export default async function AgentPage({
   const { slug } = await params;
   const agent = getAgent(slug);
   if (!agent) notFound();
+
+  const stitch = stitchRedesignFor(`/agentes/${slug}`);
+  if (stitch) {
+    return <StitchRedesignFrame path={`/agentes/${slug}`} />;
+  }
 
   const convos = conversationsFor(slug);
   const peers = (agent.collaboratesWith || [])
