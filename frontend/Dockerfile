@@ -1,4 +1,5 @@
 FROM node:20-alpine AS base
+# cache-bust 2026-10-21 sin-pantalla-login
 
 FROM base AS deps
 WORKDIR /app

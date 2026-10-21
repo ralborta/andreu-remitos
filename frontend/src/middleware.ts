@@ -26,9 +26,9 @@ function hostName(request: NextRequest) {
   return request.headers.get("host")?.split(":")[0]?.toLowerCase() ?? "";
 }
 
-/** Sin login hasta el 21/10/2026 23:59 ART. No importar lib/auth.mjs (Edge). */
+/** SOL sin pantalla de login. AUTH_FORCE_LOGIN=1 la vuelve. */
 function authTemporarilyOpen() {
-  return Date.now() < Date.parse("2026-10-22T03:00:00.000Z");
+  return true;
 }
 
 export function middleware(request: NextRequest) {
@@ -60,13 +60,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  if (pathname === "/login" || pathname.startsWith("/login/")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    if (
-      pathname.startsWith("/login") &&
-      (authTemporarilyOpen() || request.cookies.get(SESSION_COOKIE)?.value)
-    ) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
     return NextResponse.next();
   }
 
@@ -75,9 +73,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (!request.cookies.get(SESSION_COOKIE)?.value) {
-    const login = new URL("/login", request.url);
-    login.searchParams.set("next", pathname);
-    return NextResponse.redirect(login);
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();

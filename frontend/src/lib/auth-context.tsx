@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     await logoutSession();
     setUser(null);
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }, [router]);
 

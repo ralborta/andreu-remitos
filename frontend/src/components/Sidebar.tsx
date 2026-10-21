@@ -25,7 +25,6 @@ import { useAuth } from "@/lib/auth-context";
 import { canMutateParametros, isAdmin, ROL_LABEL } from "@/lib/auth-types";
 import { AgentIcon } from "./Icon";
 import { Brand } from "./Brand";
-import { LogOut } from "lucide-react";
 
 export function Sidebar({
   open,
@@ -35,7 +34,7 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const admin = isAdmin(user);
   const parametros = canMutateParametros(user);
   const remitosSectionOpen =
@@ -375,14 +374,6 @@ export function Sidebar({
                 {user ? ROL_LABEL[user.rol] : "—"}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => logout()}
-              title="Cerrar sesión"
-              className="rounded-lg p-1.5 text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
-            >
-              <LogOut size={16} />
-            </button>
           </div>
         </div>
       </aside>

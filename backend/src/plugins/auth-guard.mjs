@@ -65,10 +65,18 @@ export async function registerAuthGuard(app) {
       const payload = await verifySessionToken(token);
       const row = await getUserById(payload.id);
       if (!row || row.activo === false) {
+        if (isAuthTemporarilyOpen()) {
+          request.user = await guestOpenUser();
+          return;
+        }
         return reply.code(401).send({ error: "Sesión inválida" });
       }
       request.user = toPublicUser(row);
     } catch {
+      if (isAuthTemporarilyOpen()) {
+        request.user = await guestOpenUser();
+        return;
+      }
       return reply.code(401).send({ error: "Sesión inválida o expirada" });
     }
   });
