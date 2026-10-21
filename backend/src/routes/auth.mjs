@@ -1,5 +1,6 @@
 import {
   authCookieName,
+  isAuthTemporarilyOpen,
   signSessionToken,
   verifyPassword,
 } from "../../../lib/auth.mjs";
@@ -38,10 +39,13 @@ export default async function authRoutes(fastify) {
       return reply.code(401).send({ error: "No autenticado" });
     }
     const row = await getUserById(request.user.id);
-    if (!row || row.activo === false) {
-      return reply.code(401).send({ error: "Usuario inactivo o inexistente" });
+    if (row && row.activo !== false) {
+      return { user: toPublicUser(row) };
     }
-    return { user: toPublicUser(row) };
+    if (isAuthTemporarilyOpen()) {
+      return { user: request.user };
+    }
+    return reply.code(401).send({ error: "Usuario inactivo o inexistente" });
   });
 
   fastify.post("/logout", async () => ({ ok: true }));
