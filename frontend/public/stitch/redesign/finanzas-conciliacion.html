@@ -1,130 +1,868 @@
 <!DOCTYPE html>
+
 <html class="h-full bg-[#f8f9ff]" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Conciliación · Finanzas · Empliados Logistics Cloud</title>
+<title>Facturas a Pagar (AP) · Finanzas · Empliados Logistics Cloud</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" referrerpolicy="no-referrer" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 CDN with Forms and Container Queries -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#4f46e5',
+              600: '#4338ca',
+              700: '#3730a3',
+              900: '#1e1b4b',
+            }
+          },
+          boxShadow: {
+            'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+            'subtle': '0 2px 6px -1px rgba(0, 0, 0, 0.05), 0 1px 4px -1px rgba(0, 0, 0, 0.03)',
           }
         }
       }
     }
-</script>
-</head>
-<body class="min-h-full flex flex-col font-sans text-slate-800 antialiased bg-[#f8f9ff]">
-<header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-<div class="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 border-b border-slate-100">
-<div class="flex items-center gap-6">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-indigo-200">E</div>
-<div class="leading-none">
-<span class="block font-black tracking-tight text-slate-900 text-base">EMPLIADOS</span>
-<span class="text-[9px] font-bold uppercase tracking-widest text-indigo-600">LOGISTICS CLOUD</span>
+  </script>
+<!-- Custom Styles for Typography & Fine Adjustments -->
+<style data-purpose="base-styling">
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+<meta content="web_standard" name="shell-type"/></head>
+<body class="min-h-full flex flex-col font-sans text-slate-800 bg-[#f8f9ff]">
+<!-- BEGIN: MainHeader -->
+<header class="w-full bg-white border-b border-slate-200 sticky top-0 z-40 select-none">
+<!-- Level 1: Global Navigation & Utilities -->
+<div class="px-4 sm:px-6 h-14 flex items-center justify-between gap-4 border-b border-slate-100">
+<!-- Brand & Search Bar -->
+<div class="flex items-center gap-6 flex-1 max-w-2xl">
+<!-- Brand Identity -->
+<a aria-label="Empliados Logistics Cloud Home" class="flex items-center gap-2.5 shrink-0 group" href="#">
+<div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm shadow-indigo-200">
+            E
+          </div>
+<div class="flex flex-col leading-none">
+<span class="text-slate-900 font-extrabold tracking-tight text-sm">EMPLIADOS</span>
+<span class="text-slate-400 font-semibold tracking-wider text-[9px] mt-0.5">LOGISTICS CLOUD</span>
+</div>
+</a>
+<!-- Universal Search Input -->
+<div class="relative w-full max-w-md hidden md:block" data-purpose="omnibox-search">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-9 pr-12 py-1.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-xs text-slate-800 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-xs">⌘K</kbd>
 </div>
 </div>
-<div class="relative hidden md:block w-72 lg:w-96">
-<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></div>
-<input class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-10 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
-<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none"><kbd class="text-[10px] bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-400 shadow-sm font-mono">⌘K</kbd></div>
 </div>
-</div>
-<nav aria-label="Módulos Principales" class="hidden xl:flex items-center space-x-1">
-<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100" href="/">Torre de Control</a>
-<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100" href="/monitor">Monitor</a>
-<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5" href="/contactos"><span>WhatsApp</span><span class="bg-emerald-100 text-emerald-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full uppercase">Nuevo</span></a>
-<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100" href="/backoffice">Métricas</a>
-<a aria-current="page" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#0d1424] text-white shadow-sm" href="/finanzas">Finanzas</a>
+<!-- Center Modules Tabs -->
+<nav aria-label="Módulos Maestros" class="hidden lg:flex items-center gap-1.5">
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Torre de Control
+        </a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Monitor
+        </a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors inline-flex items-center gap-1.5" href="#">
+          WhatsApp
+          <span class="inline-flex items-center px-1.5 py-0.2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded">Nuevo</span>
+</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Métricas
+        </a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Finanzas
+        </a>
 </nav>
+<!-- Right Utility Actions & User Menu -->
 <div class="flex items-center gap-3">
-<div class="hidden sm:flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full text-xs text-emerald-700 font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Sistemas activos</span></div>
-<button aria-label="5 notificaciones pendientes" class="relative p-2 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100"><i class="fa-regular fa-bell text-sm"></i><span class="absolute top-1 right-1 bg-rose-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white">5</span></button>
-<div class="h-5 w-px bg-slate-200 hidden sm:block"></div>
-<div class="flex items-center gap-2.5 p-1 rounded-lg">
-<div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">GD</div>
-<div class="hidden lg:block leading-tight text-left"><div class="text-xs font-bold text-slate-800">Gonzalo Demo</div><div class="text-[10px] text-slate-500">Administrador</div></div>
+<!-- Live System Status Badge -->
+<div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+          Sistemas activos
+        </div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white font-bold text-[9px] rounded-full flex items-center justify-center ring-2 ring-white">
+            5
+          </span>
+</button>
+<div class="h-6 w-px bg-slate-200 mx-0.5"></div>
+<!-- User Profile Dropdown Trigger -->
+<button class="flex items-center gap-2.5 pl-1 pr-1.5 py-1 hover:bg-slate-100 rounded-lg transition-colors group" type="button">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-slate-100 shadow-xs">
+            GD
+          </div>
+<div class="text-left hidden xl:block leading-tight">
+<div class="text-xs font-bold text-slate-800">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400 font-medium">Administrador</div>
+</div>
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
 </div>
 </div>
+<!-- Level 2: Agents & Operational Quick Links -->
+<div class="px-4 sm:px-6 h-9 flex items-center overflow-x-auto custom-scrollbar bg-slate-50/60 border-b border-slate-150 text-[11px] font-medium text-slate-600">
+<div class="flex items-center gap-4 shrink-0">
+<span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">AGENTES:</span>
+<a class="hover:text-indigo-600 transition-colors" href="#">Gestión de Viajes</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Tracking Express</a>
+<button class="flex items-center gap-1 hover:text-indigo-600 transition-colors" type="button">
+<span>Remitos</span>
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<a class="hover:text-indigo-600 transition-colors" href="#">Destinos</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Incidencias</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Rendición</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">ETA</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">POP/POD</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Reclamos</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Analítica</a>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+          Nuevo Finanzas
+        </span>
 </div>
-<div class="px-4 sm:px-6 lg:px-8 py-2 bg-slate-50/70 border-b border-slate-200 overflow-x-auto flex items-center gap-1.5 text-xs">
-<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-2">AGENTES:</span>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/viajes">Gestión de Viajes</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/tracking">Tracking Express</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/remitos">Remitos ▾</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/destinos">Destinos</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/incidencias">Incidencias</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/rendicion">Rendición</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/eta">ETA</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/pod">POP/POD</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/reclamos">Reclamos</a>
-<a class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white whitespace-nowrap" href="/agentes/analitica">Analítica</a>
-<a class="px-2.5 py-1 rounded-md text-indigo-700 bg-indigo-50/80 font-semibold border border-indigo-200/60 whitespace-nowrap flex items-center gap-1" href="/finanzas"><span class="bg-indigo-600 text-white text-[8px] font-black px-1 rounded">Nuevo</span> Finanzas</a>
 </div>
-<div class="px-4 sm:px-6 lg:px-8 py-2.5 bg-white text-xs">
-<div class="flex items-center gap-2 overflow-x-auto">
-<span class="font-black text-slate-400 uppercase tracking-widest text-[11px] mr-1">FINANZAS</span>
-<a class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap" href="/finanzas">Dashboard</a><a class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap" href="/finanzas/clientes">Clientes</a><a class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap" href="/finanzas/facturas/pagos">Facturas</a><a class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap" href="/finanzas/facturas/cobranzas">Cobranza</a><a class="px-3.5 py-1.5 rounded-md font-bold bg-[#0d1424] text-white shadow-xs whitespace-nowrap" href="/finanzas/conciliacion">Conciliación</a><a class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap" href="/finanzas/comunicacion">Enviar Mensaje</a>
+<!-- Level 3: Finance Contextual Submenu -->
+<div class="px-4 sm:px-6 h-11 flex items-center justify-between border-b border-slate-200 bg-white">
+<nav aria-label="Finanzas Menú" class="flex items-center gap-1 overflow-x-auto custom-scrollbar">
+<span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mr-2 shrink-0">FINANZAS</span>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Dashboard</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Clientes</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Facturas</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Cobranza</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Conciliación</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Enviar Mensaje</a>
+</nav>
+<!-- Sync Status Indicator -->
+<div class="hidden md:flex items-center gap-3 shrink-0 text-xs font-medium text-slate-500">
+<span class="inline-flex items-center gap-1.5 text-slate-600 font-semibold text-[11px]">
+<span class="text-amber-500">⚡</span> Cuentas por Pagar (AP) · AFIP &amp; OCR Sincronizado
+        </span>
+<span class="h-3 w-px bg-slate-200"></span>
+<span class="text-[11px] text-slate-500 font-mono">USD/ARS $1.045,50</span>
 </div>
 </div>
 </header>
-
-<main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
-<div>
-<h1 class="text-2xl sm:text-[28px] font-black text-slate-900 tracking-tight">CONCILIACIÓN</h1>
-<p class="text-sm text-slate-500 mt-1">Aviso de pasarela vs factura abierta. Aplicá el cobro cuando coincida el monto.</p>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6"><div class="flex flex-col w-full space-y-6">
+<!-- TOP BAR: Title, Subtitle, Live Status & Global Action Triggers -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<div class="space-y-1.5 max-w-3xl">
+<div class="flex flex-wrap items-center gap-2.5">
+<h1 class="font-headline-lg text-headline-lg tracking-tight text-on-surface uppercase font-extrabold">
+          CONCILIACIÓN DE COBROS Y PASARELAS
+        </h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-caps font-label-caps bg-emerald-50 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          OPERATIVO
+        </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-caps font-label-caps bg-secondary-fixed text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-sm">auto_mode</span>
+          CONCILIACIÓN MULTICANAL IA
+        </span>
 </div>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-<section class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-<h2 class="text-sm font-bold text-slate-900 mb-4">Simular aviso de pasarela</h2>
-<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Monto</label>
-<input class="w-full mb-4 border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono text-slate-800" value="1.240.000"/>
-<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">N° operación</label>
-<input class="w-full mb-4 border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono text-slate-800" value="MP-88421"/>
-<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Factura</label>
-<select class="w-full mb-5 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-800 bg-white">
-<option selected>FC-A 0001-00482 · PepsiCo</option>
-<option>FC-A 0001-00491 · Arcor S.A.</option>
-<option>FC-A 0001-00502 · Cervecería Quilmes</option>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Aviso de pasarela vs factura abierta. Aplicá el cobro cuando coincida el monto con matching automático y trazabilidad en tiempo real.
+      </p>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-label-md font-label-md transition-all shadow-xs" type="button">
+<span class="material-symbols-outlined text-base text-secondary">sync</span>
+<span>Sincronizar Pasarelas / AFIP</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-surface-tint text-on-primary text-label-md font-label-md transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-base">add_circle</span>
+<span>+ Cargar cobro manual</span>
+</button>
+</div>
+</div>
+<!-- 4 KPI METRIC CARDS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Card 1: Total Conciliado -->
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">TOTAL CONCILIADO HOY</span>
+<span class="w-8 h-8 rounded-lg bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="font-metric-stat text-metric-stat text-on-surface font-mono tracking-tight">$48.290.450</div>
+<div class="mt-1 flex items-center gap-1.5 text-label-md font-label-md text-emerald-700">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+14% vs ayer</span>
+<span class="text-on-surface-variant text-body-sm font-body-sm ml-1">· 142 ops.</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Conciliación Automática -->
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">CONCILIACIÓN AUTOMÁTICA</span>
+<span class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+<span class="material-symbols-outlined text-lg">smart_toy</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="font-metric-stat text-metric-stat text-on-surface font-mono tracking-tight">96,4%</div>
+<div class="mt-1 flex items-center gap-1.5 text-label-md font-label-md text-emerald-700">
+<span class="material-symbols-outlined text-sm">arrow_upward</span>
+<span>+2.8 pts prom.</span>
+<span class="text-on-surface-variant text-body-sm font-body-sm ml-1">· 1.240 auto</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Tiempo Promedio Match -->
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">TIEMPO PROMEDIO MATCH</span>
+<span class="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-lg">bolt</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="font-metric-stat text-metric-stat text-on-surface font-mono tracking-tight">1,4 min</div>
+<div class="mt-1 flex items-center gap-1.5 text-label-md font-label-md text-secondary">
+<span class="material-symbols-outlined text-sm">speed</span>
+<span>-74% manual</span>
+<span class="text-on-surface-variant text-body-sm font-body-sm ml-1">· Instantáneo</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Pendientes de Revisión -->
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">PENDIENTES DE REVISIÓN</span>
+<span class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800">
+<span class="material-symbols-outlined text-lg">pending_actions</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="font-metric-stat text-metric-stat text-on-surface font-mono tracking-tight">8 casos</div>
+<div class="mt-1 flex items-center gap-1.5 text-label-md font-label-md text-amber-800">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>SLA: 45m rest.</span>
+<span class="text-error text-body-sm font-body-sm ml-1">· 3 dif. monto</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 2-COLUMN MAIN WORKSPACE (Inspired directly by screenshot structure) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- LEFT COLUMN: Simular Aviso de Pasarela (Form) -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div class="space-y-4">
+<!-- Header -->
+<div class="flex items-center justify-between pb-3">
+<div class="space-y-0.5">
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Simular aviso de pasarela</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ingreso de evento vía webhook o simulación fiscal.</p>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-secondary-fixed text-on-secondary-fixed">
+            Push API v2.4
+          </span>
+</div>
+<!-- Pasarela Selector -->
+<div class="space-y-1">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase">CANAL / PASARELA RECEPTORA</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md rounded-lg py-2.5 px-3 appearance-none focus:outline-none focus:bg-surface-container-lowest transition-colors pr-9">
+<option selected="">Mercado Pago API (Webhook Instantáneo)</option>
+<option>Interbanking API (Transferencias Directas)</option>
+<option>Prisma / Banelco Pagos B2B</option>
+<option>Stripe LatAm Express</option>
 </select>
-<button class="w-full py-2.5 rounded-lg bg-[#0d1424] text-white text-sm font-semibold">Registrar cobro</button>
-</section>
-<section class="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-<div class="px-5 py-4 border-b border-slate-100"><h2 class="text-sm font-bold text-slate-900">Cobros</h2></div>
-<table class="w-full text-left text-sm">
+<span class="material-symbols-outlined absolute right-3 top-3 pointer-events-none text-on-surface-variant text-base">expand_more</span>
+</div>
+</div>
+<!-- MONTO -->
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase">MONTO (ARS)</label>
+<span class="font-mono text-[11px] text-emerald-700 font-semibold">Total a acreditar neto</span>
+</div>
+<div class="relative">
+<span class="absolute left-3.5 top-2.5 font-mono text-on-surface-variant font-bold text-body-md">$</span>
+<input class="w-full bg-surface-container-low text-on-surface font-code-table text-code-table font-semibold rounded-lg py-2.5 pl-8 pr-3 focus:outline-none focus:bg-surface-container-lowest transition-colors" type="text" value="1.240.000"/>
+</div>
+</div>
+<!-- Nº OPERACIÓN -->
+<div class="space-y-1">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Nº OPERACIÓN / TRANSACTION ID</label>
+<input class="w-full bg-surface-container-low text-on-surface font-code-table text-code-table rounded-lg py-2.5 px-3 focus:outline-none focus:bg-surface-container-lowest transition-colors uppercase font-medium" type="text" value="MP-88421"/>
+</div>
+<!-- FACTURA -->
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase">FACTURA ASOCIADA</label>
+<span class="font-body-sm text-body-sm text-secondary font-medium">1 coincidencia exacta</span>
+</div>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md rounded-lg py-2.5 px-3 appearance-none focus:outline-none focus:bg-surface-container-lowest transition-colors pr-9">
+<option selected="">FC-A 0001-00482 · PepsiCo Central ($1.240.000)</option>
+<option>FC-A 0001-00491 · Arcor S.A. ($200.000)</option>
+<option>FC-A 0001-00502 · Cervecería Quilmes ($860.000)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 pointer-events-none text-on-surface-variant text-base">expand_more</span>
+</div>
+</div>
+<!-- Metadata Emisor -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 text-body-sm font-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>CUIT Receptor:</span>
+<span class="font-mono font-medium text-on-surface">30-50000000-1</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Razón Social:</span>
+<span class="font-medium text-on-surface">PepsiCo de Argentina S.R.L.</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Condición:</span>
+<span class="text-emerald-700 font-medium">48hs contra remito conformado</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="pt-5 mt-2">
+<button class="w-full py-3 px-4 rounded-lg bg-primary hover:bg-surface-tint text-on-primary font-label-lg text-label-lg transition-all flex items-center justify-center gap-2 shadow-sm" type="button">
+<span class="material-symbols-outlined text-base">task_alt</span>
+<span>Registrar cobro y conciliar</span>
+</button>
+</div>
+</div>
+<!-- RIGHT COLUMN: Auditoría Cruzada y Validación Documental en Vivo -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div class="space-y-4">
+<!-- Top header of card -->
+<div class="flex items-center justify-between pb-2">
+<div class="space-y-0.5">
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Auditoría Cruzada &amp; Matching Documental</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Verificación de 3 vías: Pasarela bancaria, Factura Electrónica y Remito Conforme.</p>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-caps font-label-caps bg-emerald-50 text-emerald-800 font-bold">
+<span class="material-symbols-outlined text-sm text-emerald-600">verified</span>
+            100% MATCH
+          </span>
+</div>
+<!-- Live matching visualization bento box -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<!-- Item 1: Pasarela -->
+<div class="p-3.5 bg-surface-container-low rounded-lg space-y-2">
+<div class="flex items-center gap-1.5 text-on-secondary-container">
+<span class="material-symbols-outlined text-base">payments</span>
+<span class="font-label-caps text-label-caps uppercase font-bold">1. AVISO PASARELA</span>
+</div>
+<div class="font-mono text-on-surface text-code-table font-bold">MP-88421</div>
+<div class="text-metric-stat font-metric-stat text-on-surface font-mono">$1.240.000</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Mercado Pago Argentina</div>
+</div>
+<!-- Item 2: Factura AFIP -->
+<div class="p-3.5 bg-surface-container-low rounded-lg space-y-2">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+<span class="font-label-caps text-label-caps uppercase font-bold">2. FACTURA ABIERTA</span>
+</div>
+<div class="font-mono text-on-surface text-code-table font-bold">FC-A 0001-00482</div>
+<div class="text-metric-stat font-metric-stat text-on-surface font-mono">$1.240.000</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">CAE: 73948192841029</div>
+</div>
+<!-- Item 3: Remito Conforme -->
+<div class="p-3.5 bg-surface-container-low rounded-lg space-y-2">
+<div class="flex items-center gap-1.5 text-emerald-700">
+<span class="material-symbols-outlined text-base">local_shipping</span>
+<span class="font-label-caps text-label-caps uppercase font-bold">3. REMITO LOGÍSTICO</span>
+</div>
+<div class="font-mono text-on-surface text-code-table font-bold">#REM-98214</div>
+<div class="font-mono text-emerald-700 text-headline-sm font-bold">CONFORME</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Firma Digital &amp; Geocerca</div>
+</div>
+</div>
+<!-- AI Confidence & Cross check audit detail -->
+<div class="p-4 bg-surface-container rounded-lg space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">psychology</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Reporte de Asignación por Inteligencia Artificial SOL</span>
+</div>
+<span class="font-mono text-xs text-on-surface-variant">Confianza 99.8%</span>
+</div>
+<!-- Progress bar -->
+<div class="w-full bg-surface-container-highest rounded-full h-2 overflow-hidden">
+<div class="bg-secondary h-2 rounded-full w-full"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+<span>Monto exacto sin diferencias de retención</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+<span>Identificador CUIT coincide con Cuenta de Pago</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+<span>POD con firma receptora validada por OCR</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+<span>Asiento pre-generado listo para mayor contable</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center gap-3 pt-5 mt-2">
+<button class="flex-1 py-2.5 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-label-lg text-label-lg transition-colors flex items-center justify-center gap-2 shadow-xs" type="button">
+<span class="material-symbols-outlined text-base">check</span>
+<span>Aprobar Conciliación Automática</span>
+</button>
+<button class="py-2.5 px-4 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg transition-colors flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-base text-on-surface-variant">flag</span>
+<span>Observar Discrepancia</span>
+</button>
+</div>
+</div>
+</div>
+<!-- MASTER TABLE SECTION: Cobros & Operaciones -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden space-y-3 p-6">
+<!-- Header & Table Filters -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Cobros y Transacciones</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Listado consolidado de comprobantes registrados y avisos recibidos.</p>
+</div>
+<!-- Filtering Chips & Search -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Quick search in table -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant text-base">search</span>
+<input class="bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg pl-8 pr-3 py-1.5 w-56 focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Filtrar por ID o cliente..." type="text"/>
+</div>
+<!-- Filter pills -->
+<div class="inline-flex rounded-lg bg-surface-container-low p-1 gap-1">
+<button class="px-2.5 py-1 rounded-md text-label-md font-label-md bg-surface-container-lowest text-on-surface font-bold shadow-xs">
+            Todas (142)
+          </button>
+<button class="px-2.5 py-1 rounded-md text-label-md font-label-md text-on-surface-variant hover:text-on-surface">
+            Pendientes (8)
+          </button>
+<button class="px-2.5 py-1 rounded-md text-label-md font-label-md text-on-surface-variant hover:text-on-surface">
+            Conciliadas (128)
+          </button>
+<button class="px-2.5 py-1 rounded-md text-label-md font-label-md text-on-surface-variant hover:text-on-surface">
+            Con diferencia (6)
+          </button>
+</div>
+<!-- Export -->
+<button class="p-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" title="Descargar Excel" type="button">
+<span class="material-symbols-outlined text-lg">download</span>
+</button>
+</div>
+</div>
+<!-- The Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
 <thead>
-<tr class="bg-slate-50/90 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-<th class="py-3 px-5">Operación</th>
-<th class="py-3 px-5">Monto</th>
-<th class="py-3 px-5">Factura</th>
-<th class="py-3 px-5">Estado</th>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase">
+<th class="py-3 px-3.5 w-10">
+<input class="rounded bg-surface-container-lowest text-primary focus:ring-0" type="checkbox"/>
+</th>
+<th class="py-3 px-3.5">OPERACIÓN</th>
+<th class="py-3 px-3.5">PASARELA / CANAL</th>
+<th class="py-3 px-3.5">CLIENTE / EMISOR</th>
+<th class="py-3 px-3.5">FACTURA</th>
+<th class="py-3 px-3.5 font-mono">MONTO</th>
+<th class="py-3 px-3.5">FECHA Y HORA</th>
+<th class="py-3 px-3.5">ESTADO</th>
+<th class="py-3 px-3.5 text-right">ACCIONES</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-100">
-<tr class="hover:bg-slate-50/80">
-<td class="py-4 px-5 font-mono text-slate-800">MP-88421</td>
-<td class="py-4 px-5 font-mono text-slate-800">$1.240.000</td>
-<td class="py-4 px-5 font-mono text-slate-700">FC-A 0001-00482</td>
-<td class="py-4 px-5"><span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">Pendiente</span></td>
+<tbody class="divide-y divide-surface-container-low text-body-md font-body-md">
+<!-- Row 1: Pendiente (Exact match with screenshot MP-88421) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-3.5">
+<input class="rounded bg-surface-container-lowest text-primary focus:ring-0" type="checkbox"/>
+</td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-semibold text-on-surface">
+              MP-88421
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1.5 text-on-surface font-medium text-body-sm">
+<span class="w-2 h-2 rounded-full bg-sky-500"></span> Mercado Pago
+              </span>
+</td>
+<td class="py-3.5 px-3.5 font-semibold text-on-surface">
+              PepsiCo Central
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table text-secondary hover:underline cursor-pointer">
+              FC-A 0001-00482
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-bold text-on-surface">
+              $1.240.000
+            </td>
+<td class="py-3.5 px-3.5 text-on-surface-variant font-code-table text-xs">
+              Hoy, 09:24 hs
+            </td>
+<td class="py-3.5 px-3.5">
+<!-- Pending badge like original screenshot -->
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-caps font-label-caps font-bold bg-amber-50 text-amber-800">
+                Pendiente
+              </span>
+</td>
+<td class="py-3.5 px-3.5 text-right space-x-1">
+<button class="px-2.5 py-1 rounded bg-primary hover:bg-surface-tint text-on-primary font-label-md text-label-md">
+                Conciliar
+              </button>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</td>
 </tr>
-<tr class="hover:bg-slate-50/80">
-<td class="py-4 px-5 font-mono text-slate-800">MP-88390</td>
-<td class="py-4 px-5 font-mono text-slate-800">$200.000</td>
-<td class="py-4 px-5 font-mono text-slate-700">FC-A 0001-00491</td>
-<td class="py-4 px-5"><span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">Conciliado</span></td>
+<!-- Row 2: Conciliado (Exact match with screenshot MP-88390) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-3.5">
+<input class="rounded bg-surface-container-lowest text-primary focus:ring-0" type="checkbox"/>
+</td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-semibold text-on-surface">
+              MP-88390
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1.5 text-on-surface font-medium text-body-sm">
+<span class="w-2 h-2 rounded-full bg-sky-500"></span> Mercado Pago
+              </span>
+</td>
+<td class="py-3.5 px-3.5 font-semibold text-on-surface">
+              Arcor S.A.
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table text-secondary hover:underline cursor-pointer">
+              FC-A 0001-00491
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-bold text-on-surface">
+              $200.000
+            </td>
+<td class="py-3.5 px-3.5 text-on-surface-variant font-code-table text-xs">
+              Hoy, 08:45 hs
+            </td>
+<td class="py-3.5 px-3.5">
+<!-- Conciliado badge like original screenshot -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-caps font-label-caps font-bold bg-emerald-50 text-emerald-800">
+<span class="material-symbols-outlined text-xs">check</span>
+                Conciliado
+              </span>
+</td>
+<td class="py-3.5 px-3.5 text-right space-x-1">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md">
+                Ver Asiento
+              </button>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Interbanking -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-3.5">
+<input class="rounded bg-surface-container-lowest text-primary focus:ring-0" type="checkbox"/>
+</td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-semibold text-on-surface">
+              IB-449102
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1.5 text-on-surface font-medium text-body-sm">
+<span class="w-2 h-2 rounded-full bg-indigo-500"></span> Interbanking Datanet
+              </span>
+</td>
+<td class="py-3.5 px-3.5 font-semibold text-on-surface">
+              Cervecería Quilmes
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table text-secondary hover:underline cursor-pointer">
+              FC-A 0001-00502
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-bold text-on-surface">
+              $860.000
+            </td>
+<td class="py-3.5 px-3.5 text-on-surface-variant font-code-table text-xs">
+              Ayer, 18:12 hs
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-caps font-label-caps font-bold bg-emerald-50 text-emerald-800">
+<span class="material-symbols-outlined text-xs">check</span>
+                Conciliado
+              </span>
+</td>
+<td class="py-3.5 px-3.5 text-right space-x-1">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md">
+                Ver Asiento
+              </button>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Diferencia detectada -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-3.5">
+<input class="rounded bg-surface-container-lowest text-primary focus:ring-0" type="checkbox"/>
+</td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-semibold text-on-surface">
+              MP-982401
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1.5 text-on-surface font-medium text-body-sm">
+<span class="w-2 h-2 rounded-full bg-sky-500"></span> Mercado Pago
+              </span>
+</td>
+<td class="py-3.5 px-3.5 font-semibold text-on-surface">
+              Molinos Río de la Plata
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table text-secondary hover:underline cursor-pointer">
+              FC-A 0001-00511
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-bold text-on-surface">
+              $620.000
+            </td>
+<td class="py-3.5 px-3.5 text-on-surface-variant font-code-table text-xs">
+              Ayer, 16:30 hs
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-caps font-label-caps font-bold bg-error-container text-on-error-container">
+<span class="material-symbols-outlined text-xs">warning</span>
+                Dif. $1.200
+              </span>
+</td>
+<td class="py-3.5 px-3.5 text-right space-x-1">
+<button class="px-2.5 py-1 rounded bg-error hover:bg-red-700 text-on-error font-label-md text-label-md">
+                Revisar
+              </button>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Santander CBU Directo -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3.5 px-3.5">
+<input class="rounded bg-surface-container-lowest text-primary focus:ring-0" type="checkbox"/>
+</td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-semibold text-on-surface">
+              PG-110293
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1.5 text-on-surface font-medium text-body-sm">
+<span class="w-2 h-2 rounded-full bg-red-600"></span> Santander Directo
+              </span>
+</td>
+<td class="py-3.5 px-3.5 font-semibold text-on-surface">
+              YPF Directa S.A.
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table text-secondary hover:underline cursor-pointer">
+              FC-A 0001-00520
+            </td>
+<td class="py-3.5 px-3.5 font-code-table text-code-table font-bold text-on-surface">
+              $540.000
+            </td>
+<td class="py-3.5 px-3.5 text-on-surface-variant font-code-table text-xs">
+              Ayer, 14:10 hs
+            </td>
+<td class="py-3.5 px-3.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-caps font-label-caps font-bold bg-emerald-50 text-emerald-800">
+<span class="material-symbols-outlined text-xs">check</span>
+                Conciliado
+              </span>
+</td>
+<td class="py-3.5 px-3.5 text-right space-x-1">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md">
+                Ver Asiento
+              </button>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</td>
 </tr>
 </tbody>
 </table>
-</section>
 </div>
-</main>
+<!-- Pagination & Summary -->
+<div class="flex flex-col sm:flex-row items-center justify-between pt-4 gap-3 text-body-sm font-body-sm text-on-surface-variant">
+<span>Mostrando 1–5 de 142 operaciones conciliadas</span>
+<div class="flex items-center gap-1 font-mono">
+<button class="px-3 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface disabled:opacity-50" disabled="">
+          Anterior
+        </button>
+<button class="w-8 h-8 rounded bg-primary text-on-primary font-bold">1</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-low text-on-surface">2</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-low text-on-surface">3</button>
+<span>...</span>
+<button class="w-8 h-8 rounded hover:bg-surface-container-low text-on-surface">29</button>
+<button class="px-3 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface">
+          Siguiente
+        </button>
+</div>
+</div>
+</div>
+<!-- BOTTOM PIPELINE & AI CONVERSATIONAL QUERY -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- 5-Step Pipeline -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-sm space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Flujo del Pipeline de Conciliación Automática</h3>
+<span class="text-label-caps font-label-caps text-secondary font-mono">LATENCIA: ~320ms</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2">
+<!-- Step 1 -->
+<div class="bg-surface-container-low p-3 rounded-lg flex flex-col justify-between space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-mono text-xs font-bold text-secondary">01</span>
+<span class="material-symbols-outlined text-base text-emerald-600">cloud_download</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Webhook In</div>
+<div class="text-[11px] text-on-surface-variant leading-tight mt-0.5">Recepción de evento pasarela</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-low p-3 rounded-lg flex flex-col justify-between space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-mono text-xs font-bold text-secondary">02</span>
+<span class="material-symbols-outlined text-base text-emerald-600">cleaning_services</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Normalización</div>
+<div class="text-[11px] text-on-surface-variant leading-tight mt-0.5">CBU / Alias y CUIT match</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-low p-3 rounded-lg flex flex-col justify-between space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-mono text-xs font-bold text-secondary">03</span>
+<span class="material-symbols-outlined text-base text-emerald-600">psychology</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Matching IA</div>
+<div class="text-[11px] text-on-surface-variant leading-tight mt-0.5">Cruce con remito &amp; CAE</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="bg-surface-container-low p-3 rounded-lg flex flex-col justify-between space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-mono text-xs font-bold text-secondary">04</span>
+<span class="material-symbols-outlined text-base text-emerald-600">calculate</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Retenciones</div>
+<div class="text-[11px] text-on-surface-variant leading-tight mt-0.5">IIBB, Ganancias y SIRCUPA</div>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="bg-secondary text-on-secondary p-3 rounded-lg flex flex-col justify-between space-y-2 shadow-xs">
+<div class="flex items-center justify-between">
+<span class="font-mono text-xs font-bold text-on-secondary">05</span>
+<span class="material-symbols-outlined text-base">sync_alt</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-secondary">Asiento &amp; ERP</div>
+<div class="text-[11px] text-on-secondary/80 leading-tight mt-0.5">Sincronización SAP / Tango</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Asistente Financiero SOL -->
+<div class="lg:col-span-4 bg-primary text-on-primary rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div class="space-y-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest/10 flex items-center justify-center text-secondary-fixed">
+<span class="material-symbols-outlined text-lg">forum</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold">Asistente Financiero SOL</h3>
+<p class="text-[11px] text-on-primary/70">Consultas semánticas sobre cobranza y pasarelas</p>
+</div>
+</div>
+<div class="space-y-2 pt-1">
+<button class="w-full text-left p-2.5 rounded-lg bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors text-body-sm font-body-sm flex items-center justify-between">
+<span>¿Qué operaciones tienen diferencia de monto?</span>
+<span class="material-symbols-outlined text-sm opacity-60">arrow_forward</span>
+</button>
+<button class="w-full text-left p-2.5 rounded-lg bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors text-body-sm font-body-sm flex items-center justify-between">
+<span>¿Cuál es el total conciliado de Mercado Pago hoy?</span>
+<span class="material-symbols-outlined text-sm opacity-60">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="relative pt-4">
+<input class="w-full bg-surface-container-lowest/10 text-on-primary placeholder:text-on-primary/50 text-body-sm font-body-sm rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:bg-surface-container-lowest/20 transition-all border-0" placeholder="Preguntar a SOL Finanzas..." type="text"/>
+<button class="absolute right-2.5 bottom-2 p-1 text-on-primary/70 hover:text-on-primary">
+<span class="material-symbols-outlined text-base">send</span>
+</button>
+</div>
+</div>
+</div>
+</div></main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="mt-auto bg-white border-t border-slate-200 py-4 px-4 sm:px-6 select-none" data-purpose="app-footer">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 font-medium">
+<div class="flex items-center gap-2">
+<span>Empliados Logistics Cloud © 2026</span>
+<span>•</span>
+<span>Finanzas &amp; Cuentas a Pagar (AP SOL)</span>
+<span>•</span>
+<a class="text-indigo-600 hover:underline" href="https://sol.nivel41.com" rel="noopener" target="_blank">sol.nivel41.com</a>
+</div>
+<div class="flex items-center gap-4 text-[11px]">
+<span class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Monitor SOL Activo
+        </span>
+<a class="hover:text-slate-800 transition-colors" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-800 transition-colors" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
