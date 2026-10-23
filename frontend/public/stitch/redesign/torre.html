@@ -1,318 +1,1040 @@
 <!DOCTYPE html>
 
-<html class="h-full bg-[#f4f6fb]" lang="es"><head>
+<html lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Torre de Control - Empliados</title>
-<!-- Tailwind CSS v3 with Plugins -->
+<title>Empliados - Torre de Control</title>
+<!-- Tailwind CSS CDN with forms & container queries -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- Google Fonts: Inter & Plus Jakarta Sans -->
+<!-- Google Fonts: Plus Jakarta Sans -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <script data-purpose="tailwind-config">
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Inter"', 'sans-serif'],
-            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
           },
           colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              900: '#1e1b4b',
-            },
             navy: {
-              800: '#0f172a',
-              900: '#0a0f1d',
+              900: '#0b132b',
+              850: '#0e1738',
+              800: '#14214d',
+              700: '#1b2f6b',
+            },
+            brand: {
+              blue: '#1952e1',
+              cyan: '#00c6ff',
             }
           }
         }
       }
     }
   </script>
-<style data-purpose="custom-scrollbars">
-    /* Barra de desplazamiento estética para contenedores con scroll horizontal */
+<!-- BEGIN: Custom Styling for Maps, Gauges & Timeline -->
+<style data-purpose="custom-elements">
+    /* Subtle custom scrollbar */
     ::-webkit-scrollbar {
-      height: 6px;
       width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+      background: #f1f4f9;
     }
     ::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 9999px;
+      border-radius: 3px;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+    
+    /* Conic gradients for donuts & gauges */
+    .donut-chart-incidencias {
+      background: conic-gradient(
+        #3b82f6 0% 32%,
+        #06b6d4 32% 48%,
+        #10b981 48% 68%,
+        #f59e0b 68% 85%,
+        #ef4444 85% 100%
+      );
+    }
+    
+    .gauge-semi-sla {
+      background: conic-gradient(
+        from 180deg at 50% 100%,
+        #06b6d4 0deg,
+        #10b981 170deg,
+        #e2e8f0 170deg 360deg
+      );
+    }
+
+    .circle-ring-viajes {
+      background: conic-gradient(
+        #38bdf8 0% 58%,
+        rgba(255, 255, 255, 0.15) 58% 100%
+      );
+    }
+
+    /* Dashed line animation / path style */
+    .dashed-route {
+      stroke-dasharray: 4, 4;
     }
   </style>
+<!-- END: Custom Styling for Maps, Gauges & Timeline -->
 </head>
-<body class="min-h-full font-sans text-slate-800 antialiased flex flex-col bg-[#f4f6fb]">
-<!-- BEGIN: TopHeader -->
-<header class="sticky top-0 z-50 bg-white border-b border-slate-200/90 shadow-xs" data-purpose="global-header">
-<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-<!-- Brand Logo Container -->
-<div class="flex items-center gap-3 shrink-0">
-<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-700 to-indigo-500 flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-display font-bold text-xl tracking-tight">
+<body class="bg-[#f4f6fb] text-slate-800 font-sans antialiased min-h-screen pb-12">
+<!-- BEGIN: TopNavigation -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+<!-- Row 1: Header / Logo & Profile Search -->
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+<!-- Logo -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-navy-900 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
           E
         </div>
-<span class="font-display font-bold text-xl tracking-tight text-slate-900">Empliados</span>
+<span class="font-extrabold text-xl tracking-tight text-slate-900">Empliados</span>
 </div>
-<!-- Search Bar -->
-<div class="flex-1 max-w-xl mx-4 hidden md:block">
-<div class="relative">
+<!-- Search Input with ⌘K -->
+<div class="flex-1 max-w-xl mx-4 relative hidden md:block">
 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
 </div>
-<input class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors" placeholder="Buscar remito, chofer o patente..." type="search"/>
+<input class="w-full text-xs pl-10 pr-12 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Buscar remito, chofer o patente..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white border border-slate-200 rounded shadow-xs">⌘K</kbd>
 </div>
 </div>
-<!-- Right Header Status & Profile Controls -->
-<div class="flex items-center gap-4 shrink-0">
-<!-- Live System Status Badge -->
-<div class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100/80 text-emerald-700 text-xs font-medium">
+<!-- Right Controls -->
+<div class="flex items-center gap-4">
+<!-- Sistemas activos badge -->
+<div class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200/60">
 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Sistemas activos
-        </div>
+<span>Sistemas activos</span>
+</div>
 <!-- Notification Bell -->
-<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
-<span class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center">5</span>
+<span class="absolute top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">5</span>
 </button>
-<div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
 <!-- User Profile Pill -->
-<button class="flex items-center gap-2.5 p-1 pl-1.5 pr-2 rounded-lg hover:bg-slate-100 transition-colors text-left" title="Perfil de usuario">
-<div class="w-8 h-8 rounded-full bg-brand-600 text-white font-medium text-xs flex items-center justify-center shadow-xs">
+<div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+<div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100">
             GD
           </div>
-<div class="hidden lg:block">
-<p class="text-xs font-semibold text-slate-800 leading-tight">Gonzalo Demo</p>
-<p class="text-[11px] text-slate-500 leading-tight">Administrador</p>
+<div class="hidden lg:block text-left">
+<div class="text-xs font-bold text-slate-800 leading-tight">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400 font-medium">Administrador</div>
 </div>
-<svg class="w-3.5 h-3.5 text-slate-400 hidden lg:block" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
+</div>
+</div>
+</div>
+<!-- Row 2: Primary Horizontal Tabs -->
+<div class="border-t border-slate-100 bg-white">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1.5 py-1.5 overflow-x-auto">
+<!-- Torre de Control (Active) -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0e1738] text-white text-xs font-semibold shadow-xs">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="7" rx="1" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1" width="7" x="3" y="14"></rect>
+</svg>
+          Torre de Control
+        </button>
+<!-- Monitor -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Monitor
+        </button>
+<!-- WhatsApp -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"></path>
+</svg>
+          WhatsApp
+          <span class="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded-full leading-relaxed tracking-wider">NUEVO</span>
 </button>
+<!-- Métricas -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Métricas
+        </button>
+<!-- Finanzas -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Finanzas
+        </button>
+</div>
+</div>
+<!-- Row 3: Agent Horizontal Strip (Sub-navigation) -->
+<div class="border-t border-slate-100 bg-[#fbfcfd]">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 py-1.5 overflow-x-auto text-xs">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase mr-1">AGENTES</span>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Gestión de Viajes
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Tracking Express
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Remitos ▾
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Destinos
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Incidencias
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Rendición
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          ETA
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          POP/POD
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Reclamos
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Analítica
+        </a>
 </div>
 </div>
 </header>
-<!-- END: TopHeader -->
-<!-- BEGIN: DoubleLevelNavigation -->
-<nav class="bg-white border-b border-slate-200/90 shrink-0" data-purpose="main-navigation">
-<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-<!-- Level 1: Primary Module Tabs -->
-<div class="flex items-center gap-1 sm:gap-2 pt-2 border-b border-slate-100 text-sm overflow-x-auto no-scrollbar">
-<!-- Torre de Control -->
-<a class="inline-flex items-center gap-2 px-3 py-2.5 font-semibold text-white bg-slate-900 rounded-lg mb-1 border-b-2 border-transparent" href="/">
-<svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-          Torre de Control
-        </a>
-<!-- Monitor -->
-<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
-<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-          Monitor
-        </a>
-<!-- WhatsApp -->
-<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
-<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-          WhatsApp
-          <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Nuevo</span>
-</a>
-<!-- Métricas -->
-<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="#">
-<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-          Métricas
-        </a>
-<a class="inline-flex items-center gap-2 px-3 py-2.5 font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-slate-300 transition-colors" href="/finanzas">
-          Finanzas
-          <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">Nuevo</span>
-        </a>
+<!-- END: TopNavigation -->
+<!-- BEGIN: PageMain -->
+<main class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+<!-- BEGIN: PageHeader -->
+<section class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Torre de Control</h1>
+<p class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Operación logística en tiempo real</p>
 </div>
-<!-- Level 2: Agents Sub-navigation Strip -->
-<div class="flex items-center gap-2 py-2.5 overflow-x-auto text-xs font-medium no-scrollbar">
-<span class="text-slate-400 font-bold uppercase tracking-wider text-[11px] pr-1 select-none">Agentes |</span>
-<!-- Active Tab: Gestión de Viajes -->
-<a class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">
-<svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-<span>Gestión de Viajes</span>
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5"></span>
-</a>
-<!-- Other Agent Links -->
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Tracking Express</a>
-<div class="relative inline-flex items-center">
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors inline-flex items-center gap-1" href="#">
-            Remitos
-            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-</a>
+<div class="flex items-center gap-4">
+<!-- 8 agentes en linea badge -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>8 agentes en línea</span>
 </div>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Destinos</a>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Incidencias</a>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Rendición</a>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">ETA</a>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">POP/POD</a>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Reclamos</a>
-<a class="px-2.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Analítica</a>
+<!-- Date indicator -->
+<span class="text-xs text-slate-500 font-medium">Martes 12 de marzo de 2024</span>
+</div>
+</section>
+<!-- END: PageHeader -->
+<!-- BEGIN: MainHeroGrid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+<!-- LEFT COLUMN: Key Metrics (Viajes activos & Remitos procesados) -->
+<div class="lg:col-span-3 flex flex-col gap-4">
+<!-- Card 1: Viajes Activos (Navy Gradient) -->
+<div class="bg-gradient-to-br from-[#0c4ee8] to-[#0433a8] text-white p-5 rounded-2xl shadow-sm relative overflow-hidden flex flex-col justify-between h-[230px]">
+<div>
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs font-medium text-blue-100 tracking-wide uppercase">Viajes activos</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-5xl font-extrabold tracking-tight">15</span>
+<span class="text-xs font-medium text-blue-200">de 26 en gestión</span>
 </div>
 </div>
-</nav>
-<!-- END: DoubleLevelNavigation -->
-
-<main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+<!-- Circular gauge ring -->
+<div class="w-16 h-16 rounded-full circle-ring-viajes flex items-center justify-center p-2 shadow-inner">
+<div class="w-full h-full bg-[#0c4ee8] rounded-full flex flex-col items-center justify-center">
+<span class="text-xs font-extrabold leading-none">15</span>
+<span class="text-[9px] text-blue-200 leading-none">26</span>
+</div>
+</div>
+</div>
+<!-- Route visual illustration with truck -->
+<div class="mt-4 flex items-center justify-between px-2 text-blue-200 relative">
+<svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<!-- Truck moving along path -->
+<div class="flex-1 mx-2 relative flex items-center">
+<div class="w-full border-t border-dashed border-blue-300/50"></div>
+<div class="absolute left-1/3 -top-3.5 bg-blue-500/80 px-1.5 py-0.5 rounded text-white shadow-xs">
+<svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Entregas hoy sub-metric -->
+<div class="pt-2 border-t border-blue-400/30 flex items-center justify-between text-xs">
+<div>
+<span class="text-blue-200 block text-[11px]">Entregas hoy</span>
+<span class="text-xl font-bold text-white">296</span>
+</div>
+<div class="flex items-center text-emerald-300 font-bold bg-blue-900/40 px-2 py-1 rounded-md text-[11px]">
+<svg class="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M5 10l7-7m0 0l7 7m-7-7v18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              +16% <span class="text-blue-200 font-normal ml-1">vs. ayer</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Remitos procesados (White Card) -->
+<div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between h-[230px]">
+<div>
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs font-semibold text-slate-500 uppercase">Remitos procesados</span>
+<div class="text-4xl font-extrabold text-slate-900 tracking-tight mt-1">518</div>
+<div class="text-xs font-medium text-slate-500 mt-0.5">
+<span class="font-bold text-slate-800">97,1%</span> lectura automática
+                </div>
+</div>
+<div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Bottom SLA Gauge -->
+<div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+<div>
+<span class="text-[11px] font-semibold text-slate-400 block uppercase">SLA</span>
+<span class="text-2xl font-extrabold text-slate-900">94,2%</span>
+</div>
+<!-- Half Gauge -->
+<div class="flex items-center gap-3">
+<div class="w-16 h-8 overflow-hidden relative">
+<div class="w-16 h-16 rounded-full gauge-semi-sla"></div>
+<div class="w-11 h-11 bg-white rounded-full absolute bottom-0 left-2.5"></div>
+</div>
+<div class="text-[11px] font-bold text-emerald-600 flex items-center">
+<svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M5 10l7-7m0 0l7 7m-7-7v18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+                +2,4 pts <span class="text-slate-400 font-normal ml-1">vs. ayer</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- CENTER COLUMN: Chat Central Copilot / AI Assistant -->
+<div class="lg:col-span-6 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 flex flex-col justify-between">
+<!-- Chat Header -->
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-xs">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM9 11a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"></path>
+</svg>
+</div>
+<span class="font-bold text-slate-800 text-sm">Chat Central</span>
+<span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea
+            </span>
+</div>
+<div class="flex items-center gap-3 text-xs">
+<button class="text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Historial
+            </button>
+<button class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-0.5 transition-colors">
+<span class="text-base leading-none">+</span> Nueva conversación
+            </button>
+</div>
+</div>
+<!-- Chat Central Main Body & Greeting -->
+<div class="py-4 text-center my-auto">
+<!-- Bot Avatar -->
+<div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-50 text-blue-600 ring-8 ring-blue-50/50 mb-3 shadow-inner">
+<svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 01-6.23.693L4.2 15.3m15.6 0L21 21H3l1.2-5.7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h2 class="text-lg font-extrabold text-slate-900 tracking-tight">¿Qué necesitás saber de la operación?</h2>
+<p class="text-xs text-slate-500 max-w-md mx-auto mt-1">
+            Te ayudo a consultar viajes, remitos, incidencias y toda la operación logística en tiempo real.
+          </p>
+<!-- 4 Quick Suggestion Chips (2x2 Grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-5 max-w-lg mx-auto text-left">
+<!-- Chip 1 -->
+<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
+<div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="overflow-hidden">
+<div class="text-xs font-bold text-slate-800">Camiones por salir</div>
+<div class="text-[11px] text-slate-400 truncate">Ver próximos viajes</div>
+</div>
+</button>
+<!-- Chip 2 -->
+<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-amber-400 hover:bg-amber-50/40 transition-all flex items-center gap-3 group text-left">
+<div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="overflow-hidden">
+<div class="text-xs font-bold text-slate-800">Incidencias abiertas</div>
+<div class="text-[11px] text-slate-400 truncate">Mostrar casos activos</div>
+</div>
+</button>
+<!-- Chip 3 -->
+<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
+<div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="overflow-hidden">
+<div class="text-xs font-bold text-slate-800">Camiones con demora</div>
+<div class="text-[11px] text-slate-400 truncate">Ver qué viajes están demorados</div>
+</div>
+</button>
+<!-- Chip 4 -->
+<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
+<div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="overflow-hidden">
+<div class="text-xs font-bold text-slate-800">Viajes pendientes</div>
+<div class="text-[11px] text-slate-400 truncate">Listar viajes sin iniciar</div>
+</div>
+</button>
+</div>
+</div>
+<!-- Chat Input Field -->
+<div class="mt-2">
+<div class="flex items-center justify-between text-[11px] text-slate-400 mb-1 px-1">
+<span class="inline-flex items-center gap-1 text-emerald-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Operación en vivo
+            </span>
+</div>
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="w-full text-xs pl-9 pr-12 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Preguntá algo sobre la operación..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-1.5 flex items-center">
+<button class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-xs">
+<svg class="w-4 h-4 transform rotate-45 -translate-y-0.5 translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Flota en tiempo real (Map Card) & Incidencias -->
+<div class="lg:col-span-3 flex flex-col gap-4">
+<!-- Flota Map Card -->
+<div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between h-[340px] relative overflow-hidden">
+<div class="flex items-center justify-between z-10">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-xs font-bold text-slate-800">Flota en tiempo real</span>
+</div>
+<svg class="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-pointer" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Argentina Map Simulation with interactive SVG -->
+<div class="relative w-full h-[270px] bg-slate-50/60 rounded-xl overflow-hidden mt-2 border border-slate-100 flex items-center justify-center">
+<!-- Map Legend Overlay -->
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-xs p-2 rounded-lg border border-slate-200/80 text-[10px] space-y-1 shadow-xs z-10">
+<div class="flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span> 15 en curso
+              </div>
+<div class="flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-2 h-2 rounded-full bg-rose-500"></span> 3 detenidos
+              </div>
+<div class="flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Entregados
+              </div>
+</div>
+<!-- Country Silhouette SVG & Logistical Routes -->
+<svg class="w-full h-full text-slate-200" fill="none" viewbox="0 0 280 360" xmlns="http://www.w3.org/2000/svg">
+<!-- Water/Ocean background subtle label -->
+<text fill="#94a3b8" font-size="8" font-weight="600" opacity="0.6" x="210" y="270">Océano</text>
+<text fill="#94a3b8" font-size="8" font-weight="600" opacity="0.6" x="210" y="280">Atlántico</text>
+<!-- Neighboring countries hints -->
+<text fill="#cbd5e1" font-size="7" x="180" y="80">PARAGUAY</text>
+<text fill="#cbd5e1" font-size="7" x="200" y="160">URUGUAY</text>
+<text fill="#cbd5e1" font-size="7" x="30" y="190">CHILE</text>
+<!-- Simplified Argentina Silhouette -->
+<path d="M125 40 L160 55 L165 80 L185 95 L180 130 L165 145 L175 175 L150 185 L135 220 L120 280 L105 320 L95 340 L85 300 L95 240 L80 190 L95 130 L110 70 Z" fill="#e9eff7" stroke="#cbd5e1" stroke-linejoin="round" stroke-width="1.5"></path>
+<text fill="#94a3b8" font-size="8" font-weight="bold" opacity="0.7" x="110" y="150">ARGENTINA</text>
+<!-- Logistical Route Lines connecting nodes -->
+<!-- Route 1: North to Center (Tucumán - Córdoba - Rosario) -->
+<path d="M125 90 L138 135 L150 160" stroke="#3b82f6" stroke-dasharray="3 3" stroke-linecap="round" stroke-width="2"></path>
+<!-- Route 2: Córdoba - CABA - Mar del Plata -->
+<path d="M138 135 L168 170 L170 215" stroke="#3b82f6" stroke-linecap="round" stroke-width="2"></path>
+<!-- Route 3: CABA - Neuquén - Patagonia -->
+<path d="M168 170 L120 220 L105 260" stroke="#10b981" stroke-dasharray="4 2" stroke-width="1.8"></path>
+<!-- Active Truck Pin 1 (Salta / Tucumán) -->
+<circle class="animate-ping" cx="125" cy="90" fill="#3b82f6" opacity="0.5" r="4"></circle>
+<circle cx="125" cy="90" fill="#3b82f6" r="3"></circle>
+<!-- Detained Truck Pin 2 (Rosario / Zárate - Red) -->
+<circle cx="150" cy="148" fill="#ef4444" opacity="0.2" r="6"></circle>
+<circle cx="150" cy="148" fill="#ef4444" r="3.5"></circle>
+<!-- Active Node 3 (Córdoba - Blue) -->
+<circle cx="138" cy="135" fill="#3b82f6" r="3.5"></circle>
+<!-- Active Truck Indicator (CABA - Blue with Truck icon badge) -->
+<g transform="translate(156, 158)">
+<rect fill="#1d4ed8" filter="drop-shadow(0 2px 3px rgba(0,0,0,0.2))" height="15" rx="3.5" width="20"></rect>
+<path d="M4 11a1 1 0 102 0 1 1 0 00-2 0zm8 0a1 1 0 102 0 1 1 0 00-2 0z" fill="white"></path>
+<path d="M4 5h7v5H4zM11 7h3l2 2v2h-5z" fill="white"></path>
+</g>
+<!-- Completed Pin (Bahía Blanca - Green) -->
+<circle cx="145" cy="205" fill="#10b981" r="3.5"></circle>
+<!-- South Node (Neuquén/Río Negro - Blue) -->
+<circle cx="120" cy="220" fill="#3b82f6" r="3.5"></circle>
+<!-- Southernmost Completed Node -->
+<circle cx="105" cy="260" fill="#10b981" r="3.5"></circle>
+</svg>
+</div>
+</div>
+<!-- Incidencias Abiertas Alert Card -->
+<div class="bg-rose-50/60 border border-rose-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between flex-1">
 <div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-rose-100 text-rose-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-bold text-slate-800">Incidencias abiertas</span>
+</div>
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="flex items-baseline gap-3 mt-2">
+<span class="text-4xl font-black text-slate-900 tracking-tight">7</span>
 <div>
-<h1 class="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 tracking-tight">Torre de Control</h1>
-<p class="text-xs text-slate-500 mt-0.5">Operación logística en tiempo real</p>
-</div>
-<div class="flex items-center gap-2 text-xs text-slate-500">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>8 agentes en línea</span>
+<div class="text-xs font-bold text-rose-600">2 de criticidad alta</div>
+<div class="text-[11px] text-slate-500 font-medium">Requieren seguimiento inmediato.</div>
 </div>
 </div>
-<div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
-<div class="xl:col-span-3 space-y-3">
-<div class="rounded-2xl bg-[#0b3a8a] text-white p-5 shadow-sm">
-<p class="text-xs text-blue-100">Viajes activos</p>
-<div class="flex items-end justify-between mt-1">
+</div>
+</div>
+</div>
+<!-- END: MainHeroGrid -->
+<!-- BEGIN: OperacionEnMovimientoSection -->
+<section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 space-y-6">
+<!-- Section Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+<h2 class="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Operación en movimiento</h2>
+<div class="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold border border-emerald-200/60">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>Operación actualizada en tiempo real</span>
+</div>
+</div>
+<!-- Section Body Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Feed: ACTIVIDAD DE AGENTES (Col 1-5) -->
+<div class="lg:col-span-5 space-y-4">
+<h3 class="text-xs font-extrabold text-slate-700 tracking-wider uppercase">Actividad de agentes</h3>
+<div class="space-y-3.5 relative">
+<!-- Row 1: Reclamos -->
+<div class="flex items-start justify-between gap-3 text-xs group">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0"></span>
+<div class="p-1 rounded bg-rose-50 text-rose-600 shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
 <div>
-<p class="text-5xl font-display font-extrabold leading-none">15</p>
-<p class="text-xs text-blue-200 mt-1">de 26 en gestión</p>
+<div class="font-bold text-slate-800 leading-tight">Reclamo recibido · viaje identificado automáticamente</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Se generó un reclamo y se vinculó al viaje VJ-24820.</div>
 </div>
-<div class="w-16 h-16 rounded-full border-4 border-blue-300/40 flex items-center justify-center text-xs font-bold">15<br/>26</div>
 </div>
-<div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+<div class="text-right shrink-0">
+<span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Reclamos</span>
+<div class="text-[10px] text-slate-400 mt-1">10:24</div>
+</div>
+</div>
+<!-- Row 2: Remitos -->
+<div class="flex items-start justify-between gap-3 text-xs group">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
+<div class="p-1 rounded bg-blue-50 text-blue-600 shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
 <div>
-<p class="text-[11px] text-blue-200">Entregas hoy</p>
-<p class="text-2xl font-display font-bold">296</p>
-</div>
-<span class="text-[11px] bg-emerald-400/20 text-emerald-200 px-2 py-0.5 rounded-full">+16% vs. ayer</span>
+<div class="font-bold text-slate-800 leading-tight">Nuevo remito recibido por WhatsApp · lectura en curso</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Se procesando el documento enviado por el chofer.</div>
 </div>
 </div>
-<div class="rounded-2xl bg-white border border-slate-200 p-4">
-<p class="text-xs text-slate-500">Remitos procesados</p>
-<p class="text-3xl font-display font-extrabold text-slate-900">518</p>
-<p class="text-[11px] text-slate-400">97,1% lectura auto</p>
-<div class="mt-3 flex items-center justify-between">
+<div class="text-right shrink-0">
+<span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Remitos</span>
+<div class="text-[10px] text-slate-400 mt-1">09:47</div>
+</div>
+</div>
+<!-- Row 3: Remitos / Diferencia -->
+<div class="flex items-start justify-between gap-3 text-xs group">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
+<div class="p-1 rounded bg-amber-50 text-amber-600 shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
 <div>
-<p class="text-[11px] text-slate-500">SLA de entrega</p>
-<p class="text-xl font-bold text-slate-900">94,2%</p>
-</div>
-<span class="text-[11px] text-emerald-600 font-semibold">+2,4 pts</span>
+<div class="font-bold text-slate-800 leading-tight">Diferencia de bultos detectada · enviado a revisión</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Se detectó una diferencia y se notificó al equipo.</div>
 </div>
 </div>
+<div class="text-right shrink-0">
+<span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Remitos</span>
+<div class="text-[10px] text-slate-400 mt-1">09:12</div>
 </div>
-<div class="xl:col-span-5 bg-white border border-slate-200 rounded-2xl p-5">
-<div class="flex items-center justify-between mb-3">
+</div>
+<!-- Row 4: Destinos -->
+<div class="flex items-start justify-between gap-3 text-xs group">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
+<div class="p-1 rounded bg-emerald-50 text-emerald-600 shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
 <div>
-<p class="text-sm font-bold text-slate-900">Chat Central</p>
-<p class="text-[11px] text-emerald-600">En línea</p>
+<div class="font-bold text-slate-800 leading-tight">Destino validado · link enviado al chofer</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Se compartió la ubicación de entrega con el chofer.</div>
 </div>
 </div>
-<h2 class="text-xl font-display font-extrabold text-slate-900">¿Qué necesitás saber de la operación?</h2>
-<p class="text-xs text-slate-500 mt-1 mb-4">Te ayudo a consultar viajes, remitos, incidencias y toda la operación logística en tiempo real.</p>
-<div class="grid grid-cols-2 gap-2">
-<button class="text-left text-xs rounded-xl border border-slate-200 px-3 py-2.5 hover:bg-slate-50">Camiones por salir</button>
-<button class="text-left text-xs rounded-xl border border-slate-200 px-3 py-2.5 hover:bg-slate-50">Incidencias abiertas</button>
-<button class="text-left text-xs rounded-xl border border-slate-200 px-3 py-2.5 hover:bg-slate-50">Camiones con demora</button>
-<button class="text-left text-xs rounded-xl border border-slate-200 px-3 py-2.5 hover:bg-slate-50">Viajes pendientes</button>
-</div>
-<div class="mt-4 flex gap-2">
-<input class="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Preguntá algo sobre la operación…"/>
-<button class="w-10 h-10 rounded-xl bg-blue-600 text-white">→</button>
+<div class="text-right shrink-0">
+<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Destinos</span>
+<div class="text-[10px] text-slate-400 mt-1">08:50</div>
 </div>
 </div>
-<div class="xl:col-span-4 space-y-3">
-<div class="bg-white border border-slate-200 rounded-2xl p-4 h-56 bg-slate-50">
-<p class="text-xs font-semibold text-slate-500 mb-2">Flota en tiempo real</p>
-<div class="h-40 rounded-xl bg-gradient-to-b from-sky-100 to-slate-100 border border-slate-200"></div>
+<!-- Row 5: Rendición -->
+<div class="flex items-start justify-between gap-3 text-xs group">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
+<div class="p-1 rounded bg-purple-50 text-purple-600 shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 </div>
-<div class="rounded-2xl bg-rose-50 border border-rose-100 p-4">
-<p class="text-xs text-rose-600 font-medium">Incidencias abiertas</p>
-<p class="text-4xl font-display font-extrabold text-rose-600">7</p>
-<p class="text-xs text-rose-500">2 de criticidad alta</p>
+<div>
+<div class="font-bold text-slate-800 leading-tight">Comprobante leído y clasificado · combustible</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Se procesó el comprobante de YPF.</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Rendición</span>
+<div class="text-[10px] text-slate-400 mt-1">08:20</div>
+</div>
+</div>
+<!-- Row 6: Incidencias / Check -->
+<div class="flex items-start justify-between gap-3 text-xs group">
+<div class="flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
+<div class="p-1 rounded bg-cyan-50 text-cyan-600 shrink-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<div>
+<div class="font-bold text-slate-800 leading-tight">Evento resuelto · causa trazada en backoffice</div>
+<div class="text-[11px] text-slate-500 mt-0.5">La incidencia fue resuelta y se actualizó el historial.</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">Incidencias</span>
+<div class="text-[10px] text-slate-400 mt-1">07:41</div>
 </div>
 </div>
 </div>
-<section>
-<h2 class="text-sm font-bold tracking-widest text-slate-700 mb-3">OPERACIÓN EN MOVIMIENTO</h2>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-<div class="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-4">
-<p class="text-xs font-semibold text-slate-500 mb-3">ACTIVIDAD DE AGENTES</p>
-<ul class="space-y-2 text-xs text-slate-600">
-<li>Remito validado · Arcor S.A.</li>
-<li>Viaje confirmado · R. Quiroga</li>
-<li>INC-3391 abierta · parada no prevista</li>
-<li>Notificación de llegada enviada</li>
-<li>Dirección corregida · Coca-Cola Andina</li>
-</ul>
 </div>
-<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="bg-white border border-slate-200 rounded-2xl p-4 md:col-span-3 h-40">
-<p class="text-xs font-semibold text-slate-500">VIAJES POR DÍA</p>
-<div class="mt-6 h-20 rounded-xl bg-gradient-to-t from-blue-100 to-transparent"></div>
+<!-- Charts Grid (Col 6-12) -->
+<div class="lg:col-span-7 flex flex-col gap-6">
+<!-- VIAJES POR DÍA (Area Line Chart) -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100">
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-extrabold text-slate-700 uppercase">Viajes por día</span>
 </div>
-<div class="bg-white border border-slate-200 rounded-2xl p-4">
-<p class="text-xs font-semibold text-slate-500">INCIDENCIAS POR TIPO</p>
-<p class="text-3xl font-display font-extrabold mt-2">140</p>
+<div class="h-32 w-full relative">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 500 120">
+<defs>
+<lineargradient id="areaGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid guidelines -->
+<line stroke="#e2e8f0" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="500" y1="20" y2="20"></line>
+<line stroke="#e2e8f0" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="500" y1="60" y2="60"></line>
+<line stroke="#e2e8f0" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="500" y1="100" y2="100"></line>
+<!-- Values on Y axis -->
+<text fill="#94a3b8" font-size="9" x="2" y="24">30</text>
+<text fill="#94a3b8" font-size="9" x="2" y="64">20</text>
+<text fill="#94a3b8" font-size="9" x="2" y="104">10</text>
+<!-- Shaded Area -->
+<path d="M 20,80 Q 100,65 170,55 T 320,25 T 400,60 T 480,75 L 480,110 L 20,110 Z" fill="url(#areaGrad)"></path>
+<!-- Main Trend Line (Blue) -->
+<path d="M 20,80 Q 100,65 170,55 T 320,25 T 400,60 T 480,75" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Secondary Line (Green) -->
+<path d="M 20,95 Q 100,85 170,75 T 320,55 T 400,80 T 480,90" fill="none" stroke="#10b981" stroke-linecap="round" stroke-width="1.8"></path>
+<!-- Peak marker on Thursday (Jue) -->
+<circle cx="320" cy="25" fill="#2563eb" r="4" stroke="#ffffff" stroke-width="2"></circle>
+<circle cx="320" cy="55" fill="#10b981" r="3.5" stroke="#ffffff" stroke-width="2"></circle>
+</svg>
 </div>
-<div class="bg-white border border-slate-200 rounded-2xl p-4 md:col-span-2">
-<p class="text-xs font-semibold text-slate-500">SLA POR ZONA</p>
-<div class="mt-3 space-y-2 text-xs">
-<div class="flex justify-between"><span>CABA</span><span class="font-semibold">97%</span></div>
-<div class="flex justify-between"><span>GBA</span><span class="font-semibold">94%</span></div>
-<div class="flex justify-between"><span>Cuyo</span><span class="font-semibold">91%</span></div>
+<!-- X axis days labels -->
+<div class="flex justify-between text-[11px] font-semibold text-slate-400 mt-2 px-3">
+<span>Lun</span>
+<span>Mar</span>
+<span>Mié</span>
+<span class="text-blue-600 font-bold">Jue</span>
+<span>Vie</span>
+<span>Sáb</span>
+<span>Dom</span>
+</div>
+</div>
+<!-- Bottom Sub-Charts: Incidencias por tipo & SLA por zona -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Incidencias por Tipo (Donut Chart) -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center justify-between">
+<span class="text-xs font-extrabold text-slate-700 uppercase w-full text-left mb-2">Incidencias por tipo</span>
+<!-- Donut representation -->
+<div class="relative w-28 h-28 my-1 flex items-center justify-center">
+<div class="w-full h-full rounded-full donut-chart-incidencias shadow-inner"></div>
+<div class="w-18 h-18 bg-white rounded-full absolute flex flex-col items-center justify-center shadow-xs">
+<span class="text-base font-black text-slate-800 leading-tight">140</span>
+<span class="text-[9px] text-slate-400 font-medium">eventos</span>
+</div>
+</div>
+<!-- Quick tiny legend dots -->
+<div class="flex items-center justify-center gap-2 text-[10px] text-slate-500 font-medium mt-2">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Ruta</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> Bultos</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Demora</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Doc</span>
+</div>
+</div>
+<!-- SLA por Zona (Horizontal Progress Bars) -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col justify-between">
+<span class="text-xs font-extrabold text-slate-700 uppercase mb-2">SLA por zona</span>
+<div class="space-y-2 text-xs">
+<!-- AMBA -->
+<div>
+<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+<span>AMBA</span>
+<span class="font-bold text-slate-800">97%</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-1.5 rounded-full" style="width: 97%"></div>
+</div>
+</div>
+<!-- Centro -->
+<div>
+<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+<span>Centro</span>
+<span class="font-bold text-slate-800">95%</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-sky-500 h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<!-- Litoral -->
+<div>
+<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+<span>Litoral</span>
+<span class="font-bold text-slate-800">93%</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-teal-500 h-1.5 rounded-full" style="width: 93%"></div>
+</div>
+</div>
+<!-- Cuyo -->
+<div>
+<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+<span>Cuyo</span>
+<span class="font-bold text-slate-800">91%</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 91%"></div>
+</div>
+</div>
+<!-- NOA -->
+<div>
+<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+<span>NOA</span>
+<span class="font-bold text-slate-800">88%</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<!-- Patagonia -->
+<div>
+<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+<span>Patagonia</span>
+<span class="font-bold text-slate-800">92%</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-blue-500 h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-<div class="px-4 py-3 border-b border-slate-100">
-<h2 class="text-sm font-bold tracking-widest text-slate-700">VIAJES EN GESTIÓN</h2>
+<!-- END: OperacionEnMovimientoSection -->
+<!-- BEGIN: ViajesEnGestionTable -->
+<section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+<!-- Table Header Title Bar -->
+<div class="p-4 sm:px-6 flex items-center justify-between border-b border-slate-100">
+<h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight uppercase">Viajes en gestión</h2>
+<a class="text-xs font-bold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 transition-colors" href="#">
+          Ver todos →
+        </a>
 </div>
+<!-- Responsive Table Container -->
 <div class="overflow-x-auto">
-<table class="min-w-full text-xs">
-<thead class="bg-slate-900 text-white">
+<table class="w-full text-left text-xs" id="logistics-voyages-table">
+<thead class="bg-[#0e1738] text-white uppercase text-[10px] tracking-wider font-bold">
 <tr>
-<th class="text-left px-3 py-2 font-semibold">VIAJE</th>
-<th class="text-left px-3 py-2 font-semibold">CLIENTE</th>
-<th class="text-left px-3 py-2 font-semibold">RUTA</th>
-<th class="text-left px-3 py-2 font-semibold">CHOFER</th>
-<th class="text-left px-3 py-2 font-semibold">ESTADO</th>
-<th class="text-left px-3 py-2 font-semibold">AVANCE</th>
+<th class="py-3 px-4 sm:px-6" scope="col">Viaje</th>
+<th class="py-3 px-4" scope="col">Cliente</th>
+<th class="py-3 px-4" scope="col">Ruta</th>
+<th class="py-3 px-4" scope="col">Chofer</th>
+<th class="py-3 px-4" scope="col">Estado</th>
+<th class="py-3 px-4 w-44" scope="col">Avance</th>
+<th class="py-3 px-4 text-center" scope="col">ETA</th>
+<th class="py-3 px-4 text-right pr-6" scope="col"></th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-100">
-<tr><td class="px-3 py-2 font-mono">VJ-24817</td><td class="px-3 py-2">Arcor S.A.</td><td class="px-3 py-2">CABA → Córdoba</td><td class="px-3 py-2">Carlos Pérez</td><td class="px-3 py-2">En curso</td><td class="px-3 py-2">68%</td></tr>
-<tr><td class="px-3 py-2 font-mono">VJ-24820</td><td class="px-3 py-2">Molinos Río de la Plata</td><td class="px-3 py-2">Rosario → Tucumán</td><td class="px-3 py-2">Juan Rodríguez</td><td class="px-3 py-2">Demorado</td><td class="px-3 py-2">41%</td></tr>
-<tr><td class="px-3 py-2 font-mono">VJ-24823</td><td class="px-3 py-2">YPF Distribución</td><td class="px-3 py-2">Bahía Blanca → Neuquén</td><td class="px-3 py-2">Walter Benítez</td><td class="px-3 py-2">En curso</td><td class="px-3 py-2">55%</td></tr>
-<tr><td class="px-3 py-2 font-mono">VJ-24826</td><td class="px-3 py-2">Molinos Río de la Plata</td><td class="px-3 py-2">Zárate → Tucumán</td><td class="px-3 py-2">Miguel Sosa</td><td class="px-3 py-2">En curso</td><td class="px-3 py-2">72%</td></tr>
-<tr><td class="px-3 py-2 font-mono">VJ-24831</td><td class="px-3 py-2">Acindar Grupo</td><td class="px-3 py-2">CABA → Villa María</td><td class="px-3 py-2">R. Quiroga</td><td class="px-3 py-2">Confirmado</td><td class="px-3 py-2">12%</td></tr>
+<tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24817</td>
+<td class="py-3 px-4">Arcor S.A.</td>
+<td class="py-3 px-4 text-slate-600">Córdoba → CABA</td>
+<td class="py-3 px-4">Carlos Páez</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> En curso
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 68%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">68%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-800">14:35</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24820</td>
+<td class="py-3 px-4">Cervecería Quilmes</td>
+<td class="py-3 px-4 text-slate-600">Zárate → Mar del Plata</td>
+<td class="py-3 px-4">Juan Domínguez</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Detenido
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-rose-500 h-2 rounded-full" style="width: 41%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">41%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-800">16:10</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24823</td>
+<td class="py-3 px-4">YPF Distribución</td>
+<td class="py-3 px-4 text-slate-600">Bahía Blanca → Neuquén</td>
+<td class="py-3 px-4">Walter Benítez</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> En curso
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 33%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">33%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-800">18:40</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24826</td>
+<td class="py-3 px-4">Molinos Río de la Plata</td>
+<td class="py-3 px-4 text-slate-600">Rosario → Tucumán</td>
+<td class="py-3 px-4">Miguel Sosa</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> En curso
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 54%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">54%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-800">21:05</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24829</td>
+<td class="py-3 px-4">La Serenísima</td>
+<td class="py-3 px-4 text-slate-600">CABA → Santa Fe</td>
+<td class="py-3 px-4">Pablo Cardozo</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Entregado
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">100%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-400">—</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24831</td>
+<td class="py-3 px-4">Acindar Grupo</td>
+<td class="py-3 px-4 text-slate-600">San Nicolás → Córdoba</td>
+<td class="py-3 px-4">Roberto Quiroga</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> En curso
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 77%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">77%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-800">13:50</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24834</td>
+<td class="py-3 px-4">Coca-Cola Andina</td>
+<td class="py-3 px-4 text-slate-600">Mendoza → CABA</td>
+<td class="py-3 px-4">Héctor Maldonado</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Pendiente
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-slate-300 h-2 rounded-full" style="width: 0%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">0%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-400">—</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-4 sm:px-6 font-bold text-slate-900">VJ-24836</td>
+<td class="py-3 px-4">Frigorífico La Pampa</td>
+<td class="py-3 px-4 text-slate-600">Mar del Plata → CABA</td>
+<td class="py-3 px-4">Sergio Ferreyra</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> En curso
+                </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 88%"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-500 w-8">88%</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center font-semibold text-slate-800">12:25</td>
+<td class="py-3 px-4 text-right pr-6 text-slate-400 font-bold hover:text-slate-600 cursor-pointer">···</td>
+</tr>
 </tbody>
 </table>
 </div>
 </section>
+<!-- END: ViajesEnGestionTable -->
 </main>
+<!-- END: PageMain -->
+<!-- BEGIN: PageFooter -->
+<footer class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-4 border-t border-slate-200 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div>
+      Empliados © 2026 • Torre y agentes · consultas en <span class="text-blue-600 font-semibold cursor-pointer">Chat Central</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="inline-flex items-center gap-1 text-emerald-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Monitor SOL Activo
+      </span>
+<a class="hover:text-slate-600" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-600" href="#">Salas Demo</a>
+</div>
+</footer>
+<!-- END: PageFooter -->
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
