@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 
-<html class="h-full bg-[#f8fafc]" lang="es"><head>
+<html class="h-full bg-[#f8f9ff]" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Empliados - Finanzas Cobranza</title>
-<!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+<title>Facturas a Pagar (AP) · Finanzas · Empliados Logistics Cloud</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS CDN with forms and container queries -->
+<!-- Tailwind CSS v3 CDN with Forms and Container Queries -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
 <script id="tailwind-config">
     tailwind.config = {
       theme: {
@@ -21,183 +21,829 @@
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            navy: {
-              950: '#060a17',
-              900: '#0e1738',
-              850: '#141f48',
-              800: '#1a275a',
-            },
             brand: {
               50: '#eef2ff',
               100: '#e0e7ff',
-              200: '#c7d2fe',
               500: '#4f46e5',
               600: '#4338ca',
               700: '#3730a3',
+              900: '#1e1b4b',
             }
           },
           boxShadow: {
-            'card': '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
-            'subtle': '0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.03)',
-            'radar': '0 0 35px -5px rgba(239, 68, 68, 0.25)'
+            'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+            'subtle': '0 2px 6px -1px rgba(0, 0, 0, 0.05), 0 1px 4px -1px rgba(0, 0, 0, 0.03)',
           }
         }
       }
     }
   </script>
-<style>
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+<!-- Custom Styles for Typography & Fine Adjustments -->
+<style data-purpose="base-styling">
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
     }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
       border-radius: 9999px;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-    .radar-pulse-ring {
-      animation: radar-pulse 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-    }
-    @keyframes radar-pulse {
-      0% { transform: scale(0.6); opacity: 0.9; }
-      50% { transform: scale(1.15); opacity: 0.35; }
-      100% { transform: scale(1.6); opacity: 0; }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
     }
   </style>
-</head>
-<body class="h-full font-sans text-slate-800 bg-[#f8fafc] antialiased selection:bg-indigo-50 selection:text-indigo-700">
-<div class="min-h-full flex flex-col">
-<!-- ========================================================================= -->
-<!-- HEADER NIVEL 1: INSTITUCIONAL Y HERRAMIENTAS GLOBALES                      -->
-<!-- ========================================================================= -->
-<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16">
-<!-- Logo & Marca -->
-<div class="flex items-center gap-6">
-<a class="flex items-center gap-2.5 group" href="#">
-<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all font-black text-lg">
-                E
-              </div>
-<div class="flex flex-col">
-<span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>
-<span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>
+<meta content="web_standard" name="shell-type"/></head>
+<body class="min-h-full flex flex-col font-sans text-slate-800 bg-[#f8f9ff]">
+<!-- BEGIN: MainHeader -->
+<header class="w-full bg-white border-b border-slate-200 sticky top-0 z-40 select-none">
+<!-- Level 1: Global Navigation & Utilities -->
+<div class="px-4 sm:px-6 h-14 flex items-center justify-between gap-4 border-b border-slate-100">
+<!-- Brand & Search Bar -->
+<div class="flex items-center gap-6 flex-1 max-w-2xl">
+<!-- Brand Identity -->
+<a aria-label="Empliados Logistics Cloud Home" class="flex items-center gap-2.5 shrink-0 group" href="#">
+<div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm shadow-indigo-200">
+            E
+          </div>
+<div class="flex flex-col leading-none">
+<span class="text-slate-900 font-extrabold tracking-tight text-sm">EMPLIADOS</span>
+<span class="text-slate-400 font-semibold tracking-wider text-[9px] mt-0.5">LOGISTICS CLOUD</span>
 </div>
 </a>
-<!-- Buscador Global Centralizado con ⌘K -->
-<div class="relative w-80 hidden md:block">
+<!-- Universal Search Input -->
+<div class="relative w-full max-w-md hidden md:block" data-purpose="omnibox-search">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-<span class="material-symbols-outlined text-base">search</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
 </div>
-<input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
-<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-<kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd>
+<input class="w-full pl-9 pr-12 py-1.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-xs text-slate-800 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-xs">⌘K</kbd>
 </div>
 </div>
 </div>
-<!-- Módulos Globales (Navegación Nivel 1) -->
-<nav class="hidden xl:flex items-center space-x-1">
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Torre de Control</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Monitor</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors flex items-center gap-1.5" href="#">
-              WhatsApp
-              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">Nuevo</span>
+<!-- Center Modules Tabs -->
+<nav aria-label="Módulos Maestros" class="hidden lg:flex items-center gap-1.5">
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Torre de Control
+        </a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Monitor
+        </a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors inline-flex items-center gap-1.5" href="#">
+          WhatsApp
+          <span class="inline-flex items-center px-1.5 py-0.2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded">Nuevo</span>
 </a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Métricas</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-white bg-[#0e1738] rounded-md shadow-sm" href="/finanzas">Finanzas</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Métricas
+        </a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" href="#">
+          Finanzas
+        </a>
 </nav>
-<!-- Estado, Campana y Perfil -->
-<div class="flex items-center gap-4">
-<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">
+<!-- Right Utility Actions & User Menu -->
+<div class="flex items-center gap-3">
+<!-- Live System Status Badge -->
+<div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
 <span class="relative flex h-2 w-2">
 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
 <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
 </span>
-<span>Sistemas activos</span>
-</div>
-<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones operativas">
-<span class="material-symbols-outlined text-lg">notifications</span>
-<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>
+          Sistemas activos
+        </div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white font-bold text-[9px] rounded-full flex items-center justify-center ring-2 ring-white">
+            5
+          </span>
 </button>
-<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
-<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
-                GD
-              </div>
-<div class="hidden lg:flex flex-col text-left">
-<span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span>
-<span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span>
+<div class="h-6 w-px bg-slate-200 mx-0.5"></div>
+<!-- User Profile Dropdown Trigger -->
+<button class="flex items-center gap-2.5 pl-1 pr-1.5 py-1 hover:bg-slate-100 rounded-lg transition-colors group" type="button">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-slate-100 shadow-xs">
+            GD
+          </div>
+<div class="text-left hidden xl:block leading-tight">
+<div class="text-xs font-bold text-slate-800">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400 font-medium">Administrador</div>
 </div>
-<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
 </div>
 </div>
+<!-- Level 2: Agents & Operational Quick Links -->
+<div class="px-4 sm:px-6 h-9 flex items-center overflow-x-auto custom-scrollbar bg-slate-50/60 border-b border-slate-150 text-[11px] font-medium text-slate-600">
+<div class="flex items-center gap-4 shrink-0">
+<span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">AGENTES:</span>
+<a class="hover:text-indigo-600 transition-colors" href="#">Gestión de Viajes</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Tracking Express</a>
+<button class="flex items-center gap-1 hover:text-indigo-600 transition-colors" type="button">
+<span>Remitos</span>
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<a class="hover:text-indigo-600 transition-colors" href="#">Destinos</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Incidencias</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Rendición</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">ETA</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">POP/POD</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Reclamos</a>
+<a class="hover:text-indigo-600 transition-colors" href="#">Analítica</a>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+          Nuevo Finanzas
+        </span>
+</div>
+</div>
+<!-- Level 3: Finance Contextual Submenu -->
+<div class="px-4 sm:px-6 h-11 flex items-center justify-between border-b border-slate-200 bg-white">
+<nav aria-label="Finanzas Menú" class="flex items-center gap-1 overflow-x-auto custom-scrollbar">
+<span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mr-2 shrink-0">FINANZAS</span>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Dashboard</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Clientes</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Facturas</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Cobranza</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Conciliación</a>
+<a class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md transition-colors shrink-0" href="#">Enviar Mensaje</a>
+</nav>
+<!-- Sync Status Indicator -->
+<div class="hidden md:flex items-center gap-3 shrink-0 text-xs font-medium text-slate-500">
+<span class="inline-flex items-center gap-1.5 text-slate-600 font-semibold text-[11px]">
+<span class="text-amber-500">⚡</span> Cuentas por Pagar (AP) · AFIP &amp; OCR Sincronizado
+        </span>
+<span class="h-3 w-px bg-slate-200"></span>
+<span class="text-[11px] text-slate-500 font-mono">USD/ARS $1.045,50</span>
 </div>
 </div>
 </header>
-<!-- ========================================================================= -->
-<!-- HEADER NIVEL 2: BARRA DE AGENTES (SUB-BARRA HORIZONTAL)                   -->
-<!-- ========================================================================= -->
-<nav class="bg-white border-b border-slate-200 text-xs shadow-xs sticky top-16 z-40">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center space-x-1 overflow-x-auto py-2 no-scrollbar">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 flex items-center gap-1 shrink-0">
-<span class="material-symbols-outlined text-xs">smart_toy</span> AGENTES:
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6"><div class="flex flex-col w-full space-y-6">
+<!-- 1. Contextual Finance Submenu & Live Controls -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-lowest p-3 rounded-xl shadow-xs">
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider px-2">FINANZAS:</span>
+<a class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" href="#">Dashboard</a>
+<a class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" href="#">Clientes</a>
+<a class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" href="#">Facturas</a>
+<a class="px-3.5 py-1.5 rounded-lg font-label-md text-label-md bg-primary-container text-on-tertiary shadow-xs flex items-center gap-1.5 font-semibold" href="#">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+        Cobranza
+      </a>
+<a class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" href="#">Conciliación</a>
+<a class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" href="#">Enviar Mensaje</a>
+</div>
+<div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-secondary text-base leading-none">smart_toy</span>
+<span class="font-semibold text-on-surface">Motor Cobranza v2.4</span>
+<span class="text-xs">• Recordatorios activos</span>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-base leading-none">sync</span>
+<span>Sincronizar AFIP / ERP</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-lg text-label-lg shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-base leading-none">forward_to_inbox</span>
+<span>+ Emitir reclamo masivo</span>
+</button>
+</div>
+</div>
+<!-- 2. Screen Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="space-y-1">
+<div class="flex items-center gap-3">
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight">GESTIÓN DE COBRANZAS (AR)</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          OPERATIVO
+        </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+        Facturas a cobrar · saldo, vencimiento y estado de gestión proactiva para transporte, fletes y servicios logísticos.
+      </p>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-lg text-label-lg shadow-xs" type="button">
+<span class="material-symbols-outlined text-lg leading-none">campaign</span>
+<span>Comunicar masivo (WhatsApp)</span>
+</button>
+</div>
+</div>
+<!-- 3. KPI Cards Grid (4 Columns) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-subtle flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">TOTAL A COBRAR (CARTERA)</span>
+<div class="w-8 h-8 rounded-lg bg-secondary-fixed text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+</div>
+</div>
+<div>
+<div class="font-metric-stat text-metric-stat font-bold text-on-surface tracking-tight">$48.720.500 <span class="font-body-sm text-body-sm font-semibold text-on-surface-variant">ARS</span></div>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-label-caps text-label-caps font-semibold">
+<span class="material-symbols-outlined text-xs leading-none">trending_up</span> +8,4%
           </span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Gestión de Viajes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Tracking Express</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1" href="#">
-            Remitos ▾
-          </a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Destinos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Incidencias</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Rendición</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">ETA</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">POP/POD</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Reclamos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Analítica</a>
+<span class="font-body-sm text-body-sm text-on-surface-variant">vs mes anterior</span>
 </div>
 </div>
-</nav>
-<!-- ========================================================================= -->
-
-<nav class="bg-white border-b border-slate-200 text-xs sticky top-[6.75rem] z-30">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center gap-1 overflow-x-auto py-2">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 shrink-0">FINANZAS</span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas">Dashboard</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/clientes">Clientes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/pagos">Facturas</a>
-<a class="px-3.5 py-1.5 bg-[#0e1738] text-white font-semibold rounded-lg shadow-sm whitespace-nowrap" href="/finanzas/facturas/cobranzas">Cobranza</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/conciliacion">Conciliación</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/comunicacion">Enviar Mensaje</a>
+<div class="font-body-sm text-body-sm text-on-surface-variant pt-2 border-t-0">
+<span class="font-semibold text-on-surface">94 facturas activas</span> · Promedio plazo: 28 días
+      </div>
+</div>
+<!-- KPI 2 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-subtle flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">COBRADO ESTE MES</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">check_circle</span>
 </div>
 </div>
-</nav>
-
-<main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-<section>
-<h1 class="text-2xl font-bold text-slate-900 tracking-tight">COBRANZA</h1>
-<p class="text-xs sm:text-sm text-slate-500 mt-1">Facturas a cobrar · saldo, vencimiento y estado de gestión.</p>
-</section>
-<section class="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
-<div class="p-4 border-b border-slate-100 flex gap-2">
-<input class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50" placeholder="Buscar factura o cliente..."/>
-<a class="px-3.5 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold" href="/finanzas/comunicacion">Comunicar</a>
+<div>
+<div class="font-metric-stat text-metric-stat font-bold text-on-surface tracking-tight">$31.450.000 <span class="font-body-sm text-body-sm font-semibold text-on-surface-variant">ARS</span></div>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-label-caps text-label-caps font-semibold">
+            ↑ 64,5%
+          </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">recuperado sobre meta</span>
 </div>
-<table class="w-full text-left text-xs"><thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr>
-<th class="py-3 px-4">Número</th><th class="py-3 px-4">Cliente</th><th class="py-3 px-4">Vto</th><th class="py-3 px-4">Monto</th><th class="py-3 px-4">Aplicado</th><th class="py-3 px-4">Saldo</th><th class="py-3 px-4">Estado</th>
-</tr></thead><tbody class="divide-y divide-slate-100">
-<tr><td class="py-3 px-4 font-mono font-semibold">FC-A 0001-00482</td><td class="py-3 px-4">PepsiCo Central</td><td class="py-3 px-4 font-mono">12/10</td><td class="py-3 px-4 font-mono">$1.240.000</td><td class="py-3 px-4 font-mono">$0</td><td class="py-3 px-4 font-mono font-bold">$1.240.000</td><td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">Vencida</span></td></tr>
-<tr><td class="py-3 px-4 font-mono font-semibold">FC-A 0001-00491</td><td class="py-3 px-4">Arcor S.A.</td><td class="py-3 px-4 font-mono">18/10</td><td class="py-3 px-4 font-mono">$860.000</td><td class="py-3 px-4 font-mono">$200.000</td><td class="py-3 px-4 font-mono font-bold">$660.000</td><td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 font-semibold">Parcial</span></td></tr>
-<tr><td class="py-3 px-4 font-mono font-semibold">FC-A 0001-00502</td><td class="py-3 px-4">Cervecería Quilmes</td><td class="py-3 px-4 font-mono">22/10</td><td class="py-3 px-4 font-mono">$540.000</td><td class="py-3 px-4 font-mono">$0</td><td class="py-3 px-4 font-mono font-bold">$540.000</td><td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold">Por vencer</span></td></tr>
-</tbody></table></section>
-
-</main>
 </div>
+<div class="space-y-1 pt-1">
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 64.5%"></div>
+</div>
+<div class="flex justify-between font-label-caps text-label-caps text-on-surface-variant">
+<span>Meta mensual: $48.000.000</span>
+<span>64,5%</span>
+</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-subtle flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">SALDO VENCIDO (&gt;30 DÍAS)</span>
+<div class="w-8 h-8 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">warning</span>
+</div>
+</div>
+<div>
+<div class="font-metric-stat text-metric-stat font-bold text-error tracking-tight">$6.240.800 <span class="font-body-sm text-body-sm font-semibold text-on-surface-variant">ARS</span></div>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-red-100 text-error font-label-caps text-label-caps font-semibold">
+            12,8% de cartera
+          </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">riesgo moderado</span>
+</div>
+</div>
+<div class="font-body-sm text-body-sm text-error font-medium pt-2">
+        11 facturas con atraso crítico (&gt;45 días)
+      </div>
+</div>
+<!-- KPI 4 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-subtle flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">RECORDATORIOS (WHATSAPP IA)</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">forum</span>
+</div>
+</div>
+<div>
+<div class="font-metric-stat text-metric-stat font-bold text-on-surface tracking-tight">142 <span class="font-body-sm text-body-sm font-semibold text-on-surface-variant">notificaciones</span></div>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-label-caps text-label-caps font-semibold">
+            88% tasa apertura
+          </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">DEBIN activo</span>
+</div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant pt-2">
+        Respuesta promedio cliente: <span class="font-semibold text-on-surface">3,4 horas</span>
+</div>
+</div>
+</div>
+<!-- 4. Filter Toolbar & State Counters -->
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-subtle space-y-3.5">
+<!-- State Pills -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1">
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md flex items-center gap-2 shrink-0">
+<span>Todas</span>
+<span class="bg-primary-container px-1.5 py-0.2 rounded-full text-xs">94</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shrink-0">
+<span>Vencidas</span>
+<span class="bg-error-container text-on-error-container font-semibold px-1.5 py-0.2 rounded-full text-xs">18</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shrink-0">
+<span>Por vencer</span>
+<span class="bg-amber-100 text-amber-900 font-semibold px-1.5 py-0.2 rounded-full text-xs">32</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shrink-0">
+<span>Parciales</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant font-semibold px-1.5 py-0.2 rounded-full text-xs">14</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 shrink-0">
+<span>Al día</span>
+<span class="bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.2 rounded-full text-xs">30</span>
+</button>
+</div>
+<!-- Inputs & Action Row -->
+<div class="flex flex-col md:flex-row items-center gap-3">
+<div class="relative w-full flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-surface-container-low text-body-md text-on-surface rounded-lg placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary transition-all" placeholder="Buscar factura o cliente (ej: FC-A, CUIT, razón social, remito)..." type="text" value=""/>
+</div>
+<div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+<select class="bg-surface-container-low text-body-sm font-label-md text-on-surface py-2 px-3 rounded-lg focus:outline-none shrink-0">
+<option>Todos los clientes / dadores de carga</option>
+<option>PepsiCo Central</option>
+<option>Arcor S.A.</option>
+<option>Cervecería Quilmes</option>
+<option>Molinos Río de la Plata</option>
+<option>YPF Distribución Directa</option>
+</select>
+<select class="bg-surface-container-low text-body-sm font-label-md text-on-surface py-2 px-3 rounded-lg focus:outline-none shrink-0">
+<option>Rango de vencimiento: Octubre 2026</option>
+<option>Vencidas &gt; 15 días</option>
+<option>Próximos 7 días</option>
+<option>Próximos 30 días</option>
+</select>
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-on-tertiary font-label-md text-label-md shrink-0 shadow-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-base leading-none">send</span>
+<span>Comunicar seleccionadas (WhatsApp IA)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 5. Master Receivables Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-subtle overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase tracking-wider">
+<th class="py-3 px-4 w-10 text-center">
+<input checked="" class="rounded text-primary focus:ring-secondary" type="checkbox"/>
+</th>
+<th class="py-3 px-4">NÚMERO</th>
+<th class="py-3 px-4">CLIENTE / DADOR</th>
+<th class="py-3 px-4">VTO.</th>
+<th class="py-3 px-4 text-right">MONTO</th>
+<th class="py-3 px-4 text-right">APLICADO</th>
+<th class="py-3 px-4 text-right">SALDO</th>
+<th class="py-3 px-4 text-center">ESTADO</th>
+<th class="py-3 px-4">ÚLTIMO CONTACTO</th>
+<th class="py-3 px-4 text-right">ACCIÓN</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface font-body-sm text-body-sm">
+<!-- ROW 1: PepsiCo -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-lowest">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="rounded text-primary focus:ring-secondary" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-code-table text-code-table font-bold text-on-surface">FC-A 0001-00482</div>
+<div class="flex items-center gap-1 text-xs text-secondary mt-0.5">
+<span class="material-symbols-outlined text-xs leading-none">local_shipping</span>
+<a class="hover:underline" href="#">Remito #REM-98214</a>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-semibold text-on-surface">PepsiCo Central</div>
+<div class="text-xs text-on-surface-variant">CUIT 30-50000000-1 · compras@pepsico.com</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-medium text-on-surface">12/10/2026</div>
+<span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-error-container text-on-error-container">
+                Vencida hace 12d
+              </span>
+</td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $1.240.000
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $0
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table font-bold text-error whitespace-nowrap">
+              $1.240.000
+            </td>
+<td class="py-3.5 px-4 text-center whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps font-bold bg-red-100 text-error">
+                Vencida
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5 text-xs text-on-surface">
+<span class="material-symbols-outlined text-emerald-600 text-xs">done_all</span>
+<span>Aviso enviado hoy 10:15hs · Leído</span>
+</div>
+<div class="text-[11px] text-on-surface-variant">Canal: WhatsApp Bot IA</div>
+</td>
+<td class="py-3.5 px-4 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-on-tertiary font-label-md text-label-md flex items-center gap-1 transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-sm leading-none">chat</span>
+<span>Comunicar</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: Arcor -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-lowest">
+<td class="py-3.5 px-4 text-center">
+<input checked="" class="rounded text-primary focus:ring-secondary" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-code-table text-code-table font-bold text-on-surface">FC-A 0001-00491</div>
+<div class="flex items-center gap-1 text-xs text-secondary mt-0.5">
+<span class="material-symbols-outlined text-xs leading-none">local_shipping</span>
+<a class="hover:underline" href="#">Remito #REM-98172</a>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-semibold text-on-surface">Arcor S.A.</div>
+<div class="text-xs text-on-surface-variant">CUIT 30-50123456-9 · pagos@arcor.com</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-medium text-on-surface">18/10/2026</div>
+<span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-900">
+                Vencida hace 6d
+              </span>
+</td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $860.000
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-emerald-700 whitespace-nowrap">
+              $200.000
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table font-bold text-on-surface whitespace-nowrap">
+              $660.000
+            </td>
+<td class="py-3.5 px-4 text-center whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps font-bold bg-secondary-fixed text-on-secondary-fixed-variant">
+                Parcial
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5 text-xs text-on-surface">
+<span class="material-symbols-outlined text-secondary text-xs">schedule</span>
+<span>Promesa de pago para 26/10</span>
+</div>
+<div class="text-[11px] text-on-surface-variant">Por Tesorería Arcor</div>
+</td>
+<td class="py-3.5 px-4 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-secondary hover:bg-on-secondary-container text-on-secondary font-label-md text-label-md flex items-center gap-1 transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-sm leading-none">notifications_active</span>
+<span>Reclamar saldo</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: Quilmes -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-lowest">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded text-primary focus:ring-secondary" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-code-table text-code-table font-bold text-on-surface">FC-A 0001-00502</div>
+<div class="flex items-center gap-1 text-xs text-secondary mt-0.5">
+<span class="material-symbols-outlined text-xs leading-none">local_shipping</span>
+<a class="hover:underline" href="#">Remito #REM-98301</a>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-semibold text-on-surface">Cervecería Quilmes</div>
+<div class="text-xs text-on-surface-variant">CUIT 30-50222222-3 · ap@ab-inbev.com</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-medium text-on-surface">22/10/2026</div>
+<span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-800">
+                Por vencer en 3d
+              </span>
+</td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $540.000
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $0
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table font-bold text-on-surface whitespace-nowrap">
+              $540.000
+            </td>
+<td class="py-3.5 px-4 text-center whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps font-bold bg-amber-100 text-amber-900">
+                Por vencer
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5 text-xs text-on-surface">
+<span class="material-symbols-outlined text-on-surface-variant text-xs">alarm</span>
+<span>Recordatorio programado 09:00hs</span>
+</div>
+<div class="text-[11px] text-on-surface-variant">Disparo automático T-24h</div>
+</td>
+<td class="py-3.5 px-4 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-sm leading-none">bolt</span>
+<span>Anticipar</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: Molinos -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-lowest">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded text-primary focus:ring-secondary" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-code-table text-code-table font-bold text-on-surface">FC-A 0001-00515</div>
+<div class="flex items-center gap-1 text-xs text-secondary mt-0.5">
+<span class="material-symbols-outlined text-xs leading-none">local_shipping</span>
+<a class="hover:underline" href="#">Remito #REM-98044</a>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-semibold text-on-surface">Molinos Río de la Plata</div>
+<div class="text-xs text-on-surface-variant">CUIT 30-50333333-7 · tesoreria@molinos.com.ar</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-medium text-on-surface">28/10/2026</div>
+<span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800">
+                Cancelada
+              </span>
+</td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $4.150.000
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-emerald-700 whitespace-nowrap">
+              $4.150.000
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table font-bold text-emerald-700 whitespace-nowrap">
+              $0
+            </td>
+<td class="py-3.5 px-4 text-center whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps font-bold bg-emerald-100 text-emerald-800">
+                Cobrada / Al día
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+<span class="material-symbols-outlined text-xs">receipt_long</span>
+<span>Recibo oficial emitido #RC-0812</span>
+</div>
+<div class="text-[11px] text-on-surface-variant">Conciliado Banco Galicia</div>
+</td>
+<td class="py-3.5 px-4 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-sm leading-none">visibility</span>
+<span>Ver Recibo</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 5: YPF -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-lowest">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded text-primary focus:ring-secondary" type="checkbox"/>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-code-table text-code-table font-bold text-on-surface">FC-A 0001-00522</div>
+<div class="flex items-center gap-1 text-xs text-secondary mt-0.5">
+<span class="material-symbols-outlined text-xs leading-none">local_shipping</span>
+<a class="hover:underline" href="#">Remito #REM-98440</a>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-semibold text-on-surface">YPF Distribución Directa</div>
+<div class="text-xs text-on-surface-variant">CUIT 30-54667674-9 · cuentasapagar@ypf.com</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-medium text-on-surface">05/11/2026</div>
+<span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-surface-container text-on-surface-variant">
+                En término
+              </span>
+</td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $3.820.800
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table text-on-surface-variant whitespace-nowrap">
+              $0
+            </td>
+<td class="py-3.5 px-4 text-right font-code-table text-code-table font-bold text-on-surface whitespace-nowrap">
+              $3.820.800
+            </td>
+<td class="py-3.5 px-4 text-center whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-label-caps font-bold bg-emerald-50 text-emerald-700">
+                Al día
+              </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-1.5 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-xs">check</span>
+<span>Sin avisos pendientes</span>
+</div>
+<div class="text-[11px] text-on-surface-variant">Plazo contractual 30 días</div>
+</td>
+<td class="py-3.5 px-4 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-sm leading-none">info</span>
+<span>Detalle</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="px-4 py-3 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant font-medium">
+<div class="flex items-center gap-2">
+<span>Mostrando <span class="font-bold text-on-surface">1–5</span> de <span class="font-bold text-on-surface">94</span> facturas en cartera</span>
+<span class="text-outline-variant">•</span>
+<span>Total seleccionado: <span class="font-bold text-on-surface">2 facturas ($1.900.000 ARS)</span></span>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface disabled:opacity-40 transition-colors">Anterior</button>
+<button class="px-2.5 py-1 rounded bg-primary text-on-primary font-bold">1</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors">2</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors">3</button>
+<span class="px-1 text-on-surface-variant">...</span>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors">19</button>
+<button class="px-2 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors">Siguiente</button>
+</div>
+</div>
+</div>
+<!-- 6. Bottom Modules: Automation & AI Assistant (2 Columns) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Col Left: WhatsApp Business Simulator (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-5 shadow-subtle space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">mark_chat_read</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Simulador de Disparo de Cobranza IA · WhatsApp</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Vista previa del mensaje generado dinámicamente según el perfil de morosidad</p>
+</div>
+</div>
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">API WhatsApp Cloud v20</span>
+</div>
+<!-- Realistic WA Chat Bubble -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<div class="flex items-center justify-between text-xs text-on-surface-variant">
+<div class="flex items-center gap-1.5 font-semibold text-on-surface">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Empliados Finanzas (Cuenta Oficial Verificada)
+          </div>
+<span>Para: PepsiCo Central (Compras/AP)</span>
+</div>
+<div class="bg-surface-container-lowest p-3.5 rounded-lg shadow-xs space-y-2.5 max-w-lg">
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            Hola <span class="font-semibold">Equipo de Pagos de PepsiCo Central</span> 👋, le recordamos que la factura de servicios de transporte <span class="font-code-table text-code-table font-bold">FC-A 0001-00482</span> registra un saldo exigible de <span class="font-bold text-error">$1.240.000 ARS</span> con vencimiento operado el <span class="font-semibold">12/10/2026</span> (hace 12 días).
+          </p>
+<div class="p-2.5 rounded bg-surface-container-low space-y-1 font-body-sm text-body-sm">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Remito asociado:</span>
+<span class="font-mono font-medium text-secondary">#REM-98214 (POD firmado)</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Plazo estimado para neutralizar recargos:</span>
+<span class="font-bold text-on-surface">48 hs hábiles</span>
+</div>
+</div>
+<p class="text-xs text-on-surface-variant italic">
+            Podés cancelar directamente con QR Interoperable DEBIN o remitir comprobante respondiendo a este mensaje.
+          </p>
+<div class="flex flex-col sm:flex-row gap-2 pt-1">
+<button class="w-full py-1.5 px-3 rounded bg-secondary-container text-on-secondary-container font-label-md text-label-md font-semibold text-center hover:opacity-90 transition-opacity" type="button">
+              Pagar vía DEBIN / QR ($1.240.000)
+            </button>
+<button class="w-full py-1.5 px-3 rounded bg-surface-container text-on-surface font-label-md text-label-md text-center hover:bg-surface-container-high transition-colors" type="button">
+              Descargar Factura &amp; POD
+            </button>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="text-xs text-on-surface-variant">Plantilla AFIP-WA: <span class="font-mono text-on-surface">tpl_aviso_mora_v3</span></span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+            Editar plantilla
+          </button>
+<button class="px-4 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-xs transition-colors flex items-center gap-1.5 font-semibold" type="button">
+<span class="material-symbols-outlined text-base leading-none">send</span>
+            Enviar recordatorio ahora
+          </button>
+</div>
+</div>
+</div>
+<!-- Col Right: AI Finance Assistant (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-5 shadow-subtle space-y-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">auto_awesome</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Asistente Inteligente de Cartera</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">¿Qué necesitás saber sobre la cobranza actual?</p>
+</div>
+</div>
+<!-- Quick prompts / chips -->
+<div class="space-y-2">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Consultas rápidas recomendadas:</span>
+<div class="flex flex-col gap-1.5">
+<button class="text-left p-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-body-sm text-on-surface flex items-center justify-between group transition-colors" type="button">
+<span>¿Cuáles facturas tienen más de 15 días de atraso?</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+<button class="text-left p-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-body-sm text-on-surface flex items-center justify-between group transition-colors" type="button">
+<span>Monto total a cobrar a PepsiCo y proyección semanal</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+<button class="text-left p-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-body-sm text-on-surface flex items-center justify-between group transition-colors" type="button">
+<span>Generar reporte de cobranza semanal consolidado (PDF/Excel)</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Prompt Input -->
+<div class="pt-2">
+<div class="relative">
+<input class="w-full pr-10 pl-3 py-2 text-body-sm bg-surface-container-low text-on-surface rounded-lg placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-secondary" placeholder="Hacer una consulta sobre saldos, clientes o AFIP..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-secondary hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-lg leading-none">send</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 mt-2 text-[11px] text-on-surface-variant">
+<span class="material-symbols-outlined text-xs">info</span>
+<span>Modelo entrenado con histórico de cobranzas y cuentas corrientes Empliados.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interactions for table rows selection count
+  document.addEventListener('DOMContentLoaded', () => {
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const checkedCount = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
+        console.log(`Facturas seleccionadas para comunicación masiva: ${checkedCount}`);
+      });
+    });
+  });
+</script></main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="mt-auto bg-white border-t border-slate-200 py-4 px-4 sm:px-6 select-none" data-purpose="app-footer">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 font-medium">
+<div class="flex items-center gap-2">
+<span>Empliados Logistics Cloud © 2026</span>
+<span>•</span>
+<span>Finanzas &amp; Cuentas a Pagar (AP SOL)</span>
+<span>•</span>
+<a class="text-indigo-600 hover:underline" href="https://sol.nivel41.com" rel="noopener" target="_blank">sol.nivel41.com</a>
+</div>
+<div class="flex items-center gap-4 text-[11px]">
+<span class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Monitor SOL Activo
+        </span>
+<a class="hover:text-slate-800 transition-colors" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-800 transition-colors" href="#">Salas Demo</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
