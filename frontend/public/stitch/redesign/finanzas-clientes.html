@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 
-<html class="h-full bg-[#f8fafc]" lang="es"><head>
+<html class="h-full bg-[#f8f9ff]" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Empliados - Finanzas Clientes</title>
+<title>Gestión de Clientes y Cobranzas · Empliados Logistics Cloud</title>
 <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols Outlined -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS CDN with forms and container queries -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome Icons -->
+<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" referrerpolicy="no-referrer" rel="stylesheet"/>
+<!-- Tailwind CSS v3 CDN -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<script>
     tailwind.config = {
       theme: {
         extend: {
@@ -21,31 +21,22 @@
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            navy: {
-              950: '#060a17',
-              900: '#0e1738',
-              850: '#141f48',
-              800: '#1a275a',
-            },
             brand: {
               50: '#eef2ff',
               100: '#e0e7ff',
-              200: '#c7d2fe',
-              500: '#4f46e5',
-              600: '#4338ca',
-              700: '#3730a3',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#0f172a',
             }
-          },
-          boxShadow: {
-            'card': '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
-            'subtle': '0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.03)',
-            'radar': '0 0 35px -5px rgba(239, 68, 68, 0.25)'
           }
         }
       }
     }
   </script>
-<style>
+<style data-purpose="custom-scrollbars">
+    /* Barra de scroll suave y compacta */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -55,153 +46,756 @@
     }
     ::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 9999px;
+      border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    .radar-pulse-ring {
-      animation: radar-pulse 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-    }
-    @keyframes radar-pulse {
-      0% { transform: scale(0.6); opacity: 0.9; }
-      50% { transform: scale(1.15); opacity: 0.35; }
-      100% { transform: scale(1.6); opacity: 0; }
-    }
   </style>
 </head>
-<body class="h-full font-sans text-slate-800 bg-[#f8fafc] antialiased selection:bg-indigo-50 selection:text-indigo-700">
-<div class="min-h-full flex flex-col">
-<!-- ========================================================================= -->
-<!-- HEADER NIVEL 1: INSTITUCIONAL Y HERRAMIENTAS GLOBALES                      -->
-<!-- ========================================================================= -->
-<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16">
-<!-- Logo & Marca -->
+<body class="min-h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+<!-- BEGIN: MainHeader -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm" data-purpose="site-navigation-container">
+<!-- Top Level Bar: Global Brand, Search, Modules & User -->
+<div class="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 border-b border-slate-100">
+<!-- Brand & Search Bar -->
 <div class="flex items-center gap-6">
-<a class="flex items-center gap-2.5 group" href="#">
-<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all font-black text-lg">
-                E
-              </div>
-<div class="flex flex-col">
-<span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>
-<span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-indigo-200">
+            E
+          </div>
+<div class="leading-none">
+<span class="block font-black tracking-tight text-slate-900 text-base">EMPLIADOS</span>
+<span class="text-[9px] font-bold uppercase tracking-widest text-indigo-600">LOGISTICS CLOUD</span>
 </div>
-</a>
-<!-- Buscador Global Centralizado con ⌘K -->
-<div class="relative w-80 hidden md:block">
+</div>
+<!-- Global Search Input -->
+<div class="relative hidden md:block w-72 lg:w-96">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-<span class="material-symbols-outlined text-base">search</span>
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
 </div>
-<input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
-<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-<kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd>
+<input aria-label="Buscar recursos en plataforma" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-10 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="text-[10px] bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-400 shadow-sm font-mono">⌘K</kbd>
 </div>
 </div>
 </div>
-<!-- Módulos Globales (Navegación Nivel 1) -->
-<nav class="hidden xl:flex items-center space-x-1">
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Torre de Control</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Monitor</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors flex items-center gap-1.5" href="#">
-              WhatsApp
-              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">Nuevo</span>
+<!-- Main Portal Navigation Tabs -->
+<nav aria-label="Módulos Principales" class="hidden xl:flex items-center space-x-1">
+<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Torre de Control</a>
+<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Monitor</a>
+<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1.5" href="#">
+<span>WhatsApp</span>
+<span class="bg-emerald-100 text-emerald-700 font-bold text-[9px] px-1.5 py-0.5 rounded-full uppercase">Nuevo</span>
 </a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Métricas</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-white bg-[#0e1738] rounded-md shadow-sm" href="/finanzas">Finanzas</a>
+<a class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors" href="#">Métricas</a>
+<a aria-current="page" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#0d1424] text-white shadow-sm flex items-center gap-1.5" href="#">
+<i class="fa-solid fa-wallet text-[11px] text-indigo-400"></i>
+<span>Finanzas</span>
+</a>
 </nav>
-<!-- Estado, Campana y Perfil -->
-<div class="flex items-center gap-4">
-<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">
-<span class="relative flex h-2 w-2">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-</span>
+<!-- Right Utility Actions & User Profile -->
+<div class="flex items-center gap-3">
+<!-- System Health Pill -->
+<div class="hidden sm:flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full text-xs text-emerald-700 font-semibold shadow-xs">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
 <span>Sistemas activos</span>
 </div>
-<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones operativas">
-<span class="material-symbols-outlined text-lg">notifications</span>
-<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>
+<!-- Notification Bell -->
+<button aria-label="5 notificaciones pendientes" class="relative p-2 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
+<i class="fa-regular fa-bell text-sm"></i>
+<span class="absolute top-1 right-1 bg-rose-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white">5</span>
 </button>
-<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
-<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
-                GD
-              </div>
-<div class="hidden lg:flex flex-col text-left">
-<span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span>
-<span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span>
+<div class="h-5 w-px bg-slate-200 hidden sm:block"></div>
+<!-- User Badge -->
+<div class="flex items-center gap-2.5 cursor-pointer p-1 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            GD
+          </div>
+<div class="hidden lg:block leading-tight text-left">
+<div class="text-xs font-bold text-slate-800">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-500">Administrador</div>
 </div>
-<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>
+<i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden lg:block"></i>
 </div>
+</div>
+</div>
+<!-- Sub-Level Bar: Logistic Agents Horizontal Carousel -->
+<div class="px-4 sm:px-6 lg:px-8 py-2 bg-slate-50/70 border-b border-slate-200 overflow-x-auto flex items-center gap-1.5 text-xs">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1">
+<i class="fa-solid fa-robot text-slate-400"></i> AGENTES:
+      </span>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Gestión de Viajes</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Tracking Express</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap flex items-center gap-1">
+        Remitos <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Destinos</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Incidencias</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Rendición</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">ETA</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">POP/POD</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Reclamos</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:bg-white hover:shadow-xs transition whitespace-nowrap">Analítica</button>
+<button class="px-2.5 py-1 rounded-md text-indigo-700 bg-indigo-50/80 font-semibold border border-indigo-200/60 whitespace-nowrap flex items-center gap-1">
+<span class="bg-indigo-600 text-white text-[8px] font-black px-1 rounded">Nuevo</span> Finanzas
+      </button>
+</div>
+<!-- Contextual Module Bar: Finanzas Internal Navigation -->
+<div class="px-4 sm:px-6 lg:px-8 py-2.5 bg-white flex flex-wrap items-center justify-between gap-3 text-xs">
+<div class="flex items-center gap-2 overflow-x-auto py-0.5">
+<span class="font-black text-slate-400 uppercase tracking-widest text-[11px] mr-1 hidden sm:inline-block">FINANZAS</span>
+<button class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Dashboard</button>
+<button class="px-3.5 py-1.5 rounded-md font-bold bg-[#0d1424] text-white shadow-xs whitespace-nowrap flex items-center gap-1.5">
+<i class="fa-solid fa-users text-[10px] text-blue-400"></i>
+<span>Clientes</span>
+</button>
+<button class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Facturas</button>
+<button class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Cobranza</button>
+<button class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Conciliación</button>
+<button class="px-3 py-1.5 rounded-md font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Enviar Mensaje</button>
+</div>
+<!-- Sync Status Pill -->
+<div class="flex items-center gap-2">
+<div class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 flex items-center gap-1.5">
+<i class="fa-solid fa-bolt text-amber-500"></i>
+<span>Motor AR v2.4 · <strong class="text-slate-700">AFIP Sincronizado</strong></span>
 </div>
 </div>
 </div>
 </header>
-<!-- ========================================================================= -->
-<!-- HEADER NIVEL 2: BARRA DE AGENTES (SUB-BARRA HORIZONTAL)                   -->
-<!-- ========================================================================= -->
-<nav class="bg-white border-b border-slate-200 text-xs shadow-xs sticky top-16 z-40">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center space-x-1 overflow-x-auto py-2 no-scrollbar">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 flex items-center gap-1 shrink-0">
-<span class="material-symbols-outlined text-xs">smart_toy</span> AGENTES:
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6" data-purpose="finance-clients-dashboard">
+<!-- Page Title & Operational Summary -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2" data-purpose="page-title-section">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">CLIENTES</h1>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+            48 cuentas activas
           </span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Gestión de Viajes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Tracking Express</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1" href="#">
-            Remitos ▾
-          </a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Destinos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Incidencias</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Rendición</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">ETA</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">POP/POD</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Reclamos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Analítica</a>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Finanzas Operativas
+          </span>
+</div>
+<p class="text-sm text-slate-500 mt-1 font-normal">
+          Cartera de clientes logísticos, contratos marco, facturación consolidada y saldo abierto por cobranza.
+        </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2.5 self-start md:self-auto">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition shadow-xs">
+<i class="fa-solid fa-rotate text-slate-500"></i>
+<span>Sincronizar AFIP / ERP</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm shadow-blue-200">
+<i class="fa-solid fa-plus"></i>
+<span>+ Registrar nuevo cliente</span>
+</button>
 </div>
 </div>
-</nav>
-<!-- ========================================================================= -->
-
-<nav class="bg-white border-b border-slate-200 text-xs sticky top-[6.75rem] z-30">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center gap-1 overflow-x-auto py-2">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 shrink-0">FINANZAS</span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas">Dashboard</a>
-<a class="px-3.5 py-1.5 bg-[#0e1738] text-white font-semibold rounded-lg shadow-sm whitespace-nowrap" href="/finanzas/clientes">Clientes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/pagos">Facturas</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/cobranzas">Cobranza</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/conciliacion">Conciliación</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/comunicacion">Enviar Mensaje</a>
+<!-- BEGIN: KPIGrid -->
+<!-- 4 KPI Cards Section -->
+<section aria-label="Métricas Principales de Clientes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Card 1: Total Clientes -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all" data-purpose="kpi-total-clients">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">CLIENTES</span>
+<div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
+<i class="fa-solid fa-building-user"></i>
 </div>
 </div>
-</nav>
-
-<main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-<section>
-<div class="flex items-center gap-2 mb-1"><h1 class="text-2xl font-bold text-slate-900 tracking-tight">CLIENTES</h1>
-<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">48 cuentas</span></div>
-<p class="text-xs sm:text-sm text-slate-500 mb-5">Cartera de clientes logísticos y saldo abierto por cobranza.</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-black text-slate-900">48</span>
+<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">↑ +4 este mes</span>
+</div>
+<div class="mt-3 text-xs text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+<i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i>
+<span>42 con contratos de transporte vigentes</span>
+</div>
+</div>
+<!-- Card 2: Con Saldo (Foco según diseño original de referencia) -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all" data-purpose="kpi-with-balance">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">CON SALDO</span>
+<div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+<i class="fa-solid fa-clock-rotate-left"></i>
+</div>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-black text-amber-600">18</span>
+<span class="text-xs font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Atención requerida</span>
+</div>
+<div class="mt-3 text-xs text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+<i class="fa-solid fa-percent text-slate-400 text-[10px]"></i>
+<span>37,5% de la cartera total activa</span>
+</div>
+</div>
+<!-- Card 3: Cartera Total a Cobrar -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all" data-purpose="kpi-total-portfolio">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">CARTERA</span>
+<div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+<i class="fa-solid fa-hand-holding-dollar"></i>
+</div>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-black text-slate-900 font-mono tracking-tight">$3,1M</span>
+<span class="text-xs text-slate-500">($3.148.920 ARS)</span>
+</div>
+<div class="mt-3 text-xs text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+<i class="fa-solid fa-arrow-trend-up text-emerald-500 text-[10px]"></i>
+<span>SLA de cobro promedio: <strong class="text-slate-700">24 días</strong></span>
+</div>
+</div>
+<!-- Card 4: Cobranzas del mes al día -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all" data-purpose="kpi-collections-month">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">COBRADO ESTE MES</span>
+<div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+<i class="fa-solid fa-shield-check"></i>
+</div>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-black text-slate-900 font-mono tracking-tight">$14,8M</span>
+<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">94,2% en término</span>
+</div>
+<div class="mt-3 text-xs text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+<i class="fa-solid fa-truck-fast text-slate-400 text-[10px]"></i>
+<span>Superávit financiero en fletes y viajes</span>
+</div>
+</div>
 </section>
-<section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<article class="bg-white rounded-xl border border-slate-200 p-4 shadow-card"><p class="text-xs font-bold uppercase text-slate-500">Clientes</p><p class="mt-2 text-3xl font-extrabold font-mono">48</p></article>
-<article class="bg-white rounded-xl border border-slate-200 p-4 shadow-card"><p class="text-xs font-bold uppercase text-slate-500">Con saldo</p><p class="mt-2 text-3xl font-extrabold font-mono text-amber-700">18</p></article>
-<article class="bg-white rounded-xl border border-slate-200 p-4 shadow-card"><p class="text-xs font-bold uppercase text-slate-500">Cartera</p><p class="mt-2 text-3xl font-extrabold font-mono">$3,1M</p></article>
+<!-- END: KPIGrid -->
+<!-- BEGIN: SearchAndFiltersSection -->
+<section class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-xs space-y-3" data-purpose="filter-controls">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+<!-- Search Field styled exactly as requested -->
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
+</div>
+<input aria-label="Filtrar por razón social o CUIT" class="w-full bg-[#f8f9ff]/70 border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Buscar razón social o CUIT..." type="text"/>
+</div>
+<!-- Filter Dropdowns & Actions -->
+<div class="flex flex-wrap items-center gap-2">
+<select class="text-xs border-slate-200 rounded-lg text-slate-700 bg-white py-2 pl-3 pr-8 focus:ring-blue-500 focus:border-blue-500 font-medium">
+<option>Todos los estados</option>
+<option>Con saldo pendiente</option>
+<option>Al día</option>
+<option>Vencido</option>
+</select>
+<select class="text-xs border-slate-200 rounded-lg text-slate-700 bg-white py-2 pl-3 pr-8 focus:ring-blue-500 focus:border-blue-500 font-medium">
+<option>Segmento / Industria</option>
+<option>Consumo Masivo / Alimentos</option>
+<option>Bebidas</option>
+<option>Energía &amp; Petróleo</option>
+<option>Siderurgia</option>
+</select>
+<select class="text-xs border-slate-200 rounded-lg text-slate-700 bg-white py-2 pl-3 pr-8 focus:ring-blue-500 focus:border-blue-500 font-medium">
+<option>Plazo de Cobro</option>
+<option>15 días</option>
+<option>30 días</option>
+<option>45 días</option>
+<option>60 días</option>
+</select>
+<button class="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:bg-slate-50 transition flex items-center gap-1.5">
+<i class="fa-solid fa-file-excel text-emerald-600"></i>
+<span>Exportar</span>
+</button>
+</div>
+</div>
+<!-- Quick Filter Pills -->
+<div class="flex items-center gap-2 pt-2 border-t border-slate-100 overflow-x-auto text-xs">
+<span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Filtro rápido:</span>
+<button class="px-2.5 py-1 rounded-full bg-slate-900 text-white font-bold text-xs whitespace-nowrap">
+          Todos (48)
+        </button>
+<button class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-xs hover:bg-amber-100 transition whitespace-nowrap flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Con saldo pendiente (18)
+        </button>
+<button class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs hover:bg-emerald-100 transition whitespace-nowrap">
+          Al día (30)
+        </button>
+<button class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold text-xs hover:bg-rose-100 transition whitespace-nowrap flex items-center gap-1">
+<i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Vencidos &gt; 30d (4)
+        </button>
+</div>
 </section>
-<section class="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
-<div class="p-4 border-b border-slate-100"><input class="w-full max-w-md px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50" placeholder="Buscar razón social o CUIT..."/></div>
-<table class="w-full text-left text-xs"><thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr>
-<th class="py-3 px-4">Razón social</th><th class="py-3 px-4">CUIT</th><th class="py-3 px-4">Facturas abiertas</th><th class="py-3 px-4">Saldo</th><th class="py-3 px-4">Último cobro</th><th class="py-3 px-4"></th>
-</tr></thead><tbody class="divide-y divide-slate-100">
-<tr><td class="py-3 px-4 font-semibold">PepsiCo Central</td><td class="py-3 px-4 font-mono">30-50000000-1</td><td class="py-3 px-4">3</td><td class="py-3 px-4 font-mono">$1.240.000</td><td class="py-3 px-4">02/10</td><td class="py-3 px-4"><a class="text-indigo-700 font-semibold" href="/finanzas/facturas/cobranzas">Ver cobranza</a></td></tr>
-<tr><td class="py-3 px-4 font-semibold">Arcor S.A.</td><td class="py-3 px-4 font-mono">30-50123456-9</td><td class="py-3 px-4">2</td><td class="py-3 px-4 font-mono">$860.000</td><td class="py-3 px-4">28/09</td><td class="py-3 px-4"><a class="text-indigo-700 font-semibold" href="/finanzas/facturas/cobranzas">Ver cobranza</a></td></tr>
-<tr><td class="py-3 px-4 font-semibold">Cervecería Quilmes</td><td class="py-3 px-4 font-mono">30-50222222-3</td><td class="py-3 px-4">1</td><td class="py-3 px-4 font-mono">$540.000</td><td class="py-3 px-4">05/10</td><td class="py-3 px-4"><a class="text-indigo-700 font-semibold" href="/finanzas/facturas/cobranzas">Ver cobranza</a></td></tr>
-<tr><td class="py-3 px-4 font-semibold">Molinos Río de la Plata</td><td class="py-3 px-4 font-mono">30-50333333-7</td><td class="py-3 px-4">2</td><td class="py-3 px-4 font-mono">$410.000</td><td class="py-3 px-4">11/10</td><td class="py-3 px-4"><a class="text-indigo-700 font-semibold" href="/finanzas/facturas/cobranzas">Ver cobranza</a></td></tr>
-</tbody></table></section>
-
+<!-- END: SearchAndFiltersSection -->
+<!-- BEGIN: ClientsMasterTable -->
+<!-- Contenedor de la tabla de alta densidad -->
+<div class="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden" data-purpose="master-clients-table">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs border-collapse">
+<thead>
+<tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+<th class="py-3.5 px-4 font-bold" scope="col">RAZÓN SOCIAL</th>
+<th class="py-3.5 px-4 font-bold" scope="col">CUIT</th>
+<th class="py-3.5 px-4 font-bold text-center" scope="col">FACTURAS ABIERTAS</th>
+<th class="py-3.5 px-4 font-bold" scope="col">SALDO</th>
+<th class="py-3.5 px-4 font-bold text-center" scope="col">PLAZO</th>
+<th class="py-3.5 px-4 font-bold" scope="col">ÚLTIMO COBRO</th>
+<th class="py-3.5 px-4 font-bold text-center" scope="col">ESTADO</th>
+<th class="py-3.5 px-4 font-bold text-right pr-6" scope="col">ACCIONES</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-medium">
+<!-- Row 1: PepsiCo Central -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-black flex items-center justify-center text-xs">
+                    P
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">PepsiCo Central</span>
+<span class="text-[10px] text-slate-400">Cliente Corporativo A+</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-50000000-1</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                  3
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                $1.240.000
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">30 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">02/10</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Vencido
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Arcor S.A. -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-amber-100 text-amber-800 font-black flex items-center justify-center text-xs">
+                    A
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">Arcor S.A.</span>
+<span class="text-[10px] text-slate-400">Distribución Nacional</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-50123456-9</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  2
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                $860.000
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">45 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">28/09</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Saldo corriente
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Cervecería Quilmes -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-sky-100 text-sky-800 font-black flex items-center justify-center text-xs">
+                    Q
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">Cervecería Quilmes</span>
+<span class="text-[10px] text-slate-400">Flota Dedicada</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-50222222-3</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  1
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                $540.000
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">30 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">05/10</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Al día
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Molinos Río de la Plata -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
+                    M
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">Molinos Río de la Plata</span>
+<span class="text-[10px] text-slate-400">Larga Distancia</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-50333333-7</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  2
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                $410.000
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">30 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">11/10</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> En gestión
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: YPF Distribución Directa -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-blue-900 text-white font-black flex items-center justify-center text-xs">
+                    Y
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">YPF Distribución Directa</span>
+<span class="text-[10px] text-slate-400">Cargas Peligrosas / Cisterna</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-54668997-9</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  0
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-emerald-600">
+                $0
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">15 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">21/10</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Al día
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: La Serenísima (Mastellone) -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-red-100 text-red-700 font-black flex items-center justify-center text-xs">
+                    LS
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">La Serenísima (Mastellone)</span>
+<span class="text-[10px] text-slate-400">Cadena de Frío Ultra Frescos</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-50045612-8</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  2
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                $390.800
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">30 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">14/10</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Saldo corriente
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Acindar Grupo ArcelorMittal -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-stone-200 text-stone-800 font-black flex items-center justify-center text-xs">
+                    AC
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">Acindar Grupo ArcelorMittal</span>
+<span class="text-[10px] text-slate-400">Transporte Pesado y Carretones</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-50012891-3</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  1
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                $291.020
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">60 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">02/10</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Saldo corriente
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 8: Frigorífico La Pampa S.A. -->
+<tr class="hover:bg-slate-50/90 transition-colors">
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-rose-100 text-rose-800 font-black flex items-center justify-center text-xs">
+                    LP
+                  </div>
+<div>
+<span class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">Frigorífico La Pampa S.A.</span>
+<span class="text-[10px] text-slate-400">Exportación Puerto Buenos Aires</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">30-61298451-7</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  5
+                </span>
+</td>
+<td class="py-3.5 px-4 font-mono font-bold text-rose-600">
+                $400.000
+              </td>
+<td class="py-3.5 px-4 text-center text-slate-500">15 días</td>
+<td class="py-3.5 px-4 font-mono text-slate-600">28/09</td>
+<td class="py-3.5 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Vencido
+                </span>
+</td>
+<td class="py-3.5 px-4 text-right pr-6">
+<div class="flex items-center justify-end gap-2">
+<button class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-2.5 py-1 rounded hover:bg-blue-50 transition">
+                    Ver cobranza
+                  </button>
+<button aria-label="Más opciones" class="text-slate-400 hover:text-slate-600 p-1">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+<div>
+          Mostrando <strong class="text-slate-900 font-semibold">1-8</strong> de <strong class="text-slate-900 font-semibold">48</strong> clientes registrados
+        </div>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-50" disabled="">
+<i class="fa-solid fa-chevron-left text-[10px]"></i> Anterior
+          </button>
+<button class="px-3 py-1 rounded border border-blue-600 bg-blue-600 text-white font-bold">1</button>
+<button class="px-3 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-medium">2</button>
+<button class="px-3 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-medium">3</button>
+<span class="px-1 text-slate-400">...</span>
+<button class="px-3 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-medium">6</button>
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
+            Siguiente <i class="fa-solid fa-chevron-right text-[10px]"></i>
+</button>
+</div>
+</div>
+</div>
+<!-- END: ClientsMasterTable -->
+<!-- BEGIN: ProjectionsAndCopilotSection -->
+<!-- Two Column Operational Section: Forecast & AI Assistant -->
+<section aria-label="Módulos complementarios de gestión" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Left Column: Forecast & Collections SLA -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between" data-purpose="collections-forecast">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+<i class="fa-solid fa-calendar-check"></i>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 text-sm">Resumen de Cobranzas Proyectadas</h3>
+<span class="text-[11px] text-slate-500">Próximos 15 días según condiciones pactadas</span>
+</div>
+</div>
+<span class="font-mono font-bold text-slate-900 text-sm">$2.220.000 ARS</span>
+</div>
+<div class="space-y-4 mt-4">
+<!-- Period 1 -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-semibold text-slate-700">Semana 1 (24 Oct - 31 Oct) · PepsiCo, Arcor, Molinos</span>
+<span class="font-mono font-bold text-slate-800">$1.240.000 (56%)</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 56%"></div>
+</div>
+</div>
+<!-- Period 2 -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-semibold text-slate-700">Semana 2 (01 Nov - 07 Nov) · Acindar, Mastellone</span>
+<span class="font-mono font-bold text-slate-800">$980.000 (44%)</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: 44%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+<span class="flex items-center gap-1.5 text-emerald-600 font-semibold">
+<i class="fa-solid fa-building-columns"></i> Conciliación bancaria activa: Santander Río &amp; Galicia
+          </span>
+<a class="font-bold text-blue-600 hover:underline" href="#">Ver detalle de flujo →</a>
+</div>
+</div>
+<!-- Right Column: Operational Finance Assistant -->
+<div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-5 shadow-xs text-white flex flex-col justify-between" data-purpose="finance-ai-assistant">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-700/60">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center text-sm">
+<i class="fa-solid fa-sparkles"></i>
+</div>
+<div>
+<h3 class="font-bold text-white text-sm">Asistente de Finanzas y Consultas Comerciales</h3>
+<span class="text-[11px] text-slate-300">Inteligencia contextual sobre saldos, vencimientos y viajes</span>
+</div>
+</div>
+<span class="text-[10px] bg-indigo-600/60 border border-indigo-400/40 px-2 py-0.5 rounded font-mono">IA ACTIVA</span>
+</div>
+<!-- Prompt bar -->
+<div class="mt-4 relative">
+<input aria-label="Preguntar al asistente financiero" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-3 pr-10 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition" placeholder="¿Qué necesitás saber sobre la cartera de clientes o cobros?" type="text"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-indigo-400 hover:text-indigo-200 transition">
+<i class="fa-solid fa-arrow-right text-xs"></i>
+</button>
+</div>
+<!-- Quick Suggestion Badges -->
+<div class="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+<span class="text-slate-400 self-center text-[10px]">Consultas rápidas:</span>
+<button class="px-2.5 py-1 rounded bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition">
+              ¿Cuáles clientes tienen saldo vencido?
+            </button>
+<button class="px-2.5 py-1 rounded bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition">
+              Ver facturas de Arcor
+            </button>
+<button class="px-2.5 py-1 rounded bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition">
+              Proyección cobranza semana en curso
+            </button>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+<span>Último batch procesado hoy a las 09:00 hs</span>
+<span class="text-indigo-300 font-medium">SLA AFIP 100% OK</span>
+</div>
+</div>
+</section>
+<!-- END: ProjectionsAndCopilotSection -->
 </main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="mt-auto bg-white border-t border-slate-200 py-4 px-4 sm:px-6 lg:px-8 text-xs text-slate-500" data-purpose="site-footer">
+<div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-800">Empliados</span>
+<span>© 2026 Logistics Cloud · Finanzas y Cobranzas</span>
+<span class="hidden sm:inline text-slate-300">|</span>
+<span class="hidden sm:inline text-emerald-600 font-semibold"><i class="fa-solid fa-circle text-[8px]"></i> Monitor SOL Activo</span>
 </div>
+<div class="flex items-center gap-4 text-slate-500">
+<a class="hover:text-slate-800 transition" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-800 transition" href="#">Salas Demo</a>
+<a class="hover:text-slate-800 transition" href="#">Documentación AFIP API</a>
+<span class="font-mono text-[11px] text-slate-400">v4.18.2-prod</span>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
