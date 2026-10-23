@@ -9,6 +9,7 @@ export const STITCH_REDESIGN: Record<string, { src: string; title: string }> = {
   "/agentes/remitos": { src: "/stitch/redesign/remitos.html", title: "Remitos" },
   "/agentes/destinos": { src: "/stitch/redesign/destinos.html", title: "Destinos" },
   "/agentes/incidencias": { src: "/stitch/redesign/incidencias.html", title: "Incidencias" },
+  "/agentes/eta": { src: "/stitch/redesign/eta.html", title: "ETA" },
   "/agentes/rendicion": { src: "/stitch/redesign/rendicion.html", title: "Rendición" },
   "/agentes/pod": { src: "/stitch/redesign/pod.html", title: "POP/POD" },
   "/agentes/reclamos": { src: "/stitch/redesign/reclamos.html", title: "Reclamos" },
