@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empliados - Torre de Control</title>
+<!-- Tailwind CSS CDN with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script data-purpose="tailwind-config" id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              900: '#0b132b',
+              850: '#0e1738',
+              800: '#14214d',
+              700: '#1b2f6b',
+            },
+            brand: {
+              blue: '#1952e1',
+              cyan: '#00c6ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styling for Maps, Gauges & Timeline -->
+<style data-purpose="custom-elements">
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f4f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    
+    /* Conic gradients for donuts & gauges */
+    .donut-chart-incidencias {
+      background: conic-gradient(
+        #3b82f6 0% 32%,
+        #06b6d4 32% 48%,
+        #10b981 48% 68%,
+        #f59e0b 68% 85%,
+        #ef4444 85% 100%
+      );
+    }
+    
+    .gauge-semi-sla {
+      background: conic-gradient(
+        from 180deg at 50% 100%,
+        #06b6d4 0deg,
+        #10b981 170deg,
+        #e2e8f0 170deg 360deg
+      );
+    }
+
+    .circle-ring-viajes {
+      background: conic-gradient(
+        #38bdf8 0% 58%,
+        rgba(255, 255, 255, 0.15) 58% 100%
+      );
+    }
+
+    /* Dashed line animation / path style */
+    .dashed-route {
+      stroke-dasharray: 4, 4;
+    }
+  </style>
+<!-- END: Custom Styling for Maps, Gauges & Timeline -->
+<meta content="web_standard" name="shell-type"/></head>
+<body class="bg-[#f4f6fb] text-slate-800 font-sans antialiased min-h-screen pb-12">
+<!-- BEGIN: TopNavigation -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+<!-- Row 1: Header / Logo & Profile Search -->
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+<!-- Logo -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-navy-900 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+          E
+        </div>
+<span class="font-extrabold text-xl tracking-tight text-slate-900">Empliados</span>
+</div>
+<!-- Search Input with ⌘K -->
+<div class="flex-1 max-w-xl mx-4 relative hidden md:block">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="w-full text-xs pl-10 pr-12 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Buscar remito, chofer o patente..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white border border-slate-200 rounded shadow-xs">⌘K</kbd>
+</div>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-4">
+<!-- Sistemas activos badge -->
+<div class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200/60">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="absolute top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">5</span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+<div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100">
+            GD
+          </div>
+<div class="hidden lg:block text-left">
+<div class="text-xs font-bold text-slate-800 leading-tight">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400 font-medium">Administrador</div>
+</div>
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Row 2: Primary Horizontal Tabs -->
+<div class="border-t border-slate-100 bg-white">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1.5 py-1.5 overflow-x-auto">
+<!-- Torre de Control (Active) -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0e1738] text-white text-xs font-semibold shadow-xs">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="7" rx="1" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1" width="7" x="3" y="14"></rect>
+</svg>
+          Torre de Control
+        </button>
+<!-- Monitor -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Monitor
+        </button>
+<!-- WhatsApp -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"></path>
+</svg>
+          WhatsApp
+          <span class="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded-full leading-relaxed tracking-wider">NUEVO</span>
+</button>
+<!-- Métricas -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Métricas
+        </button>
+<!-- Finanzas -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Finanzas
+        </button>
+</div>
+</div>
+<!-- Row 3: Agent Horizontal Strip (Sub-navigation) -->
+<div class="border-t border-slate-100 bg-[#fbfcfd]">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 py-1.5 overflow-x-auto text-xs">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase mr-1">AGENTES</span>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Gestión de Viajes
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Tracking Express
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Remitos ▾
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Destinos
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Incidencias
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Rendición
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          ETA
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          POP/POD
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Reclamos
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Analítica
+        </a>
+</div>
+</div>
+</header>
+<!-- END: TopNavigation -->
+<!-- BEGIN: PageMain -->
+<main class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6"><div class="flex flex-col w-full space-y-6">
+<!-- 1. HEADER OPERATIVO -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-lowest p-space-xl rounded-xl shadow-sm">
+<div class="space-y-1">
+<div class="flex flex-wrap items-center gap-2">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Reclamos Logísticos</h1>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-surface-container text-secondary">
+          Beta
+        </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Operativo
+        </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+        Clasificación, trazabilidad y resolución asistida de reclamos por WhatsApp con diálogo 100% IA
+      </p>
+</div>
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors" type="button">
+<span class="material-symbols-outlined text-base text-secondary">sync</span>
+        Sincronizar CRM / WhatsApp
+      </button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-on-surface transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-base">add</span>
+        + Cargar reclamo manual
+      </button>
+</div>
+</div>
+<!-- 2. KPIS Y MÉTRICAS SUPERIORES (4 tarjetas en grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-lg">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Reclamos abiertos</span>
+<span class="material-symbols-outlined text-base text-secondary">inbox</span>
+</div>
+<div class="flex items-baseline gap-3">
+<span class="font-metric-stat text-metric-stat text-on-surface">23</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-amber-50 text-amber-700">
+          En cola activa
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        6 nuevos sin asignar · 9 en gestión
+      </p>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Resueltos en SLA</span>
+<span class="material-symbols-outlined text-base text-emerald-600">verified</span>
+</div>
+<div class="flex items-baseline gap-3">
+<span class="font-metric-stat text-metric-stat text-on-surface">89%</span>
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
+          ↑ +10 pts
+        </span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 89%"></div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Tiempo de resolución</span>
+<span class="material-symbols-outlined text-base text-secondary">schedule</span>
+</div>
+<div class="flex items-baseline gap-3">
+<span class="font-metric-stat text-metric-stat text-on-surface">5,8 h</span>
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
+          ↓ -42%
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Asistencia SOL IA vs proceso manual
+      </p>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Automatización IA</span>
+<span class="material-symbols-outlined text-base text-secondary">smart_toy</span>
+</div>
+<div class="flex items-baseline gap-3">
+<span class="font-metric-stat text-metric-stat text-on-surface">94,2%</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-secondary-fixed text-on-secondary-fixed-variant">
+          Diálogo libre
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Primera línea resuelta sin menús rígidos
+      </p>
+</div>
+</div>
+<!-- 3. FILTROS RÁPIDOS DE ESTADO -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors whitespace-nowrap" type="button">
+      Todos <span class="text-on-surface-variant font-code-table text-code-table font-semibold">48</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm whitespace-nowrap" type="button">
+      Abiertos <span class="bg-white/20 text-on-primary px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">23</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+      Nuevos <span class="bg-secondary-fixed text-on-secondary-fixed-variant px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">6</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+      En proceso <span class="bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">9</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+      Escalados <span class="bg-error-container text-on-error-container px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">3</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+      Resueltos <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">25</span>
+</button>
+</div>
+<!-- 4. MÓDULO OPERATIVO DIVIDIDO EN 2 COLUMNAS (INTERACTIVO Y DE ALTA FIDELIDAD) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- COLUMNA IZQUIERDA: Conversación en Vivo WhatsApp IA & Detección Inteligente (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col justify-between space-y-5">
+<div>
+<!-- Contextual Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-surface-container gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-code-table text-code-table font-bold text-secondary">#REC-20261014-042</span>
+<span class="font-label-caps text-label-caps bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-semibold">En proceso</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Coca-Cola Andina · Centro Logístico Monte Grande</div>
+</div>
+<span class="inline-flex items-center gap-1.5 font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full self-start sm:self-center">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            WhatsApp 100% IA
+          </span>
+</div>
+<!-- Meta Summary Strip -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 py-3 bg-surface-container-low px-3.5 rounded-lg mt-4">
+<div class="space-y-0.5">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Motivo detectado</span>
+<p class="font-body-sm text-body-sm font-semibold text-on-surface">Faltante de 4 bultos en entrega · Pallets sin precinto en rampa</p>
+</div>
+<div class="space-y-0.5">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Viaje Asociado</span>
+<p class="font-body-sm text-body-sm font-semibold text-on-surface">
+<span class="font-code-table text-code-table text-secondary">VJ-20261014-009</span> · Héctor Maldonado (AF 891 CD)
+            </p>
+</div>
+</div>
+<!-- WhatsApp Conversation Thread -->
+<div class="mt-4 space-y-3.5 bg-[#f0f2f5] p-4 rounded-xl">
+<!-- User msg -->
+<div class="flex flex-col items-start max-w-[85%]">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1 ml-1">Martín (Recepción Planta) · 11:22</span>
+<div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-xs font-body-sm text-body-sm text-on-surface">
+              Hola, recibimos el camión de las 11hs pero faltan 4 packs de Coca Zero y el chofer dice que en remito figura todo.
+            </div>
+</div>
+<!-- Bot msg -->
+<div class="flex flex-col items-end ml-auto max-w-[85%]">
+<span class="font-label-caps text-label-caps text-on-secondary-container mb-1 mr-1">SOL IA · 11:23</span>
+<div class="bg-[#dcf8c6] p-3 rounded-2xl rounded-tr-sm shadow-xs font-body-sm text-body-sm text-on-surface space-y-1">
+<p>Hola Martín, ya identifiqué tu entrega del viaje <span class="font-code-table text-code-table font-semibold">VJ-20261014-009</span> con Héctor Maldonado.</p>
+<p>¿Podés enviarme una foto del remito conformado o del precinto de la unidad?</p>
+</div>
+</div>
+<!-- User msg with attachment -->
+<div class="flex flex-col items-start max-w-[85%]">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1 ml-1">Martín (Recepción Planta) · 11:27</span>
+<div class="bg-white p-2.5 rounded-2xl rounded-tl-sm shadow-xs font-body-sm text-body-sm text-on-surface space-y-2">
+<div class="relative w-64 h-36 bg-surface-container rounded-lg overflow-hidden flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Close up photograph of a crisp physical logistics waybill document resting on a warehouse ramp desk with handwritten signatures and barcode markings under bright industrial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6dXHYIpfUZelv8HrITGnYImM4ANU0WdkFJ1PswCER2tFBIAQWCG22uD5iLA-jCTqYpbI434MZMcY0hkYk-bNQ6QCKiMJuAcJv9rsYErZbS2_SDNkgoSc9CgyCw0scw_RzdWW8DCdkQQvM1y3hOGz3c89Z2e6nPzPPuXWkLTsSEtgZVvI_2NV5_Hk1_69s1kRYl79x4Et5OE6lkCiXor_o9nojycxeq7zAI6FJkb2xARN4Ypm1oAkU"/>
+<span class="absolute bottom-2 left-2 bg-on-surface/80 text-white font-code-table text-code-table px-2 py-0.5 rounded text-[11px]">
+                  REMITO-78912.jpg
+                </span>
+</div>
+<p class="px-1 text-on-surface">Ahí te paso la copia firmada con la aclaración de recepción condicional.</p>
+</div>
+</div>
+<!-- Bot msg final OCR classification -->
+<div class="flex flex-col items-end ml-auto max-w-[88%]">
+<span class="font-label-caps text-label-caps text-on-secondary-container mb-1 mr-1">SOL IA · 11:28</span>
+<div class="bg-[#dcf8c6] p-3 rounded-2xl rounded-tr-sm shadow-xs font-body-sm text-body-sm text-on-surface space-y-2">
+<div class="flex items-center gap-1.5 text-secondary font-label-caps text-label-caps font-bold">
+<span class="material-symbols-outlined text-sm">document_scanner</span>
+                DOCUMENT AI: REMITO PROCESADO
+              </div>
+<p>
+                Foto analizada por Document AI. Cotejado contra POP de origen: se despacharon 36 pallets. Se abrió el ticket <span class="font-code-table text-code-table font-bold">#REC-042</span> clasificado como <strong>Diferencia de Carga (Criticidad Media)</strong>. El equipo de Torre de Control ya fue alertado para contactar al despachante.
+              </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Action Controls -->
+<div class="flex flex-wrap items-center justify-between pt-3 border-t border-surface-container gap-3">
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+            Escalar a Supervisor
+          </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+            Solicitar intervención chofer
+          </button>
+</div>
+<button class="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary/90 transition-colors shadow-xs" type="button">
+          Resolver y notificar cliente
+        </button>
+</div>
+</div>
+<!-- COLUMNA DERECHA: Ficha Técnica del Reclamo & Diagnóstico Causal (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-space-xl shadow-sm space-y-5 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-surface-container">
+<span class="font-headline-sm text-headline-sm text-on-surface">Ficha Técnica &amp; Causa Raíz</span>
+<span class="material-symbols-outlined text-secondary">analytics</span>
+</div>
+<!-- Metric Badges Strip -->
+<div class="grid grid-cols-3 gap-2">
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant block uppercase">Criticidad</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-amber-100 text-amber-800 font-semibold">
+              Media
+            </span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant block uppercase">SLA Restante</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">42 min</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">De 60m totales</span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant block uppercase">Impacto Est.</span>
+<span class="font-headline-sm text-headline-sm text-error">$ 142.000</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">ARS estimado</span>
+</div>
+</div>
+<!-- Cross Agent Trazabilidad -->
+<div class="space-y-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">
+            Trazabilidad Cruzada de Agentes SOL
+          </span>
+<div class="space-y-2 font-body-sm text-body-sm">
+<div class="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-emerald-600 text-lg">fact_check</span>
+<div>
+<span class="font-semibold text-on-surface">Agente POP/POD:</span>
+<p class="text-on-surface-variant">POP verificado con 36 pallets a las 07:45 hs en Planta Pompeya.</p>
+</div>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-secondary text-lg">timer</span>
+<div>
+<span class="font-semibold text-on-surface">Agente ETA:</span>
+<p class="text-on-surface-variant">Entregado a las 11:14 hs (dentro de ventana pactada de 11:00 a 11:30 hs).</p>
+</div>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-secondary text-lg">format_image_left</span>
+<div>
+<span class="font-semibold text-on-surface">Agente Incidencias:</span>
+<p class="text-on-surface-variant">Sin paradas no programadas ni alertas de telemetría en trayecto.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Diagnostic Box -->
+<div class="p-3.5 bg-secondary-fixed/30 rounded-lg space-y-1.5">
+<div class="flex items-center gap-1.5 text-secondary font-label-caps text-label-caps font-bold">
+<span class="material-symbols-outlined text-base">psychology</span>
+            CONCLUSIÓN IA PRELIMINAR
+          </div>
+<p class="font-body-sm text-body-sm text-on-surface">
+            Discrepancia originada en rampa de descarga o error de conteo en recepción. Se recomienda cotejo fotográfico de descarga con el chofer Maldonado previo a emitir ajuste de remito.
+          </p>
+</div>
+<!-- Selector de Resolución -->
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase block">
+            Acción de Cierre / Resolución
+          </label>
+<select class="w-full bg-surface-container-low border-0 text-on-surface font-body-sm text-body-sm rounded-lg p-2.5 focus:ring-1 focus:ring-secondary">
+<option>Ajuste de remito digital</option>
+<option>Reenvío prioritario de mercadería (Viaje puente)</option>
+<option>Nota de crédito directa</option>
+<option>Desestimado con conformidad de planta</option>
+</select>
+</div>
+</div>
+<div class="pt-3 border-t border-surface-container flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+<span>Operador asignado: GD (Gonzalo Demo)</span>
+<button class="text-secondary font-label-md text-label-md font-semibold hover:underline" type="button">
+          Historial de auditoría
+        </button>
+</div>
+</div>
+</div>
+<!-- 5. TABLA COMPLETA: 'Reclamos en Gestión' -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<!-- Table Toolbar -->
+<div class="p-space-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-container">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Reclamos en Gestión</h2>
+<span class="px-2 py-0.5 rounded-full font-code-table text-code-table bg-surface-container text-on-surface-variant font-semibold">
+          23 activos
+        </span>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<!-- Search table -->
+<div class="relative min-w-[260px]">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant text-base">search</span>
+<input class="w-full pl-8 pr-3 py-1.5 bg-surface-container-low border-0 rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Buscar por cliente, viaje, ticket o chofer..." type="text"/>
+</div>
+<!-- Select criticidad -->
+<select class="bg-surface-container-low border-0 rounded-lg px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-secondary">
+<option>Todas las criticidades</option>
+<option>Alta / Crítica</option>
+<option>Media</option>
+<option>Baja</option>
+</select>
+<!-- Date range -->
+<div class="flex items-center gap-1 bg-surface-container-low px-3 py-1.5 rounded-lg font-body-sm text-body-sm text-on-surface">
+<span class="material-symbols-outlined text-base text-on-surface-variant">calendar_today</span>
+<span>Hoy, 14 Oct</span>
+</div>
+<!-- Export -->
+<button class="p-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" title="Exportar reporte" type="button">
+<span class="material-symbols-outlined text-lg">download</span>
+</button>
+</div>
+</div>
+<!-- Table content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low font-label-caps text-label-caps text-on-surface-variant uppercase">
+<tr>
+<th class="py-3 px-4">Código Ticket</th>
+<th class="py-3 px-4">Cliente / Cuenta</th>
+<th class="py-3 px-4">Viaje Asociado</th>
+<th class="py-3 px-4">Motivo / Clasificación</th>
+<th class="py-3 px-4">Canal</th>
+<th class="py-3 px-4">Criticidad</th>
+<th class="py-3 px-4">Estado</th>
+<th class="py-3 px-4">Tiempo / SLA</th>
+<th class="py-3 px-4 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
+<!-- Row 1 (Active) -->
+<tr class="hover:bg-surface-container-low/50 bg-secondary-fixed/10 transition-colors">
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-042</td>
+<td class="py-3 px-4 font-semibold">Coca-Cola Andina</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">VJ-20261014-009</td>
+<td class="py-3 px-4">Faltante de mercadería (4 packs)</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 text-emerald-700">
+<span class="material-symbols-outlined text-sm">chat</span> WhatsApp
+              </span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded font-label-caps text-label-caps bg-amber-50 text-amber-800 font-semibold">Media</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-amber-100 text-amber-900">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> En proceso
+              </span>
+</td>
+<td class="py-3 px-4 font-code-table text-code-table font-semibold text-amber-700">42 min rest.</td>
+<td class="py-3 px-4 text-right space-x-1">
+<button class="px-2 py-1 bg-surface-container rounded font-label-md text-label-md hover:bg-surface-container-high transition-colors">Gestionar</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-041</td>
+<td class="py-3 px-4 font-semibold">Cervecería Quilmes</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">VJ-20261014-015</td>
+<td class="py-3 px-4">Rotura de carga en tránsito</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 text-emerald-700">
+<span class="material-symbols-outlined text-sm">chat</span> WhatsApp
+              </span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded font-label-caps text-label-caps bg-red-100 text-red-800 font-semibold">Alta</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-red-100 text-red-800 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span> Escalado
+              </span>
+</td>
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-red-700">15 min rest.</td>
+<td class="py-3 px-4 text-right space-x-1">
+<button class="px-2 py-1 bg-surface-container rounded font-label-md text-label-md hover:bg-surface-container-high transition-colors">Gestionar</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-039</td>
+<td class="py-3 px-4 font-semibold">Arcor S.A.</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">VJ-20261013-088</td>
+<td class="py-3 px-4">Demora no notificada en planta</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">mail</span> Email/WA
+              </span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded font-label-caps text-label-caps bg-surface-container text-on-surface-variant">Baja</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Resuelto
+              </span>
+</td>
+<td class="py-3 px-4 font-code-table text-code-table text-emerald-700">Cerrado en SLA</td>
+<td class="py-3 px-4 text-right space-x-1">
+<button class="px-2 py-1 bg-surface-container-low rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Ver detalle</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-038</td>
+<td class="py-3 px-4 font-semibold">Unilever Pilar</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">VJ-20261013-074</td>
+<td class="py-3 px-4">Remito sin firma de receptor</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 text-emerald-700">
+<span class="material-symbols-outlined text-sm">chat</span> WhatsApp
+              </span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded font-label-caps text-label-caps bg-amber-50 text-amber-800 font-semibold">Media</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-amber-100 text-amber-900">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> En proceso
+              </span>
+</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">1h 10m rest.</td>
+<td class="py-3 px-4 text-right space-x-1">
+<button class="px-2 py-1 bg-surface-container rounded font-label-md text-label-md hover:bg-surface-container-high transition-colors">Gestionar</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-037</td>
+<td class="py-3 px-4 font-semibold">Molinos Río de la Plata</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">VJ-20261013-051</td>
+<td class="py-3 px-4">Temperatura fuera de rango</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm">sensors</span> Sensor/WA
+              </span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded font-label-caps text-label-caps bg-red-100 text-red-800 font-semibold">Alta</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Resuelto
+              </span>
+</td>
+<td class="py-3 px-4 font-code-table text-code-table text-emerald-700">Cerrado en SLA</td>
+<td class="py-3 px-4 text-right space-x-1">
+<button class="px-2 py-1 bg-surface-container-low rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Ver detalle</button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-035</td>
+<td class="py-3 px-4 font-semibold">Mastellone Hnos</td>
+<td class="py-3 px-4 font-code-table text-code-table text-on-surface-variant">VJ-20261012-092</td>
+<td class="py-3 px-4">Diferencia de precinto de seguridad</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 text-emerald-700">
+<span class="material-symbols-outlined text-sm">chat</span> WhatsApp
+              </span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded font-label-caps text-label-caps bg-red-100 text-red-800 font-semibold">Alta</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Resuelto
+              </span>
+</td>
+<td class="py-3 px-4 font-code-table text-code-table text-secondary">Compensado</td>
+<td class="py-3 px-4 text-right space-x-1">
+<button class="px-2 py-1 bg-surface-container-low rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Ver detalle</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-space-lg flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface-container-low/30 border-t border-surface-container text-on-surface-variant font-body-sm text-body-sm">
+<span>Mostrando 6 de 23 reclamos activos · Página 1 de 4</span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-50 font-label-md text-label-md transition-colors" disabled="" type="button">
+          Anterior
+        </button>
+<button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">
+          Siguiente
+        </button>
+</div>
+</div>
+</div>
+<!-- 6. ASISTENTE INTELIGENTE EMBEBIDO ('¿Qué necesitás saber de Reclamos?') -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-5">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-2xl">auto_awesome</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">¿Qué necesitás saber de Reclamos?</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Consultá reclamos reales, causas, SLA y estados por lenguaje natural persistido.
+      </p>
+</div>
+<!-- Suggested Query Chips -->
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase mr-1">Sugerencias:</span>
+<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+        ¿cuántos reclamos abiertos hay?
+      </button>
+<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+        ¿cuáles están escalados?
+      </button>
+<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+        mostrame los últimos de Quilmes
+      </button>
+<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+        ¿cuál es el tiempo medio de resolución?
+      </button>
+</div>
+<!-- Natural Query Input -->
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-lg">chat_bubble</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-0 rounded-lg font-body-md text-body-md text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Escribí tu consulta sobre clientes, choferes o motivos..." type="text"/>
+</div>
+<button class="px-5 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-on-surface transition-colors shadow-sm whitespace-nowrap" type="button">
+        Consultar
+      </button>
+</div>
+<!-- 3 Tarjetas resumen de ayuda -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg pt-2">
+<div class="p-space-lg bg-surface-container-low rounded-lg space-y-2">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+<span class="material-symbols-outlined text-secondary">monitoring</span>
+          Conteos en tiempo real
+        </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          23 reclamos abiertos, 6 nuevos recibidos en la última hora y 3 casos escalados con seguimiento del supervisor de operaciones.
+        </p>
+</div>
+<div class="p-space-lg bg-surface-container-low rounded-lg space-y-2">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+<span class="material-symbols-outlined text-secondary">corporate_fare</span>
+          Listados por Cliente
+        </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Segmentación instantánea para Arcor, Quilmes, Unilever y PepsiCo con correlación histórica de discrepancias de entrega.
+        </p>
+</div>
+<div class="p-space-lg bg-surface-container-low rounded-lg space-y-2">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface">
+<span class="material-symbols-outlined text-secondary">timelapse</span>
+          Detalle &amp; SLA
+        </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Análisis de causa raíz en rampa, tiempos restantes de atención para no quebrar acuerdos y sugerencia de cierre asistido.
+        </p>
+</div>
+</div>
+</div>
+<!-- 7. ARQUITECTURA Y FUNCIONAMIENTO DEL AGENTE DE RECLAMOS -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-6">
+<div class="space-y-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Arquitectura y Funcionamiento del Agente de Reclamos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Ecosistema autónomo con validación cruzada y trazabilidad operativa de punta a punta.
+      </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+<!-- Card: ¿Qué hace el Agente? -->
+<div class="p-space-xl bg-surface-container-low rounded-xl space-y-3">
+<div class="flex items-center gap-2 text-secondary font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined">psychology</span>
+          ¿Qué hace el Agente?
+        </div>
+<p class="font-body-md text-body-md text-on-surface">
+          Recibe reclamos de clientes por WhatsApp con diálogo 100% IA (humanizado, sin menús ni heurísticas frágiles). Entiende el caso, pide solo la información o foto faltante, clasifica motivo y criticidad, abre el ticket y escala a la mesa operativa solo cuando urge.
+        </p>
+</div>
+<!-- Card: Beneficios Operativos -->
+<div class="p-space-xl bg-surface-container-low rounded-xl space-y-3">
+<div class="flex items-center gap-2 text-emerald-700 font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined">trending_up</span>
+          Beneficios Operativos
+        </div>
+<ul class="space-y-1.5 font-body-sm text-body-sm text-on-surface">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>
+<span><strong>Atención ordenada 24/7</strong> sin colas de espera ni saturación telefónica.</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>
+<span><strong>Trazabilidad completa</strong> con evidencias fotográficas y remitos conformados.</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>
+<span><strong>Menor tiempo de resolución</strong> (-42% en SLA) mediante respuestas inmediatas.</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>
+<span><strong>Descompresión radical</strong> de la mesa de despacho y soporte al chofer.</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Flujo Operativo Secuencial en 6 Etapas -->
+<div class="space-y-3 pt-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">
+        Flujo Operativo Secuencial en 6 Etapas
+      </span>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+<!-- Step 1 -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 relative">
+<div class="font-code-table text-code-table font-bold text-secondary">01</div>
+<div class="font-label-lg text-label-lg text-on-surface">Cliente reporta</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Inicio vía WhatsApp Business sin formularios complejos.</p>
+</div>
+<!-- Step 2 -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 relative">
+<div class="font-code-table text-code-table font-bold text-secondary">02</div>
+<div class="font-label-lg text-label-lg text-on-surface">IA entiende</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Diálogo fluido para comprender qué ocurrió exactamente.</p>
+</div>
+<!-- Step 3 -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 relative">
+<div class="font-code-table text-code-table font-bold text-secondary">03</div>
+<div class="font-label-lg text-label-lg text-on-surface">Identifica viaje</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Coteja con pedido, remito digital y chofer asignado.</p>
+</div>
+<!-- Step 4 -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 relative">
+<div class="font-code-table text-code-table font-bold text-secondary">04</div>
+<div class="font-label-lg text-label-lg text-on-surface">Clasifica motivo</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Determina criticidad y detecta faltantes o roturas con OCR.</p>
+</div>
+<!-- Step 5 -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 relative">
+<div class="font-code-table text-code-table font-bold text-secondary">05</div>
+<div class="font-label-lg text-label-lg text-on-surface">Abre ticket</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Entra en cola operativa y alerta si la criticidad es urgente.</p>
+</div>
+<!-- Step 6 -->
+<div class="p-3 bg-surface-container-low rounded-lg space-y-1 relative">
+<div class="font-code-table text-code-table font-bold text-secondary">06</div>
+<div class="font-label-lg text-label-lg text-on-surface">Resolución</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Backoffice toma o confirma con notificación al cliente.</p>
+</div>
+</div>
+</div>
+<!-- Canales e Integraciones Strip -->
+<div class="pt-4 border-t border-surface-container flex flex-wrap items-center justify-between gap-4 font-body-sm text-body-sm">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase mr-2">Canales e Integraciones:</span>
+<span class="px-2.5 py-1 rounded bg-surface-container text-on-surface font-label-md text-label-md">WhatsApp Business API</span>
+<span class="px-2.5 py-1 rounded bg-surface-container text-on-surface font-label-md text-label-md">Email Inbound</span>
+<span class="px-2.5 py-1 rounded bg-surface-container text-on-surface font-label-md text-label-md">Web Portal Clientes</span>
+<span class="px-2.5 py-1 rounded bg-surface-container text-on-surface font-label-md text-label-md">TMS / ERP Conectores</span>
+</div>
+<div class="flex items-center gap-2 text-secondary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-base">hub</span>
+        Interconectado con Agente ETA, POP/POD e Incidencias
+      </div>
+</div>
+</div>
+</div></main>
+<!-- END: PageMain -->
+<!-- BEGIN: PageFooter -->
+<footer class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-4 border-t border-slate-200 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div>
+      Empliados © 2026 • Torre y agentes · consultas en <span class="text-blue-600 font-semibold cursor-pointer">Chat Central</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="inline-flex items-center gap-1 text-emerald-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Monitor SOL Activo
+      </span>
+<a class="hover:text-slate-600" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-600" href="#">Salas Demo</a>
+</div>
+</footer>
+<!-- END: PageFooter -->
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

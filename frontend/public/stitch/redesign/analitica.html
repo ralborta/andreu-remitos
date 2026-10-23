@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empliados - Torre de Control</title>
+<!-- Tailwind CSS CDN with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script data-purpose="tailwind-config" id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              900: '#0b132b',
+              850: '#0e1738',
+              800: '#14214d',
+              700: '#1b2f6b',
+            },
+            brand: {
+              blue: '#1952e1',
+              cyan: '#00c6ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styling for Maps, Gauges & Timeline -->
+<style data-purpose="custom-elements">
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f4f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    
+    /* Conic gradients for donuts & gauges */
+    .donut-chart-incidencias {
+      background: conic-gradient(
+        #3b82f6 0% 32%,
+        #06b6d4 32% 48%,
+        #10b981 48% 68%,
+        #f59e0b 68% 85%,
+        #ef4444 85% 100%
+      );
+    }
+    
+    .gauge-semi-sla {
+      background: conic-gradient(
+        from 180deg at 50% 100%,
+        #06b6d4 0deg,
+        #10b981 170deg,
+        #e2e8f0 170deg 360deg
+      );
+    }
+
+    .circle-ring-viajes {
+      background: conic-gradient(
+        #38bdf8 0% 58%,
+        rgba(255, 255, 255, 0.15) 58% 100%
+      );
+    }
+
+    /* Dashed line animation / path style */
+    .dashed-route {
+      stroke-dasharray: 4, 4;
+    }
+  </style>
+<!-- END: Custom Styling for Maps, Gauges & Timeline -->
+<meta content="web_standard" name="shell-type"/></head>
+<body class="bg-[#f4f6fb] text-slate-800 font-sans antialiased min-h-screen pb-12">
+<!-- BEGIN: TopNavigation -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+<!-- Row 1: Header / Logo & Profile Search -->
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+<!-- Logo -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-navy-900 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+          E
+        </div>
+<span class="font-extrabold text-xl tracking-tight text-slate-900">Empliados</span>
+</div>
+<!-- Search Input with ⌘K -->
+<div class="flex-1 max-w-xl mx-4 relative hidden md:block">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="w-full text-xs pl-10 pr-12 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Buscar remito, chofer o patente..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white border border-slate-200 rounded shadow-xs">⌘K</kbd>
+</div>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-4">
+<!-- Sistemas activos badge -->
+<div class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200/60">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Sistemas activos</span>
+</div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="absolute top-0.5 right-0.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">5</span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+<div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-100">
+            GD
+          </div>
+<div class="hidden lg:block text-left">
+<div class="text-xs font-bold text-slate-800 leading-tight">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-400 font-medium">Administrador</div>
+</div>
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Row 2: Primary Horizontal Tabs -->
+<div class="border-t border-slate-100 bg-white">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1.5 py-1.5 overflow-x-auto">
+<!-- Torre de Control (Active) -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0e1738] text-white text-xs font-semibold shadow-xs">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="7" rx="1" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="3"></rect>
+<rect height="7" rx="1" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1" width="7" x="3" y="14"></rect>
+</svg>
+          Torre de Control
+        </button>
+<!-- Monitor -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Monitor
+        </button>
+<!-- WhatsApp -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"></path>
+</svg>
+          WhatsApp
+          <span class="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded-full leading-relaxed tracking-wider">NUEVO</span>
+</button>
+<!-- Métricas -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Métricas
+        </button>
+<!-- Finanzas -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 text-xs font-medium transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Finanzas
+        </button>
+</div>
+</div>
+<!-- Row 3: Agent Horizontal Strip (Sub-navigation) -->
+<div class="border-t border-slate-100 bg-[#fbfcfd]">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 py-1.5 overflow-x-auto text-xs">
+<span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase mr-1">AGENTES</span>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Gestión de Viajes
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Tracking Express
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Remitos ▾
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Destinos
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Incidencias
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Rendición
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          ETA
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          POP/POD
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Reclamos
+        </a>
+<a class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap" href="#">
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Analítica
+        </a>
+</div>
+</div>
+</header>
+<!-- END: TopNavigation -->
+<!-- BEGIN: PageMain -->
+<main class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6"><div class="flex flex-col w-full">
+<!-- Interactive script to mark "Analítica" active in top shell strip -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const links = document.querySelectorAll('header a');
+      links.forEach(a => {
+        if (a.textContent.trim().includes('Analítica')) {
+          a.className = 'px-3 py-1 rounded-lg bg-[#0e1738] text-white flex items-center gap-1.5 whitespace-nowrap font-semibold shadow-xs';
+          const icon = a.querySelector('svg');
+          if (icon) {
+            icon.classList.remove('text-slate-400');
+            icon.classList.add('text-sky-400');
+          }
+        }
+      });
+    });
+  </script>
+<!-- BEGIN: Operational Header Section -->
+<section class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2">
+<div>
+<div class="flex flex-wrap items-center gap-2.5">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight">
+          Analítica de Performance
+        </h1>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-caps font-semibold bg-amber-100 text-amber-800">
+          Beta
+        </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-caps font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Operativo
+        </span>
+</div>
+<p class="font-body-md text-body-md text-slate-500 mt-1">
+        Datos consolidados, KPIs operativos y alertas inteligentes en tiempo real para la toma de decisiones.
+      </p>
+</div>
+<!-- Quick action toolbars -->
+<div class="flex items-center gap-2.5 self-start lg:self-auto">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-label-lg text-label-lg transition-colors shadow-xs">
+<span class="material-symbols-outlined text-[18px] text-slate-500">query_stats</span>
+<span>Exportar Reporte BI / Looker</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0e1738] hover:bg-[#14214d] text-white font-label-lg text-label-lg transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-cyan-400">add_alert</span>
+<span>Configurar Alerta KPI</span>
+</button>
+</div>
+</section>
+<!-- END: Operational Header Section -->
+<!-- BEGIN: Top 4 KPI Metrics Grid -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+<!-- Card 1: Viajes Analizados -->
+<div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps tracking-wider text-slate-400 uppercase">VIAJES ANALIZADOS (30D)</span>
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2.5 mt-3">
+<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">6.918</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
+<span class="material-symbols-outlined text-[13px]">trending_up</span>
+            +16%
+          </span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-slate-400 mt-4 flex items-center gap-1.5 pt-3 border-t border-slate-100">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+        100% de la flota consolidada en BigQuery
+      </p>
+</div>
+<!-- Card 2: SLA de Entrega -->
+<div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps tracking-wider text-slate-400 uppercase">SLA DE ENTREGA</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2.5 mt-3">
+<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">95,1%</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
+<span class="material-symbols-outlined text-[13px]">trending_up</span>
+            +2,9% pts
+          </span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-slate-400 mt-4 flex items-center gap-1.5 pt-3 border-t border-slate-100">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        Entregas en ventana horaria acordada
+      </p>
+</div>
+<!-- Card 3: Alertas Generadas -->
+<div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps tracking-wider text-slate-400 uppercase">ALERTAS GENERADAS</span>
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">notification_important</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2.5 mt-3">
+<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">64</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-caps font-bold bg-amber-50 text-amber-700">
+            12 críticas resueltas
+          </span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-slate-400 mt-4 flex items-center gap-1.5 pt-3 border-t border-slate-100">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+        Desvíos de ruta, roturas y demoras
+      </p>
+</div>
+<!-- Card 4: Tiempo Ciclo Completo -->
+<div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps tracking-wider text-slate-400 uppercase">TIEMPO CICLO COMPLETO</span>
+<div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">speed</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2.5 mt-3">
+<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">4,2 h</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
+<span class="material-symbols-outlined text-[13px]">arrow_downward</span>
+            -34% optimizado
+          </span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-slate-400 mt-4 flex items-center gap-1.5 pt-3 border-t border-slate-100">
+<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+        Desde asignación a rendición conforme
+      </p>
+</div>
+</section>
+<!-- END: Top 4 KPI Metrics Grid -->
+<!-- BEGIN: Main Visual Analytics Charts (2 Columns) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-6">
+<!-- Chart A (7/12): Viajes y Entregas (7 días) -->
+<div class="lg:col-span-7 bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-600 text-[20px]">show_chart</span>
+              Viajes y Entregas (Últimos 7 días)
+            </h2>
+<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Volumen coordinado vs. entregas completadas en ventana</p>
+</div>
+<!-- Filter pills -->
+<div class="flex items-center bg-slate-50 p-1 rounded-lg border border-slate-200/70 text-xs font-medium text-slate-600">
+<button class="px-2.5 py-1 rounded-md bg-white text-slate-900 font-semibold shadow-2xs">Viajes totales</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-900 transition-colors">A tiempo</button>
+<button class="px-2.5 py-1 rounded-md hover:text-slate-900 transition-colors">Desvíos</button>
+</div>
+</div>
+<!-- Metric highlights bar -->
+<div class="grid grid-cols-3 gap-2 py-3.5 my-2 border-b border-slate-100 text-xs">
+<div>
+<span class="text-slate-400 font-medium block">Total semana:</span>
+<span class="font-bold text-slate-800 text-sm">7.420 viajes</span>
+</div>
+<div>
+<span class="text-slate-400 font-medium block">Promedio diario:</span>
+<span class="font-bold text-slate-800 text-sm">1.060 viajes/día</span>
+</div>
+<div>
+<span class="text-slate-400 font-medium block">SLA ponderado:</span>
+<span class="font-bold text-emerald-600 text-sm">96,4% a tiempo</span>
+</div>
+</div>
+<!-- SVG Line Chart with gradient fills -->
+<div class="relative w-full h-64 mt-2">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 680 230">
+<defs>
+<lineargradient id="blueGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#1952e1" stop-opacity="0.22"></stop>
+<stop offset="100%" stop-color="#1952e1" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#10b981" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#10b981" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Horizontal grid lines -->
+<line stroke="#f1f5f9" stroke-width="1" x1="30" x2="660" y1="30" y2="30"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="30" x2="660" y1="80" y2="80"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="30" x2="660" y1="130" y2="130"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="30" x2="660" y1="180" y2="180"></line>
+<!-- Y Axis labels -->
+<text fill="#94a3b8" font-family="Plus Jakarta Sans" font-size="10" text-anchor="end" x="22" y="34">1.4k</text>
+<text fill="#94a3b8" font-family="Plus Jakarta Sans" font-size="10" text-anchor="end" x="22" y="84">1.0k</text>
+<text fill="#94a3b8" font-family="Plus Jakarta Sans" font-size="10" text-anchor="end" x="22" y="134">600</text>
+<text fill="#94a3b8" font-family="Plus Jakarta Sans" font-size="10" text-anchor="end" x="22" y="184">200</text>
+<!-- Area fills -->
+<path d="M 50 150 Q 150 120 250 80 T 450 60 T 640 90 L 640 190 L 50 190 Z" fill="url(#blueGradient)"></path>
+<path d="M 50 162 Q 150 134 250 96 T 450 78 T 640 106 L 640 190 L 50 190 Z" fill="url(#tealGradient)"></path>
+<!-- Metric 1: Total Viajes (Blue curve) -->
+<path d="M 50 150 Q 150 120 250 80 T 450 60 T 640 90" fill="none" stroke="#1952e1" stroke-linecap="round" stroke-width="3"></path>
+<!-- Metric 2: Entregas On-Time (Emerald curve) -->
+<path d="M 50 162 Q 150 134 250 96 T 450 78 T 640 106" fill="none" stroke="#10b981" stroke-dasharray="0" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Highlight node for Thursday (peak) -->
+<circle cx="450" cy="60" fill="#1952e1" r="5" stroke="#ffffff" stroke-width="2.5"></circle>
+<circle cx="450" cy="78" fill="#10b981" r="4" stroke="#ffffff" stroke-width="2"></circle>
+<!-- Interactive tooltip box -->
+<g transform="translate(415, 8)">
+<rect fill="#0e1738" height="42" opacity="0.95" rx="6" width="94"></rect>
+<text fill="#ffffff" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" x="8" y="16">Jue: 1.120 viajes</text>
+<text fill="#34d399" font-family="Plus Jakarta Sans" font-size="9" font-weight="600" x="8" y="30">96,2% a tiempo</text>
+</g>
+<!-- Data point dots -->
+<circle cx="50" cy="150" fill="#1952e1" r="3.5"></circle>
+<circle cx="150" cy="120" fill="#1952e1" r="3.5"></circle>
+<circle cx="250" cy="80" fill="#1952e1" r="3.5"></circle>
+<circle cx="350" cy="95" fill="#1952e1" r="3.5"></circle>
+<circle cx="550" cy="72" fill="#1952e1" r="3.5"></circle>
+<circle cx="640" cy="90" fill="#1952e1" r="3.5"></circle>
+<!-- X Axis days labels -->
+<text fill="#64748b" font-size="11" font-weight="500" text-anchor="middle" x="50" y="212">Lun</text>
+<text fill="#64748b" font-size="11" font-weight="500" text-anchor="middle" x="150" y="212">Mar</text>
+<text fill="#64748b" font-size="11" font-weight="500" text-anchor="middle" x="250" y="212">Mié</text>
+<text fill="#64748b" font-size="11" font-weight="500" text-anchor="middle" x="350" y="212">Jue</text>
+<text fill="#0f172a" font-size="11" font-weight="700" text-anchor="middle" x="450" y="212">Vie</text>
+<text fill="#64748b" font-size="11" font-weight="500" text-anchor="middle" x="550" y="212">Sáb</text>
+<text fill="#64748b" font-size="11" font-weight="500" text-anchor="middle" x="640" y="212">Dom</text>
+</svg>
+</div>
+</div>
+<!-- Bottom legend -->
+<div class="flex items-center justify-between text-xs pt-3 mt-1 border-t border-slate-100 text-slate-500">
+<div class="flex items-center gap-4">
+<span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-3 h-1 bg-blue-600 rounded-full"></span>
+            Viajes totales despachados
+          </span>
+<span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-3 h-1 bg-emerald-500 rounded-full"></span>
+            Entregas SLA cumplido
+          </span>
+</div>
+<span class="text-[11px] text-slate-400">Actualizado hace 2m</span>
+</div>
+</div>
+<!-- Chart B (5/12): Incidencias por Tipo (Donut Chart) -->
+<div class="lg:col-span-5 bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500 text-[20px]">pie_chart</span>
+              Incidencias por Tipo
+            </h2>
+<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Distribución de las últimas 140 novedades registradas</p>
+</div>
+<span class="px-2 py-0.5 rounded-full text-label-caps font-semibold bg-slate-100 text-slate-700">
+            30 Días
+          </span>
+</div>
+<!-- Donut & Breakdown wrapper -->
+<div class="flex flex-col sm:flex-row items-center gap-6 mt-4">
+<!-- Donut SVG graphic -->
+<div class="relative w-40 h-40 shrink-0 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<!-- Background circle -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#f1f5f9" stroke-width="14"></circle>
+<!-- Segments (circumference = 2 * PI * 38 ≈ 238.76) -->
+<!-- 1. Ruta: 38 (27.1%) -> stroke-dasharray: 64.7 174 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#3b82f6" stroke-dasharray="64.7 238.76" stroke-dashoffset="0" stroke-width="14"></circle>
+<!-- 2. Bultos: 24 (17.1%) -> stroke-dasharray: 40.8 198 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#06b6d4" stroke-dasharray="40.8 238.76" stroke-dashoffset="-64.7" stroke-width="14"></circle>
+<!-- 3. Demora: 22 (15.7%) -> stroke-dasharray: 37.5 201 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#10b981" stroke-dasharray="37.5 238.76" stroke-dashoffset="-105.5" stroke-width="14"></circle>
+<!-- 4. Documentación: 18 (12.8%) -> stroke-dasharray: 30.6 208 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#f59e0b" stroke-dasharray="30.6 238.76" stroke-dashoffset="-143" stroke-width="14"></circle>
+<!-- 5. Falla Mecánica: 16 (11.4%) -> stroke-dasharray: 27.2 211 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#ef4444" stroke-dasharray="27.2 238.76" stroke-dashoffset="-173.6" stroke-width="14"></circle>
+<!-- 6. Otros: 22 (15.7%) -> stroke-dasharray: 37.5 201 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#8b5cf6" stroke-dasharray="37.5 238.76" stroke-dashoffset="-200.8" stroke-width="14"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-xs text-slate-400 font-semibold tracking-wider uppercase">TOTAL</span>
+<span class="font-extrabold text-slate-900 text-lg leading-tight">140</span>
+<span class="text-[10px] text-slate-400 font-medium">eventos</span>
+</div>
+</div>
+<!-- Breakdown list -->
+<div class="flex-1 w-full space-y-2 text-xs">
+<div class="flex items-center justify-between py-1 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+<span class="text-slate-700 font-medium">Desvío de Ruta</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-900">38</span>
+<span class="text-slate-400 text-[11px] font-mono w-8 text-right">27,1%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
+<span class="text-slate-700 font-medium">Bultos / Roturas</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-900">24</span>
+<span class="text-slate-400 text-[11px] font-mono w-8 text-right">17,1%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span class="text-slate-700 font-medium">Demora en Carga</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-900">22</span>
+<span class="text-slate-400 text-[11px] font-mono w-8 text-right">15,7%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span class="text-slate-700 font-medium">Documentación</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-900">18</span>
+<span class="text-slate-400 text-[11px] font-mono w-8 text-right">12,8%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+<span class="text-slate-700 font-medium">Falla Mecánica</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-900">16</span>
+<span class="text-slate-400 text-[11px] font-mono w-8 text-right">11,4%</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+<span class="text-slate-700 font-medium">Otros Eventos</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-900">22</span>
+<span class="text-slate-400 text-[11px] font-mono w-8 text-right">15,7%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+<span class="flex items-center gap-1 text-amber-700 font-medium">
+<span class="material-symbols-outlined text-[15px]">info</span>
+          Desvío de Ruta creció +4% vs mes previo
+        </span>
+<a class="text-blue-600 hover:underline font-semibold" href="#">Ver detalle →</a>
+</div>
+</div>
+</section>
+<!-- END: Main Visual Analytics Charts -->
+<!-- BEGIN: Row 2 - SLA por Zona & Alertas Inteligentes (2 Columns) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-6">
+<!-- Columna 1 (6/12): SLA de Cumplimiento por Zona Geográfica -->
+<div class="lg:col-span-6 bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[20px]">map</span>
+              SLA de Cumplimiento por Zona Geográfica
+            </h2>
+<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Tasa de entrega efectiva según corredor y región</p>
+</div>
+<span class="font-label-caps text-label-caps text-slate-400 font-mono">Meta: 92%</span>
+</div>
+<div class="space-y-4 mt-4">
+<!-- AMBA -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-bold text-slate-800 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                AMBA (CABA y Gran Buenos Aires)
+              </span>
+<span class="font-bold text-emerald-700 font-mono">97%</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 97%"></div>
+</div>
+</div>
+<!-- Centro -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-bold text-slate-800 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Centro (Córdoba / Santa Fe)
+              </span>
+<span class="font-bold text-emerald-700 font-mono">95%</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 95%"></div>
+</div>
+</div>
+<!-- Litoral -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-bold text-slate-800 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                Litoral (Entre Ríos / Corrientes / Misiones)
+              </span>
+<span class="font-bold text-teal-700 font-mono">93%</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-teal-500 h-full rounded-full transition-all duration-500" style="width: 93%"></div>
+</div>
+</div>
+<!-- Patagonia -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-bold text-slate-800 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                Patagonia (Neuquén / Río Negro / Chubut)
+              </span>
+<span class="font-bold text-teal-700 font-mono">92%</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-teal-500 h-full rounded-full transition-all duration-500" style="width: 92%"></div>
+</div>
+</div>
+<!-- Cuyo -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-bold text-slate-800 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                Cuyo (Mendoza / San Juan / San Luis)
+              </span>
+<span class="font-bold text-amber-700 font-mono">91%</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 91%"></div>
+</div>
+</div>
+<!-- NOA (En alerta) -->
+<div class="p-2.5 rounded-lg bg-rose-50/50 border border-rose-100">
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-bold text-rose-900 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                NOA (Tucumán / Salta / Jujuy)
+                <span class="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-semibold">Requiere atención</span>
+</span>
+<span class="font-bold text-rose-700 font-mono">88%</span>
+</div>
+<div class="w-full bg-rose-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: 88%"></div>
+</div>
+<p class="text-[11px] text-rose-600 mt-1.5 font-medium">
+              Demoras por cortes viales en Ruta 34 y verificación en aduana interior.
+            </p>
+</div>
+</div>
+</div>
+<div class="pt-3 mt-3 border-t border-slate-100 text-xs text-slate-400 flex items-center justify-between">
+<span>Corredor más eficiente: <strong>AMBA Express (98,4%)</strong></span>
+<button class="text-blue-600 font-semibold hover:underline">Ver mapa de calor</button>
+</div>
+</div>
+<!-- Columna 2 (6/12): Alertas Inteligentes y Cuellos de Botella -->
+<div class="lg:col-span-6 bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-indigo-600 text-[20px]">smart_toy</span>
+              Alertas Inteligentes y Detección de Cuellos de Botella
+            </h2>
+<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Hallazgos predictivos generados por el modelo SOL Analytics</p>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<div class="space-y-3 mt-3.5">
+<!-- Alerta 1: Crítica -->
+<div class="p-3 rounded-lg bg-rose-50/70 border border-rose-200/60 flex items-start gap-3">
+<div class="w-7 h-7 rounded-md bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+</div>
+<div class="text-xs">
+<div class="flex items-center gap-2">
+<span class="font-bold text-rose-900">Congestión recurrente en Acceso Norte Km 42 (Pacheco)</span>
+<span class="text-[10px] bg-rose-200 text-rose-800 font-bold px-1.5 py-0.2 rounded">Crítico</span>
+</div>
+<p class="text-rose-800/90 mt-1">
+                Impactó a 14 viajes entre las 17:00 y 19:30 hs. El SLA local descendió al 84%. Se sugiere ruteo alternativo por Camino del Buen Ayre.
+              </p>
+<div class="text-[10px] text-rose-600 mt-1 font-mono">Hace 28 minutos • Detección automática por GPS</div>
+</div>
+</div>
+<!-- Alerta 2: Documentación -->
+<div class="p-3 rounded-lg bg-amber-50/70 border border-amber-200/60 flex items-start gap-3">
+<div class="w-7 h-7 rounded-md bg-amber-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">description</span>
+</div>
+<div class="text-xs">
+<div class="flex items-center gap-2">
+<span class="font-bold text-amber-900">Rechazo de remitos manuscritos en Planta Arcor Córdoba</span>
+<span class="text-[10px] bg-amber-200 text-amber-800 font-bold px-1.5 py-0.2 rounded">Rendición</span>
+</div>
+<p class="text-amber-800/90 mt-1">
+                Demora media de 48 min por ilegibilidad de firma. Agente de Remitos activó validación OCR pre-ingreso a rampa.
+              </p>
+<div class="text-[10px] text-amber-600 mt-1 font-mono">Hace 1 hora • 3 choferes notificados</div>
+</div>
+</div>
+<!-- Alerta 3: Positiva -->
+<div class="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200/60 flex items-start gap-3">
+<div class="w-7 h-7 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+</div>
+<div class="text-xs">
+<div class="flex items-center gap-2">
+<span class="font-bold text-emerald-900">Optimización en corredor Rosario — CABA</span>
+<span class="text-[10px] bg-emerald-200 text-emerald-800 font-bold px-1.5 py-0.2 rounded">Eficiencia</span>
+</div>
+<p class="text-emerald-800/90 mt-1">
+                Reducción de 28 min de tiempo en tránsito gracias a sincronización de avisos de ETA proactivos con centros de recepción.
+              </p>
+<div class="text-[10px] text-emerald-600 mt-1 font-mono">Hoy, 09:15 hs • Ahorro combustible estimado: 4,1%</div>
+</div>
+</div>
+<!-- Alerta 4: Presupuestaria -->
+<div class="p-3 rounded-lg bg-blue-50/70 border border-blue-200/60 flex items-start gap-3">
+<div class="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">local_gas_station</span>
+</div>
+<div class="text-xs">
+<div class="flex items-center gap-2">
+<span class="font-bold text-blue-900">Desvío en consumo de combustible en tramo NOA</span>
+<span class="text-[10px] bg-blue-200 text-blue-800 font-bold px-1.5 py-0.2 rounded">Finanzas</span>
+</div>
+<p class="text-blue-800/90 mt-1">
+                +8% por encima del parámetro estándar en la subida a Salta. Correlacionado con peso bruto de carga y paradas con motor encendido.
+              </p>
+<div class="text-[10px] text-blue-600 mt-1 font-mono">Ayer, 21:40 hs • Revisión de telemetría CAN-bus</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+<span>Patrones auditados por SOL AI Engine</span>
+<button class="text-blue-600 font-semibold hover:underline">Ver historial de alertas (64)</button>
+</div>
+</div>
+</section>
+<!-- END: Row 2 SLA & Alertas -->
+<!-- BEGIN: AI Agent Conversation Module ("¿Qué necesitás consultar de Analítica?") -->
+<section class="bg-white rounded-xl border border-slate-200/80 p-6 shadow-xs mt-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-cyan-400 flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm font-bold text-slate-900">
+              ¿Qué necesitás saber de Analítica de Performance?
+            </h2>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/50">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> En línea
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Motor SOL Analytics Core v4 · Consulta libre sobre métricas, viajes y choferes</p>
+</div>
+</div>
+<div class="text-xs text-slate-400 font-mono">
+        Latencia de consulta: <span class="text-slate-700 font-bold">120ms</span>
+</div>
+</div>
+<!-- Suggested Question Chips -->
+<div class="mt-4">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Consultas recomendadas para hoy:</span>
+<div class="flex flex-wrap gap-2 text-xs">
+<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
+          ¿cuál fue la zona con menor SLA esta semana?
+        </button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
+          ¿cuántas alertas críticas hubo hoy?
+        </button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
+          mostrame los 5 clientes con más viajes
+        </button>
+<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
+          analizá la tendencia de incidencias de carga
+        </button>
+</div>
+</div>
+<!-- Natural Language Search Bar -->
+<div class="mt-4 flex gap-2">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+</div>
+<input class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/90 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-2xs" placeholder="Escribí tu consulta analítica sobre flota, rutas, tiempos o costos..." type="text"/>
+</div>
+<button class="px-4 py-2.5 rounded-lg bg-[#0e1738] hover:bg-[#14214d] text-white font-label-lg text-label-lg flex items-center gap-1.5 shadow-sm transition-colors">
+<span>Consultar</span>
+<span class="material-symbols-outlined text-[16px] text-cyan-400">send</span>
+</button>
+</div>
+<!-- 3 Guide Cards below Chat -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 pt-5 border-t border-slate-100">
+<div class="p-3.5 rounded-lg bg-slate-50 border border-slate-100">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="material-symbols-outlined text-blue-600 text-[18px]">calculate</span>
+<h3 class="font-bold text-slate-800 text-xs">Conteos y Métricas</h3>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed">
+          Consolidados automáticos a 30 días, SLA global de entrega, demoras en rampa y comparativos contra períodos anteriores.
+        </p>
+</div>
+<div class="p-3.5 rounded-lg bg-slate-50 border border-slate-100">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="material-symbols-outlined text-teal-600 text-[18px]">tune</span>
+<h3 class="font-bold text-slate-800 text-xs">Segmentación por Eje</h3>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed">
+          Filtros dinámicos por cuenta cliente, corredor logístico, transportista, tipo de unidad o severidad de incidencia.
+        </p>
+</div>
+<div class="p-3.5 rounded-lg bg-slate-50 border border-slate-100">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="material-symbols-outlined text-indigo-600 text-[18px]">database</span>
+<h3 class="font-bold text-slate-800 text-xs">Detalle y Exportación</h3>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed">
+          Cruce dimensional sincronizado con Google Cloud BigQuery y conectores listos para Looker Studio y PowerBI.
+        </p>
+</div>
+</div>
+</section>
+<!-- END: AI Agent Conversation Module -->
+<!-- BEGIN: Architecture & How Analytics Works Section -->
+<section class="bg-white rounded-xl border border-slate-200/80 p-6 shadow-xs mt-6">
+<div class="pb-4 border-b border-slate-100">
+<h2 class="font-headline-md text-headline-md font-bold text-slate-900">
+        Arquitectura y Funcionamiento del Agente de Analítica
+      </h2>
+<p class="font-body-md text-body-md text-slate-500 mt-1">
+        Ecosistema de inteligencia analítica para la optimización logística de punta a punta.
+      </p>
+</div>
+<!-- What it does & Operational Benefits Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+<!-- Left Column: ¿Qué hace el Agente? -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2.5 mb-2.5">
+<span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[18px]">hub</span>
+</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-slate-900">¿Qué hace el Agente?</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed">
+            Consolida de manera autónoma toda la información transaccional generada por viajes, remitos escaneados, novedades de incidencias, reclamos abiertos y rendiciones de choferes. Permite detectar patrones operacionales ocultos, medir el desempeño logístico en tiempo real y alimentar dashboards ejecutivos y operativos en <strong>BigQuery</strong> y <strong>Looker</strong> sin necesidad de carga ni intervención manual.
+          </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-700">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+          Sincronización continua de eventos (CDC Event Stream)
+        </div>
+</div>
+<!-- Right Column: Beneficios Operativos -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100">
+<div class="flex items-center gap-2.5 mb-2.5">
+<span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[18px]">stars</span>
+</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-slate-900">Beneficios Operativos</h3>
+</div>
+<ul class="space-y-2 text-xs text-slate-600">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[16px] mt-0.5">check_circle</span>
+<span><strong>Decisiones con datos:</strong> Detección temprana de anomalías antes de que afecten negativamente el nivel de servicio percibido por el cliente.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[16px] mt-0.5">check_circle</span>
+<span><strong>Detección de cuellos de botella:</strong> Identificación quirúrgica de rampas de carga, tramos de ruta y dadores con demoras crónicas.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[16px] mt-0.5">check_circle</span>
+<span><strong>Mejora continua:</strong> Retroalimentación algorítmica para los agentes de ETA y Gestión de Viajes para recalibrar predicciones futuras.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-[16px] mt-0.5">check_circle</span>
+<span><strong>Consolidación ejecutiva:</strong> Generación y envío automatizado de reportes a la dirección de operaciones.</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Sequential Operational Flow (6 Steps) -->
+<div class="mt-8">
+<h3 class="font-label-caps text-label-caps tracking-wider text-slate-400 uppercase mb-4">
+        Flujo Operativo Secuencial en 6 Etapas
+      </h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+<!-- Step 1 -->
+<div class="p-3 rounded-lg border border-slate-200/70 bg-white shadow-2xs relative">
+<div class="w-6 h-6 rounded-full bg-slate-900 text-white font-extrabold text-[11px] flex items-center justify-center mb-2">1</div>
+<h4 class="font-bold text-slate-800 text-xs leading-tight">Captura de datos</h4>
+<p class="text-[11px] text-slate-500 mt-1">Registra eventos de viajes e interacciones de todos los agentes.</p>
+</div>
+<!-- Step 2 -->
+<div class="p-3 rounded-lg border border-slate-200/70 bg-white shadow-2xs relative">
+<div class="w-6 h-6 rounded-full bg-slate-900 text-white font-extrabold text-[11px] flex items-center justify-center mb-2">2</div>
+<h4 class="font-bold text-slate-800 text-xs leading-tight">Consolidación</h4>
+<p class="text-[11px] text-slate-500 mt-1">Limpia y cataloga datos en BigQuery en tiempo real.</p>
+</div>
+<!-- Step 3 -->
+<div class="p-3 rounded-lg border border-slate-200/70 bg-white shadow-2xs relative">
+<div class="w-6 h-6 rounded-full bg-blue-600 text-white font-extrabold text-[11px] flex items-center justify-center mb-2">3</div>
+<h4 class="font-bold text-slate-800 text-xs leading-tight">Detección IA</h4>
+<p class="text-[11px] text-slate-500 mt-1">Aplica modelos estadísticos de anomalías y tendencias.</p>
+</div>
+<!-- Step 4 -->
+<div class="p-3 rounded-lg border border-slate-200/70 bg-white shadow-2xs relative">
+<div class="w-6 h-6 rounded-full bg-blue-600 text-white font-extrabold text-[11px] flex items-center justify-center mb-2">4</div>
+<h4 class="font-bold text-slate-800 text-xs leading-tight">Generación KPIs</h4>
+<p class="text-[11px] text-slate-500 mt-1">Calcula SLAs en vivo y emite alertas preventivas.</p>
+</div>
+<!-- Step 5 -->
+<div class="p-3 rounded-lg border border-slate-200/70 bg-white shadow-2xs relative">
+<div class="w-6 h-6 rounded-full bg-slate-900 text-white font-extrabold text-[11px] flex items-center justify-center mb-2">5</div>
+<h4 class="font-bold text-slate-800 text-xs leading-tight">Looker Dashboards</h4>
+<p class="text-[11px] text-slate-500 mt-1">Refresca vistas ejecutivas y tableros operativos.</p>
+</div>
+<!-- Step 6 -->
+<div class="p-3 rounded-lg border border-slate-200/70 bg-white shadow-2xs relative">
+<div class="w-6 h-6 rounded-full bg-slate-900 text-white font-extrabold text-[11px] flex items-center justify-center mb-2">6</div>
+<h4 class="font-bold text-slate-800 text-xs leading-tight">Reporte Ejecutivo</h4>
+<p class="text-[11px] text-slate-500 mt-1">Distribución automatizada a gerentes y stakeholders.</p>
+</div>
+</div>
+</div>
+<!-- Integrations Badges Footer -->
+<div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+<div class="flex items-center gap-2 text-slate-500">
+<span class="font-semibold text-slate-700">Canales e Integraciones activas:</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px]">Google BigQuery</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px]">Looker Studio</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px]">Backoffice SOL API</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px]">Agente ETA</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px]">Agente Reclamos</span>
+</div>
+<div class="text-slate-400 text-[11px]">
+        Último pipeline ejecutado: <strong class="text-slate-600">Hoy a las 14:32 hs (OK)</strong>
+</div>
+</div>
+</section>
+<!-- END: Architecture Section -->
+</div></main>
+<!-- END: PageMain -->
+<!-- BEGIN: PageFooter -->
+<footer class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-4 border-t border-slate-200 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div>
+      Empliados © 2026 • Torre y agentes · consultas en <span class="text-blue-600 font-semibold cursor-pointer">Chat Central</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="inline-flex items-center gap-1 text-emerald-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Monitor SOL Activo
+      </span>
+<a class="hover:text-slate-600" href="#">Soporte Técnico</a>
+<a class="hover:text-slate-600" href="#">Salas Demo</a>
+</div>
+</footer>
+<!-- END: PageFooter -->
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>
