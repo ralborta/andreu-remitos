@@ -1,5 +1,5 @@
-import { ComunicacionFinanzasPanel } from "@/components/ComunicacionFinanzasPanel";
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
 export default function Page() {
-  return <ComunicacionFinanzasPanel />;
+  return <StitchRedesignFrame path="/finanzas/comunicacion" />;
 }

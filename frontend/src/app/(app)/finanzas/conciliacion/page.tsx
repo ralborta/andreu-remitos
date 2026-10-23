@@ -1,5 +1,5 @@
-import { ConciliacionFinanzasPanel } from "@/components/ConciliacionFinanzasPanel";
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
 export default function Page() {
-  return <ConciliacionFinanzasPanel />;
+  return <StitchRedesignFrame path="/finanzas/conciliacion" />;
 }

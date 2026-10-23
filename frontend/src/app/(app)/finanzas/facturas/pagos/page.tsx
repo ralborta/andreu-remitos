@@ -1,5 +1,5 @@
-import { FacturasFinanzasPanel } from "@/components/FacturasFinanzasPanel";
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
 export default function Page() {
-  return <FacturasFinanzasPanel modo="pagar" />;
+  return <StitchRedesignFrame path="/finanzas/facturas/pagos" />;
 }

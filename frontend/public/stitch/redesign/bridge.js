@@ -18,6 +18,7 @@
     "chat central": "/agentes/commander",
     "finanzas": "/finanzas",
     "modulo de finanzas": "/finanzas",
+    "dashboard de cobranzas": "/finanzas",
     "clientes": "/finanzas/clientes",
     "facturas": "/finanzas/facturas/pagos",
     "cobranza": "/finanzas/facturas/cobranzas",

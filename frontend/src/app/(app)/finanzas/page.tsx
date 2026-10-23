@@ -1,5 +1,5 @@
-import { FinanzasDashboard } from "@/components/finanzas/FinanzasDashboard";
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
 export default function FinanzasHubPage() {
-  return <FinanzasDashboard />;
+  return <StitchRedesignFrame path="/finanzas" />;
 }
