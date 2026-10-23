@@ -475,10 +475,11 @@
 <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
 </div>
-<!-- Argentina Map Simulation with interactive SVG -->
-<div class="relative w-full h-[270px] bg-slate-50/60 rounded-xl overflow-hidden mt-2 border border-slate-100 flex items-center justify-center">
+<!-- Mapa original (Leaflet/OSM) en el tamaño de la tarjeta -->
+<div class="relative w-full h-[270px] bg-slate-50/60 rounded-xl overflow-hidden mt-2 border border-slate-100">
+<iframe class="absolute inset-0 h-full w-full border-0" src="/embed/fleet-map" title="Flota en tiempo real"></iframe>
 <!-- Map Legend Overlay -->
-<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-xs p-2 rounded-lg border border-slate-200/80 text-[10px] space-y-1 shadow-xs z-10">
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-xs p-2 rounded-lg border border-slate-200/80 text-[10px] space-y-1 shadow-xs z-10 pointer-events-none">
 <div class="flex items-center gap-1.5 font-medium text-slate-700">
 <span class="w-2 h-2 rounded-full bg-blue-500"></span> 15 en curso
               </div>
@@ -489,46 +490,6 @@
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Entregados
               </div>
 </div>
-<!-- Country Silhouette SVG & Logistical Routes -->
-<svg class="w-full h-full text-slate-200" fill="none" viewbox="0 0 280 360" xmlns="http://www.w3.org/2000/svg">
-<!-- Water/Ocean background subtle label -->
-<text fill="#94a3b8" font-size="8" font-weight="600" opacity="0.6" x="210" y="270">Océano</text>
-<text fill="#94a3b8" font-size="8" font-weight="600" opacity="0.6" x="210" y="280">Atlántico</text>
-<!-- Neighboring countries hints -->
-<text fill="#cbd5e1" font-size="7" x="180" y="80">PARAGUAY</text>
-<text fill="#cbd5e1" font-size="7" x="200" y="160">URUGUAY</text>
-<text fill="#cbd5e1" font-size="7" x="30" y="190">CHILE</text>
-<!-- Simplified Argentina Silhouette -->
-<path d="M125 40 L160 55 L165 80 L185 95 L180 130 L165 145 L175 175 L150 185 L135 220 L120 280 L105 320 L95 340 L85 300 L95 240 L80 190 L95 130 L110 70 Z" fill="#e9eff7" stroke="#cbd5e1" stroke-linejoin="round" stroke-width="1.5"></path>
-<text fill="#94a3b8" font-size="8" font-weight="bold" opacity="0.7" x="110" y="150">ARGENTINA</text>
-<!-- Logistical Route Lines connecting nodes -->
-<!-- Route 1: North to Center (Tucumán - Córdoba - Rosario) -->
-<path d="M125 90 L138 135 L150 160" stroke="#3b82f6" stroke-dasharray="3 3" stroke-linecap="round" stroke-width="2"></path>
-<!-- Route 2: Córdoba - CABA - Mar del Plata -->
-<path d="M138 135 L168 170 L170 215" stroke="#3b82f6" stroke-linecap="round" stroke-width="2"></path>
-<!-- Route 3: CABA - Neuquén - Patagonia -->
-<path d="M168 170 L120 220 L105 260" stroke="#10b981" stroke-dasharray="4 2" stroke-width="1.8"></path>
-<!-- Active Truck Pin 1 (Salta / Tucumán) -->
-<circle class="animate-ping" cx="125" cy="90" fill="#3b82f6" opacity="0.5" r="4"></circle>
-<circle cx="125" cy="90" fill="#3b82f6" r="3"></circle>
-<!-- Detained Truck Pin 2 (Rosario / Zárate - Red) -->
-<circle cx="150" cy="148" fill="#ef4444" opacity="0.2" r="6"></circle>
-<circle cx="150" cy="148" fill="#ef4444" r="3.5"></circle>
-<!-- Active Node 3 (Córdoba - Blue) -->
-<circle cx="138" cy="135" fill="#3b82f6" r="3.5"></circle>
-<!-- Active Truck Indicator (CABA - Blue with Truck icon badge) -->
-<g transform="translate(156, 158)">
-<rect fill="#1d4ed8" filter="drop-shadow(0 2px 3px rgba(0,0,0,0.2))" height="15" rx="3.5" width="20"></rect>
-<path d="M4 11a1 1 0 102 0 1 1 0 00-2 0zm8 0a1 1 0 102 0 1 1 0 00-2 0z" fill="white"></path>
-<path d="M4 5h7v5H4zM11 7h3l2 2v2h-5z" fill="white"></path>
-</g>
-<!-- Completed Pin (Bahía Blanca - Green) -->
-<circle cx="145" cy="205" fill="#10b981" r="3.5"></circle>
-<!-- South Node (Neuquén/Río Negro - Blue) -->
-<circle cx="120" cy="220" fill="#3b82f6" r="3.5"></circle>
-<!-- Southernmost Completed Node -->
-<circle cx="105" cy="260" fill="#10b981" r="3.5"></circle>
-</svg>
 </div>
 </div>
 <!-- Incidencias Abiertas Alert Card -->

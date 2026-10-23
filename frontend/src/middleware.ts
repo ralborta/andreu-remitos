@@ -11,6 +11,7 @@ const PUBLIC_PREFIXES = [
   "/vincular-wa",
   "/tracking",
   "/stitch",
+  "/embed",
 ];
 
 /** Hosts que solo sirven la pantalla de QR WhatsApp (URL externa para compartir). */

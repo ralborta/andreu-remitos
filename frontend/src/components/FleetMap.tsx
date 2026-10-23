@@ -69,7 +69,7 @@ function popupHtml(t: Trip) {
   </div>`;
 }
 
-export function FleetMap() {
+export function FleetMap({ compact = false }: { compact?: boolean }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
@@ -90,9 +90,10 @@ export function FleetMap() {
         mapRef.current.innerHTML = "";
 
         const map = L.map(mapRef.current, {
-          zoomControl: true,
-          attributionControl: true,
-        }).setView([-34.6, -64.0], 8);
+          zoomControl: !compact,
+          attributionControl: !compact,
+          scrollWheelZoom: !compact,
+        }).setView([-34.6, -64.0], compact ? 5 : 8);
 
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution:
@@ -145,13 +146,16 @@ export function FleetMap() {
         }
 
         if (bounds.length) {
-          map.fitBounds(bounds, { padding: [48, 48], maxZoom: 9 });
+          map.fitBounds(bounds, {
+            padding: compact ? [18, 18] : [48, 48],
+            maxZoom: compact ? 6 : 9,
+          });
         } else {
-          map.setView([-34.6, -64.0], 8);
+          map.setView([-34.6, -64.0], compact ? 5 : 8);
         }
 
         // Leaflet a veces necesita invalidateSize tras el layout
-        setTimeout(() => map.invalidateSize(), 80);
+        setTimeout(() => map.invalidateSize(), compact ? 160 : 80);
 
         cleanupRef.current = () => map.remove();
         setReady(true);
@@ -169,7 +173,25 @@ export function FleetMap() {
       cleanupRef.current?.();
       cleanupRef.current = null;
     };
-  }, []);
+  }, [compact]);
+
+  if (compact) {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-[#eef2f7]">
+        <div ref={mapRef} className="absolute inset-0 z-0 h-full w-full" />
+        {!ready && !error && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center text-[11px] text-slate-500">
+            Cargando mapa…
+          </div>
+        )}
+        {error && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center px-4 text-center text-[11px] text-amber-700">
+            No se pudo cargar el mapa: {error}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
