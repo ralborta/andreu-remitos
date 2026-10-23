@@ -1,51 +1,47 @@
 <!DOCTYPE html>
 
-<html class="h-full bg-[#f8fafc]" lang="es"><head>
+<html class="h-full bg-[#f8f9ff]" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Empliados - Finanzas Enviar Mensaje</title>
-<!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+<title>Enviar Mensaje de Cobranza | Finanzas | Empliados Logistics Cloud</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols Outlined -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS CDN with forms and container queries -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- FontAwesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<!-- Tailwind CSS CDN with plugins -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
+            mono: ['"JetBrains Mono"', 'monospace']
           },
           colors: {
-            navy: {
-              950: '#060a17',
-              900: '#0e1738',
-              850: '#141f48',
-              800: '#1a275a',
-            },
             brand: {
               50: '#eef2ff',
               100: '#e0e7ff',
-              200: '#c7d2fe',
-              500: '#4f46e5',
-              600: '#4338ca',
-              700: '#3730a3',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b'
+            },
+            slate: {
+              850: '#151f32',
+              900: '#0f172a',
+              950: '#090d16'
             }
-          },
-          boxShadow: {
-            'card': '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
-            'subtle': '0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.03)',
-            'radar': '0 0 35px -5px rgba(239, 68, 68, 0.25)'
           }
         }
       }
     }
   </script>
-<style>
+<!-- BEGIN: CustomStyles -->
+<style data-purpose="custom-scrollbars">
+    /* Barra de desplazamiento elegante para tablas y vistas previas */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -60,154 +56,754 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    .radar-pulse-ring {
-      animation: radar-pulse 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  </style>
+<style data-purpose="chat-bubble">
+    /* Estilo para la burbuja de chat de WhatsApp simulación */
+    .whatsapp-bubble {
+      position: relative;
+      background-color: #ffffff;
+      border-radius: 0.75rem;
+      border-top-left-radius: 0.2rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
     }
-    @keyframes radar-pulse {
-      0% { transform: scale(0.6); opacity: 0.9; }
-      50% { transform: scale(1.15); opacity: 0.35; }
-      100% { transform: scale(1.6); opacity: 0; }
+    .whatsapp-bubble::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid #ffffff;
+      border-left: 8px solid transparent;
     }
   </style>
+<!-- END: CustomStyles -->
 </head>
-<body class="h-full font-sans text-slate-800 bg-[#f8fafc] antialiased selection:bg-indigo-50 selection:text-indigo-700">
-<div class="min-h-full flex flex-col">
-<!-- ========================================================================= -->
-<!-- HEADER NIVEL 1: INSTITUCIONAL Y HERRAMIENTAS GLOBALES                      -->
-<!-- ========================================================================= -->
+<body class="min-h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+<!-- BEGIN: CorporateHeader -->
 <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16">
-<!-- Logo & Marca -->
-<div class="flex items-center gap-6">
-<a class="flex items-center gap-2.5 group" href="#">
-<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all font-black text-lg">
-                E
-              </div>
-<div class="flex flex-col">
-<span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>
-<span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>
+<!-- Nivel 1: Top Bar (56px) -->
+<div class="px-6 h-14 flex items-center justify-between border-b border-slate-100 gap-4" data-purpose="main-navbar-level-1">
+<!-- Logotipo y Nombre Institucional -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-700 via-brand-600 to-indigo-500 flex items-center justify-center text-white font-extrabold text-lg shadow-sm shadow-indigo-200">
+          E
+        </div>
+<div>
+<div class="font-extrabold tracking-tight text-slate-900 text-sm leading-none flex items-center gap-1.5">
+            EMPLIADOS
+            <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded border border-brand-100">LOGISTICS CLOUD</span>
 </div>
-</a>
-<!-- Buscador Global Centralizado con ⌘K -->
-<div class="relative w-80 hidden md:block">
+<span class="text-[10px] text-slate-400 font-medium tracking-wide">ENTERPRISE TMS &amp; SUITE FINANCIERA</span>
+</div>
+</div>
+<!-- Buscador Global -->
+<div class="flex-1 max-w-md hidden md:block">
+<div class="relative">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-<span class="material-symbols-outlined text-base">search</span>
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
 </div>
-<input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
-<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-<kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd>
+<input class="w-full pl-9 pr-12 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-mono" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<kbd class="px-1.5 py-0.5 text-[10px] font-mono text-slate-500 bg-slate-200/70 rounded border border-slate-300">⌘K</kbd>
 </div>
 </div>
 </div>
-<!-- Módulos Globales (Navegación Nivel 1) -->
-<nav class="hidden xl:flex items-center space-x-1">
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Torre de Control</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Monitor</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors flex items-center gap-1.5" href="#">
-              WhatsApp
-              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">Nuevo</span>
+<!-- Navegación Superior de Módulos Principales -->
+<nav class="flex items-center gap-1 lg:gap-2">
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors" href="#">Torre de Control</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors" href="#">Monitor</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors flex items-center gap-1.5" href="#">
+          WhatsApp
+          <span class="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">Nuevo</span>
 </a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Métricas</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-white bg-[#0e1738] rounded-md shadow-sm" href="/finanzas">Finanzas</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors" href="#">Métricas</a>
+<a class="px-3 py-1.5 text-xs font-bold bg-slate-900 text-white rounded-md shadow-sm" href="#">Finanzas</a>
 </nav>
-<!-- Estado, Campana y Perfil -->
-<div class="flex items-center gap-4">
-<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">
-<span class="relative flex h-2 w-2">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-</span>
-<span>Sistemas activos</span>
-</div>
-<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones operativas">
-<span class="material-symbols-outlined text-lg">notifications</span>
-<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>
+<!-- Estado, Alertas y Perfil de Usuario -->
+<div class="flex items-center gap-3 shrink-0">
+<!-- Badge Sistemas Activos -->
+<div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Sistemas activos
+        </div>
+<!-- Notificaciones -->
+<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="5 notificaciones pendientes">
+<i class="fa-regular fa-bell text-sm"></i>
+<span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">5</span>
 </button>
-<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
-<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
-                GD
-              </div>
-<div class="hidden lg:flex flex-col text-left">
-<span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span>
-<span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span>
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Usuario Administrador -->
+<div class="flex items-center gap-2 pl-1 cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-slate-100">
+            GD
+          </div>
+<div class="text-left hidden lg:block">
+<div class="text-xs font-bold text-slate-800 leading-tight group-hover:text-brand-600 transition-colors">Gonzalo Demo</div>
+<div class="text-[10px] text-slate-500 font-medium">Administrador</div>
 </div>
-<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>
+<i class="fa-solid fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 ml-0.5"></i>
 </div>
 </div>
+</div>
+<!-- Nivel 2: Sub-barra de Agentes Operativos (Horizontal) -->
+<div class="px-6 py-2 bg-slate-50/70 border-b border-slate-200 overflow-x-auto flex items-center justify-between gap-4 text-xs" data-purpose="operational-agents-bar">
+<div class="flex items-center gap-1 whitespace-nowrap">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1">
+<i class="fa-solid fa-briefcase text-[10px]"></i> Agentes:
+        </span>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Gestión de Viajes</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Tracking Express</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors flex items-center gap-1" href="#">
+          Remitos <i class="fa-solid fa-chevron-down text-[9px]"></i>
+</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Destinos</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Incidencias</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Rendición</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">ETA</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">POP/POD</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Reclamos</a>
+<a class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors" href="#">Analítica</a>
+<a class="px-2.5 py-1 font-semibold text-brand-700 bg-brand-50 border border-brand-200/60 rounded flex items-center gap-1" href="#">
+<span class="bg-brand-600 text-white text-[9px] px-1 py-0.2 rounded font-bold">Nuevo</span>
+          Finanzas
+        </a>
+</div>
+<div class="hidden xl:flex items-center gap-3 text-[11px] text-slate-500 shrink-0 font-medium">
+<span><i class="fa-regular fa-clock mr-1 text-slate-400"></i> Servidor Sync: <strong>Hace 3 min</strong></span>
+<span class="text-slate-300">|</span>
+<span class="font-mono text-slate-700 font-bold bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs">USD/ARS $1.045,50</span>
+</div>
+</div>
+<!-- Nivel 3: Submenú Específico de Finanzas -->
+<div class="px-6 py-2.5 bg-white flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-200" data-purpose="finance-navigation-bar">
+<div class="flex items-center gap-2 overflow-x-auto">
+<span class="font-extrabold uppercase tracking-wider text-slate-400 text-[10px] mr-1">FINANZAS</span>
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" href="#">Dashboard</a>
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" href="#">Clientes</a>
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" href="#">Facturas</a>
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" href="#">Cobranza</a>
+<a class="px-3 py-1.5 font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" href="#">Conciliación</a>
+<a class="px-3.5 py-1.5 font-bold bg-slate-900 text-white rounded-lg shadow-sm flex items-center gap-1.5" href="#">
+<i class="fa-regular fa-paper-plane text-xs text-brand-400"></i>
+          Enviar Mensaje
+        </a>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/80">
+<i class="fa-solid fa-bolt text-amber-500 text-xs"></i>
+          Motor Omnicanal v2.4 · Disparo Masivo WhatsApp / Email
+        </span>
 </div>
 </div>
 </header>
-<!-- ========================================================================= -->
-<!-- HEADER NIVEL 2: BARRA DE AGENTES (SUB-BARRA HORIZONTAL)                   -->
-<!-- ========================================================================= -->
-<nav class="bg-white border-b border-slate-200 text-xs shadow-xs sticky top-16 z-40">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center space-x-1 overflow-x-auto py-2 no-scrollbar">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 flex items-center gap-1 shrink-0">
-<span class="material-symbols-outlined text-xs">smart_toy</span> AGENTES:
-          </span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Gestión de Viajes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Tracking Express</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1" href="#">
-            Remitos ▾
-          </a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Destinos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Incidencias</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Rendición</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">ETA</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">POP/POD</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Reclamos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Analítica</a>
-</div>
-</div>
-</nav>
-<!-- ========================================================================= -->
-
-<nav class="bg-white border-b border-slate-200 text-xs sticky top-[6.75rem] z-30">
-<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center gap-1 overflow-x-auto py-2">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 shrink-0">FINANZAS</span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas">Dashboard</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/clientes">Clientes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/pagos">Facturas</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/cobranzas">Cobranza</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/conciliacion">Conciliación</a>
-<a class="px-3.5 py-1.5 bg-[#0e1738] text-white font-semibold rounded-lg shadow-sm whitespace-nowrap" href="/finanzas/comunicacion">Enviar Mensaje</a>
-</div>
-</div>
-</nav>
-
+<!-- END: CorporateHeader -->
+<!-- BEGIN: MainContent -->
 <main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-<section>
-<h1 class="text-2xl font-bold text-slate-900 tracking-tight">ENVIAR MENSAJE</h1>
-<p class="text-xs sm:text-sm text-slate-500 mt-1">Recordatorios de cobranza por WhatsApp o email, con plantilla.</p>
-</section>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-<section class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
-<div class="p-4 border-b border-slate-100"><input class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50" placeholder="Filtrar facturas con saldo..."/></div>
-<table class="w-full text-left text-xs"><thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr>
-<th class="py-3 px-4"></th><th class="py-3 px-4">Cliente</th><th class="py-3 px-4">Factura</th><th class="py-3 px-4">Saldo</th>
-</tr></thead><tbody class="divide-y divide-slate-100">
-<tr><td class="py-3 px-4"><input checked type="checkbox"/></td><td class="py-3 px-4 font-semibold">PepsiCo Central</td><td class="py-3 px-4 font-mono">FC-A 0001-00482</td><td class="py-3 px-4 font-mono">$1.240.000</td></tr>
-<tr><td class="py-3 px-4"><input type="checkbox"/></td><td class="py-3 px-4 font-semibold">Arcor S.A.</td><td class="py-3 px-4 font-mono">FC-A 0001-00491</td><td class="py-3 px-4 font-mono">$660.000</td></tr>
-<tr><td class="py-3 px-4"><input type="checkbox"/></td><td class="py-3 px-4 font-semibold">Cervecería Quilmes</td><td class="py-3 px-4 font-mono">FC-A 0001-00502</td><td class="py-3 px-4 font-mono">$540.000</td></tr>
-</tbody></table></section>
-<section class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-card p-5 space-y-3">
-<div class="flex gap-2 text-xs font-semibold">
-<button class="px-3 py-1.5 rounded-lg bg-[#0e1738] text-white">WhatsApp</button>
-<button class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600">Email</button>
+<!-- BEGIN: TitleAndActionHeader -->
+<section class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-1" data-purpose="section-header">
+<div>
+<div class="flex items-center gap-2.5 flex-wrap">
+<h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">ENVIAR MENSAJE DE COBRANZA</h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            Operativo
+          </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
+<i class="fa-solid fa-robot text-[10px]"></i>
+            Disparo Omnicanal IA
+          </span>
 </div>
-<label class="block text-[11px] font-semibold text-slate-500 uppercase">Plantilla</label>
-<select class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg"><option>Recordatorio corto</option><option>Factura vencida</option></select>
-<label class="block text-[11px] font-semibold text-slate-500 uppercase">Vista previa</label>
-<textarea class="w-full h-36 px-3 py-2 text-xs border border-slate-200 rounded-lg">Hola PepsiCo Central, te recordamos la factura FC-A 0001-00482. Saldo $1.240.000, vence 12/10. ¿Me confirmás el pago?</textarea>
-<button class="w-full px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold">Enviar</button>
+<p class="text-xs text-slate-500 mt-1 max-w-3xl">
+          Recordatorios de cobranza proactiva por WhatsApp o email, selección masiva o individual de facturas con saldo y plantillas dinámicas con botón de pago DEBIN interoperable.
+        </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition shadow-2xs">
+<i class="fa-solid fa-arrows-rotate text-slate-400"></i>
+          Sincronizar ERP / AFIP
+        </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition shadow-sm">
+<i class="fa-solid fa-plus text-xs"></i>
+          Nueva Plantilla
+        </button>
+</div>
+</section>
+<!-- END: TitleAndActionHeader -->
+<!-- BEGIN: KPISection -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-purpose="kpi-metrics-grid">
+<!-- KPI 1: Total Seleccionado -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-brand-500 transition-all">
+<div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+<span>TOTAL A COBRAR SELECCIONADO</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-wallet"></i>
+</div>
+</div>
+<div class="text-2xl font-black text-slate-900 tracking-tight font-mono" id="kpi-monto-seleccionado">
+          $1.240.000 <span class="text-xs font-bold text-slate-500">ARS</span>
+</div>
+<div class="mt-2.5 flex items-center gap-2 text-[11px]">
+<span class="inline-flex items-center text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+<i class="fa-solid fa-check mr-1 text-[9px]"></i> 1 factura marcada
+          </span>
+<span class="text-slate-400">Listo para despacho</span>
+</div>
+</div>
+<!-- KPI 2: Vencidas Críticas -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-amber-500 transition-all">
+<div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+<span>FACTURAS VENCIDAS (&gt;15D)</span>
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-triangle-exclamation"></i>
+</div>
+</div>
+<div class="text-2xl font-black text-slate-900 tracking-tight font-mono">
+          18 <span class="text-xs font-bold text-slate-500">casos ($8.42M)</span>
+</div>
+<div class="mt-2.5 flex items-center gap-2 text-[11px]">
+<span class="inline-flex items-center text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+            Atención requerida
+          </span>
+<span class="text-slate-400">SLA intimación: 24h</span>
+</div>
+</div>
+<!-- KPI 3: Tasa de Lectura -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-brand-500 transition-all">
+<div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+<span>TASA DE LECTURA PROACTIVA</span>
+<div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+<i class="fa-brands fa-whatsapp"></i>
+</div>
+</div>
+<div class="text-2xl font-black text-slate-900 tracking-tight font-mono">
+          88,4%
+        </div>
+<div class="mt-2.5 flex items-center gap-2 text-[11px]">
+<span class="inline-flex items-center text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+            ↑ +5,2 pts
+          </span>
+<span class="text-slate-400">WhatsApp Cloud API</span>
+</div>
+</div>
+<!-- KPI 4: Tiempo Medio de Pago -->
+<div class="bg-white rounded-xl p-4 border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-blue-500 transition-all">
+<div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+<span>TIEMPO MEDIO DE PAGO POST-AVISO</span>
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+<i class="fa-solid fa-stopwatch"></i>
+</div>
+</div>
+<div class="text-2xl font-black text-slate-900 tracking-tight font-mono">
+          1,8 <span class="text-xs font-bold text-slate-500">días promedio</span>
+</div>
+<div class="mt-2.5 flex items-center gap-2 text-[11px]">
+<span class="inline-flex items-center text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+<i class="fa-solid fa-bolt mr-1 text-[9px]"></i> -65% vs tradicional
+          </span>
+<span class="text-slate-400">Pago directo vía DEBIN/QR</span>
+</div>
+</div>
+</section>
+<!-- END: KPISection -->
+<!-- BEGIN: OperationalTwoColumnLayout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start" data-purpose="main-split-workspace">
+<!-- ========================================== -->
+<!-- COLUMNA IZQUIERDA: Listado de Facturas (7 cols) -->
+<!-- ========================================== -->
+<section class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col" data-purpose="invoices-selection-panel">
+<!-- Header de la sección de selección -->
+<div class="p-4 border-b border-slate-200 bg-white">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+<div>
+<h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+<i class="fa-solid fa-list-check text-slate-400"></i>
+                Facturas con Saldo Pendiente
+              </h2>
+<p class="text-[11px] text-slate-500">Seleccioná los comprobantes que recibirán el aviso con link de cobro</p>
+</div>
+<div class="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+<span class="px-2 py-0.5 bg-slate-100 rounded text-[11px] border border-slate-200">Total: 5 registradas</span>
+</div>
+</div>
+<!-- Barra de Búsqueda y Filtros Rápidos -->
+<div class="space-y-2">
+<div class="relative">
+<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+<input class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-sans transition-all" placeholder="Filtrar facturas con saldo, cliente o CUIT..." type="text" value=""/>
+</div>
+<!-- Tags rápidos de filtrado -->
+<div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Filtros:</span>
+<button class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-900 text-white">Todas las con saldo</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200">Vencidas (&gt;10d)</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200">Por vencer</button>
+<button class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200">Monto &gt; $1.000.000</button>
+</div>
+</div>
+</div>
+<!-- Tabla de comprobantes -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+<th class="py-2.5 px-3 w-10 text-center">
+<input checked="" class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</th>
+<th class="py-2.5 px-3">Cliente / Razón Social</th>
+<th class="py-2.5 px-3">Comprobante</th>
+<th class="py-2.5 px-3">Vencimiento</th>
+<th class="py-2.5 px-3 text-right">Saldo Pendiente</th>
+<th class="py-2.5 px-3 text-center">Contacto</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- FILA 1: PepsiCo Central (Marcada como en la captura de referencia) -->
+<tr class="bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors">
+<td class="py-3 px-3 text-center">
+<input checked="" class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-slate-900 flex items-center gap-1.5">
+                    PepsiCo Central
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Canal activo"></span>
+</div>
+<div class="text-[10px] text-slate-500 font-mono">CUIT: 30-50349281-9</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-mono font-bold text-slate-800">FC-A 0001-00482</div>
+<div class="text-[10px] text-slate-400">Viaje #TR-88219 (Logística)</div>
+</td>
+<td class="py-3 px-3 whitespace-nowrap">
+<span class="text-rose-600 font-bold font-mono">12/10/2026</span>
+<div class="text-[9px] text-rose-500 font-semibold uppercase">Vencida hace 12 días</div>
+</td>
+<td class="py-3 px-3 text-right font-mono font-bold text-slate-900 text-sm">
+                  $1.240.000
+                  <div class="text-[9px] text-slate-400 font-normal">Original: $1.240.000</div>
+</td>
+<td class="py-3 px-3 text-center whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 text-xs text-slate-600">
+<span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px]" title="+54 9 11 4455-2231">
+<i class="fa-brands fa-whatsapp"></i>
+</span>
+<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px]" title="compras@pepsico.com">
+<i class="fa-regular fa-envelope"></i>
+</span>
+</div>
+</td>
+</tr>
+<!-- FILA 2: Arcor S.A. -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-slate-800">Arcor S.A.</div>
+<div class="text-[10px] text-slate-400 font-mono">CUIT: 30-70891234-4</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-mono font-bold text-slate-700">FC-A 0001-00491</div>
+<div class="text-[10px] text-slate-400">Viaje #TR-88310</div>
+</td>
+<td class="py-3 px-3 whitespace-nowrap">
+<span class="text-amber-600 font-bold font-mono">18/10/2026</span>
+<div class="text-[9px] text-amber-600 font-semibold uppercase">Vencida hace 6 días</div>
+</td>
+<td class="py-3 px-3 text-right font-mono font-bold text-slate-800 text-sm">
+                  $660.000
+                  <div class="text-[9px] text-slate-400 font-normal">Original: $1.200.000</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 inline-flex items-center justify-center text-[10px]" title="pagos@arcor.com">
+<i class="fa-regular fa-envelope"></i>
+</span>
+</td>
+</tr>
+<!-- FILA 3: Cervecería Quilmes -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-slate-800">Cervecería Quilmes</div>
+<div class="text-[10px] text-slate-400 font-mono">CUIT: 30-50014299-1</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-mono font-bold text-slate-700">FC-A 0001-00502</div>
+<div class="text-[10px] text-slate-400">Viaje #TR-88402</div>
+</td>
+<td class="py-3 px-3 whitespace-nowrap">
+<span class="text-slate-600 font-semibold font-mono">22/10/2026</span>
+<div class="text-[9px] text-slate-500">Por vencer en 3 días</div>
+</td>
+<td class="py-3 px-3 text-right font-mono font-bold text-slate-800 text-sm">
+                  $540.000
+                  <div class="text-[9px] text-slate-400 font-normal">Original: $540.000</div>
+</td>
+<td class="py-3 px-3 text-center">
+<div class="inline-flex items-center gap-1 text-xs">
+<span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 inline-flex items-center justify-center text-[10px]">
+<i class="fa-brands fa-whatsapp"></i>
+</span>
+</div>
+</td>
+</tr>
+<!-- FILA 4: Molinos Río de la Plata -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-slate-800">Molinos Río de la Plata</div>
+<div class="text-[10px] text-slate-400 font-mono">CUIT: 30-50018842-8</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-mono font-bold text-slate-700">FC-A 0001-00511</div>
+<div class="text-[10px] text-slate-400">Viaje #TR-88519</div>
+</td>
+<td class="py-3 px-3 whitespace-nowrap">
+<span class="text-slate-600 font-semibold font-mono">25/10/2026</span>
+<div class="text-[9px] text-slate-500">Por vencer en 6 días</div>
+</td>
+<td class="py-3 px-3 text-right font-mono font-bold text-slate-800 text-sm">
+                  $410.000
+                  <div class="text-[9px] text-slate-400 font-normal">Original: $820.000</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 inline-flex items-center justify-center text-[10px]">
+<i class="fa-regular fa-envelope"></i>
+</span>
+</td>
+</tr>
+<!-- FILA 5: Distribuidora Norte S.A. -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-slate-800">Distribuidora Norte S.A.</div>
+<div class="text-[10px] text-slate-400 font-mono">CUIT: 33-68291044-9</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-mono font-bold text-slate-700">FC-A 0014-00012904</div>
+<div class="text-[10px] text-slate-400">Flota Larga Distancia</div>
+</td>
+<td class="py-3 px-3 whitespace-nowrap">
+<span class="text-rose-600 font-bold font-mono">05/10/2026</span>
+<div class="text-[9px] text-rose-500 font-semibold uppercase">Vencida hace 19 días</div>
+</td>
+<td class="py-3 px-3 text-right font-mono font-bold text-slate-800 text-sm">
+                  $3.200.200
+                  <div class="text-[9px] text-slate-400 font-normal">Original: $3.200.200</div>
+</td>
+<td class="py-3 px-3 text-center">
+<div class="inline-flex items-center gap-1 text-xs">
+<span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 inline-flex items-center justify-center text-[10px]">
+<i class="fa-brands fa-whatsapp"></i>
+</span>
+<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 inline-flex items-center justify-center text-[10px]">
+<i class="fa-regular fa-envelope"></i>
+</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer / Barra de resumen de selección -->
+<div class="p-3 bg-slate-50/90 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+<span><strong>1 factura seleccionada</strong> ($1.240.000 ARS)</span>
+<span class="text-slate-300">·</span>
+<a class="text-brand-600 font-bold hover:underline" href="#">Seleccionar todas las vencidas (2)</a>
+</div>
+<div class="text-[11px] text-slate-400 font-medium">
+            Mostrando 5 de 42 facturas con saldo
+          </div>
+</div>
+</section>
+<!-- ========================================== -->
+<!-- COLUMNA DERECHA: Configuración y Vista Previa (5 cols) -->
+<!-- ========================================== -->
+<section class="lg:col-span-5 space-y-4" data-purpose="message-dispatch-panel">
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-5">
+<!-- Canal de Despacho (Tabs interactivos) -->
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+              Canal de Comunicación
+            </label>
+<div class="grid grid-cols-3 gap-2">
+<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm ring-1 ring-slate-900" type="button">
+<i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i>
+                WhatsApp
+                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-mono font-normal">98%</span>
+</button>
+<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50" type="button">
+<i class="fa-regular fa-envelope text-slate-400"></i>
+                Email
+              </button>
+<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50" type="button">
+<i class="fa-solid fa-arrows-split-up-and-left text-slate-400 text-xs"></i>
+                Ambos
+              </button>
+</div>
+</div>
+<!-- Selector de Plantilla -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="text-xs font-bold text-slate-700 uppercase tracking-wider" for="template-selector">
+                PLANTILLA DE RECORDATORIO
+              </label>
+<span class="text-[10px] text-brand-600 font-bold hover:underline cursor-pointer">
+<i class="fa-solid fa-pen text-[9px] mr-1"></i> Editar plantilla
+              </span>
+</div>
+<div class="relative">
+<select class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg focus:ring-slate-900 focus:border-slate-900 p-2.5 font-medium appearance-none pr-9" id="template-selector">
+<option selected="">Recordatorio corto (WhatsApp optimizado)</option>
+<option>Aviso previo al vencimiento (Preventivo)</option>
+<option>Intimación formal de cobranza con link DEBIN</option>
+<option>Corte preventivo de servicio de carga</option>
+<option>Notificación con remito POD digital conformado</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+<i class="fa-solid fa-chevron-down text-xs"></i>
+</div>
+</div>
+</div>
+<!-- Parámetros dinámicos y enlaces rápidos -->
+<div class="bg-slate-50 p-3 rounded-lg border border-slate-200/80 space-y-2">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Variables automáticas adjuntas</span>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+<label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+<input checked="" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5" type="checkbox"/>
+<span>Adjuntar PDF Factura AFIP</span>
+</label>
+<label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+<input checked="" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5" type="checkbox"/>
+<span>Link de pago DEBIN directo</span>
+</label>
+<label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+<input checked="" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5" type="checkbox"/>
+<span>Remito POD conformado</span>
+</label>
+<label class="flex items-center gap-2 text-slate-700 cursor-pointer">
+<input class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5" type="checkbox"/>
+<span>Copiar a ejecutivo de cuenta</span>
+</label>
+</div>
+</div>
+<!-- Vista Previa de Mensaje (Simulación de WhatsApp Business) -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+<i class="fa-regular fa-eye text-slate-400"></i>
+                VISTA PREVIA EN DISPOSITIVO
+              </span>
+<span class="text-[10px] bg-slate-100 font-mono text-slate-600 px-2 py-0.5 rounded font-bold">Destino: +54 9 11 4455-2231</span>
+</div>
+<!-- Simulación WhatsApp Card -->
+<div class="rounded-xl border border-slate-200 overflow-hidden bg-[#efeae2] shadow-inner">
+<!-- Barra superior del chat simulado -->
+<div class="bg-[#075e54] text-white px-3 py-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center font-bold text-[10px]">
+<i class="fa-solid fa-truck-fast"></i>
+</div>
+<div>
+<div class="text-xs font-bold leading-tight flex items-center gap-1">
+                      SOL Empliados · Cobranzas
+                      <i class="fa-solid fa-circle-check text-emerald-300 text-[10px]"></i>
+</div>
+<div class="text-[9px] text-emerald-100">Cuenta Oficial Verificada</div>
+</div>
+</div>
+<div class="text-[10px] text-emerald-100 flex items-center gap-2">
+<i class="fa-solid fa-phone"></i>
+<i class="fa-solid fa-ellipsis-vertical"></i>
+</div>
+</div>
+<!-- Área de conversación -->
+<div class="p-3 space-y-2">
+<div class="text-center">
+<span class="text-[9px] font-semibold text-slate-600 bg-white/80 backdrop-blur px-2 py-0.5 rounded-full shadow-2xs">
+                    HOY · MENSAJE AUTOMATIZADO CON CIFRADO
+                  </span>
+</div>
+<!-- Burbuja de mensaje -->
+<div class="whatsapp-bubble p-3 max-w-[92%] ml-2 border border-slate-200/40 text-xs text-slate-800 leading-relaxed font-sans">
+<p class="font-medium">
+                    Hola <strong class="text-slate-900 font-bold">PepsiCo Central</strong>, te recordamos la factura <strong class="font-mono bg-slate-100 px-1 rounded text-slate-900">FC-A 0001-00482</strong> por servicios de transporte y logística nacional.
+                  </p>
+<div class="my-2 p-2.5 rounded bg-slate-50 border border-slate-200 text-xs space-y-1">
+<div class="flex justify-between">
+<span class="text-slate-500">Saldo pendiente:</span>
+<span class="font-mono font-bold text-slate-900">$1.240.000 ARS</span>
+</div>
+<div class="flex justify-between">
+<span class="text-slate-500">Vencimiento operado:</span>
+<span class="font-mono text-rose-600 font-bold">12/10/2026</span>
+</div>
+<div class="flex justify-between">
+<span class="text-slate-500">Estado de mora:</span>
+<span class="text-rose-600 font-semibold">12 días de atraso</span>
+</div>
+</div>
+<p class="text-[11px] text-slate-600 mb-2">
+                    ¿Nos confirmás la fecha estimada de acreditación? Podés abonar o adjuntar comprobante directamente ingresando en el portal:
+                  </p>
+<!-- Botón simulado dentro del chat -->
+<div class="pt-1 border-t border-slate-100">
+<a class="block w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-center text-xs transition shadow-2xs" href="#">
+<i class="fa-solid fa-qrcode mr-1"></i> Pagar vía DEBIN / QR ($1.240.000)
+                    </a>
+</div>
+<div class="mt-1 text-right">
+<span class="text-[9px] text-slate-400 font-mono">09:30 AM · <i class="fa-solid fa-check-double text-sky-500"></i></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Acciones principales de envío -->
+<div class="space-y-2 pt-2">
+<button class="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 group" type="button">
+<i class="fa-solid fa-paper-plane group-hover:translate-x-0.5 transition-transform text-brand-400"></i>
+              Enviar Recordatorio a Seleccionados (1 destinatario)
+            </button>
+<div class="grid grid-cols-2 gap-2">
+<button class="py-2 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold rounded-lg text-xs transition flex items-center justify-center gap-1.5" type="button">
+<i class="fa-regular fa-clock text-slate-400"></i>
+                Programar Envío
+              </button>
+<button class="py-2 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold rounded-lg text-xs transition flex items-center justify-center gap-1.5" type="button">
+<i class="fa-solid fa-vial text-slate-400"></i>
+                Enviar Prueba a mí
+              </button>
+</div>
+</div>
+</div>
 </section>
 </div>
-
+<!-- END: OperationalTwoColumnLayout -->
+<!-- BEGIN: OperationalWorkflowSection -->
+<section class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm" data-purpose="operational-workflow-pipeline">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+<i class="fa-solid fa-diagram-project text-brand-600"></i>
+            Flujo Operativo de Cobranzas Proactivas (SLA 24 Horas)
+          </h3>
+<p class="text-[11px] text-slate-500">Pipeline continuo entre AFIP, TMS Logístico y Gateway de Pago Interoperable</p>
+</div>
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+<i class="fa-solid fa-circle-nodes mr-1"></i> Automatización 100% Sincronizada
+        </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+<!-- Paso 1 -->
+<div class="p-3 rounded-lg bg-slate-50 border border-slate-200 relative">
+<div class="text-[10px] font-bold text-brand-600 mb-1">01. DETECCIÓN</div>
+<div class="font-bold text-slate-800 text-xs">Vencimiento AFIP</div>
+<p class="text-[11px] text-slate-500 mt-1">El motor detecta automáticamente saldos no conciliados a 3 días del corte.</p>
+</div>
+<!-- Paso 2 -->
+<div class="p-3 rounded-lg bg-slate-50 border border-slate-200 relative">
+<div class="text-[10px] font-bold text-brand-600 mb-1">02. SEGMENTACIÓN</div>
+<div class="font-bold text-slate-800 text-xs">Perfil de Riesgo</div>
+<p class="text-[11px] text-slate-500 mt-1">Clasificación por días de mora, historial crediticio y volumen de carga en tránsito.</p>
+</div>
+<!-- Paso 3 -->
+<div class="p-3 rounded-lg bg-indigo-50/50 border border-indigo-200 relative">
+<div class="text-[10px] font-bold text-indigo-600 mb-1">03. COMPOSICIÓN IA</div>
+<div class="font-bold text-slate-900 text-xs">Plantilla Dinámica</div>
+<p class="text-[11px] text-slate-600 mt-1">Se incrusta el comprobante digital, remito conformado y link tokenizado.</p>
+</div>
+<!-- Paso 4 -->
+<div class="p-3 rounded-lg bg-slate-50 border border-slate-200 relative">
+<div class="text-[10px] font-bold text-brand-600 mb-1">04. DISPARO</div>
+<div class="font-bold text-slate-800 text-xs">WhatsApp API + Mail</div>
+<p class="text-[11px] text-slate-500 mt-1">Envío masivo con confirmación de entrega y apertura en tiempo real.</p>
+</div>
+<!-- Paso 5 -->
+<div class="p-3 rounded-lg bg-emerald-50/50 border border-emerald-200 relative">
+<div class="text-[10px] font-bold text-emerald-700 mb-1">05. CONCILIACIÓN</div>
+<div class="font-bold text-slate-900 text-xs">Acreditación DEBIN</div>
+<p class="text-[11px] text-slate-600 mt-1">Conciliación automática en el libro diario y reapertura de crédito operativo.</p>
+</div>
+</div>
+</section>
+<!-- END: OperationalWorkflowSection -->
+<!-- BEGIN: SOLFinancialAssistant -->
+<section class="bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 rounded-xl p-5 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4" data-purpose="ai-financial-assistant">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-xl text-indigo-300 shrink-0">
+<i class="fa-solid fa-headset"></i>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold text-sm text-white">Asistente Inteligente Financiero SOL</h4>
+<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.2 rounded-full font-mono">IA Conectada</span>
+</div>
+<p class="text-xs text-slate-300 mt-0.5">
+            ¿Necesitás redactar una intimación personalizada o calcular intereses moratorios antes del despacho?
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-wrap">
+<button class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white border border-white/10 transition">
+<i class="fa-solid fa-wand-magic-sparkles mr-1 text-indigo-300"></i> Sugerir texto según score
+        </button>
+<button class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition shadow-sm">
+          Consultar a SOL
+        </button>
+</div>
+</section>
+<!-- END: SOLFinancialAssistant -->
 </main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="bg-white border-t border-slate-200 mt-8 py-4 px-6 text-xs text-slate-500" data-purpose="corporate-footer">
+<div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2 font-medium">
+<span>© 2026 <strong>Empliados Logistics Cloud</strong> · Módulo de Finanzas &amp; Cobranzas</span>
+<span class="text-slate-300">|</span>
+<span class="text-slate-400">Versión 4.19.2-b</span>
 </div>
+<div class="flex items-center gap-4 text-[11px]">
+<a class="hover:text-slate-800 transition" href="#">Términos de Facturación</a>
+<a class="hover:text-slate-800 transition" href="#">Políticas de WhatsApp API</a>
+<a class="hover:text-slate-800 transition" href="#">Soporte Operativo 24/7</a>
+<span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Nodo AFIP Conectado
+        </span>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+<!-- BEGIN: InteractiveHandlers -->
+<script data-purpose="toggle-interactivity">
+    // Simulación de interacción simple para selección y cálculo en vivo
+    document.addEventListener('DOMContentLoaded', () => {
+      const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+      const kpiTotal = document.getElementById('kpi-monto-seleccionado');
+
+      checkboxes.forEach(chk => {
+        chk.addEventListener('change', () => {
+          // Si cambia la fila, actualizar apariencia
+          const row = chk.closest('tr');
+          if (chk.checked) {
+            row.classList.add('bg-indigo-50/40');
+          } else {
+            row.classList.remove('bg-indigo-50/40');
+          }
+        });
+      });
+    });
+  </script>
+<!-- END: InteractiveHandlers -->
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
