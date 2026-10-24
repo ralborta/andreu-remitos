@@ -14,6 +14,11 @@ const PUBLIC_PREFIXES = [
   "/embed",
 ];
 
+/** Borrador SOL: se abre sin iniciar sesión. */
+const PUBLIC_DRAFT_HOSTS = new Set([
+  "transitone-transitone-borrador.wd75db.easypanel.host",
+]);
+
 /** Hosts que solo sirven la pantalla de QR WhatsApp (URL externa para compartir). */
 const CONEXION_PRUEBA_HOSTS = new Set([
   // Andreu prod (rama main)
@@ -55,6 +60,10 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (PUBLIC_DRAFT_HOSTS.has(host)) {
+    return NextResponse.next();
   }
 
   if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
