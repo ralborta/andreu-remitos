@@ -2,6 +2,7 @@
   var LABELS = {
     "torre de control": "/",
     "monitor": "/monitor",
+    "monitor flota": "/monitor",
     "monitor de servicios": "/monitor",
     "whatsapp": "/contactos",
     "metricas": "/backoffice",
