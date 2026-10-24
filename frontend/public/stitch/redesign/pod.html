@@ -3,32 +3,112 @@
 <html lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Empliados - Torre de Control</title>
+<title>Empliados - Evidencias de Transporte (POP/POD)</title>
 <!-- Tailwind CSS CDN with forms & container queries -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- Google Fonts: Plus Jakarta Sans -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script data-purpose="tailwind-config" id="tailwind-config">
     tailwind.config = {
+      darkMode: "class",
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          "colors": {
+            "on-error": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "outline": "#76777d",
+            "on-surface": "#0b1c30",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "on-primary-fixed": "#131b2e",
+            "background": "#f8f9ff",
+            "secondary-fixed-dim": "#93ccff",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#d3e4fe",
+            "on-primary-fixed-variant": "#3f465c",
+            "surface": "#f8f9ff",
+            "on-secondary-container": "#00476e",
+            "on-tertiary-container": "#028fb0",
+            "secondary": "#006398",
+            "inverse-surface": "#213145",
+            "tertiary-fixed-dim": "#6cd3f7",
+            "on-tertiary-fixed": "#001f28",
+            "tertiary-container": "#001f28",
+            "inverse-primary": "#bec6e0",
+            "primary-fixed": "#dae2fd",
+            "outline-variant": "#c6c6cd",
+            "on-surface-variant": "#45464d",
+            "secondary-fixed": "#cce5ff",
+            "on-primary-container": "#7c839b",
+            "surface-container": "#e5eeff",
+            "on-secondary-fixed-variant": "#004b73",
+            "surface-container-high": "#dce9ff",
+            "on-secondary-fixed": "#001d31",
+            "on-background": "#0b1c30",
+            "primary-fixed-dim": "#bec6e0",
+            "surface-tint": "#565e74",
+            "secondary-container": "#5bb8fe",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#d3e4fe",
+            "on-tertiary-fixed-variant": "#004e61",
+            "surface-container-low": "#eff4ff",
+            "tertiary": "#000000",
+            "primary-container": "#131b2e",
+            "primary": "#000000",
+            "error": "#ba1a1a",
+            "surface-dim": "#cbdbf5",
+            "tertiary-fixed": "#b7eaff",
+            "on-primary": "#ffffff"
           },
-          colors: {
-            navy: {
-              900: '#0b132b',
-              850: '#0e1738',
-              800: '#14214d',
-              700: '#1b2f6b',
-            },
-            brand: {
-              blue: '#1952e1',
-              cyan: '#00c6ff',
-            }
+          "spacing": {
+            "space-2xl": "2rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin-tablet": "1.5rem",
+            "space-xs": "0.25rem",
+            "margin": "1rem",
+            "space-lg": "1rem",
+            "margin-desktop": "2rem",
+            "gutter": "1rem",
+            "space-2xs": "0.125rem",
+            "gutter-desktop": "1.5rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "sans": ["Plus Jakarta Sans", "sans-serif"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "code-table": ["JetBrains Mono"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "metric-stat": ["Plus Jakarta Sans"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["15px", {"lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+            "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+            "code-table": ["13px", {"lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+            "body-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400"}],
+            "label-lg": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400"}],
+            "headline-sm": ["16px", {"lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+            "display-lg-mobile": ["26px", {"lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+            "metric-stat": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700"}],
+            "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
           }
         }
       }
