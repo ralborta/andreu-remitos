@@ -234,7 +234,7 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">412</div>
+<div id="sol-rem-kpi-hoy" class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">412</div>
 <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
 <i class="ph-bold ph-trend-up"></i> +18% vs ayer
             </span>
@@ -250,7 +250,7 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">97,1%</div>
+<div id="sol-rem-kpi-ocr" class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">97,1%</div>
 <span class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
 <i class="ph-bold ph-arrow-up-right"></i> +2,1%
             </span>
@@ -266,7 +266,7 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">16 s</div>
+<div id="sol-rem-kpi-tiempo" class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">16 s</div>
 <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
 <i class="ph-fill ph-lightning"></i> -76% manual
             </span>
@@ -282,7 +282,7 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">98,4%</div>
+<div id="sol-rem-kpi-legible" class="text-2xl font-extrabold text-slate-900 tracking-tight font-mono">98,4%</div>
 <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
               Alta fidelidad
             </span>
@@ -314,18 +314,18 @@
 <!-- Search in table -->
 <div class="relative min-w-[240px]">
 <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-<input class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Buscar remito, chofer, patente..." type="text"/>
+<input id="sol-rem-buscar" class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Buscar remito, chofer, patente..." type="text"/>
 </div>
 <!-- Status Dropdown Filter -->
-<select class="py-1.5 pl-3 pr-8 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-<option selected="">Todos los estados</option>
-<option>100% Validado</option>
-<option>Revisión manual</option>
-<option>Pendiente foto cumplido</option>
+<select id="sol-rem-estado" class="py-1.5 pl-3 pr-8 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+<option value="todos" selected="">Todos los estados</option>
+<option value="confirmado">100% Validado</option>
+<option value="revision">Revisión manual</option>
+<option value="incompleto">Pendiente foto cumplido</option>
 </select>
 <!-- Tenant / Client Dropdown Filter -->
-<select class="py-1.5 pl-3 pr-8 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-<option selected="">Todos los clientes / tenants</option>
+<select id="sol-rem-tenant" class="py-1.5 pl-3 pr-8 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+<option value="" selected="">Todos los clientes / tenants</option>
 <option>Arcor S.A.</option>
 <option>Distribuidora Norte SA</option>
 <option>Alimentos del Sur</option>
@@ -353,7 +353,7 @@
 <th class="py-3 px-4 text-right" scope="col">ACCIONES</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+<tbody id="sol-rem-body" class="divide-y divide-slate-100 text-xs text-slate-700">
 <!-- Row 1 (Active/Inspected row: #REM-98214) -->
 <tr class="bg-indigo-50/40 hover:bg-indigo-50/60 transition-colors border-l-4 border-l-indigo-600">
 <td class="py-3.5 px-4">
@@ -609,7 +609,7 @@
 </div>
 <!-- Table Footer / Pagination status -->
 <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-<div>Mostrando <strong class="text-slate-700 font-mono">5</strong> de <strong class="text-slate-700 font-mono">412</strong> remitos</div>
+<div id="sol-rem-pie">Mostrando <strong class="text-slate-700 font-mono">5</strong> de <strong class="text-slate-700 font-mono">412</strong> remitos</div>
 <a class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-800" href="#">
 <span>Ver registro histórico completo</span>
 <i class="ph-bold ph-arrow-right"></i>
@@ -627,9 +627,9 @@
 <i class="ph-bold ph-scan text-base"></i>
 </span>
 <h3 class="text-sm font-bold text-slate-900">
-                Inspección de Remito Activo: <span class="font-mono text-indigo-600">#REM-98214</span>
+                Inspección de Remito Activo: <span id="sol-rem-activo" class="font-mono text-indigo-600">#REM-98214</span>
 </h3>
-<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200">
+<span id="sol-rem-conf" class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200">
                 Document AI Confidence: 99.2%
               </span>
 </div>
@@ -639,7 +639,7 @@
 </div>
 <!-- Document tools: rotate, zoom, fullscreen -->
 <div class="flex items-center gap-2">
-<span class="text-xs font-mono text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 flex items-center gap-1">
+<span id="sol-rem-archivo" class="text-xs font-mono text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 flex items-center gap-1">
 <i class="ph-bold ph-file-image text-slate-400"></i> IMG_20260826_191502.jpg
             </span>
 <button class="p-1.5 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-50" title="Rotar documento">
@@ -661,10 +661,10 @@
 <div class="w-full max-w-md bg-white rounded-lg shadow-md border border-slate-300 p-5 font-sans relative">
 <!-- Document Header Block -->
 <div class="border-2 border-indigo-500/40 rounded p-3 relative bg-indigo-50/10">
-<span class="absolute -top-2.5 left-2 bg-indigo-600 text-white font-mono text-[9px] px-1 rounded">R_NUM: 0001-00098214</span>
+<span id="sol-rem-rnum" class="absolute -top-2.5 left-2 bg-indigo-600 text-white font-mono text-[9px] px-1 rounded">R_NUM: 0001-00098214</span>
 <div class="flex justify-between items-start">
 <div>
-<h4 class="font-bold text-slate-900 text-sm">ARCOR S.A.I.C.</h4>
+<h4 id="sol-rem-doc-empresa" class="font-bold text-slate-900 text-sm">ARCOR S.A.I.C.</h4>
 <p class="text-[10px] text-slate-500">Planta Industrial Córdoba · CUIT 30-50279317-9</p>
 </div>
 <span class="px-2 py-0.5 border-2 border-slate-800 text-xs font-extrabold rounded">REMITO "R"</span>
@@ -674,10 +674,10 @@
 <div class="mt-3 border border-slate-300 rounded p-2.5 text-[11px] bg-slate-50/50">
 <span class="text-[9px] uppercase font-mono font-bold text-slate-400 block mb-1">TRIP_DATA</span>
 <div class="grid grid-cols-2 gap-2">
-<div>Chofer: <strong class="text-slate-800">Raúl Alborta</strong></div>
-<div>Patente: <strong class="font-mono text-slate-800">AF 821 ZK</strong></div>
-<div>Origen: <span class="text-slate-600">Cba. Cap.</span></div>
-<div>Destino: <span class="text-slate-600">CD CABA</span></div>
+<div>Chofer: <strong id="sol-rem-doc-chofer" class="text-slate-800">Raúl Alborta</strong></div>
+<div>Patente: <strong id="sol-rem-doc-patente" class="font-mono text-slate-800">AF 821 ZK</strong></div>
+<div>Origen: <span id="sol-rem-doc-origen" class="text-slate-600">Cba. Cap.</span></div>
+<div>Destino: <span id="sol-rem-doc-destino" class="text-slate-600">CD CABA</span></div>
 </div>
 </div>
 <!-- Manifest Items Table -->
@@ -702,8 +702,8 @@
 </tbody>
 <tfoot class="bg-slate-50 font-bold border-t border-slate-200 text-slate-900">
 <tr>
-<td class="p-1.5">TOTAL 18 PALLETS</td>
-<td class="p-1.5 text-right">14.200 KG BRUTO</td>
+<td id="sol-rem-doc-total" class="p-1.5">TOTAL 18 PALLETS</td>
+<td id="sol-rem-doc-peso" class="p-1.5 text-right">14.200 KG BRUTO</td>
 </tr>
 </tfoot>
 </table>
@@ -737,33 +737,33 @@
 <i class="ph-bold ph-database text-indigo-600"></i>
 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600">Datos estructurados validados</h4>
 </div>
-<span class="text-[11px] text-slate-400 font-mono">Sync ID: #SYN-998214</span>
+<span id="sol-rem-sync" class="text-[11px] text-slate-400 font-mono">Sync ID: #SYN-998214</span>
 </div>
 <!-- Key Value Data Fields Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
 <div>
 <span class="text-slate-400 font-medium block text-[11px]">N° REMITO LEGAL</span>
-<span class="font-mono font-bold text-slate-900 text-base">0001-00098214</span>
+<span id="sol-rem-legal" class="font-mono font-bold text-slate-900 text-base">0001-00098214</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block text-[11px]">FECHA Y HORA REMITO</span>
-<span class="font-mono font-semibold text-slate-900">26/08/2026 19:15 hs</span>
+<span id="sol-rem-fecha" class="font-mono font-semibold text-slate-900">26/08/2026 19:15 hs</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block text-[11px]">REMITENTE / DADOR</span>
-<span class="font-bold text-slate-900">ARCOR S.A.I.C. (Planta Cba)</span>
+<span id="sol-rem-dador" class="font-bold text-slate-900">ARCOR S.A.I.C. (Planta Cba)</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block text-[11px]">DESTINATARIO</span>
-<span class="font-bold text-slate-900">Centro Distribución CABA</span>
+<span id="sol-rem-destino" class="font-bold text-slate-900">Centro Distribución CABA</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block text-[11px]">CHOFER VINCULADO</span>
-<span class="font-semibold text-slate-800">Raúl Alborta (DNI 28.409.112)</span>
+<span id="sol-rem-chofer" class="font-semibold text-slate-800">Raúl Alborta (DNI 28.409.112)</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block text-[11px]">CARGA TOTAL DECLARADA</span>
-<span class="font-mono font-bold text-indigo-700">18 Pallets · 14.200 kg</span>
+<span id="sol-rem-carga" class="font-mono font-bold text-indigo-700">18 Pallets · 14.200 kg</span>
 </div>
 </div>
 <!-- Automatic Validation Checklist -->
@@ -816,7 +816,7 @@
 </div>
 <div>
 <h3 class="text-sm font-bold text-slate-900 leading-tight">¿Qué necesitás saber de Remitos?</h3>
-<p class="text-xs text-slate-500">Consulto remitos ya persistidos (solo lectura, sin OCR invasivo).</p>
+<p id="sol-rem-chat-out" class="text-xs text-slate-500">Consulto remitos ya persistidos (solo lectura, sin OCR invasivo).</p>
 </div>
 </div>
 <div class="flex items-center gap-2 text-[11px] text-slate-400">
@@ -1054,5 +1054,6 @@
     });
   </script>
 <!-- END: Interaction Handling Script -->
+<script src="/stitch/redesign/remitos-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
