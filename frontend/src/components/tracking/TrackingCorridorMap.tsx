@@ -4,21 +4,6 @@ import { useEffect, useRef, useState } from "react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const WALTER = { lat: -32.98, lng: -60.82 };
-
-const VEHICLES = [
-  { id: "walter", ...WALTER, color: "#10b981", pulse: true, label: "74 km/h · R450" },
-  { id: "paez", lat: -32.35, lng: -62.15, color: "#10b981", pulse: true, label: "C. Páez (RN9)" },
-  { id: "parada", lat: -34.0981, lng: -59.0286, color: "#f59e0b", pulse: false, label: "Parada (0 km)" },
-  { id: "rosario", lat: -32.9442, lng: -60.62, color: "#10b981", pulse: false, label: "" },
-  { id: "caba", lat: -34.6037, lng: -58.4, color: "#3b82f6", pulse: false, label: "" },
-];
-
-const CITIES = [
-  { name: "Rosario (Santa Fe)", lat: -32.9442, lng: -60.6505 },
-  { name: "Buenos Aires (CABA)", lat: -34.6037, lng: -58.3816 },
-];
-
 function loadLeaflet(): Promise<any> {
   return new Promise((resolve, reject) => {
     if ((window as any).L) {
@@ -91,59 +76,64 @@ export function TrackingCorridorMap() {
           maxZoom: 19,
         }).addTo(map);
 
-        L.polyline(
-          [
-            [-31.4201, -64.1888],
-            [-32.35, -62.15],
-            WALTER,
-            [-32.9442, -60.6505],
-            [-34.0981, -59.0286],
-            [-34.6037, -58.3816],
-          ],
-          { color: "#64748b", weight: 3, opacity: 0.55, dashArray: "8 8" },
-        ).addTo(map);
+        const markers = new Map<string, any>();
+        let trail: any = null;
 
-        for (const city of CITIES) {
-          L.circleMarker([city.lat, city.lng], {
-            radius: 5,
-            color: "#475569",
-            fillColor: "#64748b",
-            fillOpacity: 1,
-            weight: 1,
-          })
-            .bindTooltip(city.name, {
-              permanent: true,
-              direction: "right",
-              offset: [8, 0],
-              className: "sol-tracking-city",
-            })
-            .addTo(map);
+        function applyVehicles(list: any[], fit: boolean) {
+          const seen = new Set<string>();
+          const bounds: [number, number][] = [];
+          for (const v of list || []) {
+            if (!Number.isFinite(v.lat) || !Number.isFinite(v.lng)) continue;
+            seen.add(String(v.id));
+            bounds.push([v.lat, v.lng]);
+            let marker = markers.get(String(v.id));
+            const icon = vehicleIcon(L, v.color || "#64748b", Boolean(v.pulse), v.label || "");
+            if (!marker) {
+              marker = L.marker([v.lat, v.lng], { icon }).addTo(map);
+              markers.set(String(v.id), marker);
+            } else {
+              marker.setLatLng([v.lat, v.lng]);
+              marker.setIcon(icon);
+            }
+            if (v.popup) marker.bindPopup(v.popup);
+          }
+          for (const [id, marker] of markers) {
+            if (!seen.has(id)) {
+              map.removeLayer(marker);
+              markers.delete(id);
+            }
+          }
+          if (fit && bounds.length) {
+            map.fitBounds(bounds, { padding: [36, 36], maxZoom: 12 });
+          }
         }
 
-        for (const v of VEHICLES) {
-          L.marker([v.lat, v.lng], {
-            icon: vehicleIcon(L, v.color, v.pulse, v.label),
-            zIndexOffset: v.id === "walter" ? 800 : 400,
-          }).addTo(map);
+        function applyTrail(points: [number, number][]) {
+          if (trail) {
+            map.removeLayer(trail);
+            trail = null;
+          }
+          const pts = (points || []).filter(
+            (p) => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]),
+          );
+          if (pts.length >= 2) {
+            trail = L.polyline(pts, { color: "#7c3aed", weight: 3, opacity: 0.75 }).addTo(map);
+            map.fitBounds(trail.getBounds(), { padding: [36, 36], maxZoom: 14 });
+          }
         }
-
-        map.fitBounds(
-          [
-            [-32.2, -62.4],
-            [-34.75, -58.15],
-          ],
-          { padding: [28, 28], maxZoom: 8 },
-        );
 
         mapObjRef.current = map;
         setTimeout(() => map.invalidateSize(), 160);
         setReady(true);
+        window.parent?.postMessage({ type: "sol-tracking", action: "ready" }, "*");
 
         onMessage = (ev: MessageEvent) => {
           const data = ev.data;
           if (!data || data.type !== "sol-tracking" || !mapObjRef.current) return;
-          if (data.action === "center") {
-            mapObjRef.current.setView([WALTER.lat, WALTER.lng], 12, { animate: true });
+          if (data.action === "vehicles") applyVehicles(data.vehicles || [], Boolean(data.fit));
+          if (data.action === "trail") applyTrail(data.points || []);
+          if (data.action === "center" && Number.isFinite(data.lat) && Number.isFinite(data.lng)) {
+            mapObjRef.current.setView([data.lat, data.lng], data.zoom || 13, { animate: true });
           }
           if (data.action === "zoom") {
             mapObjRef.current.setZoom(mapObjRef.current.getZoom() + (data.dir === -1 ? -1 : 1));
