@@ -38,6 +38,7 @@
   function norm(s) {
     return String(s || "")
       .replace(/\bNuevo\b/gi, " ")
+      .replace(/[▾▼˅]/g, " ")
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase()
@@ -112,6 +113,11 @@
     }
 
     if (anal && anal.parentNode) {
+      var exists = false;
+      Array.prototype.forEach.call(anal.parentNode.children, function (kid) {
+        if (norm(kid.textContent).indexOf("finanzas") >= 0) exists = true;
+      });
+      if (exists) return;
       var a = document.createElement("a");
       a.setAttribute("data-sol-finanzas", "1");
       a.className = anal.className;
@@ -123,6 +129,68 @@
     }
   }
 
+  var MENU_ICONS = {
+    "gestion de viajes": "local_shipping",
+    "tracking express": "share_location",
+    "remitos": "description",
+    "destinos": "pin_drop",
+    "incidencias": "warning",
+    "rendicion": "account_balance_wallet",
+    "eta": "schedule",
+    "pop/pod": "inventory_2",
+    "reclamos": "support_agent",
+    "analitica": "monitoring",
+    "finanzas": "account_balance",
+    "dashboard": "dashboard",
+    "clientes": "corporate_fare",
+    "facturas": "receipt_long",
+    "cobranza": "handshake",
+    "conciliacion": "balance",
+    "enviar mensaje": "send",
+  };
+
+  function ensureIconFont() {
+    if (document.querySelector("link[href*='Material+Symbols'], link[href*='Material%20Symbols']")) return;
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,500,0,0&display=swap";
+    document.head.appendChild(link);
+  }
+
+  function menuBar(el) {
+    var n = el.parentElement;
+    for (var i = 0; i < 4 && n && n !== document.body; i++, n = n.parentElement) {
+      var text = n.textContent || "";
+      if (text.length > 1200) continue;
+      if (/AGENTES|FINANZAS|Agentes/i.test(text)) return n;
+    }
+    return null;
+  }
+
+  function decorateMenus() {
+    ensureIconFont();
+    document.querySelectorAll("a, button, span").forEach(function (el) {
+      if (el.tagName === "SPAN" && (el.closest("a, button") || labelOf(el) !== "finanzas")) return;
+      if (el.querySelector(".material-symbols-outlined, .sol-menu-icon")) return;
+      var label = labelOf(el);
+      var icon = MENU_ICONS[label];
+      if (!icon) return;
+      var bar = menuBar(el);
+      if (!bar) return;
+      if (label === "finanzas" && !/AGENTES|Agentes/i.test(bar.textContent || "")) return;
+      var span = document.createElement("span");
+      span.className = "material-symbols-outlined sol-menu-icon";
+      span.textContent = icon;
+      span.style.fontSize = "17px";
+      span.style.lineHeight = "1";
+      span.style.color = "inherit";
+      el.insertBefore(span, el.firstChild);
+      if (!/\bflex\b/.test(el.className)) el.classList.add("inline-flex", "items-center", "gap-1.5");
+      else el.classList.add("items-center", "gap-1.5");
+    });
+  }
+
   document.querySelectorAll("a, button").forEach(bind);
   injectFinanzas();
+  decorateMenus();
 })();
