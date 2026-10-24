@@ -269,23 +269,24 @@
 <div class="flex items-center gap-2.5 flex-wrap">
 <!-- Search in Table -->
 <div class="relative min-w-[200px]">
-<input class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Buscar en viajes..." type="text"/>
+<input id="sol-viaje-buscar" class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Buscar en viajes..." type="text"/>
 <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 </div>
 <!-- Status Dropdown Filter -->
-<select class="text-xs py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-<option>Estado: Todos</option>
-<option>Sin asignar</option>
-<option>En curso</option>
-<option>Entregado</option>
+<select id="sol-viaje-estado" class="text-xs py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+<option value="todos">Estado: Todos</option>
+<option value="sin_asignar">Sin asignar</option>
+<option value="en_curso">En curso</option>
+<option value="entregado">Entregado</option>
 </select>
 <!-- Date Dropdown Filter -->
-<select class="text-xs py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-<option>Fecha: Hoy</option>
-<option>Esta semana</option>
-<option>Este mes</option>
+<select id="sol-viaje-fecha" class="text-xs py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+<option value="todas" selected>Fecha: Todas</option>
+<option value="hoy">Hoy</option>
+<option value="semana">Esta semana</option>
+<option value="mes">Este mes</option>
 </select>
 <!-- New Trip Primary Button -->
 <button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors">
@@ -469,6 +470,9 @@
 <button class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button>
 </div>
 </td>
+</tr>
+<tr id="sol-viaje-vacio" class="hidden" data-filtro-vacio="1">
+<td colspan="9" class="py-8 text-center text-sm font-medium text-slate-400">No hay viajes con esos filtros.</td>
 </tr>
 </tbody>
 </table>
@@ -903,13 +907,81 @@
       '<button type="button" class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button></div></td></tr>';
   }
 
-  function refreshCount() {
+  function fold(s) {
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function rowDate(tr) {
+    var iso = toIso(textOf(tr.querySelectorAll("td")[1]));
+    if (!iso) return null;
+    var p = iso.split("-");
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+
+  function sameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function matchEstado(estado, filtro) {
+    if (filtro === "sin_asignar") return estado === "solicitado";
+    if (filtro === "en_curso") return estado === "en_curso" || estado === "asignado" || estado === "confirmado";
+    if (filtro === "entregado") return estado === "entregado" || estado === "cerrado";
+    return true;
+  }
+
+  function matchFecha(date, filtro) {
+    if (filtro === "todas" || !filtro) return true;
+    if (!date) return false;
+    var hoy = new Date();
+    hoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    if (filtro === "hoy") return sameDay(date, hoy);
+    if (filtro === "mes") return date.getFullYear() === hoy.getFullYear() && date.getMonth() === hoy.getMonth();
+    if (filtro === "semana") {
+      var start = new Date(hoy);
+      var day = start.getDay();
+      start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+      var end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return date >= start && date <= end;
+    }
+    return true;
+  }
+
+  function dataRows() {
     var body = tableBody();
-    if (!body) return;
-    var n = body.querySelectorAll("tr").length;
-    document.querySelectorAll("span").forEach(function (s) {
-      if (/viajes en curso/.test(s.textContent)) s.textContent = n + " viajes en curso / programados";
+    if (!body) return [];
+    return Array.prototype.filter.call(body.querySelectorAll("tr"), function (tr) {
+      return !tr.hasAttribute("data-filtro-vacio");
     });
+  }
+
+  function applyFilters() {
+    var buscar = document.getElementById("sol-viaje-buscar");
+    var estado = document.getElementById("sol-viaje-estado");
+    var fecha = document.getElementById("sol-viaje-fecha");
+    var q = fold(buscar ? buscar.value : "");
+    var filtroEstado = estado ? estado.value : "todos";
+    var filtroFecha = fecha ? fecha.value : "todas";
+    var visible = 0;
+    dataRows().forEach(function (tr) {
+      var blob = fold(textOf(tr));
+      var ok = (!q || blob.indexOf(q) >= 0) &&
+        matchEstado(estadoFromLabel(textOf(tr.querySelectorAll("td")[7])), filtroEstado) &&
+        matchFecha(rowDate(tr), filtroFecha);
+      tr.classList.toggle("hidden", !ok);
+      if (ok) visible += 1;
+    });
+    var vacio = document.getElementById("sol-viaje-vacio");
+    if (vacio) vacio.classList.toggle("hidden", visible !== 0);
+    var filtrado = Boolean(q) || filtroEstado !== "todos" || filtroFecha !== "todas";
+    var label = visible + (visible === 1 ? " viaje" : " viajes") + (filtrado ? " con estos filtros" : " en curso / programados");
+    document.querySelectorAll("span").forEach(function (s) {
+      if (/viajes? (en curso|con estos)/.test(s.textContent)) s.textContent = label;
+    });
+  }
+
+  function refreshCount() {
+    applyFilters();
   }
 
   function values() {
@@ -934,6 +1006,7 @@
       data.codigo = textOf(currentRow.querySelector("td"));
       data.fecha = data.fecha;
       paintRow(currentRow, data);
+      applyFilters();
       var id = currentRow.getAttribute("data-viaje-id");
       if (id) {
         fetch("/backend/api/viajes/" + id, {
@@ -1019,7 +1092,7 @@
   if (body) {
     body.addEventListener("click", function (e) {
       var tr = e.target.closest("tr");
-      if (!tr) return;
+      if (!tr || tr.hasAttribute("data-filtro-vacio")) return;
       var btn = e.target.closest("button");
       var label = btn ? textOf(btn).toLowerCase() : "";
       if (btn) {
@@ -1031,6 +1104,14 @@
       openModal("edit", data, label === "asignar");
     });
   }
+
+  ["sol-viaje-buscar", "sol-viaje-estado", "sol-viaje-fecha"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", applyFilters);
+    el.addEventListener("change", applyFilters);
+  });
+  applyFilters();
 })();
 </script>
 <script src="/stitch/redesign/bridge.js"></script>
