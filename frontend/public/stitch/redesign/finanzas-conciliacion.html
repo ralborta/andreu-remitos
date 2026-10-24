@@ -244,109 +244,109 @@
 <!-- ========================================================================= -->
 <!-- LEVEL 1: TOP NAVIGATION BAR (Immutable Brand Shell & Active Selection) -->
 <!-- ========================================================================= -->
-<header class="flex justify-between items-center w-full px-space-xl h-14 bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant shadow-sm">
-<!-- Left: Brand Anchor & Search -->
-<div class="flex items-center gap-space-lg">
-<div class="flex items-center gap-space-sm cursor-pointer">
-<div class="w-8 h-8 rounded-lg bg-tertiary flex items-center justify-center shadow-sm">
-<span class="text-on-tertiary font-headline-sm text-headline-sm font-bold leading-none">E</span>
-</div>
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<!-- Logo & Marca -->
+<div class="flex items-center gap-6">
+<a class="flex items-center gap-2.5 group" href="#">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all font-black text-lg">
+                E
+              </div>
 <div class="flex flex-col">
-<span class="font-display-lg text-headline-sm font-bold text-on-surface tracking-tight leading-none">Empliados</span>
-<span class="font-label-caps text-label-caps text-outline leading-tight mt-0.5">LOGISTICS CLOUD (SOL)</span>
+<span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>
+<span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>
 </div>
-</div>
-<!-- Divider -->
-<div class="h-5 w-px bg-outline-variant hidden lg:block"></div>
-<!-- Global Search Input -->
-<div class="relative hidden md:flex items-center">
-<span class="material-symbols-outlined absolute left-2.5 text-on-surface-variant text-[18px]">search</span>
-<input class="h-9 w-72 lg:w-96 pl-8 pr-12 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-all" placeholder="Buscar cobro, factura, liquidación o cliente..." type="text"/>
-<div class="absolute right-2 px-1.5 py-0.5 bg-surface-container-low border border-outline-variant rounded text-[10px] font-code-table font-semibold text-on-surface-variant">⌘K</div>
-</div>
-</div>
-<!-- Center: Main Module Links -->
-<nav class="hidden xl:flex items-center gap-1">
-<a class="text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors font-label-md text-label-md" href="#">Torre de Control</a>
-<a class="text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors font-label-md text-label-md" href="#">Monitor Flota</a>
-<a class="text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors font-label-md text-label-md inline-flex items-center gap-1.5" href="#">
-<span>WhatsApp</span>
-<span class="bg-surface-container-low text-secondary text-[10px] font-label-caps px-1.5 py-0.2 rounded-full border border-secondary-fixed-dim">Nuevo</span>
 </a>
-<a class="text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors font-label-md text-label-md" href="#">Métricas</a>
-<!-- Active Section: FINANZAS -->
-<a class="text-on-tertiary font-semibold bg-tertiary rounded-lg px-3 py-1.5 font-label-md text-label-md shadow-xs" href="#">Finanzas</a>
-</nav>
-<!-- Right: Operational Utilities -->
-<div class="flex items-center gap-space-md">
-<!-- Pulsating Health Status -->
-<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-surface-container-low rounded-full border border-outline-variant">
-<span class="relative flex h-2 w-2">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
-</span>
-<span class="font-label-caps text-label-caps text-on-surface">Sistemas activos</span>
+<!-- Buscador Global Centralizado con ⌘K -->
+<div class="relative w-80 hidden md:block">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-base">search</span>
 </div>
-<!-- Notifications -->
-<button class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="Notificaciones operativas">
-<span class="material-symbols-outlined text-[20px]">notifications</span>
-<span class="absolute top-1.5 right-1.5 flex h-2 w-2">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-error"></span>
+<input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+<kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd>
+</div>
+</div>
+</div>
+<!-- Módulos Globales (Navegación Nivel 1) -->
+<nav class="hidden xl:flex items-center space-x-1">
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Torre de Control</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Monitor</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors flex items-center gap-1.5" href="#">
+              WhatsApp
+              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">Nuevo</span>
+</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Métricas</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-white bg-[#0e1738] rounded-md shadow-sm" href="/finanzas">Finanzas</a>
+</nav>
+<!-- Estado, Campana y Perfil -->
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
 </span>
+<span>Sistemas activos</span>
+</div>
+<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones operativas">
+<span class="material-symbols-outlined text-lg">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>
 </button>
-<!-- User Profile Avatar -->
-<div class="flex items-center gap-space-sm pl-2 border-l border-outline-variant cursor-pointer">
-<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center font-code-table font-semibold text-xs text-on-surface">
-          GD
-        </div>
+<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
+                GD
+              </div>
 <div class="hidden lg:flex flex-col text-left">
-<span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Gonzalo Demo</span>
-<span class="font-label-caps text-label-caps text-on-surface-variant leading-none">Administrador</span>
+<span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span>
+<span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>
+</div>
 </div>
 </div>
 </div>
 </header>
 <!-- ========================================================================= -->
-<!-- LEVEL 2: SUB-NAVIGATION (Agentes & Módulos Financieros) -->
+<!-- HEADER NIVEL 2: BARRA DE AGENTES (SUB-BARRA HORIZONTAL)                   -->
 <!-- ========================================================================= -->
-<div class="w-full bg-surface-container-lowest border-b border-outline-variant px-space-xl py-2 flex flex-wrap justify-between items-center gap-3">
-<div class="flex items-center gap-space-md overflow-x-auto py-1">
-<div class="flex items-center gap-1.5 text-on-surface-variant pr-2 border-r border-outline-variant shrink-0">
-<span class="material-symbols-outlined text-[16px] text-secondary">account_balance_wallet</span>
-<span class="font-label-caps text-label-caps tracking-wider text-on-surface font-bold">FINANZAS &amp; COBROS</span>
-</div>
-<div class="flex items-center gap-1 shrink-0">
-<a class="bg-tertiary text-on-tertiary font-label-md text-label-md px-2.5 py-1 rounded-md shadow-xs flex items-center gap-1.5" href="#">
-<span class="material-symbols-outlined text-[15px]">sync_alt</span>
-<span>Conciliación</span>
-</a>
-<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low px-2.5 py-1 rounded-md transition-colors font-label-md text-label-md" href="#">Facturación Electrónica</a>
-<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low px-2.5 py-1 rounded-md transition-colors font-label-md text-label-md" href="#">Liquidación a Choferes</a>
-<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low px-2.5 py-1 rounded-md transition-colors font-label-md text-label-md" href="#">Cuentas Corrientes</a>
-<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low px-2.5 py-1 rounded-md transition-colors font-label-md text-label-md" href="#">Pasarelas de Pago</a>
-<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low px-2.5 py-1 rounded-md transition-colors font-label-md text-label-md" href="#">Reportes ERP</a>
-</div>
-</div>
-<!-- Quick Actions & Engine Status -->
-<div class="flex items-center gap-space-sm shrink-0">
-<div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 bg-surface-container rounded border border-outline-variant text-[11px] font-label-md text-on-surface">
-<span class="material-symbols-outlined text-secondary text-[14px]">bolt</span>
-<span>Reconciliation AI Engine v2.4 · <strong class="font-code-table text-secondary">Auto-match: 96.8%</strong></span>
-</div>
-<button class="px-2.5 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs">
-<span class="material-symbols-outlined text-[16px] text-on-surface-variant">cached</span>
-<span>Sincronizar Bancos / APIs</span>
-</button>
-<button class="px-3 py-1.5 rounded-lg bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-fixed transition-colors font-label-md text-label-md font-semibold flex items-center gap-1 shadow-xs">
-<span class="material-symbols-outlined text-[16px]">add</span>
-<span>Cargar cobro manual</span>
-</button>
+<nav class="bg-white border-b border-slate-200 text-xs shadow-xs sticky top-16 z-40">
+<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center space-x-1 overflow-x-auto py-2 no-scrollbar">
+<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 flex items-center gap-1 shrink-0">
+<span class="material-symbols-outlined text-xs">smart_toy</span> AGENTES:
+          </span>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Gestión de Viajes</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Tracking Express</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1" href="#">
+            Remitos ▾
+          </a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Destinos</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Incidencias</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Rendición</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">ETA</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">POP/POD</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Reclamos</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Analítica</a>
 </div>
 </div>
+</nav>
 <!-- ========================================================================= -->
-<!-- MAIN WORKSPACE -->
-<!-- ========================================================================= -->
+
+<nav class="bg-white border-b border-slate-200 text-xs sticky top-[6.75rem] z-30">
+<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center gap-1 overflow-x-auto py-2">
+<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 shrink-0">FINANZAS</span>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas">Dashboard</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/clientes">Clientes</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/pagos">Facturas</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/facturas/cobranzas">Cobranza</a>
+<a class="px-3.5 py-1.5 bg-[#0e1738] text-white font-semibold rounded-lg shadow-sm whitespace-nowrap" href="/finanzas/conciliacion">Conciliación</a>
+<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="/finanzas/comunicacion">Enviar Mensaje</a>
+</div>
+</div>
+</nav>
+
 <main class="flex-1 w-full max-w-[1720px] mx-auto p-space-lg lg:p-space-xl space-y-space-lg">
 <!-- PAGE HERO HEADER -->
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-outline-variant pb-space-lg">

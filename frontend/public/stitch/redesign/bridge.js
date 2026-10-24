@@ -47,7 +47,7 @@
 
   function labelOf(el) {
     var clone = el.cloneNode(true);
-    clone.querySelectorAll("svg, i, img, button").forEach(function (n) {
+    clone.querySelectorAll("svg, i, img, button, .material-symbols-outlined").forEach(function (n) {
       n.remove();
     });
     return norm(clone.textContent);
