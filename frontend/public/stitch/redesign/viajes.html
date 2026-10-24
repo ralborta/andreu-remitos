@@ -691,5 +691,347 @@
 </footer>
 <!-- END: UnifiedFooter -->
 
+<div id="sol-viaje-modal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-900/40 p-4" role="presentation">
+<div class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="sol-viaje-titulo">
+<div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+<div class="min-w-0">
+<p id="sol-viaje-kicker" class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">Viaje</p>
+<h3 id="sol-viaje-titulo" class="truncate text-lg font-bold text-slate-900">Nuevo viaje</h3>
+<p id="sol-viaje-sub" class="mt-0.5 text-xs text-slate-500">Cliente, origen, destino, carga, fecha y hora. Igual que el alta operativa.</p>
+</div>
+<button type="button" id="sol-viaje-cerrar" class="rounded-lg px-2 py-1 text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-700">Cerrar</button>
+</div>
+<form id="sol-viaje-form" class="space-y-3 overflow-y-auto px-5 py-4">
+<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+<label class="block text-xs font-medium text-slate-500">Cliente
+<input name="cliente" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Cliente"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Carga
+<input name="carga" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Carga"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Origen
+<input name="origen" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Origen"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Destino
+<input name="destino" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Destino"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Fecha
+<input name="fecha" type="date" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Hora
+<input name="hora" type="time" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Chofer
+<input name="chofer" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Sin asignar"/>
+</label>
+<label class="block text-xs font-medium text-slate-500">Unidad
+<input name="unidad" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Patente"/>
+</label>
+</div>
+<label class="block text-xs font-medium text-slate-500">Estado
+<select name="estado" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100">
+<option value="solicitado">Solicitado</option>
+<option value="confirmado">Confirmado</option>
+<option value="asignado">Asignado</option>
+<option value="en_curso">En curso</option>
+<option value="entregado">Entregado</option>
+<option value="cerrado">Cerrado</option>
+<option value="cancelado">Cancelado</option>
+</select>
+</label>
+<p id="sol-viaje-nota" class="hidden rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"></p>
+<div class="flex items-center justify-end gap-2 pt-1">
+<button type="button" id="sol-viaje-cancelar" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+<button type="submit" id="sol-viaje-guardar" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700">Crear viaje</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+(function () {
+  var ESTADOS = {
+    solicitado: "Solicitado",
+    confirmado: "Confirmado",
+    asignado: "Asignado",
+    en_curso: "En curso",
+    entregado: "Entregado",
+    cerrado: "Cerrado",
+    cancelado: "Cancelado"
+  };
+  var TONE = {
+    solicitado: ["bg-slate-100", "text-slate-600", "border-slate-200", "bg-slate-400"],
+    confirmado: ["bg-indigo-50", "text-indigo-700", "border-indigo-200/60", "bg-indigo-500"],
+    asignado: ["bg-sky-50", "text-sky-700", "border-sky-200/60", "bg-sky-500"],
+    en_curso: ["bg-blue-50", "text-blue-700", "border-blue-200/60", "bg-blue-500"],
+    entregado: ["bg-emerald-50", "text-emerald-700", "border-emerald-200/60", "bg-emerald-500"],
+    cerrado: ["bg-slate-100", "text-slate-600", "border-slate-200", "bg-slate-500"],
+    cancelado: ["bg-rose-50", "text-rose-700", "border-rose-200/60", "bg-rose-500"]
+  };
+  var modal = document.getElementById("sol-viaje-modal");
+  var form = document.getElementById("sol-viaje-form");
+  var titulo = document.getElementById("sol-viaje-titulo");
+  var sub = document.getElementById("sol-viaje-sub");
+  var nota = document.getElementById("sol-viaje-nota");
+  var guardar = document.getElementById("sol-viaje-guardar");
+  var currentRow = null;
+
+  function tableBody() {
+    var table = document.querySelector("table");
+    return table ? table.querySelector("tbody") : null;
+  }
+
+  function textOf(el) {
+    return (el ? el.textContent : "").replace(/\s+/g, " ").trim();
+  }
+
+  function estadoFromLabel(label) {
+    var n = label.toLowerCase();
+    if (n.indexOf("sin asignar") >= 0) return "solicitado";
+    if (n.indexOf("cancel") >= 0) return "cancelado";
+    if (n.indexOf("cerrad") >= 0) return "cerrado";
+    if (n.indexOf("entreg") >= 0) return "entregado";
+    if (n.indexOf("curso") >= 0) return "en_curso";
+    if (n.indexOf("asign") >= 0) return "asignado";
+    if (n.indexOf("confirm") >= 0) return "confirmado";
+    return "solicitado";
+  }
+
+  function toIso(dmy) {
+    var m = String(dmy || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (!m) return "";
+    return m[3] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[1]).slice(-2);
+  }
+
+  function fromIso(iso) {
+    var m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return "";
+    return m[3] + "/" + m[2] + "/" + m[1];
+  }
+
+  function readRow(tr) {
+    var c = tr.querySelectorAll("td");
+    var ruta = textOf(c[3]).split("→");
+    var cuando = textOf(c[1]).split("-");
+    return {
+      codigo: textOf(c[0]),
+      fecha: (cuando[0] || "").trim(),
+      hora: (cuando[1] || "").trim(),
+      cliente: textOf(c[2]),
+      origen: (ruta[0] || "").trim(),
+      destino: (ruta[1] || "").trim(),
+      carga: textOf(c[4]),
+      chofer: textOf(c[5]),
+      unidad: textOf(c[6]).replace(/^--$/, ""),
+      estado: estadoFromLabel(textOf(c[7]))
+    };
+  }
+
+  function badge(estado) {
+    var tone = TONE[estado] || TONE.solicitado;
+    var label = ESTADOS[estado] || estado;
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ' + tone[0] + " " + tone[1] + " border " + tone[2] + '"><span class="w-1.5 h-1.5 rounded-full ' + tone[3] + ' mr-1.5"></span>' + label + "</span>";
+  }
+
+  function paintRow(tr, data) {
+    var c = tr.querySelectorAll("td");
+    c[0].textContent = data.codigo;
+    var fechaTxt = data.fecha ? (fromIso(data.fecha) || data.fecha) : "";
+    c[1].textContent = [fechaTxt, data.hora].filter(Boolean).join(" - ") || "—";
+    c[2].textContent = data.cliente;
+    c[3].innerHTML = (data.origen || "—") + ' <span class="text-slate-400">→</span> ' + (data.destino || "—");
+    c[4].textContent = data.carga || "—";
+    c[5].textContent = data.chofer || "Sin asignar";
+    c[5].className = data.chofer ? "py-3 px-4 text-slate-900" : "py-3 px-4 text-slate-400 italic";
+    c[6].textContent = data.unidad || "--";
+    c[7].innerHTML = badge(data.estado);
+  }
+
+  function showNota(msg) {
+    if (!msg) {
+      nota.classList.add("hidden");
+      nota.textContent = "";
+      return;
+    }
+    nota.textContent = msg;
+    nota.classList.remove("hidden");
+  }
+
+  function openModal(mode, data, focusChofer) {
+    currentRow = mode === "edit" ? data.tr : null;
+    titulo.textContent = mode === "edit" ? data.codigo : "Nuevo viaje";
+    sub.textContent = mode === "edit"
+      ? (data.origen || "—") + " → " + (data.destino || "—")
+      : "Mismos datos que el alta operativa: cliente, origen, destino, carga, fecha y hora.";
+    form.cliente.value = data.cliente || "";
+    form.origen.value = data.origen || "";
+    form.destino.value = data.destino || "";
+    form.carga.value = data.carga || "";
+    form.fecha.value = toIso(data.fecha) || data.fechaIso || "";
+    form.hora.value = (data.hora || "").slice(0, 5);
+    form.chofer.value = data.chofer && data.chofer !== "Sin asignar" ? data.chofer : "";
+    form.unidad.value = data.unidad && data.unidad !== "--" ? data.unidad : "";
+    form.estado.value = data.estado || "solicitado";
+    guardar.textContent = mode === "edit" ? "Guardar ficha" : "Crear viaje";
+    form.dataset.mode = mode;
+    showNota("");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    var field = focusChofer ? form.chofer : form.cliente;
+    setTimeout(function () { field.focus(); }, 30);
+  }
+
+  function closeModal() {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    currentRow = null;
+  }
+
+  function rowHtml(data) {
+    var wa = '<button type="button" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.2a5.8 5.8 0 00-5.8 5.8c0 1.3.4 2.3 1 3.3l-.6 2.1 2.2-.6c1 .6 1.9.9 3.1.9a5.8 5.8 0 10.1-11.5z"></path></svg></button>';
+    return '<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group" data-viaje-id="' + (data.id || "") + '">' +
+      '<td class="py-3 px-4 font-mono font-semibold text-indigo-600"></td>' +
+      '<td class="py-3 px-4 text-slate-500 whitespace-nowrap"></td>' +
+      '<td class="py-3 px-4 font-semibold text-slate-900"></td>' +
+      '<td class="py-3 px-4 text-slate-600"></td>' +
+      '<td class="py-3 px-4 text-slate-500"></td>' +
+      '<td class="py-3 px-4 text-slate-900"></td>' +
+      '<td class="py-3 px-4 font-mono text-slate-600"></td>' +
+      '<td class="py-3 px-4"></td>' +
+      '<td class="py-3 px-4 text-center whitespace-nowrap"><div class="inline-flex items-center gap-1.5">' +
+      '<button type="button" class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>' +
+      wa +
+      '<button type="button" class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button></div></td></tr>';
+  }
+
+  function refreshCount() {
+    var body = tableBody();
+    if (!body) return;
+    var n = body.querySelectorAll("tr").length;
+    document.querySelectorAll("span").forEach(function (s) {
+      if (/viajes en curso/.test(s.textContent)) s.textContent = n + " viajes en curso / programados";
+    });
+  }
+
+  function values() {
+    return {
+      cliente: form.cliente.value.trim(),
+      origen: form.origen.value.trim(),
+      destino: form.destino.value.trim(),
+      carga: form.carga.value.trim(),
+      fecha: form.fecha.value,
+      hora: form.hora.value,
+      chofer: form.chofer.value.trim(),
+      unidad: form.unidad.value.trim(),
+      estado: form.estado.value
+    };
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var data = values();
+    if (!data.cliente || !data.origen || !data.destino) return;
+    if (form.dataset.mode === "edit" && currentRow) {
+      data.codigo = textOf(currentRow.querySelector("td"));
+      data.fecha = data.fecha;
+      paintRow(currentRow, data);
+      var id = currentRow.getAttribute("data-viaje-id");
+      if (id) {
+        fetch("/backend/api/viajes/" + id, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cliente: data.cliente,
+            origen: data.origen,
+            destino: data.destino,
+            carga: data.carga || null,
+            fecha: data.fecha || null,
+            hora: data.hora || null,
+            chofer: data.chofer || null,
+            tractor: data.unidad || null
+          })
+        }).catch(function () {});
+      }
+      closeModal();
+      return;
+    }
+    guardar.disabled = true;
+    fetch("/backend/api/viajes", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cliente: data.cliente,
+        origen: data.origen,
+        destino: data.destino,
+        carga: data.carga || undefined,
+        fecha: data.fecha || undefined,
+        hora: data.hora || undefined,
+        chofer: data.chofer || undefined,
+        tractor: data.unidad || undefined
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("http");
+      return r.json();
+    }).then(function (viaje) {
+      data.id = viaje.id;
+      data.codigo = viaje.codigo || "VJ-NUEVO";
+      data.estado = viaje.estado || "solicitado";
+      insertRow(data);
+      closeModal();
+    }).catch(function () {
+      var hoy = new Date();
+      var seq = String((tableBody() ? tableBody().querySelectorAll("tr").length : 0) + 1).padStart(3, "0");
+      data.codigo = "VJ-" + hoy.getFullYear() + ("0" + (hoy.getMonth() + 1)).slice(-2) + ("0" + hoy.getDate()).slice(-2) + "-" + seq;
+      data.estado = data.estado || "solicitado";
+      insertRow(data);
+      closeModal();
+    }).finally(function () { guardar.disabled = false; });
+  });
+
+  function insertRow(data) {
+    var body = tableBody();
+    if (!body) return;
+    var wrap = document.createElement("tbody");
+    wrap.innerHTML = rowHtml(data);
+    var tr = wrap.firstChild;
+    paintRow(tr, data);
+    body.insertBefore(tr, body.firstChild);
+    refreshCount();
+  }
+
+  document.getElementById("sol-viaje-cerrar").addEventListener("click", closeModal);
+  document.getElementById("sol-viaje-cancelar").addEventListener("click", closeModal);
+  modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); });
+
+  document.querySelectorAll("button").forEach(function (b) {
+    if (textOf(b).toLowerCase() === "nuevo viaje") {
+      b.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal("new", { estado: "solicitado", hora: "08:00" }, false);
+      });
+    }
+  });
+
+  var body = tableBody();
+  if (body) {
+    body.addEventListener("click", function (e) {
+      var tr = e.target.closest("tr");
+      if (!tr) return;
+      var btn = e.target.closest("button");
+      var label = btn ? textOf(btn).toLowerCase() : "";
+      if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      var data = readRow(tr);
+      data.tr = tr;
+      openModal("edit", data, label === "asignar");
+    });
+  }
+})();
+</script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
