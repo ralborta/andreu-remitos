@@ -67,50 +67,52 @@
       background: #94a3b8;
     }
   </style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 </head>
 <body class="h-full font-sans text-slate-800 bg-[#f8fafc] antialiased selection:bg-indigo-50 selection:text-indigo-700">
 <!-- BEGIN: Root Container -->
 <div class="min-h-full flex flex-col">
 <!-- BEGIN: Top Level Navigation (Header Nivel 1) -->
-<header class="bg-white border-b border-slate-200 sticky top-0 z-40" data-purpose="primary-header">
+<!-- HEADER NIVEL 1: INSTITUCIONAL Y HERRAMIENTAS GLOBALES                      -->
+<!-- ========================================================================= -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
 <div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex items-center justify-between h-16">
-<!-- Left section: Brand identity & Search Bar -->
+<!-- Logo & Marca -->
 <div class="flex items-center gap-6">
 <a class="flex items-center gap-2.5 group" href="#">
-<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
-<i class="ph-bold ph-shield-check text-xl"></i>
-</div>
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all font-black text-lg">
+                E
+              </div>
 <div class="flex flex-col">
 <span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>
 <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>
 </div>
 </a>
-<!-- Universal Global Search Bar -->
-<div class="relative w-80 hidden md:block" data-purpose="quick-search">
+<!-- Buscador Global Centralizado con ⌘K -->
+<div class="relative w-80 hidden md:block">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-<i class="ph-bold ph-magnifying-glass text-base"></i>
+<span class="material-symbols-outlined text-base">search</span>
 </div>
 <input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>
-<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
 <kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd>
 </div>
 </div>
 </div>
-<!-- Center section: Global Main Modules -->
-<nav class="hidden xl:flex items-center space-x-1" data-purpose="global-modules">
+<!-- Módulos Globales (Navegación Nivel 1) -->
+<nav class="hidden xl:flex items-center space-x-1">
 <a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Torre de Control</a>
 <a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Monitor</a>
 <a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors flex items-center gap-1.5" href="#">
               WhatsApp
-              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-200">Nuevo</span>
+              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">Nuevo</span>
 </a>
 <a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Métricas</a>
-<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="#">Finanzas</a>
+<a class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors" href="/finanzas">Finanzas</a>
 </nav>
-<!-- Right section: Status, Notifications and User Profile -->
+<!-- Estado, Campana y Perfil -->
 <div class="flex items-center gap-4">
-<!-- Systems Healthy Indicator -->
 <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">
 <span class="relative flex h-2 w-2">
 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -118,54 +120,47 @@
 </span>
 <span>Sistemas activos</span>
 </div>
-<!-- Notifications Bell -->
 <button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Notificaciones operativas">
-<i class="ph-bold ph-bell text-lg"></i>
+<span class="material-symbols-outlined text-lg">notifications</span>
 <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>
 </button>
-<!-- User Avatar & Tenant Selector -->
-<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100">
+<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100 group-hover:ring-indigo-200 transition-all">
                 GD
               </div>
 <div class="hidden lg:flex flex-col text-left">
 <span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span>
-<span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador TMS</span>
+<span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span>
 </div>
-<i class="ph-bold ph-caret-down text-slate-400 text-xs hidden lg:block"></i>
+<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>
 </div>
 </div>
 </div>
 </div>
 </header>
-<!-- END: Top Level Navigation -->
-<!-- BEGIN: Agent Sub-Navigation Bar (Nivel 2) -->
-<nav class="bg-white border-b border-slate-200 text-xs shadow-xs" data-purpose="agent-navigation-bar">
+<!-- ========================================================================= -->
+<!-- HEADER NIVEL 2: BARRA DE AGENTES (SUB-BARRA HORIZONTAL)                   -->
+<!-- ========================================================================= -->
+<nav class="bg-white border-b border-slate-200 text-xs shadow-xs sticky top-16 z-40">
 <div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex items-center space-x-1 overflow-x-auto py-2 no-scrollbar">
-<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 flex items-center gap-1">
-<i class="ph-bold ph-robot text-xs"></i> Agentes:
+<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 flex items-center gap-1 shrink-0">
+<span class="material-symbols-outlined text-xs">smart_toy</span> AGENTES:
           </span>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Gestión de Viajes</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Tracking Express</a>
-<!-- Active Module: Remitos -->
-<a class="px-3.5 py-1.5 bg-slate-900 text-white font-semibold rounded-lg shadow-sm flex items-center gap-1.5 whitespace-nowrap" href="#">
-<i class="ph-bold ph-receipt text-indigo-400"></i>
-<span>Remitos</span>
-<i class="ph-bold ph-caret-down text-[10px] opacity-75"></i>
-</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Destinos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Incidencias</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Rendición</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">ETA</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">POP/POD</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Reclamos</a>
-<a class="px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#">Analítica</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">local_shipping</span>Gestión de Viajes</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">share_location</span>Tracking Express</a>
+<a class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0e1738] text-white font-semibold rounded-lg shadow-sm whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">description</span>Remitos ▾</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">pin_drop</span>Destinos</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">warning</span>Incidencias</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">account_balance_wallet</span>Rendición</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">schedule</span>ETA</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">inventory_2</span>POP/POD</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">support_agent</span>Reclamos</a>
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap" href="#"><span class="material-symbols-outlined text-[17px] leading-none">monitoring</span>Analítica</a>
+<a data-sol-finanzas="1" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-semibold rounded-lg transition-colors whitespace-nowrap" href="/finanzas"><span class="material-symbols-outlined text-[17px] leading-none">account_balance</span><span class="px-1.5 py-0.5 text-[9px] font-semibold bg-emerald-200 text-emerald-900 rounded">Nuevo</span>Finanzas</a>
 </div>
 </div>
 </nav>
-<!-- END: Agent Sub-Navigation Bar -->
-<!-- BEGIN: Main Content Workspace -->
 <main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6" data-purpose="workspace">
 <!-- BEGIN: Section Header & Module Control Toolbar -->
 <section class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-1" data-purpose="module-header">
