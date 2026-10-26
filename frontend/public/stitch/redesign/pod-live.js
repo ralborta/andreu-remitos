@@ -140,8 +140,11 @@
     }
     return mismoDia(iso, new Date());
   }
+  function usarColaCompleta() {
+    return rows.length > 0 && !rows.some(enPeriodo);
+  }
   function pasa(g) {
-    if (!enPeriodo(g)) return false;
+    if (!usarColaCompleta() && !enPeriodo(g)) return false;
     if (filtro === "POP" || filtro === "POD") {
       if (g.type !== filtro) return false;
     } else if (filtro === "pending" && g.estado !== "pendiente") return false;
@@ -152,7 +155,16 @@
     if (!q) return true;
     return fold([g.codigo, g.viaje, g.chofer, g.receptor, g.destino, g.origen, g.estadoLabel, g.type, g.telefono].join(" ")).indexOf(q) >= 0;
   }
-  function delPeriodo(g) { return enPeriodo(g); }
+  function delPeriodo(g) {
+    if (usarColaCompleta()) return true;
+    return enPeriodo(g);
+  }
+  function notaCola() {
+    var base = "POP y POD de la mesa. La foto la manda el chofer por WhatsApp.";
+    if (rows.length >= 500) base += " Se muestran las últimas 500.";
+    if (usarColaCompleta()) base = "No hay evidencias en el período elegido. Se muestra la cola completa, con la fecha real de cada fila.";
+    setText("sol-pod-cola", base);
+  }
 
   function mapaVacio() {
     var mapa = $("sol-pod-mapa");
@@ -475,7 +487,8 @@
     var slice = list.slice(page * PAGE, page * PAGE + PAGE);
     if (!list.length) {
       var hay = rows.length > 0;
-      vacio(hay ? "No hay evidencias en este período. Probá Últimas 24 horas o Esta semana. Si siguen sin aparecer, son anteriores a esta semana." : "No hay evidencias en la cola.");
+      notaCola();
+      vacio(hay ? "Ninguna evidencia coincide con el filtro o la búsqueda." : "No hay evidencias en la cola.");
       return;
     }
     body.innerHTML = slice.map(function (g) {
@@ -497,6 +510,7 @@
     setText("sol-pod-n", String(slice.length));
     setText("sol-pod-de", String(list.length));
     setText("sol-pod-pag", "Página " + (page + 1) + " de " + pages);
+    notaCola();
     var nav = $("sol-pod-paginacion");
     if (nav) {
       var btns = nav.querySelectorAll("button");
@@ -527,17 +541,15 @@
       pintarKpis();
       pintarFiltros();
       pintarInsights();
-      var notaCola = "POP y POD de la mesa. La foto la manda el chofer por WhatsApp.";
-      if (rows.length >= 500) notaCola += " Se muestran las últimas 500.";
-      setText("sol-pod-cola", notaCola);
+      notaCola();
       if (!primed) {
         primed = true;
         var visibles = rows.filter(pasa);
         var primero = visibles.filter(function (g) { return g.estado === "pendiente"; })[0] || visibles[0];
         if (primero) ver(primero);
         else {
-          inspectorVacio(rows.length ? "No hay evidencias en el período elegido." : "No hay evidencias en la cola.");
-          setText("sol-pod-estado", rows.length ? "Cambiá el período para ver la cola." : "No hay evidencias para confirmar.");
+          inspectorVacio(rows.length ? "Ninguna evidencia coincide con el filtro." : "No hay evidencias en la cola.");
+          setText("sol-pod-estado", rows.length ? "Probá otro filtro o la búsqueda." : "No hay evidencias para confirmar.");
         }
       } else if (selectedId && byId[selectedId]) ver(byId[selectedId]);
       else ver(null);
