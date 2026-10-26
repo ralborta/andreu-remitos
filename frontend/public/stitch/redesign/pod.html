@@ -338,14 +338,14 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<span class="font-metric-stat text-metric-stat text-on-surface font-black">14</span>
-<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
+<span id="sol-pod-kpi-pop" class="font-metric-stat text-metric-stat text-on-surface font-black">14</span>
+<span id="sol-pod-kpi-pop-hint" class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
           +8% vs ayer
         </span>
 </div>
 <div class="mt-2.5 pt-2 flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
-<span>6 en proceso de validación</span>
-<span class="font-code-table text-code-table font-semibold text-secondary">42m prom.</span>
+<span id="sol-pod-kpi-pop-sub">6 en proceso de validación</span>
+<span id="sol-pod-kpi-pop-sub2" class="font-code-table text-code-table font-semibold text-secondary">42m prom.</span>
 </div>
 </div>
 <!-- Card 2: POD Pendientes -->
@@ -359,14 +359,14 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<span class="font-metric-stat text-metric-stat text-on-surface font-black">28</span>
-<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold">
+<span id="sol-pod-kpi-pod" class="font-metric-stat text-metric-stat text-on-surface font-black">28</span>
+<span id="sol-pod-kpi-pod-hint" class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold">
           82% autoverificado
         </span>
 </div>
 <div class="mt-2.5 pt-2 flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
-<span>19 recepciones conformes hoy</span>
-<span class="font-code-table text-code-table font-semibold text-emerald-600">99.1% SLA</span>
+<span id="sol-pod-kpi-pod-sub">19 recepciones conformes hoy</span>
+<span id="sol-pod-kpi-pod-sub2" class="font-code-table text-code-table font-semibold text-emerald-600">99.1% SLA</span>
 </div>
 </div>
 <!-- Card 3: Con Diferencias -->
@@ -380,14 +380,14 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<span class="font-metric-stat text-metric-stat text-error font-black">3</span>
-<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-bold">
+<span id="sol-pod-kpi-diff" class="font-metric-stat text-metric-stat text-error font-black">3</span>
+<span id="sol-pod-kpi-diff-hint" class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-bold">
           Mesa asignada
         </span>
 </div>
 <div class="mt-2.5 pt-2 flex items-center justify-between text-body-sm font-body-sm text-error">
-<span>Requiere intervención inmediata</span>
-<span class="font-code-table text-code-table font-bold">2 bultos / 1 daño</span>
+<span id="sol-pod-kpi-diff-sub">Requiere intervención inmediata</span>
+<span id="sol-pod-kpi-diff-sub2" class="font-code-table text-code-table font-bold">2 bultos / 1 daño</span>
 </div>
 </div>
 <!-- Card 4: Document AI Precision -->
@@ -401,45 +401,45 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<span class="font-metric-stat text-metric-stat text-on-surface font-black">98,8%</span>
-<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
+<span id="sol-pod-kpi-ia" class="font-metric-stat text-metric-stat text-on-surface font-black">98,8%</span>
+<span id="sol-pod-kpi-ia-hint" class="font-label-caps text-label-caps px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
           ↑ +1,2 pts histórico
         </span>
 </div>
 <div class="mt-2.5 pt-2 flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
-<span>Extracción fotos WhatsApp</span>
-<span class="font-code-table text-code-table font-semibold text-secondary">0.7s latencia</span>
+<span id="sol-pod-kpi-ia-sub">Extracción fotos WhatsApp</span>
+<span id="sol-pod-kpi-ia-sub2" class="font-code-table text-code-table font-semibold text-secondary">0.7s latencia</span>
 </div>
 </div>
 </section>
 <!-- END: KPI Metrics Grid -->
 <!-- BEGIN: Interactive Filter Pill Bar -->
 <section class="mt-6 flex items-center gap-2 overflow-x-auto pb-1 text-label-md font-label-md">
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-container text-on-primary shadow-xs transition-all" onclick="filterEvidence('all')">
+<button type="button" data-filtro="all" class="evidence-tab-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-container text-on-primary shadow-xs transition-all" onclick="filterEvidence('all')">
 <span>Todos</span>
 <span class="px-1.5 py-0.2 rounded-full bg-surface-container-lowest/20 text-on-primary text-[10px] font-bold">246</span>
 </button>
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('POP')">
+<button type="button" data-filtro="POP" class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('POP')">
 <span>POP Retiros</span>
 <span class="px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface text-[10px] font-bold">98</span>
 </button>
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('POD')">
+<button type="button" data-filtro="POD" class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('POD')">
 <span>POD Entregas</span>
 <span class="px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface text-[10px] font-bold">148</span>
 </button>
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('pending')">
+<button type="button" data-filtro="pending" class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('pending')">
 <span>Pendientes</span>
 <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">42</span>
 </button>
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('diff')">
+<button type="button" data-filtro="diff" class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('diff')">
 <span>Observados / Con diferencia</span>
 <span class="px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container text-[10px] font-bold">3</span>
 </button>
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('approved')">
+<button type="button" data-filtro="approved" class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('approved')">
 <span>Aprobados OK</span>
 <span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">189</span>
 </button>
-<button class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('rejected')">
+<button type="button" data-filtro="rejected" class="evidence-tab-btn inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all shadow-xs" onclick="filterEvidence('rejected')">
 <span>Rechazados</span>
 <span class="px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold">12</span>
 </button>
@@ -457,13 +457,13 @@
               Cadena de Custodia Activa
             </span>
 <h2 class="font-headline-md text-headline-md text-on-surface font-extrabold flex items-center gap-2 mt-0.5">
-<span>Viaje VJ-20261014-001</span>
-<span class="text-body-sm font-body-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">PepsiCo Zárate</span>
+<span id="sol-pod-viaje">Viaje VJ-20261014-001</span>
+<span id="sol-pod-cliente" class="text-body-sm font-body-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">PepsiCo Zárate</span>
 </h2>
 </div>
 <div class="flex items-center gap-2 text-label-caps font-label-caps text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg self-start sm:self-auto">
 <span class="material-symbols-outlined text-base">verified</span>
-            Validación de bultos: 100% Coincidente
+<span id="sol-pod-valida">Validación de bultos: 100% Coincidente</span>
           </div>
 </div>
 <!-- Comparative Cards (POP vs POD) -->
@@ -474,34 +474,34 @@
 <span class="px-2 py-0.5 rounded-md bg-secondary text-on-secondary font-label-caps text-label-caps font-bold">
                 POP · ORIGEN
               </span>
-<span class="font-code-table text-code-table text-on-surface-variant">08:30 hs</span>
+<span id="sol-pod-pop-hora" class="font-code-table text-code-table text-on-surface-variant">08:30 hs</span>
 </div>
 <div class="relative w-full h-44 rounded-lg overflow-hidden bg-surface-container mb-3 shadow-inner">
-<img class="w-full h-full object-cover" data-alt="Industrial distribution center loading dock showing stacked beverage pallets wrapped in clear film, logistics paperwork clipboard with scanned barcodes and signatures on top, crisp morning daylight reflecting on clean warehouse floor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzqiiMNm1T2rIWAqS0cAl5i5aG5j8lQ5Nc3ATtqpetqN17oNgxT3ewLEEFMgmUtwFetHC5Q0c_ZUbr8UIhaRSVxF2nJQPSlAPwnsW3UuBrwM7JrQHrHbMrZAiaLFHzX2MWTvkWQE78x-580KLkIlBAOOG6IEdt467Oc3ijubJxrYmBGF-LLoK9qXAOvIWotHswaZhSi2FFWBxT7DOqcNxqHPxGSICSLMG0pCLWQtkghn-5-gO6CEXu"/>
+<img id="sol-pod-img-pop" class="w-full h-full object-cover" data-alt="Foto POP del viaje seleccionado" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzqiiMNm1T2rIWAqS0cAl5i5aG5j8lQ5Nc3ATtqpetqN17oNgxT3ewLEEFMgmUtwFetHC5Q0c_ZUbr8UIhaRSVxF2nJQPSlAPwnsW3UuBrwM7JrQHrHbMrZAiaLFHzX2MWTvkWQE78x-580KLkIlBAOOG6IEdt467Oc3ijubJxrYmBGF-LLoK9qXAOvIWotHswaZhSi2FFWBxT7DOqcNxqHPxGSICSLMG0pCLWQtkghn-5-gO6CEXu"/>
 <div class="absolute bottom-2 left-2 bg-black/75 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[11px] font-code-table flex items-center gap-1.5">
-<span class="material-symbols-outlined text-xs">pin_drop</span> CABA Centro de Distribución
+<span class="material-symbols-outlined text-xs">pin_drop</span> <span id="sol-pod-pop-lugar">CABA Centro de Distribución</span>
               </div>
-<span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-emerald-500 text-white font-label-caps text-[10px] font-bold">
+<span id="sol-pod-pop-estado" class="absolute top-2 right-2 px-2 py-0.5 rounded bg-emerald-500 text-white font-label-caps text-[10px] font-bold">
                 Aprobado OK
               </span>
 </div>
 <div class="space-y-1.5 font-body-sm text-body-sm text-on-surface">
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Chofer:</span>
-<span class="font-bold">Walter Benítez (Int. 42)</span>
+<span id="sol-pod-pop-chofer" class="font-bold">Walter Benítez (Int. 42)</span>
 </div>
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Carga declarada:</span>
-<span class="font-bold text-secondary">32 Pallets (Bebidas varias)</span>
+<span id="sol-pod-pop-carga" class="font-bold text-secondary">32 Pallets (Bebidas varias)</span>
 </div>
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Precinto de salida:</span>
-<span class="font-code-table font-semibold">#PC-88921-A</span>
+<span id="sol-pod-pop-precinto" class="font-code-table font-semibold">#PC-88921-A</span>
 </div>
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Sello despachante:</span>
 <span class="text-emerald-700 font-semibold flex items-center gap-1">
-<span class="material-symbols-outlined text-xs">done</span> Verificado Document AI
+<span class="material-symbols-outlined text-xs">done</span> <span id="sol-pod-pop-sello">Verificado Document AI</span>
                 </span>
 </div>
 </div>
@@ -512,34 +512,34 @@
 <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-label-caps text-label-caps font-bold">
                 POD · DESTINO
               </span>
-<span class="font-code-table text-code-table text-on-surface-variant">14:48 hs</span>
+<span id="sol-pod-pod-hora" class="font-code-table text-code-table text-on-surface-variant">14:48 hs</span>
 </div>
 <div class="relative w-full h-44 rounded-lg overflow-hidden bg-surface-container mb-3 shadow-inner">
-<img class="w-full h-full object-cover" data-alt="Warehouse receiving gate inside manufacturing plant in Zárate, delivery driver and warehouse supervisor in safety vests holding stamped physical waybill, forklift unloading beverage cargo in background with clear signage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpuwCjTYVrqOBVKqxS4TxYmhuxqtn1lGmal4FiLeT00zzJJd6oNNTjPM8UTHaEJqZrCqytwe9cPesG4vpWnaaoz-I8xg_3oZBcwf9rI0FRiOk3fDG8aHK_XzREgPfLJXcKcdsqNx04IrFEaaT9AeMaD9uS7OezlmNZBJ6iGBgoyofSEMigsSCL4ZqZkAZzWwpi7dkIDtYc2Hy2ocu-0LSBzoCjQCnvVPSMZfhUsdZYbMNyJj_xnpk6"/>
+<img id="sol-pod-img-pod" class="w-full h-full object-cover" data-alt="Foto POD del viaje seleccionado" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpuwCjTYVrqOBVKqxS4TxYmhuxqtn1lGmal4FiLeT00zzJJd6oNNTjPM8UTHaEJqZrCqytwe9cPesG4vpWnaaoz-I8xg_3oZBcwf9rI0FRiOk3fDG8aHK_XzREgPfLJXcKcdsqNx04IrFEaaT9AeMaD9uS7OezlmNZBJ6iGBgoyofSEMigsSCL4ZqZkAZzWwpi7dkIDtYc2Hy2ocu-0LSBzoCjQCnvVPSMZfhUsdZYbMNyJj_xnpk6"/>
 <div class="absolute bottom-2 left-2 bg-black/75 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[11px] font-code-table flex items-center gap-1.5">
-<span class="material-symbols-outlined text-xs">factory</span> Zárate Planta Embotelladora
+<span class="material-symbols-outlined text-xs">factory</span> <span id="sol-pod-pod-lugar">Zárate Planta Embotelladora</span>
               </div>
-<span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-blue-600 text-white font-label-caps text-[10px] font-bold">
+<span id="sol-pod-pod-estado" class="absolute top-2 right-2 px-2 py-0.5 rounded bg-blue-600 text-white font-label-caps text-[10px] font-bold">
                 Recepción Conforme
               </span>
 </div>
 <div class="space-y-1.5 font-body-sm text-body-sm text-on-surface">
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Receptor:</span>
-<span class="font-bold">Claudio Méndez (Jefe Almacén)</span>
+<span id="sol-pod-pod-receptor" class="font-bold">Claudio Méndez (Jefe Almacén)</span>
 </div>
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Bultos recibidos:</span>
-<span class="font-bold text-emerald-700">32 Pallets (0 faltantes)</span>
+<span id="sol-pod-pod-bultos" class="font-bold text-emerald-700">32 Pallets (0 faltantes)</span>
 </div>
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Estado de precinto:</span>
-<span class="font-code-table font-semibold text-on-surface">Sin adulteración</span>
+<span id="sol-pod-pod-precinto" class="font-code-table font-semibold text-on-surface">Sin adulteración</span>
 </div>
 <div class="flex justify-between">
 <span class="text-on-surface-variant font-label-md">Canal ingreso:</span>
 <span class="text-on-surface font-semibold flex items-center gap-1">
-<span class="material-symbols-outlined text-xs text-emerald-600">chat</span> WhatsApp Business API
+<span class="material-symbols-outlined text-xs text-emerald-600">chat</span> <span id="sol-pod-pod-canal">WhatsApp Business API</span>
                 </span>
 </div>
 </div>
@@ -550,7 +550,7 @@
 <span class="material-symbols-outlined text-secondary text-xl mt-0.5">auto_awesome</span>
 <div class="flex flex-col text-body-sm font-body-sm">
 <span class="font-bold text-on-surface">Dictamen Document AI &amp; Visión Computacional:</span>
-<p class="text-on-surface-variant mt-0.5">
+<p id="sol-pod-dictamen" class="text-on-surface-variant mt-0.5">
               Coincidencia 100% de bultos declarados en remito vs conformados en descarga. Firma manuscrita y sello receptor de PepsiCo Zárate coinciden con el registro patrón corporativo. Geoposicionamiento de captura a 12 metros de rampa.
             </p>
 </div>
@@ -560,16 +560,16 @@
 <div class="mt-6 pt-4 flex flex-wrap items-center justify-between gap-3 bg-surface-container-low p-3.5 rounded-xl">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-<span class="font-label-md text-label-md text-on-surface font-bold">Viaje listo para cierre contable y rendición</span>
+<span id="sol-pod-estado" class="font-label-md text-label-md text-on-surface font-bold">Viaje listo para cierre contable y rendición</span>
 </div>
 <div class="flex items-center gap-2 flex-wrap">
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors">
+<button type="button" id="sol-pod-rechazar" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors">
             Rechazar evidencia
           </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+<button type="button" id="sol-pod-diff" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
             Marcar con diferencia
           </button>
-<button class="px-4 py-1.5 rounded-lg bg-emerald-600 text-white font-label-lg text-label-lg hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5">
+<button type="button" id="sol-pod-ok" class="px-4 py-1.5 rounded-lg bg-emerald-600 text-white font-label-lg text-label-lg hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1.5">
 <span class="material-symbols-outlined text-base">check_circle</span>
             Confirmar y Cerrar Viaje
           </button>
@@ -583,7 +583,7 @@
 <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
             Milestones del Viaje
           </h3>
-<span class="font-code-table text-code-table text-secondary font-bold">6h 33m transcurridas</span>
+<span id="sol-pod-elapsed" class="font-code-table text-code-table text-secondary font-bold">6h 33m transcurridas</span>
 </div>
 <!-- Vertical Timeline Steps -->
 <div class="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-high">
@@ -594,10 +594,10 @@
 </div>
 <div class="flex flex-col">
 <div class="flex items-center justify-between">
-<span class="font-label-lg text-label-lg text-on-surface font-bold">08:15 hs · Llegada a Origen</span>
-<span class="font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Detectado</span>
+<span id="sol-pod-m1" class="font-label-lg text-label-lg text-on-surface font-bold">08:15 hs · Llegada a Origen</span>
+<span id="sol-pod-m1s" class="font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Detectado</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+<p id="sol-pod-m1p" class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
                 Geocerca CABA CD ingresada con éxito.
               </p>
 </div>
@@ -609,10 +609,10 @@
 </div>
 <div class="flex flex-col">
 <div class="flex items-center justify-between">
-<span class="font-label-lg text-label-lg text-on-surface font-bold">08:30 hs · POP Generado</span>
-<span class="font-label-caps text-label-caps text-secondary bg-blue-50 px-1.5 py-0.2 rounded">Aprobado</span>
+<span id="sol-pod-m2" class="font-label-lg text-label-lg text-on-surface font-bold">08:30 hs · POP Generado</span>
+<span id="sol-pod-m2s" class="font-label-caps text-label-caps text-secondary bg-blue-50 px-1.5 py-0.2 rounded">Aprobado</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+<p id="sol-pod-m2p" class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
                 Remito y pallets capturados por WhatsApp del chofer.
               </p>
 </div>
@@ -624,10 +624,10 @@
 </div>
 <div class="flex flex-col">
 <div class="flex items-center justify-between">
-<span class="font-label-lg text-label-lg text-on-surface font-bold">09:00 hs · Tránsito Monitoreado</span>
-<span class="font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Completado</span>
+<span id="sol-pod-m3" class="font-label-lg text-label-lg text-on-surface font-bold">09:00 hs · Tránsito Monitoreado</span>
+<span id="sol-pod-m3s" class="font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Completado</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+<p id="sol-pod-m3p" class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
                 Ruta CABA-Zárate vía RN9 sin desvíos ni paradas no autorizadas.
               </p>
 </div>
@@ -639,10 +639,10 @@
 </div>
 <div class="flex flex-col">
 <div class="flex items-center justify-between">
-<span class="font-label-lg text-label-lg text-on-surface font-bold">14:48 hs · POD Recibido</span>
-<span class="font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Recibido</span>
+<span id="sol-pod-m4" class="font-label-lg text-label-lg text-on-surface font-bold">14:48 hs · POD Recibido</span>
+<span id="sol-pod-m4s" class="font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Recibido</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+<p id="sol-pod-m4p" class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
                 Recepción conforme en Zárate Planta. Sello físico legibilizado.
               </p>
 </div>
@@ -654,10 +654,10 @@
 </div>
 <div class="flex flex-col">
 <div class="flex items-center justify-between">
-<span class="font-label-lg text-label-lg text-on-surface font-bold">14:52 hs · Comparación Cruzada</span>
-<span class="font-label-caps text-label-caps text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded">Sin Diferencias</span>
+<span id="sol-pod-m5" class="font-label-lg text-label-lg text-on-surface font-bold">14:52 hs · Comparación Cruzada</span>
+<span id="sol-pod-m5s" class="font-label-caps text-label-caps text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded">Sin Diferencias</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+<p id="sol-pod-m5p" class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
                 POP vs POD pareo automático 100% verificado.
               </p>
 </div>
@@ -667,22 +667,22 @@
 <div class="mt-6 p-3.5 rounded-xl bg-surface-container-low text-body-sm font-body-sm space-y-2">
 <div class="flex items-center justify-between">
 <span class="text-on-surface-variant">Precinto verificado:</span>
-<span class="font-code-table font-bold text-on-surface">#PC-88921 (Intacto)</span>
+<span id="sol-pod-tel-precinto" class="font-code-table font-bold text-on-surface">#PC-88921 (Intacto)</span>
 </div>
 <div class="flex items-center justify-between">
 <span class="text-on-surface-variant">Precisión GPS en captura:</span>
-<span class="font-code-table text-emerald-700 font-bold">15m margen muelle</span>
+<span id="sol-pod-tel-gps" class="font-code-table text-emerald-700 font-bold">15m margen muelle</span>
 </div>
 <div class="flex items-center justify-between">
 <span class="text-on-surface-variant">Receptor autorizado:</span>
-<span class="font-semibold text-on-surface">Claudio Méndez (PepsiCo)</span>
+<span id="sol-pod-tel-receptor" class="font-semibold text-on-surface">Claudio Méndez (PepsiCo)</span>
 </div>
 </div>
 </div>
 <!-- Live GPS Anchor Mini-map Placeholder -->
 <div class="mt-4">
-<div class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner relative flex items-end p-2" data-location="Zarate, Buenos Aires, Argentina" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHUUpYGcXm4ld7_8hDS9oC5TOQAWahardmKFi1zcOlFEGOmwKz1KKRNc6L4-5ZPno_iqHI7o7_ha3o7-zT-kIcS8V6-cRD1Y-BXp7KVWd2RO28OjV9CkhGWRr7lhBGVrRuKmowp_6mbQ8fiF5EFQXgP1FEoriFrS7_BMgg5lw3OXJmt-37vEW065dAF7JTDauQYnh6b1MM5jC0WARuEP8lYy3ModUnrEfRmnUY-w1Ni2zMGDoA8cK7')">
-<div class="bg-black/80 backdrop-blur-xs text-white text-[10px] font-code-table px-2 py-0.5 rounded">
+<div id="sol-pod-mapa" class="w-full h-24 rounded-lg bg-cover bg-center shadow-inner relative flex items-end p-2" data-location="Zarate, Buenos Aires, Argentina" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHUUpYGcXm4ld7_8hDS9oC5TOQAWahardmKFi1zcOlFEGOmwKz1KKRNc6L4-5ZPno_iqHI7o7_ha3o7-zT-kIcS8V6-cRD1Y-BXp7KVWd2RO28OjV9CkhGWRr7lhBGVrRuKmowp_6mbQ8fiF5EFQXgP1FEoriFrS7_BMgg5lw3OXJmt-37vEW065dAF7JTDauQYnh6b1MM5jC0WARuEP8lYy3ModUnrEfRmnUY-w1Ni2zMGDoA8cK7')">
+<div id="sol-pod-geo" class="bg-black/80 backdrop-blur-xs text-white text-[10px] font-code-table px-2 py-0.5 rounded">
             Geo-Radar: -34.0957, -59.0244 · Señal 4G Óptima
           </div>
 </div>
@@ -698,7 +698,7 @@
 <h3 class="font-headline-md text-headline-md text-on-surface font-extrabold tracking-tight">
           Cola Operativa de Evidencias
         </h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-pod-cola" class="font-body-sm text-body-sm text-on-surface-variant">
           Control documental en tiempo real de remitos, precintos y conformidades de descarga.
         </p>
 </div>
@@ -706,10 +706,10 @@
 <div class="flex items-center gap-2.5 flex-wrap">
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-base">search</span>
-<input class="w-64 sm:w-80 pl-9 pr-3 py-1.5 rounded-lg bg-surface-container text-body-sm font-body-sm text-on-surface placeholder-on-surface-variant focus:outline-none" placeholder="Buscar por código, viaje, chofer o cliente..." type="text"/>
+<input id="sol-pod-buscar" class="w-64 sm:w-80 pl-9 pr-3 py-1.5 rounded-lg bg-surface-container text-body-sm font-body-sm text-on-surface placeholder-on-surface-variant focus:outline-none" placeholder="Buscar por código, viaje, chofer o cliente..." type="text"/>
 </div>
 <div class="relative">
-<select class="pl-3 pr-8 py-1.5 rounded-lg bg-surface-container text-body-sm font-body-sm text-on-surface focus:outline-none">
+<select id="sol-pod-cuando" class="pl-3 pr-8 py-1.5 rounded-lg bg-surface-container text-body-sm font-body-sm text-on-surface focus:outline-none">
 <option>Hoy (Turno en curso)</option>
 <option>Últimas 24 horas</option>
 <option>Esta semana</option>
@@ -736,7 +736,7 @@
 <th class="py-3 px-4 text-right">Acciones</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
+<tbody id="sol-pod-body" class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
 <!-- Row 1: POD PepsiCo -->
 <tr class="evidence-row hover:bg-surface-container-low/50 transition-colors" data-status="approved" data-type="POD">
 <td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">
@@ -987,16 +987,16 @@
 </table>
 </div>
 <!-- Pagination Controls -->
-<div class="p-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between text-body-sm font-body-sm text-on-surface-variant gap-3">
+<div id="sol-pod-paginacion" class="p-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between text-body-sm font-body-sm text-on-surface-variant gap-3">
 <div>
-        Mostrando <span class="font-bold text-on-surface">6</span> de <span class="font-bold text-on-surface">42</span> evidencias activas en el turno actual
+        Mostrando <span id="sol-pod-n" class="font-bold text-on-surface">6</span> de <span id="sol-pod-de" class="font-bold text-on-surface">42</span> evidencias activas en el turno actual
       </div>
 <div class="flex items-center gap-2">
-<button class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" disabled="">
+<button type="button" class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" disabled="">
           Anterior
         </button>
-<span class="font-code-table font-semibold px-2 text-on-surface">Página 1 de 7</span>
-<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-colors shadow-xs">
+<span id="sol-pod-pag" class="font-code-table font-semibold px-2 text-on-surface">Página 1 de 7</span>
+<button type="button" class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-colors shadow-xs">
           Siguiente
         </button>
 </div>
@@ -1019,7 +1019,7 @@
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> En línea
             </span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-pod-chat" class="font-body-sm text-body-sm text-on-surface-variant">
             Preguntame por pendientes, rechazos, últimos del día o el viaje de un código. Respuestas con datos en vivo.
           </p>
 </div>
@@ -1060,19 +1060,19 @@
 <div>
 <span class="font-label-caps text-label-caps text-secondary font-bold uppercase">Contadores</span>
 <h4 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">Volumen del Turno</h4>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+<p id="sol-pod-volumen" class="font-body-sm text-body-sm text-on-surface-variant mt-1">
             28 recibidos hoy · 21 aprobados OK · 4 pendientes de revisión · 3 con observaciones de rampa.
           </p>
 </div>
 <div class="mt-3 pt-2 font-code-table text-code-table text-emerald-700 font-semibold flex items-center gap-1">
-<span class="material-symbols-outlined text-sm">check</span> Tasa de éxito: 93.3%
+<span class="material-symbols-outlined text-sm">check</span> <span id="sol-pod-tasa">Tasa de éxito: 93.3%</span>
         </div>
 </div>
 <div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between">
 <div>
 <span class="font-label-caps text-label-caps text-secondary font-bold uppercase">Listados &amp; Clientes</span>
 <h4 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">Filtros Frecuentes</h4>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+<p id="sol-pod-clientes" class="font-body-sm text-body-sm text-on-surface-variant mt-1">
             PepsiCo (14 remitos), Arcor (9 remitos), Unilever (7 remitos), Quilmes (12 remitos).
           </p>
 </div>
@@ -1083,12 +1083,12 @@
 <div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between">
 <div>
 <span class="font-label-caps text-label-caps text-error font-bold uppercase">Detalle &amp; Seguimiento</span>
-<h4 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">Rechazo POD-0002</h4>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+<h4 id="sol-pod-rechazo-tit" class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">Rechazo POD-0002</h4>
+<p id="sol-pod-rechazo" class="font-body-sm text-body-sm text-on-surface-variant mt-1">
             Causa: falta sello de recepción en planta Pacheco. Chofer notificado vía WhatsApp para recolección de firma.
           </p>
 </div>
-<div class="mt-3 pt-2 font-code-table text-code-table text-on-surface-variant font-semibold">
+<div id="sol-pod-reintento" class="mt-3 pt-2 font-code-table text-code-table text-on-surface-variant font-semibold">
           Reintento programado: 16:30 hs
         </div>
 </div>
@@ -1246,5 +1246,6 @@
 </div>
 </footer>
 <!-- END: PageFooter -->
+<script src="/stitch/redesign/pod-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
