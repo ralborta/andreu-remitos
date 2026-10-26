@@ -73,7 +73,7 @@ export default async function conversacionesRoutes(fastify) {
     }
 
     try {
-      await sendWhatsAppMessage({ number: phone, message: texto.trim() });
+      await sendWhatsAppMessage({ number: phone, message: texto.trim(), operador: true });
     } catch (err) {
       request.log.error(err);
       return reply.code(502).send({
