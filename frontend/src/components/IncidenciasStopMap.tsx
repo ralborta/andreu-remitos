@@ -62,18 +62,49 @@ export function IncidenciasStopMap() {
           maxZoom: 19,
         }).addTo(map);
 
+        const icon = L.divIcon({
+          className: "",
+          html: `<span style="display:block;width:14px;height:14px;border-radius:99px;background:#e11d48;border:2px solid #fff;box-shadow:0 0 0 6px #e11d4833"></span>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+        });
+        const marker = L.marker([POINT.lat, POINT.lng], { icon }).addTo(map);
+
+        function show(lat: number, lng: number) {
+          marker.setLatLng([lat, lng]);
+          map.setView([lat, lng], 14);
+        }
+
+        function onMsg(ev: MessageEvent) {
+          const data = ev.data;
+          if (!data || data.type !== "sol-incidencias" || data.action !== "point") return;
+          const lat = Number(data.lat);
+          const lng = Number(data.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          show(lat, lng);
+        }
+
+        window.addEventListener("message", onMsg);
+        window.parent?.postMessage({ type: "sol-incidencias", action: "ready" }, "*");
+
         setTimeout(() => map.invalidateSize(), 160);
         setReady(true);
+        return () => window.removeEventListener("message", onMsg);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Error al cargar el mapa");
         }
+        return undefined;
       }
     }
 
-    void boot();
+    let detach: (() => void) | undefined;
+    void boot().then((off) => {
+      detach = off;
+    });
     return () => {
       cancelled = true;
+      detach?.();
       map?.remove();
     };
   }, []);

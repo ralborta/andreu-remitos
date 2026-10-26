@@ -203,12 +203,12 @@
 </div>
 </section>
 <!-- SUB-TABS OPERATIVAS DEL MÓDULO -->
-<div class="border-b border-slate-200 flex items-center justify-between">
+<div id="sol-inc-tabs" class="border-b border-slate-200 flex items-center justify-between">
 <div class="flex space-x-6 text-xs font-medium">
 <a class="pb-3 border-b-2 border-indigo-600 text-indigo-700 font-bold flex items-center gap-2" href="#">
 <span class="material-symbols-outlined text-sm">radar</span>
             Eventos en vivo
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">17</span>
+            <span id="sol-inc-vivos" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">17</span>
 </a>
 <a class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-colors" href="#">
 <span class="material-symbols-outlined text-sm">history</span>
@@ -237,22 +237,22 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">52</div>
+<div id="sol-inc-kpi-hoy" class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">52</div>
 <div class="flex items-center gap-2">
 <span class="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-<span class="material-symbols-outlined text-xs">trending_up</span> +13% vs ayer
+<span class="material-symbols-outlined text-xs">trending_up</span> <span id="sol-inc-kpi-hoy-hint">+13% vs ayer</span>
               </span>
 <!-- Donut badge 75% -->
 <div class="relative w-8 h-8 flex items-center justify-center">
 <svg class="w-8 h-8 -rotate-90" viewbox="0 0 36 36">
 <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
-<path class="text-sky-600" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="75, 100" stroke-linecap="round" stroke-width="3.5"></path>
+<path id="sol-inc-donut" class="text-sky-600" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="75, 100" stroke-linecap="round" stroke-width="3.5"></path>
 </svg>
-<span class="absolute font-mono text-[9px] font-bold text-slate-700">75%</span>
+<span id="sol-inc-donut-label" class="absolute font-mono text-[9px] font-bold text-slate-700">75%</span>
 </div>
 </div>
 </div>
-<div class="mt-2 text-[11px] text-slate-400">Promedio flota: <strong class="text-slate-600 font-mono">3h 42m</strong></div>
+<div id="sol-inc-kpi-hoy-sub" class="mt-2 text-[11px] text-slate-400">Promedio flota: <strong class="text-slate-600 font-mono">3h 42m</strong></div>
 </article>
 <!-- KPI 2: CAUSA DECLARADA -->
 <article class="bg-white rounded-xl border border-slate-200 p-4 shadow-card hover:shadow-subtle transition-all flex flex-col justify-between">
@@ -263,9 +263,9 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">94%</div>
+<div id="sol-inc-kpi-causa" class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">94%</div>
 <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-<span class="material-symbols-outlined text-xs">arrow_upward</span> +13 pts vs promedio
+<span class="material-symbols-outlined text-xs">arrow_upward</span> <span id="sol-inc-kpi-causa-hint">+13 pts vs promedio</span>
             </span>
 </div>
 <div class="mt-2 text-[11px] text-slate-400">WhatsApp validado con choferes</div>
@@ -279,9 +279,9 @@
 </div>
 </div>
 <div class="mt-3 flex items-baseline justify-between">
-<div class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">2,8 <span class="text-sm font-normal text-slate-500">min</span></div>
+<div id="sol-inc-kpi-tiempo" class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">2,8 <span class="text-sm font-normal text-slate-500">min</span></div>
 <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-<span class="material-symbols-outlined text-xs">bolt</span> -68% vs manual
+<span class="material-symbols-outlined text-xs">bolt</span> <span id="sol-inc-kpi-tiempo-hint">-68% vs manual</span>
             </span>
 </div>
 <div class="mt-2 text-[11px] text-slate-400">Modo operativo: <strong class="text-slate-600">IA autónoma</strong></div>
@@ -296,42 +296,42 @@
 </div>
 <div class="mt-3 flex items-baseline justify-between">
 <div class="flex items-baseline gap-2">
-<div class="text-3xl font-extrabold text-rose-600 tracking-tight font-mono">2</div>
+<div id="sol-inc-kpi-alta" class="text-3xl font-extrabold text-rose-600 tracking-tight font-mono">2</div>
 <span class="text-xs font-semibold text-rose-700">activas</span>
 </div>
 <span class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
-              Requieren auxilio inmediato
+              <span id="sol-inc-kpi-alta-hint">Requieren auxilio inmediato</span>
             </span>
 </div>
-<div class="mt-2 text-[11px] text-rose-600 font-medium">SLA vencimiento: <strong class="font-mono font-bold">2 min restantes</strong></div>
+<div id="sol-inc-kpi-alta-sub" class="mt-2 text-[11px] text-rose-600 font-medium">SLA vencimiento: <strong class="font-mono font-bold">2 min restantes</strong></div>
 </article>
 </section>
 <!-- ========================================================================= -->
 <!-- SECCIÓN 2: PÍLDORAS DE FILTRO RÁPIDO POR ESTADO                           -->
 <!-- ========================================================================= -->
 <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-<button class="px-3.5 py-1.5 rounded-lg bg-[#0e1738] text-white font-semibold flex items-center gap-2 shadow-xs whitespace-nowrap">
+<button type="button" data-filtro="abiertas" class="px-3.5 py-1.5 rounded-lg bg-[#0e1738] text-white font-semibold flex items-center gap-2 shadow-xs whitespace-nowrap">
 <span>Abiertas</span>
 <span class="px-1.5 py-0.2 rounded-full bg-white/20 text-white font-mono text-[11px] font-bold">17</span>
 </button>
-<button class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
+<button type="button" data-filtro="nueva" class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
 <span>Nuevas</span>
 <span class="px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-700 font-mono text-[11px] font-bold">3</span>
 </button>
-<button class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
+<button type="button" data-filtro="esperando_causa" class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
 <span>Esperando causa</span>
 <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 font-mono text-[11px] font-bold">6</span>
 </button>
-<button class="px-3.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-semibold flex items-center gap-1.5 shadow-xs whitespace-nowrap transition-colors">
+<button type="button" data-filtro="alta" class="px-3.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 font-semibold flex items-center gap-1.5 shadow-xs whitespace-nowrap transition-colors">
 <span class="material-symbols-outlined text-sm text-rose-600">error</span>
 <span>Criticidad alta</span>
 <span class="px-1.5 py-0.2 rounded-full bg-rose-600 text-white font-mono text-[11px] font-bold">2</span>
 </button>
-<button class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
+<button type="button" data-filtro="en_gestion" class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
 <span>En gestión</span>
 <span class="px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 font-mono text-[11px] font-bold">5</span>
 </button>
-<button class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
+<button type="button" data-filtro="resuelta" class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium flex items-center gap-2 shadow-xs whitespace-nowrap transition-colors">
 <span>Resueltas hoy</span>
 <span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 font-mono text-[11px] font-bold">10</span>
 </button>
@@ -373,23 +373,23 @@
                 1. Puntos GPS de parada detectados (simulación)
               </label>
 <div class="flex flex-wrap gap-2">
-<button class="px-3 py-1.5 rounded-lg bg-[#0e1738] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+<button type="button" data-pin="pana" class="px-3 py-1.5 rounded-lg bg-[#0e1738] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs">
 <span class="material-symbols-outlined text-sm text-amber-400">location_on</span>
                   Panamericana km 35
                 </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
+<button type="button" data-pin="ezeiza" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
 <span class="material-symbols-outlined text-xs text-slate-400">near_me</span>
                   Acceso Ezeiza
                 </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
+<button type="button" data-pin="puerto" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
 <span class="material-symbols-outlined text-xs text-slate-400">near_me</span>
                   Puerto Madero
                 </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
+<button type="button" data-pin="pacheco" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
 <span class="material-symbols-outlined text-xs text-slate-400">near_me</span>
                   Pacheco
                 </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
+<button type="button" data-pin="lujan" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1">
 <span class="material-symbols-outlined text-xs text-slate-400">near_me</span>
                   Acceso Luján
                 </button>
@@ -401,10 +401,10 @@
 <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   2. Chofer y Unidad (Viaje Activo)
                 </label>
-<div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between cursor-pointer hover:border-slate-300">
+<div id="sol-inc-chofer" class="relative p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between cursor-pointer hover:border-slate-300">
 <div class="truncate">
-<span class="font-bold text-slate-900 block">Gómez, Martín</span>
-<span class="text-slate-500 font-mono text-[11px]">Scania R450 · AB 123 CD · PepsiCo</span>
+<span id="sol-inc-chofer-nombre" class="font-bold text-slate-900 block">Gómez, Martín</span>
+<span id="sol-inc-chofer-sub" class="text-slate-500 font-mono text-[11px]">Scania R450 · AB 123 CD · PepsiCo</span>
 </div>
 <span class="material-symbols-outlined text-slate-400 text-base">expand_more</span>
 </div>
@@ -413,8 +413,8 @@
 <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   3. Tipo de evento sugerido
                 </label>
-<div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
-<span class="font-semibold text-slate-800 truncate">Parada no prevista (+15 min)</span>
+<div id="sol-inc-tipo" class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between cursor-pointer">
+<span id="sol-inc-tipo-label" class="font-semibold text-slate-800 truncate">Parada no prevista (+15 min)</span>
 <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold shrink-0">
                     Sin geocerca
                   </span>
@@ -434,7 +434,7 @@
 </div>
 <!-- Mensaje de chat -->
 <div class="bg-white p-3.5 rounded-xl rounded-tl-none border border-emerald-200 shadow-xs space-y-2">
-<p class="text-xs text-slate-800 leading-relaxed">
+<p id="sol-inc-preview" class="text-xs text-slate-800 leading-relaxed">
                   Hola <strong class="text-slate-900">Martín</strong>, detectamos que tu unidad <span class="font-mono font-bold text-indigo-700 bg-indigo-50 px-1 py-0.2 rounded">Scania R450</span> está detenida en <strong class="text-slate-900">Panamericana km 35</strong> hace 18 min. ¿Nos confirmás la causa de la parada?
                 </p>
 <div class="space-y-1 text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 font-mono">
@@ -450,7 +450,7 @@
 </div>
 <!-- Botones de Acción de Envío -->
 <div class="flex items-center gap-2 pt-1">
-<button class="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors">
+<button id="sol-inc-enviar" type="button" class="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors">
 <span class="material-symbols-outlined text-base">send</span>
 <span>▶ Ubicar y enviar consulta por WhatsApp</span>
 </button>
@@ -462,7 +462,7 @@
 </div>
 <!-- COLUMNA DERECHA: Mapa real + camión y telemetría superpuestos -->
 <div class="lg:col-span-6 relative overflow-hidden min-h-[440px] text-white flex flex-col">
-<iframe class="absolute inset-0 h-full w-full border-0" src="/embed/incidencias-map" title="Unidad detenida"></iframe>
+<iframe id="sol-inc-map" class="absolute inset-0 h-full w-full border-0" src="/embed/incidencias-map" title="Unidad detenida"></iframe>
 <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#0e1738]/85 via-[#0e1738]/20 to-[#0e1738]/90"></div>
 <div class="relative z-10 p-5 flex flex-col justify-between min-h-[440px] h-full">
 <!-- Header del Monitor -->
@@ -472,11 +472,11 @@
 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
 </span>
-<span class="text-xs font-bold uppercase tracking-wider text-rose-200">
+<span id="sol-inc-unidad" class="text-xs font-bold uppercase tracking-wider text-rose-200">
                   Unidad Detenida: Scania R450
                 </span>
 </div>
-<span class="font-mono text-[11px] text-slate-200">Lat: -34.4250 · Lng: -58.5798</span>
+<span id="sol-inc-lat" class="font-mono text-[11px] text-slate-200">Lat: -34.4250 · Lng: -58.5798</span>
 </div>
 <!-- Camión sobre el punto del mapa -->
 <div class="flex-1 flex items-center justify-center py-10 pointer-events-none">
@@ -484,7 +484,7 @@
 <div class="w-12 h-12 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-radar ring-4 ring-rose-500/40">
 <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
 </div>
-<div class="mt-2.5 text-xs font-semibold px-3 py-1 rounded-full bg-slate-900/90 text-slate-100 border border-slate-700 shadow-sm">
+<div id="sol-inc-lugar" class="mt-2.5 text-xs font-semibold px-3 py-1 rounded-full bg-slate-900/90 text-slate-100 border border-slate-700 shadow-sm">
                   Panamericana Km 35 (Ramal Campana)
                 </div>
 </div>
@@ -497,28 +497,28 @@
 </div>
 <div class="bg-slate-900/80 backdrop-blur-sm p-2 rounded-lg border border-white/10">
 <span class="text-[10px] text-slate-400 block uppercase font-mono">Velocidad</span>
-<span class="font-mono font-bold text-slate-100 text-xs">0 km/h</span>
+<span id="sol-inc-vel" class="font-mono font-bold text-slate-100 text-xs">0 km/h</span>
 </div>
 <div class="bg-slate-900/80 backdrop-blur-sm p-2 rounded-lg border border-white/10">
 <span class="text-[10px] text-slate-400 block uppercase font-mono">Motor</span>
-<span class="font-mono font-bold text-rose-400 text-xs">Apagado</span>
+<span id="sol-inc-motor" class="font-mono font-bold text-rose-400 text-xs">Apagado</span>
 </div>
 <div class="bg-slate-900/80 backdrop-blur-sm p-2 rounded-lg border border-white/10">
 <span class="text-[10px] text-slate-400 block uppercase font-mono">Batería</span>
-<span class="font-mono font-bold text-slate-100 text-xs">84%</span>
+<span id="sol-inc-bat" class="font-mono font-bold text-slate-100 text-xs">84%</span>
 </div>
 <div class="bg-slate-900/80 backdrop-blur-sm p-2 rounded-lg border border-white/10 col-span-2 sm:col-span-1">
 <span class="text-[10px] text-slate-400 block uppercase font-mono">Señal 4G</span>
-<span class="font-mono font-bold text-emerald-400 text-xs">-72 dBm</span>
+<span id="sol-inc-senal" class="font-mono font-bold text-emerald-400 text-xs">-72 dBm</span>
 </div>
 </div>
 <!-- Footer -->
 <div class="mt-3 flex items-center justify-between text-[11px] text-slate-200 pt-2 border-t border-white/10">
 <span class="flex items-center gap-1.5">
 <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                Esperando confirmación chofer por WhatsApp
+                <span id="sol-inc-espera">Esperando confirmación chofer por WhatsApp</span>
               </span>
-<span class="font-mono text-amber-300">4m restantes antes de repregunta</span>
+<span id="sol-inc-repregunta" class="font-mono text-amber-300">4m restantes antes de repregunta</span>
 </div>
 </div>
 </div>
@@ -537,7 +537,7 @@
 <div>
 <div class="flex items-center gap-2">
 <h2 class="text-sm font-bold text-slate-900">Incidencias en Ruta Registradas</h2>
-<span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200">
+<span id="sol-inc-alta-chip" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200">
                   2 en criticidad alta
                 </span>
 </div>
@@ -547,9 +547,9 @@
 <div class="flex flex-wrap items-center gap-2.5">
 <div class="relative min-w-[240px]">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-xs">search</span>
-<input class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Buscar por chofer, viaje o causa..." type="text"/>
+<input id="sol-inc-buscar" class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Buscar por chofer, viaje o causa..." type="text"/>
 </div>
-<select class="py-1.5 pl-3 pr-8 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+<select id="sol-inc-estado" class="py-1.5 pl-3 pr-8 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
 <option selected="">Todos los estados</option>
 <option>En gestión</option>
 <option>Esperando auxilio</option>
@@ -578,7 +578,7 @@
 <th class="py-3 px-4 text-right">ACCIONES</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+<tbody id="sol-inc-body" class="divide-y divide-slate-100 text-xs text-slate-700">
 <!-- FILA 1: Activa en foco -->
 <tr class="bg-indigo-50/30 hover:bg-indigo-50/50 transition-colors border-l-4 border-l-indigo-600">
 <td class="py-3.5 px-4">
@@ -891,7 +891,7 @@
 </div>
 <!-- Paginación -->
 <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-<div>Mostrando <strong class="text-slate-700 font-mono">6</strong> de <strong class="text-slate-700 font-mono">17</strong> incidencias activas</div>
+<div id="sol-inc-pie">Mostrando <strong class="text-slate-700 font-mono">6</strong> de <strong class="text-slate-700 font-mono">17</strong> incidencias activas</div>
 <div class="flex items-center gap-1">
 <button class="px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 font-semibold shadow-xs">1</button>
 <button class="px-3 py-1 rounded-lg hover:bg-white text-slate-600">2</button>
@@ -915,7 +915,7 @@
 </div>
 <div>
 <h3 class="text-sm font-bold text-slate-900 leading-tight">¿Qué necesitás saber de Incidencias?</h3>
-<p class="text-xs text-slate-500">Consultá datos reales del módulo Incidencias. Respuestas generadas al instante con telemetría en vivo y validación de choferes.</p>
+<p id="sol-inc-chat" class="text-xs text-slate-500">Consultá datos reales del módulo Incidencias. Respuestas generadas al instante con telemetría en vivo y validación de choferes.</p>
 </div>
 </div>
 <div class="flex items-center gap-2 text-[11px] text-slate-400">
@@ -944,7 +944,7 @@
 </div>
 <!-- Barra de Input del Chat -->
 <div class="relative">
-<input class="w-full pl-4 pr-24 py-2.5 text-xs bg-white rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 text-slate-800 placeholder-slate-400 outline-none shadow-xs" placeholder="Preguntá sobre demoras, causas, choferes o viajes parados..." type="text"/>
+<input id="sol-inc-pregunta" class="w-full pl-4 pr-24 py-2.5 text-xs bg-white rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 text-slate-800 placeholder-slate-400 outline-none shadow-xs" placeholder="Preguntá sobre demoras, causas, choferes o viajes parados..." type="text"/>
 <button class="absolute right-2 top-1.5 bottom-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors" type="button">
 <span>Consultar</span>
 <span class="material-symbols-outlined text-xs">arrow_forward</span>
@@ -1180,5 +1180,6 @@
 </div>
 </footer>
 </div>
+<script src="/stitch/redesign/incidencias-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
