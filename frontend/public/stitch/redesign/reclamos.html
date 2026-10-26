@@ -292,12 +292,12 @@
 <span class="material-symbols-outlined text-base text-secondary">inbox</span>
 </div>
 <div class="flex items-baseline gap-3">
-<span class="font-metric-stat text-metric-stat text-on-surface">23</span>
+<span id="sol-rec-kpi-abiertos" class="font-metric-stat text-metric-stat text-on-surface">23</span>
 <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-amber-50 text-amber-700">
           En cola activa
         </span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-rec-kpi-abiertos-sub" class="font-body-sm text-body-sm text-on-surface-variant">
         6 nuevos sin asignar · 9 en gestión
       </p>
 </div>
@@ -308,13 +308,13 @@
 <span class="material-symbols-outlined text-base text-emerald-600">verified</span>
 </div>
 <div class="flex items-baseline gap-3">
-<span class="font-metric-stat text-metric-stat text-on-surface">89%</span>
-<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
+<span id="sol-rec-kpi-sla" class="font-metric-stat text-metric-stat text-on-surface">89%</span>
+<span id="sol-rec-kpi-sla-hint" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
           ↑ +10 pts
         </span>
 </div>
 <div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
-<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 89%"></div>
+<div id="sol-rec-kpi-sla-bar" class="bg-emerald-500 h-1.5 rounded-full" style="width: 89%"></div>
 </div>
 </div>
 <!-- KPI 3 -->
@@ -324,12 +324,12 @@
 <span class="material-symbols-outlined text-base text-secondary">schedule</span>
 </div>
 <div class="flex items-baseline gap-3">
-<span class="font-metric-stat text-metric-stat text-on-surface">5,8 h</span>
-<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
+<span id="sol-rec-kpi-tiempo" class="font-metric-stat text-metric-stat text-on-surface">5,8 h</span>
+<span id="sol-rec-kpi-tiempo-hint" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-emerald-50 text-emerald-700">
           ↓ -42%
         </span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-rec-kpi-tiempo-sub" class="font-body-sm text-body-sm text-on-surface-variant">
         Asistencia SOL IA vs proceso manual
       </p>
 </div>
@@ -340,34 +340,34 @@
 <span class="material-symbols-outlined text-base text-secondary">smart_toy</span>
 </div>
 <div class="flex items-baseline gap-3">
-<span class="font-metric-stat text-metric-stat text-on-surface">94,2%</span>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-secondary-fixed text-on-secondary-fixed-variant">
+<span id="sol-rec-kpi-ia" class="font-metric-stat text-metric-stat text-on-surface">94,2%</span>
+<span id="sol-rec-kpi-ia-hint" class="inline-flex items-center px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-secondary-fixed text-on-secondary-fixed-variant">
           Diálogo libre
         </span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-rec-kpi-ia-sub" class="font-body-sm text-body-sm text-on-surface-variant">
         Primera línea resuelta sin menús rígidos
       </p>
 </div>
 </div>
 <!-- 3. FILTROS RÁPIDOS DE ESTADO -->
 <div class="flex items-center gap-2 overflow-x-auto pb-1">
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors whitespace-nowrap" type="button">
+<button data-filtro="todos" class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors whitespace-nowrap" type="button">
       Todos <span class="text-on-surface-variant font-code-table text-code-table font-semibold">48</span>
 </button>
-<button class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm whitespace-nowrap" type="button">
+<button data-filtro="abiertos" class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm whitespace-nowrap" type="button">
       Abiertos <span class="bg-white/20 text-on-primary px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">23</span>
 </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+<button data-filtro="nuevo" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
       Nuevos <span class="bg-secondary-fixed text-on-secondary-fixed-variant px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">6</span>
 </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+<button data-filtro="en_proceso" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
       En proceso <span class="bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">9</span>
 </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+<button data-filtro="escalado" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
       Escalados <span class="bg-error-container text-on-error-container px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">3</span>
 </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
+<button data-filtro="resuelto" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors shadow-xs whitespace-nowrap" type="button">
       Resueltos <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-code-table text-code-table font-semibold">25</span>
 </button>
 </div>
@@ -380,31 +380,31 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-surface-container gap-2">
 <div>
 <div class="flex items-center gap-2">
-<span class="font-code-table text-code-table font-bold text-secondary">#REC-20261014-042</span>
-<span class="font-label-caps text-label-caps bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-semibold">En proceso</span>
+<span id="sol-rec-codigo" class="font-code-table text-code-table font-bold text-secondary">#REC-20261014-042</span>
+<span id="sol-rec-estado" class="font-label-caps text-label-caps bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-semibold">En proceso</span>
 </div>
-<div class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Coca-Cola Andina · Centro Logístico Monte Grande</div>
+<div id="sol-rec-cliente" class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Coca-Cola Andina · Centro Logístico Monte Grande</div>
 </div>
 <span class="inline-flex items-center gap-1.5 font-label-caps text-label-caps text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full self-start sm:self-center">
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            WhatsApp 100% IA
+<span id="sol-rec-canal">WhatsApp 100% IA</span>
           </span>
 </div>
 <!-- Meta Summary Strip -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 py-3 bg-surface-container-low px-3.5 rounded-lg mt-4">
 <div class="space-y-0.5">
 <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Motivo detectado</span>
-<p class="font-body-sm text-body-sm font-semibold text-on-surface">Faltante de 4 bultos en entrega · Pallets sin precinto en rampa</p>
+<p id="sol-rec-motivo" class="font-body-sm text-body-sm font-semibold text-on-surface">Faltante de 4 bultos en entrega · Pallets sin precinto en rampa</p>
 </div>
 <div class="space-y-0.5">
 <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Viaje Asociado</span>
-<p class="font-body-sm text-body-sm font-semibold text-on-surface">
+<p id="sol-rec-viaje" class="font-body-sm text-body-sm font-semibold text-on-surface">
 <span class="font-code-table text-code-table text-secondary">VJ-20261014-009</span> · Héctor Maldonado (AF 891 CD)
             </p>
 </div>
 </div>
 <!-- WhatsApp Conversation Thread -->
-<div class="mt-4 space-y-3.5 bg-[#f0f2f5] p-4 rounded-xl">
+<div id="sol-rec-hilo" class="mt-4 space-y-3.5 bg-[#f0f2f5] p-4 rounded-xl">
 <!-- User msg -->
 <div class="flex flex-col items-start max-w-[85%]">
 <span class="font-label-caps text-label-caps text-on-surface-variant mb-1 ml-1">Martín (Recepción Planta) · 11:22</span>
@@ -451,14 +451,14 @@
 <!-- Quick Action Controls -->
 <div class="flex flex-wrap items-center justify-between pt-3 border-t border-surface-container gap-3">
 <div class="flex items-center gap-2">
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+<button id="sol-rec-escalar" class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
             Escalar a Supervisor
           </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+<button id="sol-rec-chofer" class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
             Solicitar intervención chofer
           </button>
 </div>
-<button class="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary/90 transition-colors shadow-xs" type="button">
+<button id="sol-rec-resolver" class="px-4 py-1.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary/90 transition-colors shadow-xs" type="button">
           Resolver y notificar cliente
         </button>
 </div>
@@ -474,19 +474,19 @@
 <div class="grid grid-cols-3 gap-2">
 <div class="p-3 bg-surface-container-low rounded-lg space-y-1">
 <span class="font-label-caps text-label-caps text-on-surface-variant block uppercase">Criticidad</span>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-amber-100 text-amber-800 font-semibold">
+<span id="sol-rec-crit" class="inline-flex items-center px-1.5 py-0.5 rounded font-label-caps text-label-caps bg-amber-100 text-amber-800 font-semibold">
               Media
             </span>
 </div>
 <div class="p-3 bg-surface-container-low rounded-lg space-y-1">
 <span class="font-label-caps text-label-caps text-on-surface-variant block uppercase">SLA Restante</span>
-<span class="font-headline-sm text-headline-sm text-on-surface">42 min</span>
-<span class="block font-body-sm text-body-sm text-on-surface-variant">De 60m totales</span>
+<span id="sol-rec-sla" class="font-headline-sm text-headline-sm text-on-surface">42 min</span>
+<span id="sol-rec-sla-sub" class="block font-body-sm text-body-sm text-on-surface-variant">De 60m totales</span>
 </div>
 <div class="p-3 bg-surface-container-low rounded-lg space-y-1">
 <span class="font-label-caps text-label-caps text-on-surface-variant block uppercase">Impacto Est.</span>
-<span class="font-headline-sm text-headline-sm text-error">$ 142.000</span>
-<span class="block font-body-sm text-body-sm text-on-surface-variant">ARS estimado</span>
+<span id="sol-rec-impacto" class="font-headline-sm text-headline-sm text-error">$ 142.000</span>
+<span id="sol-rec-impacto-sub" class="block font-body-sm text-body-sm text-on-surface-variant">ARS estimado</span>
 </div>
 </div>
 <!-- Cross Agent Trazabilidad -->
@@ -499,21 +499,21 @@
 <span class="material-symbols-outlined text-emerald-600 text-lg">fact_check</span>
 <div>
 <span class="font-semibold text-on-surface">Agente POP/POD:</span>
-<p class="text-on-surface-variant">POP verificado con 36 pallets a las 07:45 hs en Planta Pompeya.</p>
+<p id="sol-rec-pop" class="text-on-surface-variant">POP verificado con 36 pallets a las 07:45 hs en Planta Pompeya.</p>
 </div>
 </div>
 <div class="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-lg">
 <span class="material-symbols-outlined text-secondary text-lg">timer</span>
 <div>
 <span class="font-semibold text-on-surface">Agente ETA:</span>
-<p class="text-on-surface-variant">Entregado a las 11:14 hs (dentro de ventana pactada de 11:00 a 11:30 hs).</p>
+<p id="sol-rec-eta" class="text-on-surface-variant">Entregado a las 11:14 hs (dentro de ventana pactada de 11:00 a 11:30 hs).</p>
 </div>
 </div>
 <div class="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-lg">
 <span class="material-symbols-outlined text-secondary text-lg">format_image_left</span>
 <div>
 <span class="font-semibold text-on-surface">Agente Incidencias:</span>
-<p class="text-on-surface-variant">Sin paradas no programadas ni alertas de telemetría en trayecto.</p>
+<p id="sol-rec-inc" class="text-on-surface-variant">Sin paradas no programadas ni alertas de telemetría en trayecto.</p>
 </div>
 </div>
 </div>
@@ -524,7 +524,7 @@
 <span class="material-symbols-outlined text-base">psychology</span>
             CONCLUSIÓN IA PRELIMINAR
           </div>
-<p class="font-body-sm text-body-sm text-on-surface">
+<p id="sol-rec-conclusion" class="font-body-sm text-body-sm text-on-surface">
             Discrepancia originada en rampa de descarga o error de conteo en recepción. Se recomienda cotejo fotográfico de descarga con el chofer Maldonado previo a emitir ajuste de remito.
           </p>
 </div>
@@ -533,7 +533,7 @@
 <label class="font-label-caps text-label-caps text-on-surface-variant uppercase block">
             Acción de Cierre / Resolución
           </label>
-<select class="w-full bg-surface-container-low border-0 text-on-surface font-body-sm text-body-sm rounded-lg p-2.5 focus:ring-1 focus:ring-secondary">
+<select id="sol-rec-cierre" class="w-full bg-surface-container-low border-0 text-on-surface font-body-sm text-body-sm rounded-lg p-2.5 focus:ring-1 focus:ring-secondary">
 <option>Ajuste de remito digital</option>
 <option>Reenvío prioritario de mercadería (Viaje puente)</option>
 <option>Nota de crédito directa</option>
@@ -542,8 +542,8 @@
 </div>
 </div>
 <div class="pt-3 border-t border-surface-container flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
-<span>Operador asignado: GD (Gonzalo Demo)</span>
-<button class="text-secondary font-label-md text-label-md font-semibold hover:underline" type="button">
+<span id="sol-rec-linea">Operador asignado: GD (Gonzalo Demo)</span>
+<button id="sol-rec-historial" class="text-secondary font-label-md text-label-md font-semibold hover:underline" type="button">
           Historial de auditoría
         </button>
 </div>
@@ -555,7 +555,7 @@
 <div class="p-space-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-container">
 <div class="flex items-center gap-2">
 <h2 class="font-headline-sm text-headline-sm text-on-surface">Reclamos en Gestión</h2>
-<span class="px-2 py-0.5 rounded-full font-code-table text-code-table bg-surface-container text-on-surface-variant font-semibold">
+<span id="sol-rec-activos" class="px-2 py-0.5 rounded-full font-code-table text-code-table bg-surface-container text-on-surface-variant font-semibold">
           23 activos
         </span>
 </div>
@@ -563,10 +563,10 @@
 <!-- Search table -->
 <div class="relative min-w-[260px]">
 <span class="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant text-base">search</span>
-<input class="w-full pl-8 pr-3 py-1.5 bg-surface-container-low border-0 rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Buscar por cliente, viaje, ticket o chofer..." type="text"/>
+<input id="sol-rec-buscar" class="w-full pl-8 pr-3 py-1.5 bg-surface-container-low border-0 rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Buscar por cliente, viaje, ticket o chofer..." type="text"/>
 </div>
 <!-- Select criticidad -->
-<select class="bg-surface-container-low border-0 rounded-lg px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-secondary">
+<select id="sol-rec-crit-filtro" class="bg-surface-container-low border-0 rounded-lg px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-secondary">
 <option>Todas las criticidades</option>
 <option>Alta / Crítica</option>
 <option>Media</option>
@@ -575,7 +575,7 @@
 <!-- Date range -->
 <div class="flex items-center gap-1 bg-surface-container-low px-3 py-1.5 rounded-lg font-body-sm text-body-sm text-on-surface">
 <span class="material-symbols-outlined text-base text-on-surface-variant">calendar_today</span>
-<span>Hoy, 14 Oct</span>
+<span id="sol-rec-fecha">Hoy, 14 Oct</span>
 </div>
 <!-- Export -->
 <button class="p-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" title="Exportar reporte" type="button">
@@ -599,7 +599,7 @@
 <th class="py-3 px-4 text-right">Acciones</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
+<tbody id="sol-rec-body" class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
 <!-- Row 1 (Active) -->
 <tr class="hover:bg-surface-container-low/50 bg-secondary-fixed/10 transition-colors">
 <td class="py-3 px-4 font-code-table text-code-table font-bold text-secondary">#REC-042</td>
@@ -748,8 +748,8 @@
 </table>
 </div>
 <!-- Pagination -->
-<div class="p-space-lg flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface-container-low/30 border-t border-surface-container text-on-surface-variant font-body-sm text-body-sm">
-<span>Mostrando 6 de 23 reclamos activos · Página 1 de 4</span>
+<div id="sol-rec-paginacion" class="p-space-lg flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface-container-low/30 border-t border-surface-container text-on-surface-variant font-body-sm text-body-sm">
+<span id="sol-rec-pagina">Mostrando 6 de 23 reclamos activos · Página 1 de 4</span>
 <div class="flex items-center gap-2">
 <button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-50 font-label-md text-label-md transition-colors" disabled="" type="button">
           Anterior
@@ -767,7 +767,7 @@
 <span class="material-symbols-outlined text-secondary text-2xl">auto_awesome</span>
 <h2 class="font-headline-md text-headline-md text-on-surface">¿Qué necesitás saber de Reclamos?</h2>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant">
+<p id="sol-rec-chat" class="font-body-md text-body-md text-on-surface-variant">
         Consultá reclamos reales, causas, SLA y estados por lenguaje natural persistido.
       </p>
 </div>
@@ -791,7 +791,7 @@
 <div class="flex items-center gap-2">
 <div class="relative flex-1">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-lg">chat_bubble</span>
-<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-0 rounded-lg font-body-md text-body-md text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Escribí tu consulta sobre clientes, choferes o motivos..." type="text"/>
+<input id="sol-rec-pregunta" class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-0 rounded-lg font-body-md text-body-md text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Escribí tu consulta sobre clientes, choferes o motivos..." type="text"/>
 </div>
 <button class="px-5 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-on-surface transition-colors shadow-sm whitespace-nowrap" type="button">
         Consultar
@@ -804,7 +804,7 @@
 <span class="material-symbols-outlined text-secondary">monitoring</span>
           Conteos en tiempo real
         </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-rec-conteo" class="font-body-sm text-body-sm text-on-surface-variant">
           23 reclamos abiertos, 6 nuevos recibidos en la última hora y 3 casos escalados con seguimiento del supervisor de operaciones.
         </p>
 </div>
@@ -813,7 +813,7 @@
 <span class="material-symbols-outlined text-secondary">corporate_fare</span>
           Listados por Cliente
         </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-rec-clientes" class="font-body-sm text-body-sm text-on-surface-variant">
           Segmentación instantánea para Arcor, Quilmes, Unilever y PepsiCo con correlación histórica de discrepancias de entrega.
         </p>
 </div>
@@ -822,7 +822,7 @@
 <span class="material-symbols-outlined text-secondary">timelapse</span>
           Detalle &amp; SLA
         </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
+<p id="sol-rec-sla-nota" class="font-body-sm text-body-sm text-on-surface-variant">
           Análisis de causa raíz en rampa, tiempos restantes de atención para no quebrar acuerdos y sugerencia de cierre asistido.
         </p>
 </div>
@@ -948,5 +948,6 @@
 </div>
 </footer>
 <!-- END: PageFooter -->
+<script src="/stitch/redesign/reclamos-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
