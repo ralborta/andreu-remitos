@@ -85,6 +85,7 @@
   }
 
   function injectFinanzas() {
+    if (document.querySelector('[data-sol-shell="agents"] a[href="/finanzas"]')) return;
     if (document.querySelector("[data-sol-finanzas]")) return;
 
     var anal = null;
@@ -257,8 +258,154 @@
     });
   }
 
+  var TOP_LINKS = [
+    { label: "Torre de Control", href: "/" },
+    { label: "Monitor", href: "/monitor" },
+    { label: "WhatsApp", href: "/contactos", badge: "Nuevo" },
+    { label: "Métricas", href: "/backoffice" },
+    { label: "Finanzas", href: "/finanzas" },
+  ];
+  var AGENT_LINKS = [
+    { label: "Gestión de Viajes", href: "/agentes/viajes", icon: "local_shipping" },
+    { label: "Tracking Express", href: "/agentes/tracking", icon: "share_location" },
+    { label: "Remitos", href: "/agentes/remitos", icon: "description", caret: true },
+    { label: "Destinos", href: "/agentes/destinos", icon: "pin_drop" },
+    { label: "Incidencias", href: "/agentes/incidencias", icon: "warning" },
+    { label: "Rendición", href: "/agentes/rendicion", icon: "account_balance_wallet" },
+    { label: "ETA", href: "/agentes/eta", icon: "schedule" },
+    { label: "POP/POD", href: "/agentes/pod", icon: "inventory_2" },
+    { label: "Reclamos", href: "/agentes/reclamos", icon: "support_agent" },
+    { label: "Analítica", href: "/agentes/analitica", icon: "monitoring" },
+    { label: "Finanzas", href: "/finanzas", icon: "account_balance", nuevo: true },
+  ];
+  var FILE_ROUTES = {
+    "torre.html": "/",
+    "monitor.html": "/monitor",
+    "whatsapp.html": "/contactos",
+    "metricas.html": "/backoffice",
+    "viajes.html": "/agentes/viajes",
+    "tracking.html": "/agentes/tracking",
+    "remitos.html": "/agentes/remitos",
+    "destinos.html": "/agentes/destinos",
+    "incidencias.html": "/agentes/incidencias",
+    "rendicion.html": "/agentes/rendicion",
+    "eta.html": "/agentes/eta",
+    "pod.html": "/agentes/pod",
+    "reclamos.html": "/agentes/reclamos",
+    "analitica.html": "/agentes/analitica",
+    "finanzas.html": "/finanzas",
+    "finanzas-clientes.html": "/finanzas/clientes",
+    "finanzas-facturas.html": "/finanzas/facturas/pagos",
+    "finanzas-cobranza.html": "/finanzas/facturas/cobranzas",
+    "finanzas-conciliacion.html": "/finanzas/conciliacion",
+    "finanzas-comunicacion.html": "/finanzas/comunicacion",
+  };
+
+  function here() {
+    var path = location.pathname || "";
+    try { path = window.top.location.pathname || path; } catch (e) {}
+    var file = path.split("/").pop();
+    if (FILE_ROUTES[file]) return FILE_ROUTES[file];
+    return path || "/";
+  }
+
+  function isActive(href, path) {
+    if (href === "/") return path === "/" || path === "";
+    if (href === "/finanzas") return path === "/finanzas" || path.indexOf("/finanzas/") === 0;
+    return path === href;
+  }
+
+  function linkHtml(item, active, agent) {
+    var icon = item.icon
+      ? '<span class="material-symbols-outlined text-[17px] leading-none">' + item.icon + "</span>"
+      : "";
+    var badge = item.badge
+      ? '<span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">Nuevo</span>'
+      : "";
+    var nuevo = item.nuevo
+      ? '<span class="px-1.5 py-0.5 text-[9px] font-semibold bg-emerald-200 text-emerald-900 rounded">Nuevo</span>'
+      : "";
+    var caret = item.caret ? " ▾" : "";
+    var cls;
+    if (agent) {
+      cls = active
+        ? "inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0e1738] text-white font-semibold rounded-lg shadow-sm whitespace-nowrap"
+        : item.nuevo
+          ? "inline-flex items-center gap-1.5 px-3 py-1.5 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-semibold rounded-lg transition-colors whitespace-nowrap"
+          : "inline-flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium rounded-lg transition-colors whitespace-nowrap";
+    } else {
+      cls = active
+        ? "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#0e1738] text-white whitespace-nowrap"
+        : "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors whitespace-nowrap";
+    }
+    return '<a data-sol-menu="1" class="' + cls + '" href="' + item.href + '">' + icon + nuevo + item.label + caret + badge + "</a>";
+  }
+
+  function shortest(pred) {
+    var best = null;
+    var bestLen = Infinity;
+    document.querySelectorAll("nav, div").forEach(function (el) {
+      if (el.closest("main, footer")) return;
+      if (el.getAttribute("data-sol-shell")) return;
+      var text = el.textContent || "";
+      if (text.length < 24 || text.length > 1600) return;
+      if (!pred(norm(text))) return;
+      if (text.length < bestLen) {
+        best = el;
+        bestLen = text.length;
+      }
+    });
+    return best;
+  }
+
+  function agentHost(el) {
+    var nav = el.closest("nav");
+    if (!nav || nav.closest("main, footer")) return el;
+    var text = norm(nav.textContent || "");
+    if (text.indexOf("torre de control") >= 0) return el;
+    if (text.indexOf("dashboard") >= 0 && text.indexOf("conciliacion") >= 0) return el;
+    return nav;
+  }
+
+  function unifyShell() {
+    var path = here();
+    var top = document.querySelector('[data-sol-shell="top"]') || shortest(function (text) {
+      return text.indexOf("torre de control") >= 0 && text.indexOf("metricas") >= 0 && text.indexOf("gestion de viajes") < 0;
+    });
+    if (top) {
+      top.setAttribute("data-sol-shell", "top");
+      top.className = "flex items-center space-x-1 overflow-x-auto";
+      top.innerHTML = TOP_LINKS.map(function (item) {
+        return linkHtml(item, isActive(item.href, path), false);
+      }).join("");
+      top.querySelectorAll("a").forEach(bind);
+    }
+
+    var foundAgents = shortest(function (text) {
+      return text.indexOf("agente") >= 0 && text.indexOf("gestion de viajes") >= 0 && text.indexOf("analitica") >= 0 && text.indexOf("dashboard") < 0;
+    });
+    var agents = document.querySelector('[data-sol-shell="agents"]') || (foundAgents ? agentHost(foundAgents) : null);
+    if (!agents) {
+      var main = document.querySelector("main");
+      if (!main || !main.parentNode) return;
+      agents = document.createElement("nav");
+      main.parentNode.insertBefore(agents, main);
+    }
+    agents.setAttribute("data-sol-shell", "agents");
+    agents.className = "flex items-center space-x-1 overflow-x-auto py-2 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200 text-xs";
+    agents.innerHTML =
+      '<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 inline-flex items-center gap-1 shrink-0">' +
+      '<span class="material-symbols-outlined text-xs">smart_toy</span> AGENTES:</span>' +
+      AGENT_LINKS.map(function (item) {
+        return linkHtml(item, isActive(item.href, path), true);
+      }).join("");
+    agents.querySelectorAll("a").forEach(bind);
+  }
+
   document.querySelectorAll("a, button").forEach(bind);
+  unifyShell();
   injectFinanzas();
   decorateMenus();
   wireHeaderSearch();
+  document.addEventListener("DOMContentLoaded", unifyShell);
 })();
