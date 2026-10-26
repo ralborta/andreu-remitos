@@ -12,7 +12,7 @@ export function StitchFrame({
     <iframe
       title={title}
       src={src}
-      className="fixed inset-0 z-[60] h-[100dvh] w-screen border-0 bg-[#f8f9ff]"
+      className="fixed inset-0 z-[60] h-[100dvh] w-full max-w-full border-0 bg-[#f8f9ff]"
     />
   );
 }

@@ -151,11 +151,35 @@
   };
 
   function ensureIconFont() {
-    if (document.querySelector("link[href*='Material+Symbols'], link[href*='Material%20Symbols']")) return;
-    var link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,500,0,0&display=swap";
-    document.head.appendChild(link);
+    if (document.getElementById("sol-icon-style")) return;
+    document.querySelectorAll("link[href*='Material+Symbols'], link[href*='Material%20Symbols']").forEach(function (link) {
+      link.remove();
+    });
+    var face = document.createElement("link");
+    face.rel = "stylesheet";
+    face.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block";
+    document.head.appendChild(face);
+    var style = document.createElement("style");
+    style.id = "sol-icon-style";
+    style.textContent = [
+      ".material-symbols-outlined {",
+      "font-family: 'Material Symbols Outlined';",
+      "font-weight: normal;",
+      "font-style: normal;",
+      "line-height: 1;",
+      "letter-spacing: normal;",
+      "text-transform: none;",
+      "display: inline-block;",
+      "white-space: nowrap;",
+      "word-wrap: normal;",
+      "direction: ltr;",
+      "-webkit-font-smoothing: antialiased;",
+      "font-feature-settings: 'liga';",
+      "-webkit-font-feature-settings: 'liga';",
+      "font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;",
+      "}",
+    ].join("");
+    document.head.appendChild(style);
   }
 
   function menuBar(el) {
