@@ -379,13 +379,13 @@
 </svg>
 </div>
 <h2 class="text-lg font-extrabold text-slate-900 tracking-tight">¿Qué necesitás saber de la operación?</h2>
-<p class="text-xs text-slate-500 max-w-md mx-auto mt-1">
+<p id="sol-torre-chat" class="text-xs text-slate-500 max-w-md mx-auto mt-1">
             Te ayudo a consultar viajes, remitos, incidencias y toda la operación logística en tiempo real.
           </p>
 <!-- 4 Quick Suggestion Chips (2x2 Grid) -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-5 max-w-lg mx-auto text-left">
 <!-- Chip 1 -->
-<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
+<button type="button" data-q="¿Cuántos camiones están por salir?" class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
 <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -398,7 +398,7 @@
 </div>
 </button>
 <!-- Chip 2 -->
-<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-amber-400 hover:bg-amber-50/40 transition-all flex items-center gap-3 group text-left">
+<button type="button" data-q="¿Qué incidencias tenemos?" class="p-2.5 rounded-xl border border-slate-200/80 hover:border-amber-400 hover:bg-amber-50/40 transition-all flex items-center gap-3 group text-left">
 <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -410,7 +410,7 @@
 </div>
 </button>
 <!-- Chip 3 -->
-<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
+<button type="button" data-q="¿Qué camiones tienen demora?" class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
 <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -422,7 +422,7 @@
 </div>
 </button>
 <!-- Chip 4 -->
-<button class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
+<button type="button" data-q="¿Qué viajes están pendientes?" class="p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/40 transition-all flex items-center gap-3 group text-left">
 <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -448,9 +448,9 @@
 <path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
 </div>
-<input class="w-full text-xs pl-9 pr-12 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Preguntá algo sobre la operación..." type="text"/>
+<input id="sol-torre-pregunta" class="w-full text-xs pl-9 pr-12 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Preguntá algo sobre la operación..." type="text"/>
 <div class="absolute inset-y-0 right-0 pr-1.5 flex items-center">
-<button class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-xs">
+<button id="sol-torre-enviar" type="button" class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-xs">
 <svg class="w-4 h-4 transform rotate-45 -translate-y-0.5 translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
@@ -997,5 +997,6 @@
 </div>
 </footer>
 <!-- END: PageFooter -->
+<script src="/stitch/redesign/torre-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
