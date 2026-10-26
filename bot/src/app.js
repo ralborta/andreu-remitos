@@ -10,7 +10,16 @@ const SESSION_NAME = process.env.BOT_SESSION_NAME?.trim() || "andreu";
 const PUBLIC_BASE =
   process.env.BOT_PUBLIC_URL?.trim() || `http://127.0.0.1:${PORT}`;
 
+function esArgentina(from) {
+  const digits = String(from ?? "").replace(/\D/g, "");
+  return digits.startsWith("54") && digits.length >= 12 && digits.length <= 15;
+}
+
 const andreuHandler = async (ctx, { provider, fallBack }) => {
+  if (!esArgentina(ctx?.from)) {
+    console.info(`[andreu-bot] silencio: ${ctx?.from || "sin numero"} no es +54`);
+    return;
+  }
   try {
     const parsed = await forwardToAndreu(ctx, provider, { publicBaseUrl: PUBLIC_BASE });
     if (parsed?.message?.trim()) {
