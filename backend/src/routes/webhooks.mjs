@@ -70,18 +70,11 @@ const baileysBotUrl = process.env.BAILEYS_BOT_URL?.trim() || "";
 const webhookSilent =
   Boolean(baileysBotUrl) || process.env.BUILDERBOT_WEBHOOK_SILENT !== "false";
 
-function esTelefonoArgentina(telefono) {
-  const digits = String(telefono ?? "").replace(/\D/g, "");
-  return digits.startsWith("54") && digits.length >= 12 && digits.length <= 15;
-}
-
 /** Solo +54 y un chofer o encargado registrado. El resto no recibe ningún mensaje. */
 async function debeContestarWhatsApp(telefono) {
-  if (!esTelefonoArgentina(telefono)) return { ok: false, motivo: "fuera_de_argentina" };
-  if (await telefonoEsChoferRegistrado(telefono)) return { ok: true, motivo: "chofer" };
-  const row = await master.resolverChoferPorTelefono(telefono);
-  if (row) return { ok: true, motivo: "contacto" };
-  return { ok: false, motivo: "no_contactado" };
+  const { agentePuedeEscribir } = await import("../../../lib/whatsapp-audiencia.mjs");
+  if (!(await agentePuedeEscribir(telefono))) return { ok: false, motivo: "no_habilitado" };
+  return { ok: true, motivo: "contacto" };
 }
 
 function respuestaWebhook({ message = "", ...rest } = {}) {
