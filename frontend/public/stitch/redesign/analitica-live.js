@@ -10,6 +10,11 @@
     var el = $(id);
     if (el) el.textContent = value;
   }
+  function textoBoton(btn) {
+    var clone = btn.cloneNode(true);
+    clone.querySelectorAll(".material-symbols-outlined, svg, i").forEach(function (n) { n.remove(); });
+    return String(clone.textContent || "").replace(/\s+/g, " ").trim();
+  }
   function fold(s) {
     return String(s || "")
       .replace(/\s+/g, " ")
@@ -178,11 +183,12 @@
     }
     if (q.indexOf("cliente") >= 0) {
       var top = topClientes(5);
+      var en30 = viajes.filter(function (row) { return enDias(row, 30); }).length;
       if (!top.length) {
         if (out) out.textContent = "Los viajes cargados no tienen cliente para armar ese ranking.";
         return;
       }
-      if (out) out.textContent = top.map(function (item, i) {
+      if (out) out.textContent = "La tarjeta de arriba cuenta " + n(en30) + " viaje" + (en30 === 1 ? "" : "s") + " de los últimos 30 días. En la cola completa: " + top.map(function (item, i) {
         return (i + 1) + ". " + item.nombre + " (" + n(item.n) + ")";
       }).join(" · ");
       return;
@@ -220,7 +226,8 @@
     }
     var btn = e.target.closest("button");
     if (!btn) return;
-    var label = fold(btn.textContent || "");
+    var visible = textoBoton(btn);
+    var label = fold(visible);
     if (btn.id === "sol-an-consultar" || label === "consultar") {
       e.preventDefault();
       e.stopPropagation();
@@ -232,8 +239,8 @@
       e.preventDefault();
       e.stopPropagation();
       var input = $("sol-an-pregunta");
-      if (input) input.value = (btn.textContent || "").trim();
-      responder(btn.textContent);
+      if (input) input.value = visible;
+      responder(visible);
       return;
     }
     if (label.indexOf("exportar reporte") >= 0 || label.indexOf("configurar alerta") >= 0 || label.indexOf("ver detalle") >= 0 || label.indexOf("ver historial") >= 0) {
