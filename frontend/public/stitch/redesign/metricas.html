@@ -539,29 +539,31 @@
 </table>
 </div>
 <!-- Embedded Assistant for Trips -->
-<div class="p-4 bg-slate-50 border-t border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4" data-purpose="chat-trips-embedded">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-<i class="fa-solid fa-sparkles"></i>
+<div id="sol-met-chat-box" class="p-5 bg-white border-t border-slate-200 space-y-4" data-purpose="chat-trips-embedded">
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<div>
-<div class="text-xs font-bold text-slate-800">¿Qué necesitás saber de Viajes?</div>
-<div class="text-[11px] text-slate-500">Consulta viajes reales, demoras en ETA o incidencias por chofer</div>
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Viajes?</h3>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
 </div>
-<!-- Suggestion Pills -->
-<div class="flex flex-wrap gap-1.5 text-xs">
-<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">¿Cuántos viajes tenemos?</button>
-<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">¿Cuántos están activos?</button>
-<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">¿Cuáles van a Córdoba?</button>
-<button class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition font-medium">Últimos 10</button>
+<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Viajes</span></div>
 </div>
-<!-- Quick Input -->
-<div class="relative w-full md:w-64">
-<input class="w-full text-xs rounded-lg border-slate-200 bg-white pr-8 pl-3 py-1.5 focus:border-purple-600 focus:ring-purple-600 text-slate-700" placeholder="Preguntá algo sobre Viajes..." type="text"/>
-<button class="absolute right-2 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-800">
-<i class="fa-solid fa-paper-plane text-xs"></i>
-</button>
+<p id="sol-met-chat" class="text-sm text-slate-600 leading-relaxed">Consulta viajes reales, demoras en ETA o incidencias por chofer.</p>
+<div class="flex flex-wrap items-center gap-2 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuántos viajes tenemos?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuántos están activos?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuáles van a Córdoba?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Últimos 10</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input id="sol-met-pregunta" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Preguntá algo sobre Viajes..." type="text"/>
+<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
 </div>
 </div>
 </section>
@@ -964,5 +966,6 @@
 </footer>
 <!-- END: MainFooter -->
 
+<script src="/stitch/redesign/metricas-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

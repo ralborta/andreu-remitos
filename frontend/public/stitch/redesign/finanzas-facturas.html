@@ -652,46 +652,31 @@
 </div>
 <!-- END: InvoicesDataTable -->
 <!-- BEGIN: SolAiAssistantModule -->
-<section class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-5 text-white shadow-sm" data-purpose="sol-ai-financial-copilot">
-<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-<div class="space-y-1">
-<div class="flex items-center gap-2">
-<div class="w-6 h-6 rounded-md bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
-              SOL
-            </div>
-<span class="font-bold text-sm tracking-tight">Asistente Financiero &amp; Cuentas por Pagar (AP)</span>
-<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Online 24/7
-            </span>
+<section class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4" data-purpose="sol-ai-financial-copilot" data-sol-chat>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<p class="text-xs text-slate-300 font-normal">
-            Consultá saldos, vencimientos inmediatos, validaciones de CAE o proyectá el flujo de fondos de tesorería en lenguaje natural.
-          </p>
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Facturas?</h2>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
-<div class="flex-1 max-w-xl">
+</div>
+<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Finanzas</span></div>
+</div>
+<p data-sol-chat-out class="text-sm text-slate-600 leading-relaxed">Consultá facturas y vencimientos. Este módulo todavía no tiene un agente que responda con números reales.</p>
+<div class="flex flex-wrap items-center gap-2 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuánto vence esta semana?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Facturas de combustible pendientes</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Comprobantes con retención IIBB</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Exportar reporte para tesorería</button>
+</div>
 <div class="relative flex items-center">
-<input class="w-full pl-3.5 pr-28 py-2 rounded-lg bg-slate-800/80 border border-slate-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400" placeholder='Preguntá al agente financiero (ej: "¿Cuál es el saldo pendiente con YPF en octubre?")' type="text"/>
-<button class="absolute right-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded shadow-xs transition-colors" type="button">
-              Consultar ➔
-            </button>
-</div>
-</div>
-</div>
-<!-- Quick Prompt Chips -->
-<div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800/80 text-[11px]">
-<span class="text-slate-400 font-medium text-[10px] uppercase tracking-wider">Atajos rápidos:</span>
-<button class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 transition-colors">
-          ¿Cuánto vence esta semana?
-        </button>
-<button class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 transition-colors">
-          Facturas de combustible pendientes
-        </button>
-<button class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 transition-colors">
-          Comprobantes con retención IIBB
-        </button>
-<button class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 transition-colors">
-          Exportar reporte para tesorería
-        </button>
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Preguntá al agente financiero (ej: ¿Cuál es el saldo pendiente con YPF en octubre?)" type="text"/>
+<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
 </div>
 </section>
 <!-- END: SolAiAssistantModule -->
@@ -717,5 +702,6 @@
 </div>
 </footer>
 <!-- END: MainFooter -->
+<script src="/stitch/redesign/finance-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

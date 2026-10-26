@@ -711,53 +711,30 @@
 
     <!-- ASISTENTE INTELIGENTE EMBEBIDO («¿QUÉ NECESITÁS SABER DE DESTINOS?») -->
     <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-            </svg>
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">smart_toy</span>
           </div>
-          <div>
+          <div class="flex items-center gap-2 flex-wrap">
             <h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Destinos?</h2>
-            <p id="sol-des-chat" class="text-xs text-slate-500">Consulto destinos reales (confirmación / validación de entrega). Respuestas generadas con datos reales de Destinos.</p>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
           </div>
         </div>
-        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          Destinos en vivo
-        </span>
+        <div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Destinos</span></div>
       </div>
-
-      <!-- Sugerencias clickeables fidedignas -->
-      <div class="flex flex-wrap items-center gap-2 pt-1">
-        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">SUGERENCIAS:</span>
-        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
-          ¿cuántos destinos hay?
-        </button>
-        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
-          ¿cuántos están pendientes?
-        </button>
-        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
-          mostrame los últimos
-        </button>
-        <button class="px-3 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 rounded-full text-xs font-medium text-slate-700 transition-colors">
-          resumen por estado
-        </button>
+      <p id="sol-des-chat" class="text-sm text-slate-600 leading-relaxed">Consulto destinos reales (confirmación / validación de entrega).</p>
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos destinos hay?</button>
+        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos están pendientes?</button>
+        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">mostrame los últimos</button>
+        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">resumen por estado</button>
       </div>
-
-      <!-- Input de Consulta en lenguaje natural -->
-      <div class="relative">
-        <input 
-          type="text" 
-          id="sol-des-pregunta"
-          placeholder="Preguntá algo sobre Destinos... (ej: '¿Cuál es el estado de validación del viaje VJ-20261014-001?')" 
-          class="w-full pl-4 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all shadow-xs"
-        >
-        <button class="absolute right-2 top-2 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all flex items-center gap-1.5">
-          <span>Enviar</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </button>
+      <div class="relative flex items-center">
+        <span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+        <input type="text" id="sol-des-pregunta" placeholder="Preguntá algo sobre Destinos... (ej: '¿Cuál es el estado de validación del viaje VJ-20261014-001?')" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300">
+        <button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
       </div>
 
       <!-- Guía y Reglas de Consulta fidedignas -->

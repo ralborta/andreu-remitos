@@ -527,7 +527,7 @@
     var textoBtn = t.closest("button");
     var texto = textoBtn ? labelOf(textoBtn) : "";
     var chipBtn = t.closest("button");
-    var chatChip = chipBtn && $("sol-ren-chat") && chipBtn.closest(".bg-white") === $("sol-ren-chat").closest(".bg-white") && String(chipBtn.className).indexOf("rounded-full") >= 0;
+    var chatChip = chipBtn && $("sol-ren-chat") && chipBtn.closest(".bg-white") === $("sol-ren-chat").closest(".bg-white") && (String(chipBtn.className).indexOf("sol-chat-chip") >= 0 || String(chipBtn.className).indexOf("rounded-full") >= 0);
     var consultar = $("sol-ren-pregunta") && textoBtn && textoBtn.parentElement === $("sol-ren-pregunta").parentElement && textoBtn !== $("sol-ren-pregunta");
     var chipBox = t.closest(".inline-flex");
     var fecha = chipBox && chipBox.querySelector("#sol-ren-fecha");

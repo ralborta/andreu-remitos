@@ -413,8 +413,12 @@
       return;
     }
     var chip = btn.closest('[data-purpose="conversational-assistant"] button');
-    if (chip && label && label !== "enviar") {
-      var input = chip.parentElement && chip.parentElement.parentElement.querySelector("input");
+    if (chip && (label === "enviar" || label.indexOf("consultar") === 0)) {
+      var caja = document.querySelector('[data-purpose="conversational-assistant"] input');
+      if (caja) { preguntar(caja.value); caja.value = ""; }
+      return;
+    }
+    if (chip && label && chip.className.indexOf("sol-chat-chip") >= 0) {
       preguntar(btn.textContent);
       return;
     }

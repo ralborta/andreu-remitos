@@ -457,24 +457,30 @@
 <!-- ========================================================================= -->
 <!-- INTELLIGENT ASSISTANT (Natural Language NLP Query Bar) -->
 <!-- ========================================================================= -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
-<div class="flex items-center gap-2 text-on-surface-variant shrink-0">
-<div class="w-7 h-7 rounded-lg bg-tertiary flex items-center justify-center text-on-tertiary">
-<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4" data-sol-chat>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<span class="font-label-md text-label-md font-semibold text-on-surface whitespace-nowrap">Asistente Financiero SOL:</span>
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Cobros y Conciliación?</h2>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
-<div class="relative flex-1">
-<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-24 py-1.5 text-body-sm focus:bg-surface-container-lowest focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none transition-all" placeholder="¿Qué necesitás saber de Cobros y Conciliación? Consultá en lenguaje natural..." type="text"/>
-<button class="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-tertiary text-on-tertiary text-label-caps rounded-md hover:bg-inverse-surface transition-colors">
-          CONSULTAR
-        </button>
 </div>
-<div class="hidden 2xl:flex items-center gap-1.5 overflow-x-auto text-label-caps">
-<span class="text-on-surface-variant font-semibold">Sugerencias:</span>
-<button class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant transition-colors">¿Cuánto cobró MP hoy?</button>
-<button class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant transition-colors">Diferencias de retenciones</button>
-<button class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant transition-colors">Pendientes &gt; $1.000.000</button>
+<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Finanzas</span></div>
+</div>
+<p data-sol-chat-out class="text-sm text-slate-600 leading-relaxed">Consultá cobros y diferencias. Este módulo todavía no tiene un agente que responda con montos reales.</p>
+<div class="flex flex-wrap items-center gap-2 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuánto cobró MP hoy?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Diferencias de retenciones</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Pendientes mayores a $1.000.000</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Consultá cobros, diferencias o pendientes en lenguaje natural..." type="text"/>
+<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
 </div>
 </div>
 <!-- ========================================================================= -->
@@ -1036,5 +1042,6 @@
 </div>
 </div>
 </footer>
+<script src="/stitch/redesign/finance-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

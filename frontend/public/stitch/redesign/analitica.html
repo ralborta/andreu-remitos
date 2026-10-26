@@ -733,60 +733,32 @@
 <!-- END: Row 2 SLA & Alertas -->
 <!-- BEGIN: AI Agent Conversation Module ("¿Qué necesitás consultar de Analítica?") -->
 <section class="bg-white rounded-xl border border-slate-200/80 p-6 shadow-xs mt-6">
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-cyan-400 flex items-center justify-center shadow-xs">
-<span class="material-symbols-outlined text-[24px]">analytics</span>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<div>
-<div class="flex items-center gap-2">
-<h2 class="font-headline-sm text-headline-sm font-bold text-slate-900">
-              ¿Qué necesitás saber de Analítica de Performance?
-            </h2>
-<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/50">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> En línea
-            </span>
-</div>
-<p id="sol-an-chat" class="font-body-sm text-body-sm text-slate-400 mt-0.5">Motor SOL Analytics Core v4 · Consulta libre sobre métricas, viajes y choferes</p>
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Analítica de Performance?</h2>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
 </div>
-<div class="text-xs text-slate-400 font-mono">
-        Latencia de consulta: <span class="text-slate-700 font-bold">120ms</span>
+<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Analytics Core v4</span></div>
 </div>
+<p id="sol-an-chat" class="text-sm text-slate-600 leading-relaxed mt-3">Consulta libre sobre métricas, viajes y choferes.</p>
+<div class="flex flex-wrap items-center gap-2 mt-4 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuál fue la zona con menor SLA esta semana?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántas alertas críticas hubo hoy?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">mostrame los 5 clientes con más viajes</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">analizá la tendencia de incidencias de carga</button>
 </div>
-<!-- Suggested Question Chips -->
-<div class="mt-4">
-<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Consultas recomendadas para hoy:</span>
-<div class="flex flex-wrap gap-2 text-xs">
-<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
-<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
-          ¿cuál fue la zona con menor SLA esta semana?
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
-<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
-          ¿cuántas alertas críticas hubo hoy?
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
-<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
-          mostrame los 5 clientes con más viajes
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 transition-colors flex items-center gap-1.5">
-<span class="material-symbols-outlined text-slate-400 text-[14px]">search</span>
-          analizá la tendencia de incidencias de carga
-        </button>
-</div>
-</div>
-<!-- Natural Language Search Bar -->
-<div class="mt-4 flex gap-2">
-<div class="relative flex-1">
-<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
-</div>
-<input id="sol-an-pregunta" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/90 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-2xs" placeholder="Escribí tu consulta analítica sobre flota, rutas, tiempos o costos..." type="text"/>
-</div>
-<button id="sol-an-consultar" type="button" class="px-4 py-2.5 rounded-lg bg-[#0e1738] hover:bg-[#14214d] text-white font-label-lg text-label-lg flex items-center gap-1.5 shadow-sm transition-colors">
+<div class="relative flex items-center mt-4">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input id="sol-an-pregunta" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Escribí tu consulta analítica sobre flota, rutas, tiempos o costos..." type="text"/>
+<button id="sol-an-consultar" type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5">
 <span>Consultar</span>
-<span class="material-symbols-outlined text-[16px] text-cyan-400">send</span>
+<span class="material-symbols-outlined text-sm">send</span>
 </button>
 </div>
 <!-- 3 Guide Cards below Chat -->

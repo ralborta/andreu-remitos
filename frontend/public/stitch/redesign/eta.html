@@ -838,45 +838,33 @@
 </div>
 <!-- 5. CONVERSATIONAL ASSISTANT: "¿Qué necesitás saber de ETA y Entregas?" -->
 <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm space-y-4">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2.5">
-<div class="w-8 h-8 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
-<span class="material-symbols-outlined text-[20px]" data-icon="smart_toy">smart_toy</span>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<div>
-<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">¿Qué necesitás saber de ETA y Entregas?</h3>
-<span id="sol-eta-chat" class="text-xs text-outline">Consultas en lenguaje natural con respuesta instantánea basada en telemetría</span>
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de ETA y Entregas?</h3>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
 </div>
-<span class="inline-flex items-center gap-1 text-[11px] text-[#059669] font-medium bg-[#ECFDF5] px-2 py-0.5 rounded">
-<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
-          Asistente Operativo Conectado
-        </span>
+<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL ETA</span></div>
 </div>
-<!-- Input box with send button -->
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3.5 top-3 text-outline text-[20px]" data-icon="psychology">psychology</span>
-<input id="sol-eta-pregunta" class="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-xl pl-11 pr-24 py-2.5 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="Preguntá al agente: e.g. ¿Cuáles son los próximos viajes con riesgo de superar la ventana de tolerancia?" type="text"/>
-<button class="absolute right-2 top-1.5 bg-primary hover:bg-[#1E293B] text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all">
+<p id="sol-eta-chat" class="text-sm text-slate-600 leading-relaxed">Consultas en lenguaje natural con respuesta instantánea basada en telemetría</p>
+<div class="flex flex-wrap items-center gap-2 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos viajes tienen demora ahora?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿qué clientes ya fueron notificados?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">mostrame los retrasos mayores a 30m</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">resumen de cumplimiento de hoy</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input id="sol-eta-pregunta" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Preguntá al agente: e.g. ¿Cuáles son los próximos viajes con riesgo de superar la ventana de tolerancia?" type="text"/>
+<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5">
 <span>Consultar</span>
-<span class="material-symbols-outlined text-[15px]" data-icon="arrow_forward">arrow_forward</span>
+<span class="material-symbols-outlined text-sm">send</span>
 </button>
-</div>
-<!-- Quick pills -->
-<div class="flex items-center gap-2 overflow-x-auto py-1">
-<span class="font-label-caps text-[10px] text-outline uppercase font-bold shrink-0">Sugerencias:</span>
-<button class="bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors">
-          ¿cuántos viajes tienen demora ahora?
-        </button>
-<button class="bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors">
-          ¿qué clientes ya fueron notificados?
-        </button>
-<button class="bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors">
-          mostrame los retrasos mayores a 30m
-        </button>
-<button class="bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors">
-          resumen de cumplimiento de hoy
-        </button>
 </div>
 <!-- Explanatory 3 Columns -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-outline-variant/20 text-xs">

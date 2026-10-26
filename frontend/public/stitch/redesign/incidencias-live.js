@@ -550,7 +550,7 @@
     var texto = textoBtn ? labelOf(textoBtn) : "";
     var siguiente = texto.indexOf("siguiente") >= 0;
     var chipBtn = t.closest("button");
-    var chatChip = chipBtn && $("sol-inc-chat") && chipBtn.closest("section") === $("sol-inc-chat").closest("section") && String(chipBtn.className).indexOf("rounded-full") >= 0;
+    var chatChip = chipBtn && $("sol-inc-chat") && chipBtn.closest("section") === $("sol-inc-chat").closest("section") && (String(chipBtn.className).indexOf("sol-chat-chip") >= 0 || String(chipBtn.className).indexOf("rounded-full") >= 0);
     var consultar = t.closest("button") && $("sol-inc-pregunta") && t.closest("button").parentElement === $("sol-inc-pregunta").parentElement;
     var handled = pin || pill || choferBtn || act || t.closest("#sol-inc-chofer") || t.closest("#sol-inc-tipo") || t.closest("#sol-inc-enviar") || tab || pageBtn || siguiente || chatChip || consultar;
     if (texto.indexOf("sincronizar") >= 0 || texto.indexOf("reportar") >= 0 || texto.indexOf("modificar regla") >= 0) handled = textoBtn;

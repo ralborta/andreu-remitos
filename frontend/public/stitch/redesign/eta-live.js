@@ -388,7 +388,7 @@
     var textoBtn = t.closest("button");
     var texto = textoBtn ? labelOf(textoBtn) : "";
     var chipBtn = t.closest("button");
-    var chatChip = chipBtn && $("sol-eta-chat") && chipBtn.closest(".rounded-xl") === $("sol-eta-chat").closest(".rounded-xl") && String(chipBtn.className).indexOf("rounded-full") >= 0;
+    var chatChip = chipBtn && $("sol-eta-chat") && chipBtn.closest(".rounded-xl") === $("sol-eta-chat").closest(".rounded-xl") && (String(chipBtn.className).indexOf("sol-chat-chip") >= 0 || String(chipBtn.className).indexOf("rounded-full") >= 0);
     var consultar = $("sol-eta-pregunta") && textoBtn && textoBtn.parentElement === $("sol-eta-pregunta").parentElement;
     var handled = pill || act || row || pageBtn || chatChip || consultar || t.closest("#sol-eta-enviar") || t.closest("#sol-eta-reprogramar");
     if (texto.indexOf("sincronizar") >= 0 || texto.indexOf("disparar aviso") >= 0 || texto === "anterior" || texto.indexOf("siguiente") >= 0) handled = textoBtn;

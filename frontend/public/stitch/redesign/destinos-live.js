@@ -456,7 +456,7 @@
     }
     if (label === "sync" || label.indexOf("sincronizar") >= 0) { e.preventDefault(); load(); return; }
     if (!label && btn.parentElement && btn.parentElement.contains($("sol-des-estado"))) { load(); return; }
-    if (label === "enviar" && btn.parentElement && btn.parentElement.contains(pregunta)) {
+    if ((label === "enviar" || label.indexOf("consultar") === 0) && btn.parentElement && btn.parentElement.contains(pregunta)) {
       e.preventDefault();
       e.stopPropagation();
       preguntar(pregunta.value);

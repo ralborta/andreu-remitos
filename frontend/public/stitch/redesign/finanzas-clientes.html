@@ -735,45 +735,31 @@
 </div>
 </div>
 <!-- Right Column: Operational Finance Assistant -->
-<div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-5 shadow-xs text-white flex flex-col justify-between" data-purpose="finance-ai-assistant">
-<div>
-<div class="flex items-center justify-between pb-3 border-b border-slate-700/60">
-<div class="flex items-center gap-2.5">
-<div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center text-sm">
-<i class="fa-solid fa-sparkles"></i>
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4" data-purpose="finance-ai-assistant" data-sol-chat>
+<div class="flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<div>
-<h3 class="font-bold text-white text-sm">Asistente de Finanzas y Consultas Comerciales</h3>
-<span class="text-[11px] text-slate-300">Inteligencia contextual sobre saldos, vencimientos y viajes</span>
-</div>
-</div>
-<span class="text-[10px] bg-indigo-600/60 border border-indigo-400/40 px-2 py-0.5 rounded font-mono">IA ACTIVA</span>
-</div>
-<!-- Prompt bar -->
-<div class="mt-4 relative">
-<input aria-label="Preguntar al asistente financiero" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-3 pr-10 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition" placeholder="¿Qué necesitás saber sobre la cartera de clientes o cobros?" type="text"/>
-<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-indigo-400 hover:text-indigo-200 transition">
-<i class="fa-solid fa-arrow-right text-xs"></i>
-</button>
-</div>
-<!-- Quick Suggestion Badges -->
-<div class="mt-3 flex flex-wrap gap-1.5 text-[11px]">
-<span class="text-slate-400 self-center text-[10px]">Consultas rápidas:</span>
-<button class="px-2.5 py-1 rounded bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition">
-              ¿Cuáles clientes tienen saldo vencido?
-            </button>
-<button class="px-2.5 py-1 rounded bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition">
-              Ver facturas de Arcor
-            </button>
-<button class="px-2.5 py-1 rounded bg-slate-800/70 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition">
-              Proyección cobranza semana en curso
-            </button>
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Clientes?</h3>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
 </div>
-<div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-<span>Último batch procesado hoy a las 09:00 hs</span>
-<span class="text-indigo-300 font-medium">SLA AFIP 100% OK</span>
 </div>
+<p data-sol-chat-out class="text-sm text-slate-600 leading-relaxed">Consultá la cartera. Este módulo todavía no tiene un agente que responda con saldos reales.</p>
+<div class="flex flex-wrap items-center gap-2 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuáles clientes tienen saldo vencido?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Ver facturas de Arcor</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Proyección cobranza semana en curso</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input aria-label="Preguntar al asistente financiero" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="¿Qué necesitás saber sobre la cartera de clientes o cobros?" type="text"/>
+<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
+</div>
+<div class="text-xs text-slate-400">Motor: <span class="font-mono font-bold text-slate-700">SOL Finanzas</span></div>
 </div>
 </section>
 <!-- END: ProjectionsAndCopilotSection -->
@@ -797,5 +783,6 @@
 </div>
 </footer>
 <!-- END: MainFooter -->
+<script src="/stitch/redesign/finance-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

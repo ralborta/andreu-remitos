@@ -431,9 +431,9 @@
     var texto = textoBtn ? labelOf(textoBtn) : "";
     var chatP = $("sol-rec-chat");
     var chatCard = chatP && chatP.closest(".rounded-xl");
-    var chatChip = chatCard && textoBtn && textoBtn.closest(".rounded-xl") === chatCard && String(textoBtn.className).indexOf("rounded-full") >= 0 ? textoBtn : null;
+    var chatChip = chatCard && textoBtn && textoBtn.closest(".rounded-xl") === chatCard && (String(textoBtn.className).indexOf("sol-chat-chip") >= 0 || String(textoBtn.className).indexOf("rounded-full") >= 0) ? textoBtn : null;
     var input = $("sol-rec-pregunta");
-    var consultar = input && textoBtn && input.parentElement && textoBtn.parentElement === input.parentElement.parentElement;
+    var consultar = input && textoBtn && input.parentElement && (textoBtn.parentElement === input.parentElement || textoBtn.parentElement === input.parentElement.parentElement);
     var nav = t.closest("#sol-rec-paginacion");
     var exportBtn = textoBtn && textoBtn.getAttribute("title") === "Exportar reporte";
     var handled = pill || act || row || chatChip || consultar || exportBtn || t.closest("#sol-rec-escalar") || t.closest("#sol-rec-resolver") || t.closest("#sol-rec-chofer") || t.closest("#sol-rec-historial");

@@ -762,40 +762,33 @@
 </div>
 <!-- 6. ASISTENTE INTELIGENTE EMBEBIDO ('¿Qué necesitás saber de Reclamos?') -->
 <div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm space-y-5">
-<div class="space-y-1">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-secondary text-2xl">auto_awesome</span>
-<h2 class="font-headline-md text-headline-md text-on-surface">¿Qué necesitás saber de Reclamos?</h2>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
 </div>
-<p id="sol-rec-chat" class="font-body-md text-body-md text-on-surface-variant">
-        Consultá reclamos reales, causas, SLA y estados por lenguaje natural persistido.
-      </p>
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Reclamos?</h2>
+<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
-<!-- Suggested Query Chips -->
-<div class="flex flex-wrap items-center gap-2">
-<span class="font-label-caps text-label-caps text-on-surface-variant uppercase mr-1">Sugerencias:</span>
-<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
-        ¿cuántos reclamos abiertos hay?
-      </button>
-<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
-        ¿cuáles están escalados?
-      </button>
-<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
-        mostrame los últimos de Quilmes
-      </button>
-<button class="px-3 py-1 bg-surface-container rounded-full font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" type="button">
-        ¿cuál es el tiempo medio de resolución?
-      </button>
 </div>
-<!-- Natural Query Input -->
-<div class="flex items-center gap-2">
-<div class="relative flex-1">
-<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-lg">chat_bubble</span>
-<input id="sol-rec-pregunta" class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-0 rounded-lg font-body-md text-body-md text-on-surface focus:ring-1 focus:ring-secondary" placeholder="Escribí tu consulta sobre clientes, choferes o motivos..." type="text"/>
+<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Reclamos</span></div>
 </div>
-<button class="px-5 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-on-surface transition-colors shadow-sm whitespace-nowrap" type="button">
-        Consultar
-      </button>
+<p id="sol-rec-chat" class="text-sm text-slate-600 leading-relaxed">Consultá reclamos reales, causas, SLA y estados.</p>
+<div class="flex flex-wrap items-center gap-2 text-xs">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos reclamos abiertos hay?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuáles están escalados?</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">mostrame los últimos de Quilmes</button>
+<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuál es el tiempo medio de resolución?</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
+<input id="sol-rec-pregunta" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Escribí tu consulta sobre clientes, choferes o motivos..." type="text"/>
+<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5">
+<span>Consultar</span>
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
 </div>
 <!-- 3 Tarjetas resumen de ayuda -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg pt-2">
