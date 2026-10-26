@@ -3,6 +3,10 @@
   var conv = "";
   var busy = false;
   var mensajes = [];
+  var recognition = null;
+  var escuchando = false;
+  var dictadoBase = "";
+  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 
   function $(id) { return document.getElementById(id); }
   function fold(s) {
@@ -139,9 +143,103 @@
     input.style.height = Math.min(input.scrollHeight, 112) + "px";
   }
 
+  function setMicUi(on) {
+    var mic = $("sol-torre-mic");
+    if (!mic) return;
+    mic.setAttribute("aria-pressed", on ? "true" : "false");
+    mic.title = on ? "Detener dictado" : "Dictar pregunta";
+    mic.setAttribute("aria-label", on ? "Detener dictado" : "Dictar pregunta");
+    var icon = mic.querySelector(".material-symbols-outlined");
+    if (icon) icon.textContent = on ? "mic_off" : "mic";
+  }
+
+  function escribirDictado(texto, final) {
+    var input = $("sol-torre-pregunta");
+    if (!input) return;
+    var base = dictadoBase ? dictadoBase.replace(/\s+$/, "") + " " : "";
+    input.value = (base + String(texto || "").trim()).replace(/\s+/g, " ").trim();
+    autoSize();
+    syncEnviar();
+    if (final) dictadoBase = input.value;
+  }
+
+  function stopDictado() {
+    escuchando = false;
+    setMicUi(false);
+    if (recognition) {
+      try { recognition.stop(); } catch (_) {}
+    }
+  }
+
+  function startDictado() {
+    if (!SpeechRec) {
+      aviso("Este navegador no soporta dictado. Probá en Chrome o Edge.", true);
+      return;
+    }
+    if (busy) return;
+    if (!recognition) {
+      recognition = new SpeechRec();
+      recognition.lang = "es-AR";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+      recognition.onstart = function () {
+        escuchando = true;
+        setMicUi(true);
+        aviso("Escuchando… hablá tu pregunta.");
+      };
+      recognition.onresult = function (ev) {
+        var texto = "";
+        var final = false;
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          texto += ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) final = true;
+        }
+        escribirDictado(texto, final);
+      };
+      recognition.onerror = function (ev) {
+        stopDictado();
+        var code = ev && ev.error;
+        if (code === "not-allowed" || code === "service-not-allowed") {
+          aviso("Necesito permiso del micrófono para dictar.", true);
+        } else if (code === "no-speech") {
+          aviso("No escuché nada. Tocá el micrófono e intentá de nuevo.");
+        } else if (code === "aborted") {
+          aviso("Las respuestas se generan con datos reales de tus módulos activos.");
+        } else {
+          aviso("No pude usar el micrófono. Probá de nuevo.", true);
+        }
+      };
+      recognition.onend = function () {
+        escuchando = false;
+        setMicUi(false);
+        var input = $("sol-torre-pregunta");
+        if (input && String(input.value || "").trim()) {
+          aviso("Dictado listo. Revisá el texto y enviá.");
+        } else {
+          aviso("Las respuestas se generan con datos reales de tus módulos activos.");
+        }
+      };
+    }
+    var input = $("sol-torre-pregunta");
+    dictadoBase = input ? String(input.value || "").trim() : "";
+    try {
+      recognition.start();
+    } catch (_) {
+      stopDictado();
+      aviso("No pude iniciar el dictado. Tocá el micrófono de nuevo.", true);
+    }
+  }
+
+  function toggleDictado() {
+    if (escuchando) stopDictado();
+    else startDictado();
+  }
+
   function preguntar(text) {
     var q = String(text || "").trim();
     if (!q || busy) return;
+    if (escuchando) stopDictado();
     busy = true;
     syncEnviar();
     aviso("Las respuestas se generan con datos reales de tus módulos activos.");
@@ -183,9 +281,11 @@
   }
 
   function reset() {
+    if (escuchando) stopDictado();
     conv = "";
     busy = false;
     mensajes = [];
+    dictadoBase = "";
     var pregunta = $("sol-torre-pregunta");
     if (pregunta) {
       pregunta.value = "";
@@ -249,10 +349,16 @@
       else scrollBottom();
       return;
     }
-    if (btn.id === "sol-torre-adjuntar" || btn.id === "sol-torre-mic") {
+    if (btn.id === "sol-torre-mic") {
       e.preventDefault();
       e.stopPropagation();
-      aviso(btn.id === "sol-torre-mic" ? "El dictado todavía no está disponible en este chat." : "Los adjuntos todavía no están disponibles en este chat.");
+      toggleDictado();
+      return;
+    }
+    if (btn.id === "sol-torre-adjuntar") {
+      e.preventDefault();
+      e.stopPropagation();
+      aviso("Los adjuntos todavía no están disponibles en este chat.");
       return;
     }
   }, true);
