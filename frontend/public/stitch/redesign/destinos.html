@@ -709,70 +709,76 @@
       </div>
     </div>
 
-    <!-- ASISTENTE INTELIGENTE EMBEBIDO («¿QUÉ NECESITÁS SABER DE DESTINOS?») -->
-    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-xl">smart_toy</span>
+    <!-- Chat Destinos tipo ChatGPT: historial izq + hilo der (altura fija, no alarga la página) -->
+    <div id="sol-des-panel" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row h-[min(520px,62vh)] min-h-[420px]">
+      <style>
+        #sol-des-panel .sol-des-hist-item[aria-current="true"]{background:#EEF2FF;border-color:#C7D2FE}
+        #sol-des-panel #sol-des-mic[aria-pressed="true"]{background:#FEE2E2;color:#DC2626}
+        #sol-des-panel .sol-des-composer{border:1px solid #E5E7EB;border-radius:24px;box-shadow:0 6px 18px rgba(15,23,42,.07)}
+        #sol-des-panel .sol-des-send:disabled{opacity:.45;cursor:not-allowed}
+        #sol-des-panel .sol-des-user{background:#F3F4F6;border-radius:16px;padding:10px 14px;font-size:13px;line-height:1.45;color:#111827}
+      </style>
+      <aside class="w-full md:w-[240px] lg:w-[260px] shrink-0 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50/70 flex flex-col min-h-0">
+        <div class="px-3 py-3 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
+          <div class="min-w-0">
+            <p class="text-xs font-extrabold text-slate-800 tracking-tight truncate">Historial</p>
+            <p class="text-[10px] text-slate-400">Chats reales de Destinos</p>
           </div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Destinos?</h2>
-            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
+          <button type="button" id="sol-des-nueva" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#0e1738] text-white text-[11px] font-semibold hover:bg-[#14214d]" title="Nueva conversación">
+            <span class="material-symbols-outlined text-[14px]">add</span> Nueva
+          </button>
+        </div>
+        <div id="sol-des-historial" class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1"></div>
+        <div class="shrink-0 border-t border-slate-200 p-3 text-[11px] text-slate-500 leading-relaxed">
+          <p class="font-semibold text-slate-700 mb-1">Solo consulta</p>
+          No aprueba, rechaza ni envía WhatsApp. Eso se hace arriba en el panel.
+        </div>
+      </aside>
+      <section class="min-w-0 flex-1 flex flex-col bg-white">
+        <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between gap-2 shrink-0">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="text-sm font-extrabold text-slate-900">SOL AGENT</p>
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Destinos</span>
+              </div>
+              <p id="sol-des-chat" class="text-[11px] text-slate-500 truncate">Consulto destinos reales (confirmación / validación).</p>
+            </div>
           </div>
+          <span class="text-[10px] text-slate-400 shrink-0 hidden sm:inline">Motor <span class="font-mono font-bold text-slate-600">SOL Destinos</span></span>
         </div>
-        <div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Destinos</span></div>
-      </div>
-      <p id="sol-des-chat" class="text-sm text-slate-600 leading-relaxed">Consulto destinos reales (confirmación / validación de entrega).</p>
-      <div class="flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
-        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos destinos hay?</button>
-        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos están pendientes?</button>
-        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">mostrame los últimos</button>
-        <button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">resumen por estado</button>
-      </div>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
-        <input type="text" id="sol-des-pregunta" placeholder="Preguntá algo sobre Destinos... (ej: '¿Cuál es el estado de validación del viaje VJ-20261014-001?')" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300">
-        <button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
-      </div>
-
-      <!-- Guía y Reglas de Consulta fidedignas -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-        <div class="p-3 bg-slate-50/70 border border-slate-200/80 rounded-lg text-xs">
-          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-            Conteos
-          </h4>
-          <ul class="text-slate-600 space-y-0.5">
-            <li>• Totales de destinos procesados</li>
-            <li>• Por estado (confirmado / en espera)</li>
-            <li>• Pendientes de confirmación WhatsApp</li>
-          </ul>
+        <div id="sol-des-thread" class="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+          <div id="sol-des-empty" class="h-full min-h-[180px] flex flex-col items-center justify-center text-center px-2">
+            <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
+              <span class="material-symbols-outlined text-[22px]">pin_drop</span>
+            </div>
+            <h2 class="text-base font-semibold text-slate-900">¿Qué necesitás saber de Destinos?</h2>
+            <p class="mt-1 max-w-md text-xs text-slate-500">Conteos, pendientes, últimos validados o un resumen por estado.</p>
+            <div class="mt-4 flex flex-wrap justify-center gap-2">
+              <button type="button" data-q="¿cuántos destinos hay?" class="sol-chat-chip px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">¿cuántos destinos hay?</button>
+              <button type="button" data-q="¿cuántos están pendientes?" class="sol-chat-chip px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">¿cuántos están pendientes?</button>
+              <button type="button" data-q="mostrame los últimos" class="sol-chat-chip px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">mostrame los últimos</button>
+              <button type="button" data-q="resumen por estado" class="sol-chat-chip px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">resumen por estado</button>
+            </div>
+          </div>
+          <div id="sol-des-msgs" class="hidden mx-auto w-full max-w-[680px] flex flex-col gap-5"></div>
         </div>
-
-        <div class="p-3 bg-slate-50/70 border border-slate-200/80 rounded-lg text-xs">
-          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Listados
-          </h4>
-          <ul class="text-slate-600 space-y-0.5">
-            <li>• Últimos destinos validados</li>
-            <li>• Buscar por cliente o dirección</li>
-            <li>• Entregas geocodificadas con corrección</li>
-          </ul>
+        <div class="shrink-0 px-3 sm:px-4 pb-3 pt-1">
+          <form id="sol-des-form" class="sol-des-composer bg-white px-2.5 py-2 flex items-end gap-1.5">
+            <textarea id="sol-des-pregunta" rows="1" class="min-w-0 flex-1 resize-none border-0 bg-transparent text-[13px] text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0 py-2 max-h-24" placeholder="Preguntale a SOL sobre destinos..."></textarea>
+            <button type="button" id="sol-des-mic" class="w-9 h-9 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 flex items-center justify-center shrink-0" title="Dictar pregunta" aria-label="Dictar pregunta" aria-pressed="false">
+              <span class="material-symbols-outlined text-[20px]">mic</span>
+            </button>
+            <button type="submit" id="sol-des-enviar-chat" class="sol-des-send w-9 h-9 rounded-full bg-[#0e1738] text-white flex items-center justify-center shrink-0 hover:bg-[#14214d]" aria-label="Enviar" disabled>
+              <span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+            </button>
+          </form>
+          <p id="sol-des-aviso" class="mt-1.5 text-center text-[10px] text-slate-400">Datos reales del módulo Destinos.</p>
         </div>
-
-        <div class="p-3 bg-slate-50/70 border border-slate-200/80 rounded-lg text-xs">
-          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            Regla de Operación
-          </h4>
-          <p class="text-slate-600 leading-relaxed">
-            <strong class="text-slate-700">Solo consulta:</strong> En esta fase el chat no aprueba, rechaza ni envía WhatsApp. Esas tareas se ejecutan desde el panel interactivo superior.
-          </p>
-        </div>
-      </div>
+      </section>
     </div>
 
     <!-- ARQUITECTURA Y FUNCIONAMIENTO DEL AGENTE (DOCUMENTACIÓN E INGENIERÍA) -->

@@ -9,6 +9,13 @@
   var conv = null;
   var primed = false;
   var busy = false;
+  var chatBusy = false;
+  var mensajes = [];
+  var historial = [];
+  var recognition = null;
+  var escuchando = false;
+  var dictadoBase = "";
+  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   var sugTimer = null;
 
   function $(id) { return document.getElementById(id); }
@@ -103,6 +110,197 @@
   }
   function status(msg) {
     setText("sol-des-status", msg);
+  }
+  function avisoChat(texto, error) {
+    var el = $("sol-des-aviso");
+    if (!el) return;
+    el.textContent = texto;
+    el.className = "mt-1.5 text-center text-[10px] " + (error ? "text-rose-500" : "text-slate-400");
+  }
+  function horaChat(iso) {
+    try {
+      return new Date(iso || Date.now()).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false }) + " hs";
+    } catch (_) {
+      return "";
+    }
+  }
+  function fmtChat(s) {
+    return esc(s).replace(/\n/g, "<br>");
+  }
+  function syncChatEnviar() {
+    var btn = $("sol-des-enviar-chat");
+    var input = $("sol-des-pregunta");
+    if (!btn) return;
+    btn.disabled = chatBusy || !String(input && input.value || "").trim();
+  }
+  function autoSizeChat() {
+    var input = $("sol-des-pregunta");
+    if (!input) return;
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 96) + "px";
+  }
+  function scrollChat() {
+    var thread = $("sol-des-thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+  function setMicUi(on) {
+    var mic = $("sol-des-mic");
+    if (!mic) return;
+    mic.setAttribute("aria-pressed", on ? "true" : "false");
+    mic.title = on ? "Detener dictado" : "Dictar pregunta";
+    var icon = mic.querySelector(".material-symbols-outlined");
+    if (icon) icon.textContent = on ? "mic_off" : "mic";
+  }
+  function stopDictado() {
+    escuchando = false;
+    setMicUi(false);
+    if (recognition) {
+      try { recognition.stop(); } catch (_) {}
+    }
+  }
+  function startDictado() {
+    if (!SpeechRec) {
+      avisoChat("Este navegador no soporta dictado. Probá en Chrome o Edge.", true);
+      return;
+    }
+    if (chatBusy) return;
+    if (!recognition) {
+      recognition = new SpeechRec();
+      recognition.lang = "es-AR";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+      recognition.onstart = function () {
+        escuchando = true;
+        setMicUi(true);
+        avisoChat("Escuchando… hablá tu pregunta.");
+      };
+      recognition.onresult = function (ev) {
+        var texto = "";
+        var final = false;
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          texto += ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) final = true;
+        }
+        var input = $("sol-des-pregunta");
+        if (!input) return;
+        var base = dictadoBase ? dictadoBase.replace(/\s+$/, "") + " " : "";
+        input.value = (base + String(texto || "").trim()).replace(/\s+/g, " ").trim();
+        autoSizeChat();
+        syncChatEnviar();
+        if (final) dictadoBase = input.value;
+      };
+      recognition.onerror = function (ev) {
+        stopDictado();
+        var code = ev && ev.error;
+        if (code === "not-allowed" || code === "service-not-allowed") avisoChat("Necesito permiso del micrófono para dictar.", true);
+        else if (code === "no-speech") avisoChat("No escuché nada. Tocá el micrófono e intentá de nuevo.");
+        else if (code !== "aborted") avisoChat("No pude usar el micrófono. Probá de nuevo.", true);
+      };
+      recognition.onend = function () {
+        escuchando = false;
+        setMicUi(false);
+        var input = $("sol-des-pregunta");
+        avisoChat(input && String(input.value || "").trim() ? "Dictado listo. Revisá el texto y enviá." : "Datos reales del módulo Destinos.");
+      };
+    }
+    var input = $("sol-des-pregunta");
+    dictadoBase = input ? String(input.value || "").trim() : "";
+    try { recognition.start(); } catch (_) {
+      stopDictado();
+      avisoChat("No pude iniciar el dictado. Tocá el micrófono de nuevo.", true);
+    }
+  }
+  function pintarHistorial() {
+    var box = $("sol-des-historial");
+    if (!box) return;
+    if (!historial.length) {
+      box.innerHTML = '<p class="px-2 py-3 text-[11px] text-slate-400 text-center">Todavía no hay chats de Destinos. Empezá uno nuevo.</p>';
+      return;
+    }
+    box.innerHTML = historial.map(function (h) {
+      var active = conv && h.id === conv;
+      return (
+        '<button type="button" data-conv="' + esc(h.id) + '" aria-current="' + (active ? "true" : "false") + '" class="sol-des-hist-item w-full text-left px-2.5 py-2 rounded-lg border border-transparent hover:bg-white hover:border-slate-200 transition-colors">' +
+          '<p class="text-[12px] font-semibold text-slate-800 line-clamp-2 leading-snug">' + esc(h.title || "Conversación") + "</p>" +
+          '<p class="mt-0.5 text-[10px] text-slate-400 truncate">' + esc(horaChat(h.updatedAt)) + (h.messageCount ? " · " + h.messageCount + " msgs" : "") + "</p>" +
+        "</button>"
+      );
+    }).join("");
+  }
+  function pintarMsgs() {
+    var empty = $("sol-des-empty");
+    var list = $("sol-des-msgs");
+    if (!list) return;
+    if (!mensajes.length) {
+      if (empty) empty.classList.remove("hidden");
+      list.classList.add("hidden");
+      list.innerHTML = "";
+      return;
+    }
+    if (empty) empty.classList.add("hidden");
+    list.classList.remove("hidden");
+    var html = mensajes.map(function (m) {
+      if (m.role === "user") {
+        return (
+          '<div class="flex w-full justify-end">' +
+            '<div class="max-w-[82%]"><div class="sol-des-user whitespace-pre-wrap">' + fmtChat(m.text) + "</div>" +
+            '<div class="mt-1 text-right text-[10px] text-slate-400">' + esc(horaChat(m.at)) + "</div></div></div>"
+        );
+      }
+      return (
+        '<div class="flex w-full items-start gap-2.5">' +
+          '<div class="w-7 h-7 rounded-md bg-[#0e1738] text-white flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[15px]">smart_toy</span></div>' +
+          '<div class="min-w-0 flex-1"><p class="text-[12px] font-bold text-slate-900 mb-1">SOL AGENT</p>' +
+          '<div class="text-[13px] leading-relaxed text-slate-800 whitespace-pre-wrap">' + fmtChat(m.text) + "</div>" +
+          '<p class="mt-2 text-[10px] text-slate-400">' + esc(horaChat(m.at)) + "</p></div></div>"
+      );
+    }).join("");
+    if (chatBusy) {
+      html += '<div class="flex items-center gap-2 text-[11px] text-slate-500"><span class="material-symbols-outlined text-[15px] animate-spin">progress_activity</span> Pensando…</div>';
+    }
+    list.innerHTML = html;
+    scrollChat();
+  }
+  function cargarHistorial() {
+    return api("/api/agents/chat?agentId=destinos&limit=40").then(function (res) {
+      historial = Array.isArray(res.items) ? res.items : [];
+      pintarHistorial();
+    }).catch(function () {
+      historial = [];
+      pintarHistorial();
+    });
+  }
+  function abrirConversacion(id) {
+    if (!id || chatBusy) return;
+    if (escuchando) stopDictado();
+    api("/api/agents/chat/" + encodeURIComponent(id)).then(function (res) {
+      conv = res.id || id;
+      mensajes = (res.messages || []).map(function (m) {
+        return { role: m.role === "user" ? "user" : "assistant", text: m.text || "", at: m.at };
+      });
+      chat(mensajes.length ? "Conversación abierta" : "Consulto destinos reales (confirmación / validación).");
+      pintarMsgs();
+      pintarHistorial();
+    }).catch(function (err) {
+      avisoChat(err.message || "No pude abrir esa conversación.", true);
+    });
+  }
+  function nuevaConversacion() {
+    if (escuchando) stopDictado();
+    conv = null;
+    mensajes = [];
+    dictadoBase = "";
+    var input = $("sol-des-pregunta");
+    if (input) {
+      input.value = "";
+      autoSizeChat();
+    }
+    chat("Consulto destinos reales (confirmación / validación).");
+    avisoChat("Datos reales del módulo Destinos.");
+    syncChatEnviar();
+    pintarMsgs();
+    pintarHistorial();
   }
 
   function selected() {
@@ -372,16 +570,36 @@
 
   function preguntar(text) {
     var q = String(text || "").trim();
-    if (!q) return;
-    chat("Consultando…");
+    if (!q || chatBusy) return;
+    if (escuchando) stopDictado();
+    chatBusy = true;
+    syncChatEnviar();
+    avisoChat("Datos reales del módulo Destinos.");
+    mensajes.push({ role: "user", text: q, at: new Date().toISOString() });
+    pintarMsgs();
     api("/api/agents/chat", {
       method: "POST",
       body: JSON.stringify({ agentId: "destinos", message: q, conversationId: conv || undefined }),
     }).then(function (res) {
       conv = res.conversationId || conv;
-      chat((res.message && res.message.text) || "Sin respuesta.");
+      mensajes.push({
+        role: "assistant",
+        text: (res.message && res.message.text) || "Sin respuesta.",
+        at: new Date().toISOString(),
+      });
+      chat("Conversación activa");
+      return cargarHistorial();
     }).catch(function (err) {
-      chat(err.message || "No pude consultar los destinos.");
+      var msg = err.status === 401
+        ? "Hace falta una sesión para consultar destinos."
+        : (err.message || "No pude consultar los destinos.");
+      avisoChat(msg, true);
+      mensajes.push({ role: "assistant", text: "No pude responder: " + msg, at: new Date().toISOString() });
+    }).then(function () {
+      chatBusy = false;
+      syncChatEnviar();
+      pintarMsgs();
+      pintarHistorial();
     });
   }
 
@@ -410,11 +628,35 @@
   if (buscar) buscar.addEventListener("input", function () { page = 0; if (live) pintar(); });
 
   var pregunta = $("sol-des-pregunta");
-  if (pregunta) pregunta.addEventListener("keydown", function (e) {
-    if (e.key !== "Enter") return;
+  if (pregunta) {
+    pregunta.addEventListener("input", function () {
+      autoSizeChat();
+      syncChatEnviar();
+    });
+    pregunta.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" || e.shiftKey) return;
+      e.preventDefault();
+      if (chatBusy || !String(pregunta.value || "").trim()) return;
+      var q = pregunta.value;
+      pregunta.value = "";
+      autoSizeChat();
+      syncChatEnviar();
+      preguntar(q);
+    });
+  }
+
+  var chatForm = $("sol-des-form");
+  if (chatForm) chatForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    preguntar(pregunta.value);
-    pregunta.value = "";
+    e.stopPropagation();
+    var input = $("sol-des-pregunta");
+    var q = input ? input.value : "";
+    if (input) {
+      input.value = "";
+      autoSizeChat();
+    }
+    syncChatEnviar();
+    preguntar(q);
   });
 
   document.addEventListener("click", function (e) {
@@ -426,6 +668,13 @@
       if ($("sol-des-dir")) $("sol-des-dir").value = sugBtn.getAttribute("data-desc") || "";
       var box = $("sol-des-sug");
       if (box) box.classList.add("hidden");
+      return;
+    }
+    var histBtn = e.target.closest("#sol-des-historial [data-conv]");
+    if (histBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      abrirConversacion(histBtn.getAttribute("data-conv"));
       return;
     }
     var act = e.target.closest("[data-act]");
@@ -441,10 +690,19 @@
     var btn = e.target.closest("button");
     if (!btn) return;
     if (btn.id === "sol-des-enviar") { e.preventDefault(); e.stopPropagation(); enviar(); return; }
+    if (btn.id === "sol-des-nueva") { e.preventDefault(); e.stopPropagation(); nuevaConversacion(); return; }
+    if (btn.id === "sol-des-mic") { e.preventDefault(); e.stopPropagation(); if (escuchando) stopDictado(); else startDictado(); return; }
     if (btn.id === "sol-des-modo-dir") { e.preventDefault(); setModo("direccion"); return; }
     if (btn.id === "sol-des-modo-coord") { e.preventDefault(); setModo("coordenadas"); return; }
     if (btn.id === "sol-des-prev") { e.preventDefault(); if (page > 0) { page -= 1; pintar(); } return; }
     if (btn.id === "sol-des-next") { e.preventDefault(); page += 1; pintar(); return; }
+    var chip = btn.getAttribute("data-q");
+    if (chip) {
+      e.preventDefault();
+      e.stopPropagation();
+      preguntar(chip);
+      return;
+    }
     var label = fold(btn.textContent || "");
     if (label.indexOf("geocodificar y enviar") >= 0) { e.preventDefault(); e.stopPropagation(); enviar(); return; }
     if (label.indexOf("validar nueva") >= 0) {
@@ -456,18 +714,12 @@
     }
     if (label === "sync" || label.indexOf("sincronizar") >= 0) { e.preventDefault(); load(); return; }
     if (!label && btn.parentElement && btn.parentElement.contains($("sol-des-estado"))) { load(); return; }
-    if ((label === "enviar" || label.indexOf("consultar") === 0) && btn.parentElement && btn.parentElement.contains(pregunta)) {
-      e.preventDefault();
-      e.stopPropagation();
-      preguntar(pregunta.value);
-      pregunta.value = "";
-      return;
-    }
-    if (/^(¿|mostrame|resumen)/.test(label)) {
-      e.preventDefault();
-      preguntar(btn.textContent);
-    }
   }, true);
+
+  syncChatEnviar();
+  pintarMsgs();
+  pintarHistorial();
+  cargarHistorial();
 
   var body = $("sol-des-body");
   if (body) body.addEventListener("click", function (e) {

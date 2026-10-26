@@ -17,7 +17,45 @@ const SUPPORTED = new Set([
   "commander",
 ]);
 
+function titleFromConversation(row) {
+  const msgs = Array.isArray(row?.messages) ? row.messages : [];
+  const firstUser = msgs.find((m) => m.role === "user" && m.text);
+  const last = msgs.length ? msgs[msgs.length - 1] : null;
+  const title = String(firstUser?.text || last?.text || "Nueva conversación")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 72);
+  return title || "Nueva conversación";
+}
+
 export default async function agentChatRoutes(fastify) {
+  /** Lista real de chats de mesa (agent-chats.json), filtrable por agente. */
+  fastify.get("/", async (request) => {
+    const q = request.query || {};
+    const agentId = q.agentId ? String(q.agentId).trim().toLowerCase() : null;
+    const limit = Math.min(Number(q.limit) || 40, 100);
+    const rows = await chatStore.listConversations({
+      agentId: agentId || undefined,
+      limit,
+    });
+    return {
+      items: rows.map((row) => {
+        const msgs = Array.isArray(row.messages) ? row.messages : [];
+        const last = msgs.length ? msgs[msgs.length - 1] : null;
+        return {
+          id: row.id,
+          agentId: row.agentId,
+          tenant: row.tenant || null,
+          title: titleFromConversation(row),
+          preview: last?.text ? String(last.text).replace(/\s+/g, " ").trim().slice(0, 100) : "",
+          messageCount: msgs.length,
+          updatedAt: row.updatedAt,
+          createdAt: row.createdAt,
+        };
+      }),
+    };
+  });
+
   fastify.post("/", async (request, reply) => {
     const body = request.body || {};
     const agentId = String(body.agentId || "").trim().toLowerCase();
