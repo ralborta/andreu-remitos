@@ -73,9 +73,13 @@ function actorFromOpts(opts) {
 export async function appendMensaje(telefono, msg, opts = {}) {
   if (!telefono) return null;
   if (esContactoOculto(telefono, opts.nombre)) return null;
+  const actor = actorFromOpts(opts);
+  if (actor === "bot") {
+    const { agentePuedeEscribir } = await import("../../../lib/whatsapp-audiencia.mjs");
+    if (!(await agentePuedeEscribir(telefono))) return null;
+  }
   const rows = readAll();
   const conv = findOrCreate(rows, telefono, opts.tenant);
-  const actor = actorFromOpts(opts);
   const entry = {
     id: `${Date.now()}-${conv.mensajes.length}`,
     dir: opts.dir ?? (actor === "customer" ? "in" : "out"),
