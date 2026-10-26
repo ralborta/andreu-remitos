@@ -1,6 +1,5 @@
 import {
   authCookieName,
-  isAuthTemporarilyOpen,
   signSessionToken,
   verifyPassword,
 } from "../../../lib/auth.mjs";
@@ -39,13 +38,10 @@ export default async function authRoutes(fastify) {
       return reply.code(401).send({ error: "No autenticado" });
     }
     const row = await getUserById(request.user.id);
-    if (row && row.activo !== false) {
-      return { user: toPublicUser(row) };
+    if (!row || row.activo === false) {
+      return reply.code(401).send({ error: "Usuario inactivo o inexistente" });
     }
-    if (isAuthTemporarilyOpen()) {
-      return { user: request.user };
-    }
-    return reply.code(401).send({ error: "Usuario inactivo o inexistente" });
+    return { user: toPublicUser(row) };
   });
 
   fastify.post("/logout", async () => ({ ok: true }));
@@ -68,9 +64,9 @@ export default async function authRoutes(fastify) {
   });
 
   fastify.patch("/users/:id", { preHandler: adminOnly }, async (request, reply) => {
-    const { rol, nombre, activo } = request.body ?? {};
+    const { rol, nombre, activo, password } = request.body ?? {};
     try {
-      const user = await updateUser(request.params.id, { rol, nombre, activo });
+      const user = await updateUser(request.params.id, { rol, nombre, activo, password });
       return { user };
     } catch (err) {
       return reply.code(400).send({ error: err.message || "No se pudo actualizar usuario" });
