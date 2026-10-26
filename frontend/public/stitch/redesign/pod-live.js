@@ -102,8 +102,7 @@
   }
   function coords(g) {
     var loc = g && g.location;
-    if (!loc) return "";
-    if (typeof loc === "string") return loc.trim();
+    if (!loc || typeof loc !== "object") return "";
     if (loc.lat != null && (loc.lng != null || loc.lon != null)) {
       return String(loc.lat) + ", " + String(loc.lng != null ? loc.lng : loc.lon);
     }
