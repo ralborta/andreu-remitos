@@ -69,20 +69,43 @@ export function DestinosPointMap() {
           iconSize: [18, 18],
           iconAnchor: [9, 9],
         });
-        L.marker([POINT.lat, POINT.lng], { icon }).addTo(map);
+        const marker = L.marker([POINT.lat, POINT.lng], { icon }).addTo(map);
+
+        function show(lat: number, lng: number) {
+          marker.setLatLng([lat, lng]);
+          map.setView([lat, lng], 16);
+        }
+
+        function onMsg(ev: MessageEvent) {
+          const data = ev.data;
+          if (!data || data.type !== "sol-destinos" || data.action !== "point") return;
+          const lat = Number(data.lat);
+          const lng = Number(data.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          show(lat, lng);
+        }
+
+        window.addEventListener("message", onMsg);
+        window.parent?.postMessage({ type: "sol-destinos", action: "ready" }, "*");
 
         setTimeout(() => map.invalidateSize(), 160);
         setReady(true);
+        return () => window.removeEventListener("message", onMsg);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Error al cargar el mapa");
         }
+        return undefined;
       }
     }
 
-    void boot();
+    let detach: (() => void) | undefined;
+    void boot().then((off) => {
+      detach = off;
+    });
     return () => {
       cancelled = true;
+      detach?.();
       map?.remove();
     };
   }, []);

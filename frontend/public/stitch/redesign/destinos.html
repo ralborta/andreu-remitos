@@ -194,8 +194,8 @@
           </div>
         </div>
         <div class="flex items-baseline justify-between">
-          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">138</span>
-          <span class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+          <span id="sol-des-kpi-hoy" class="text-3xl font-extrabold text-slate-900 tracking-tight">138</span>
+          <span id="sol-des-kpi-hoy-hint" class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
             ↑ +19% vs ayer
           </span>
         </div>
@@ -212,7 +212,7 @@
           </div>
         </div>
         <div class="flex items-baseline justify-between">
-          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">24</span>
+          <span id="sol-des-kpi-corr" class="text-3xl font-extrabold text-slate-900 tracking-tight">24</span>
           <span class="text-xs font-semibold text-slate-400">
             Ajustadas por Google Maps
           </span>
@@ -230,8 +230,8 @@
           </div>
         </div>
         <div class="flex items-baseline justify-between">
-          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">98,6%</span>
-          <span class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+          <span id="sol-des-kpi-prec" class="text-3xl font-extrabold text-slate-900 tracking-tight">98,6%</span>
+          <span id="sol-des-kpi-prec-hint" class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
             ↑ +0,9%
           </span>
         </div>
@@ -248,8 +248,8 @@
           </div>
         </div>
         <div class="flex items-baseline justify-between">
-          <span class="text-3xl font-extrabold text-slate-900 tracking-tight">4,2 min</span>
-          <span class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+          <span id="sol-des-kpi-tiempo" class="text-3xl font-extrabold text-slate-900 tracking-tight">4,2 min</span>
+          <span id="sol-des-kpi-tiempo-hint" class="inline-flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
             ⚡ Rápido por WA
           </span>
         </div>
@@ -284,8 +284,8 @@
                 Sync
               </button>
               <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold">
-                <button class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-xs">Dirección</button>
-                <button class="px-2.5 py-1 text-slate-600 hover:text-slate-900">Coordenadas</button>
+                <button type="button" id="sol-des-modo-dir" class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-xs">Dirección</button>
+                <button type="button" id="sol-des-modo-coord" class="px-2.5 py-1 text-slate-600 hover:text-slate-900">Coordenadas</button>
               </div>
             </div>
           </div>
@@ -300,12 +300,13 @@
               </label>
               <div class="relative">
                 <input 
+                  id="sol-des-dir"
                   type="text" 
                   value="Av. Corrientes 3450, Almagro, CABA" 
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   placeholder="Ej: Av. Córdoba 1200, Rosario"
                 >
-                <span class="absolute right-3 top-2.5 text-emerald-600 flex items-center gap-1 text-xs font-semibold">
+                <span id="sol-des-geo" class="absolute right-3 top-2.5 text-emerald-600 flex items-center gap-1 text-xs font-semibold">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                   Geocodificado
                 </span>
@@ -318,6 +319,7 @@
                 Cliente destinatario *
               </label>
               <input 
+                id="sol-des-cliente"
                 type="text" 
                 value="Distribuidora Almagro SRL (Contacto: Martín R.)" 
                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -335,6 +337,7 @@
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-semibold">+54 9 11</span>
                   <input 
+                    id="sol-des-tel-cli"
                     type="text" 
                     value="5824-9921" 
                     class="w-full pl-20 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -351,6 +354,7 @@
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-semibold">+54 9 11</span>
                   <input 
+                    id="sol-des-tel-cho"
                     type="text" 
                     value="3378-8190 (Raúl Alborta)" 
                     class="w-full pl-20 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -376,9 +380,9 @@
         <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
           <div class="flex items-center gap-2 text-xs text-slate-500">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Google Maps Geocoding API activo</span>
+            <span id="sol-des-status">Google Maps Geocoding API activo</span>
           </div>
-          <button class="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm shadow-emerald-200 transition-all">
+          <button type="button" id="sol-des-enviar" class="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm shadow-emerald-200 transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
             </svg>
@@ -395,12 +399,12 @@
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
               <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Punto Georreferenciado</h3>
             </div>
-            <span class="text-xs font-semibold text-slate-500">Lat: -34.6037 | Lng: -58.4116</span>
+            <span id="sol-des-lat" class="text-xs font-semibold text-slate-500">Lat: -34.6037 | Lng: -58.4116</span>
           </div>
 
           <!-- Mapa real OSM; la tarjeta del punto queda superpuesta -->
           <div class="relative w-full h-48 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
-            <iframe class="absolute inset-0 h-full w-full border-0" src="/embed/destinos-map" title="Punto georreferenciado"></iframe>
+            <iframe id="sol-des-map" class="absolute inset-0 h-full w-full border-0" src="/embed/destinos-map" title="Punto georreferenciado"></iframe>
 
             <!-- Card flotante sobre el mapa -->
             <div class="absolute bottom-2.5 left-2.5 right-2.5 z-10 bg-white/95 backdrop-blur-xs p-2.5 rounded-lg border border-slate-200/80 shadow-sm flex items-center justify-between pointer-events-none">
@@ -409,11 +413,11 @@
                   ✓
                 </div>
                 <div>
-                  <p class="text-xs font-bold text-slate-800 leading-tight">Av. Corrientes 3450</p>
-                  <p class="text-[10px] text-slate-500">Almagro, CABA • Confianza: 99.4%</p>
+                  <p id="sol-des-punto" class="text-xs font-bold text-slate-800 leading-tight">Av. Corrientes 3450</p>
+                  <p id="sol-des-punto-sub" class="text-[10px] text-slate-500">Almagro, CABA • Confianza: 99.4%</p>
                 </div>
               </div>
-              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span id="sol-des-match" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 Coincidencia exacta
               </span>
             </div>
@@ -423,15 +427,15 @@
           <div class="mt-3.5 space-y-2 text-xs">
             <div class="flex justify-between py-1 border-b border-slate-100">
               <span class="text-slate-500">Mensaje automático WhatsApp:</span>
-              <span class="font-semibold text-slate-700">Listo para despacho</span>
+              <span id="sol-des-wa" class="font-semibold text-slate-700">Listo para despacho</span>
             </div>
             <div class="flex justify-between py-1 border-b border-slate-100">
               <span class="text-slate-500">Plantilla oficial:</span>
-              <span class="font-semibold text-slate-700">confirmacion_destino_v2</span>
+              <span id="sol-des-plantilla" class="font-semibold text-slate-700">confirmacion_destino_v2</span>
             </div>
             <div class="flex justify-between py-1">
               <span class="text-slate-500">Viaje vinculado:</span>
-              <span class="font-bold text-indigo-600">VJ-20261014-001 (Pepsi)</span>
+              <span id="sol-des-viaje" class="font-bold text-indigo-600">VJ-20261014-001 (Pepsi)</span>
             </div>
           </div>
         </div>
@@ -449,7 +453,7 @@
       <div class="p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
         <div class="flex items-center gap-3">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-          <h2 class="text-base font-extrabold text-slate-900 tracking-tight">
+          <h2 id="sol-des-cola" class="text-base font-extrabold text-slate-900 tracking-tight">
             Cola en vivo de Validaciones (5 en gestión)
           </h2>
           <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
@@ -461,6 +465,7 @@
         <div class="flex flex-wrap items-center gap-2.5">
           <div class="relative">
             <input 
+              id="sol-des-buscar"
               type="text" 
               placeholder="Buscar por cliente, dirección o chofer..." 
               class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -470,7 +475,7 @@
             </svg>
           </div>
 
-          <select class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none">
+          <select id="sol-des-estado" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none">
             <option>Todos los estados</option>
             <option>Confirmados</option>
             <option>Pendientes de WhatsApp</option>
@@ -499,7 +504,7 @@
               <th class="py-3 px-4 text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
+          <tbody id="sol-des-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
             <!-- Fila 1 -->
             <tr class="hover:bg-slate-50/80 transition-colors">
               <td class="py-3.5 px-4 font-bold text-slate-900">
@@ -695,11 +700,11 @@
 
       <!-- Footer de tabla con paginación -->
       <div class="p-4 bg-slate-50/50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-        <span>Mostrando 5 de 138 validaciones realizadas hoy</span>
+        <span id="sol-des-pie">Mostrando 5 de 138 validaciones realizadas hoy</span>
         <div class="flex items-center gap-2">
-          <button class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-400 cursor-not-allowed">Anterior</button>
-          <span class="px-2 font-bold text-slate-700">1</span>
-          <button class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100">Siguiente</button>
+          <button type="button" id="sol-des-prev" class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-400 cursor-not-allowed">Anterior</button>
+          <span id="sol-des-pag" class="px-2 font-bold text-slate-700">1</span>
+          <button type="button" id="sol-des-next" class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100">Siguiente</button>
         </div>
       </div>
     </div>
@@ -715,7 +720,7 @@
           </div>
           <div>
             <h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Destinos?</h2>
-            <p class="text-xs text-slate-500">Consulto destinos reales (confirmación / validación de entrega). Respuestas generadas con datos reales de Destinos.</p>
+            <p id="sol-des-chat" class="text-xs text-slate-500">Consulto destinos reales (confirmación / validación de entrega). Respuestas generadas con datos reales de Destinos.</p>
           </div>
         </div>
         <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
@@ -745,6 +750,7 @@
       <div class="relative">
         <input 
           type="text" 
+          id="sol-des-pregunta"
           placeholder="Preguntá algo sobre Destinos... (ej: '¿Cuál es el estado de validación del viaje VJ-20261014-001?')" 
           class="w-full pl-4 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all shadow-xs"
         >
@@ -933,6 +939,7 @@
   </footer>
 
 
+<script src="/stitch/redesign/destinos-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body>
 </html>
