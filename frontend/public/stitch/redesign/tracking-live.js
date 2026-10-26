@@ -21,6 +21,8 @@
   var frame = document.getElementById("tracking-map");
   var rows = [];
   var selectedId = null;
+  var sessionError = false;
+  var loaded = false;
   var fitted = false;
   var busy = false;
   var linkId = null;
@@ -348,6 +350,8 @@
       });
       merged.sort(function (a, b) { return ORDER[a.tone] - ORDER[b.tone]; });
       rows = merged;
+      sessionError = false;
+      loaded = true;
       if (metrics && metrics.last24h) text("sol-trk-kpi-pos", metrics.last24h.positions);
       if (metrics && metrics.gate) {
         var g = metrics.gate;
@@ -359,8 +363,15 @@
       if (selectedId) return openDetail(selectedId, true);
     }).catch(function (err) {
       var msg = err && err.message ? err.message : "No se pudo cargar la torre";
+      sessionError = err && err.status === 401;
+      loaded = true;
+      if (sessionError) decir("Hace falta una sesión para consultar la operación.");
       if (/feature_disabled|no habilitado|404/i.test(msg) || (err && err.code === "feature_disabled")) {
         showError("El módulo está desactivado. Activá SOL_TRACKING_EXPRESS_ENABLED=true en el API para ver la torre.");
+        decir("El módulo de tracking está desactivado en el servidor.");
+      } else if (!sessionError) {
+        showError(msg);
+        decir(msg);
       } else {
         showError(msg);
       }
@@ -542,6 +553,99 @@
     var data = ev.data;
     if (!data || data.type !== "sol-tracking" || data.action !== "ready") return;
     pushMap(!fitted);
+  });
+
+  function decir(texto) {
+    var p = $("sol-trk-chat");
+    if (p) p.textContent = texto;
+  }
+
+  function tienePosicion(row) {
+    var pos = row.state && row.state.last_position;
+    return Boolean(pos && isFinite(pos.latitude) && isFinite(pos.longitude));
+  }
+
+  function linea(row) {
+    var v = row.viaje || {};
+    var pos = row.state && row.state.last_position;
+    var ubi = tienePosicion(row) ? pos.latitude.toFixed(5) + ", " + pos.longitude.toFixed(5) : "sin posición";
+    return (v.codigo || row.tripId) + " · " + (v.chofer || "Sin chofer") + " · " + (v.origen || "—") + " → " + (v.destino || "—") + " · " + ((row.state && row.state.status) || "NOT_STARTED") + " · " + formatAge(row.ageSec) + " · " + ubi;
+  }
+
+  function listar(lista, vacio) {
+    if (!lista.length) return vacio;
+    return lista.slice(0, 8).map(linea).join(" · ");
+  }
+
+  function preguntar(q) {
+    q = String(q || "").replace(/\s+/g, " ").trim();
+    if (!q) return;
+    var input = $("sol-trk-pregunta");
+    if (input) input.value = q;
+    if (sessionError) {
+      decir("Hace falta una sesión para consultar la operación.");
+      return;
+    }
+    if (!loaded) {
+      decir("Todavía estoy cargando la torre.");
+      return;
+    }
+    var f = fold(q);
+    var vivos = rows.filter(tienePosicion);
+    var sin = rows.filter(function (row) { return !tienePosicion(row); });
+    var alerta = rows.filter(function (row) { return row.tone === "red"; });
+    var ruta = rows.filter(function (row) { return row.tone === "green"; });
+    if (f.indexOf("sin posicion") >= 0 || f.indexOf("no tienen posicion") >= 0 || f.indexOf("quienes no") >= 0) {
+      decir(sin.length ? sin.length + " sin posición. " + listar(sin, "") : "Todos los de la torre tienen una posición.");
+      return;
+    }
+    if (f.indexOf("alerta") >= 0 || f.indexOf("gps") >= 0 || f.indexOf("perdid") >= 0) {
+      decir(alerta.length ? alerta.length + " con alerta de GPS. " + listar(alerta, "") : "No hay alertas de GPS en la torre cargada.");
+      return;
+    }
+    if (f.indexOf("en ruta") >= 0 || f.indexOf("reciente") >= 0) {
+      decir(ruta.length ? ruta.length + " en ruta, con señal reciente. " + listar(ruta, "") : "No hay choferes en ruta con señal reciente.");
+      return;
+    }
+    if (f.indexOf("transmit") >= 0 || f.indexOf("cuantos") >= 0) {
+      decir("Hay " + vivos.length + " con posición reportada, de " + rows.length + " en la torre. " + listar(vivos, "Ninguno tiene una posición ahora."));
+      return;
+    }
+    var hallados = rows.filter(function (row) {
+      var v = row.viaje || {};
+      var blob = fold([v.codigo, v.chofer, v.tractor, v.cliente, v.origen, v.destino, row.tripId].join(" "));
+      return blob.indexOf(f) >= 0;
+    });
+    if (hallados.length) {
+      decir(listar(hallados, ""));
+      return;
+    }
+    decir("En la torre hay " + rows.length + " viajes, " + vivos.length + " con posición y " + alerta.length + " con alerta de GPS. Probá con un chofer, un código de viaje o una sugerencia.");
+  }
+
+  document.addEventListener("click", function (e) {
+    var root = e.target.closest("#sol-trk-chat-box");
+    if (!root) return;
+    var btn = e.target.closest("button");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var label = fold((btn.textContent || "").replace(/\s+/g, " ").trim());
+    if (String(btn.className).indexOf("sol-chat-chip") >= 0) {
+      preguntar(btn.textContent);
+      return;
+    }
+    if (label.indexOf("consultar") === 0) {
+      var box = $("sol-trk-pregunta");
+      preguntar(box ? box.value : "");
+    }
+  }, true);
+
+  var pregunta = $("sol-trk-pregunta");
+  if (pregunta) pregunta.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    preguntar(pregunta.value);
   });
 
   load();
