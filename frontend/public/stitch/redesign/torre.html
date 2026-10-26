@@ -260,40 +260,113 @@
 </div>
 </div>
 </div>
-<!-- CENTER COLUMN: Chat Central Copilot / AI Assistant -->
-<div class="lg:col-span-6 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 flex flex-col gap-4">
-<div class="flex items-center justify-between gap-3">
-<div class="flex items-center gap-3 min-w-0">
-<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-xl">smart_toy</span>
+<!-- CENTER COLUMN: Chat Central tipo ChatGPT -->
+<div id="sol-torre-panel" class="lg:col-span-6 bg-white rounded-2xl border border-slate-200/90 shadow-sm flex flex-col min-h-[560px] h-[min(640px,calc(100vh-11rem))] overflow-hidden relative">
+<style>
+  #sol-torre-panel .sol-gpt-thread{scrollbar-width:thin}
+  #sol-torre-panel .sol-gpt-bubble-user{background:#F3F4F6;border-radius:18px;padding:11px 16px;font-size:14px;line-height:1.5;color:#111827}
+  #sol-torre-panel .sol-gpt-composer{border:1px solid #E5E7EB;border-radius:28px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+  #sol-torre-panel .sol-gpt-tool[aria-pressed="true"]{background:#EEF2FF;color:#3730A3;border-color:#C7D2FE}
+  #sol-torre-panel .sol-gpt-send:disabled{opacity:.45;cursor:not-allowed}
+</style>
+<div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100 shrink-0">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
 </div>
+<div class="min-w-0">
 <div class="flex items-center gap-2 flex-wrap">
-<h2 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de la operación?</h2>
+<p class="text-sm font-extrabold text-slate-900 tracking-tight">SOL AGENT</p>
 <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
 </div>
-</div>
-<div class="flex items-center gap-2 shrink-0 text-xs">
-<button type="button" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Historial</button>
-<button type="button" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Nueva conversación</button>
+<p class="text-[11px] text-slate-500 truncate">Chat Central · operación en vivo</p>
 </div>
 </div>
-<p id="sol-torre-chat" class="text-sm text-slate-600 leading-relaxed">Te ayudo a consultar viajes, remitos, incidencias y toda la operación logística en tiempo real.</p>
-<div class="flex flex-wrap items-center gap-2 text-xs">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
-<button type="button" data-q="¿Cuántos camiones están por salir?" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuántos camiones están por salir?</button>
-<button type="button" data-q="¿Qué incidencias tenemos?" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Qué incidencias tenemos?</button>
-<button type="button" data-q="¿Qué camiones tienen demora?" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Qué camiones tienen demora?</button>
-<button type="button" data-q="¿Qué viajes están pendientes?" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Qué viajes están pendientes?</button>
-</div>
-<div class="relative flex items-center">
-<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
-<input id="sol-torre-pregunta" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Preguntá algo sobre la operación..." type="text"/>
-<button id="sol-torre-enviar" type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5">
-<span>Consultar</span>
-<span class="material-symbols-outlined text-sm">send</span>
+<div class="flex items-center gap-1.5 shrink-0 text-xs">
+<button type="button" id="sol-torre-historial" class="px-3 py-1.5 rounded-full text-slate-500 hover:bg-slate-100 transition-colors">Historial</button>
+<button type="button" id="sol-torre-nueva" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-slate-700 hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span class="hidden sm:inline">Nueva conversación</span>
 </button>
 </div>
-<div class="text-xs text-slate-400">Motor: <span class="font-mono font-bold text-slate-700">SOL Chat Central</span></div>
+</div>
+<div id="sol-torre-thread" class="sol-gpt-thread flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-6">
+<div id="sol-torre-empty" class="h-full min-h-[280px] flex flex-col items-center justify-center text-center px-2">
+<div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[26px]">forum</span>
+</div>
+<h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">¿Qué necesitás saber de la operación?</h2>
+<p id="sol-torre-chat" class="mt-2 max-w-xl text-sm text-slate-500">Consultá viajes, remitos, incidencias, ETA y POD con datos reales de tus módulos activos.</p>
+<div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl text-left">
+<button type="button" data-q="¿Cuántos camiones están por salir?" class="sol-chat-chip group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 hover:border-slate-300 transition-colors">
+<span class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">local_shipping</span></span>
+<span class="min-w-0 flex-1 text-sm font-medium text-slate-800 leading-snug">¿Cuántos camiones están por salir?</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+<button type="button" data-q="¿Qué incidencias tenemos?" class="sol-chat-chip group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 hover:border-slate-300 transition-colors">
+<span class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">warning</span></span>
+<span class="min-w-0 flex-1 text-sm font-medium text-slate-800 leading-snug">¿Qué incidencias tenemos?</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+<button type="button" data-q="¿Qué camiones tienen demora?" class="sol-chat-chip group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 hover:border-slate-300 transition-colors">
+<span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">schedule</span></span>
+<span class="min-w-0 flex-1 text-sm font-medium text-slate-800 leading-snug">¿Qué camiones tienen demora?</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+<button type="button" data-q="¿Qué viajes están pendientes?" class="sol-chat-chip group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 hover:border-slate-300 transition-colors">
+<span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">route</span></span>
+<span class="min-w-0 flex-1 text-sm font-medium text-slate-800 leading-snug">¿Qué viajes están pendientes?</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<div id="sol-torre-msgs" class="hidden mx-auto w-full max-w-[720px] flex flex-col gap-7"></div>
+</div>
+<div class="shrink-0 px-4 sm:px-5 pb-4 pt-1 bg-white">
+<form id="sol-torre-form" class="sol-gpt-composer mx-auto w-full max-w-[720px] bg-white px-3 py-2.5 flex flex-col gap-2">
+<div class="flex items-end gap-2">
+<button type="button" id="sol-torre-adjuntar" class="w-10 h-10 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 flex items-center justify-center shrink-0" title="Adjuntar" aria-label="Adjuntar">
+<span class="material-symbols-outlined text-[22px]">attach_file</span>
+</button>
+<textarea id="sol-torre-pregunta" rows="1" class="min-w-0 flex-1 resize-none border-0 bg-transparent text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0 py-2.5 max-h-28" placeholder="Preguntale a SOL sobre viajes, remitos, incidencias o la operación..."></textarea>
+<button type="button" id="sol-torre-mic" class="w-10 h-10 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 flex items-center justify-center shrink-0" title="Dictado (próximamente)" aria-label="Dictado">
+<span class="material-symbols-outlined text-[22px]">mic</span>
+</button>
+<button type="submit" id="sol-torre-enviar" class="sol-gpt-send w-11 h-11 rounded-full bg-[#0e1738] text-white flex items-center justify-center shrink-0 hover:bg-[#14214d] shadow-md disabled:shadow-none" aria-label="Enviar" disabled>
+<span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+</button>
+</div>
+<div class="flex flex-wrap items-center gap-1.5 px-1 pb-0.5">
+<button type="button" class="sol-gpt-tool inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-slate-200 text-[11px] font-semibold text-slate-500 hover:bg-slate-50" data-tool="tms" aria-pressed="false">
+<span class="material-symbols-outlined text-[14px]">database</span> Explorar TMS
+</button>
+<button type="button" class="sol-gpt-tool inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-slate-200 text-[11px] font-semibold text-slate-500 hover:bg-slate-50" data-tool="razonar" aria-pressed="false">
+<span class="material-symbols-outlined text-[14px]">psychology</span> Razonar
+</button>
+<button type="button" class="sol-gpt-tool inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-slate-200 text-[11px] font-semibold text-slate-500 hover:bg-slate-50" data-tool="ocr" aria-pressed="false">
+<span class="material-symbols-outlined text-[14px]">document_scanner</span> OCR Remito
+</button>
+</div>
+</form>
+<p id="sol-torre-aviso" class="mx-auto mt-2 max-w-[720px] text-center text-[11px] text-slate-400 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[13px]">lock</span>
+Las respuestas se generan con datos reales de tus módulos activos.
+</p>
+<div id="sol-torre-sugerencias" class="mx-auto mt-3 max-w-[720px] flex flex-wrap justify-center gap-2">
+<button type="button" data-q="¿Cuántos camiones están por salir?" class="sol-chat-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span> Camiones por salir
+</button>
+<button type="button" data-q="¿Qué incidencias tenemos?" class="sol-chat-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[14px]">warning</span> Incidencias abiertas
+</button>
+<button type="button" data-q="¿Qué camiones tienen demora?" class="sol-chat-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Demoras
+</button>
+<button type="button" data-q="¿Qué viajes están pendientes?" class="sol-chat-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[14px]">route</span> Viajes pendientes
+</button>
+</div>
+</div>
 </div>
 <!-- RIGHT COLUMN: Flota en tiempo real (Map Card) & Incidencias -->
 <div class="lg:col-span-3 flex flex-col gap-4">
