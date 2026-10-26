@@ -253,13 +253,13 @@
 </span>
 </div>
 <div class="mt-2">
-<div class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">3h 42m</div>
+<div id="sol-eta-kpi-prom" class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">3h 42m</div>
 </div>
 <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex flex-col gap-1">
 <div class="inline-flex items-center gap-1 text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded text-[11px] font-semibold w-max">
-<span>⚡ -18 min optimizado vs histórico</span>
+<span id="sol-eta-kpi-prom-hint">⚡ -18 min optimizado vs histórico</span>
 </div>
-<span class="font-body-sm text-body-sm text-outline">Precisión de ventana: ±7 min</span>
+<span id="sol-eta-kpi-prom-sub" class="font-body-sm text-body-sm text-outline">Precisión de ventana: ±7 min</span>
 </div>
 </div>
 <!-- KPI 2 -->
@@ -271,14 +271,14 @@
 </span>
 </div>
 <div class="mt-2 flex items-baseline gap-2">
-<div class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">4</div>
-<span class="bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B] font-label-caps text-[10px] font-bold px-2 py-0.5 rounded-full">
+<div id="sol-eta-kpi-demora" class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">4</div>
+<span id="sol-eta-kpi-demora-badge" class="bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B] font-label-caps text-[10px] font-bold px-2 py-0.5 rounded-full">
             2 crítica (&gt;45m)
           </span>
 </div>
 <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex flex-col gap-1">
-<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">4 de 26 viajes con retraso detectado</span>
-<span class="font-body-sm text-body-sm text-outline">2 resueltos con ajuste de ruta</span>
+<span id="sol-eta-kpi-demora-sub" class="font-body-sm text-body-sm text-on-surface-variant font-medium">4 de 26 viajes con retraso detectado</span>
+<span id="sol-eta-kpi-demora-sub2" class="font-body-sm text-body-sm text-outline">2 resueltos con ajuste de ruta</span>
 </div>
 </div>
 <!-- KPI 3 -->
@@ -290,13 +290,13 @@
 </span>
 </div>
 <div class="mt-2">
-<div class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">186</div>
+<div id="sol-eta-kpi-hoy" class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">186</div>
 </div>
 <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex flex-col gap-1">
 <div class="inline-flex items-center gap-1 text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded text-[11px] font-semibold w-max">
-<span>↑ +24% automatizadas</span>
+<span id="sol-eta-kpi-hoy-hint">↑ +24% automatizadas</span>
 </div>
-<span class="font-body-sm text-body-sm text-outline">99.2% entrega efectiva WhatsApp</span>
+<span id="sol-eta-kpi-hoy-sub" class="font-body-sm text-body-sm text-outline">99.2% entrega efectiva WhatsApp</span>
 </div>
 </div>
 <!-- KPI 4 -->
@@ -308,13 +308,13 @@
 </span>
 </div>
 <div class="mt-2">
-<div class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">96,4%</div>
+<div id="sol-eta-kpi-sla" class="font-metric-stat text-metric-stat text-on-surface font-extrabold tracking-tight">96,4%</div>
 </div>
 <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex flex-col gap-1">
 <div class="inline-flex items-center gap-1 text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded text-[11px] font-semibold w-max">
-<span>↑ +1,8 pts vs ayer</span>
+<span id="sol-eta-kpi-sla-hint">↑ +1,8 pts vs ayer</span>
 </div>
-<span class="font-body-sm text-body-sm text-outline">Tolerancia estándar: 30 minutos</span>
+<span id="sol-eta-kpi-sla-sub" class="font-body-sm text-body-sm text-outline">Tolerancia estándar: 30 minutos</span>
 </div>
 </div>
 </div>
@@ -337,7 +337,7 @@
 </div>
 <!-- Trip Selector dropdown -->
 <div class="relative">
-<select class="bg-surface-container-low/80 border border-outline-variant/50 rounded-lg text-on-surface font-label-md text-label-md font-semibold pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-secondary/40">
+<select id="sol-eta-viaje" class="bg-surface-container-low/80 border border-outline-variant/50 rounded-lg text-on-surface font-label-md text-label-md font-semibold pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-secondary/40">
 <option selected="">VJ-20261014-001 | PepsiCo Planta Zárate</option>
 <option>VJ-20261014-004 | Cervecería Quilmes</option>
 <option>VJ-20261014-009 | Molinos Río de la Plata</option>
@@ -348,8 +348,8 @@
 <div class="flex items-start gap-3 bg-[#FEF2F2] border border-[#FECACA] rounded-lg p-3">
 <span class="material-symbols-outlined text-error text-[20px] shrink-0 mt-0.5" data-icon="warning">warning</span>
 <div class="space-y-1">
-<div class="font-label-lg text-label-lg font-bold text-[#991B1B]">Demora detectada por congestión en RN 9 km 88</div>
-<p class="font-body-sm text-body-sm text-[#7F1D1D]">
+<div id="sol-eta-alerta" class="font-label-lg text-label-lg font-bold text-[#991B1B]">Demora detectada por congestión en RN 9 km 88</div>
+<p id="sol-eta-alerta-sub" class="font-body-sm text-body-sm text-[#7F1D1D]">
                 +35 min sobre horario pactado original debido a corte por obras en carril central. Telemetría GPS reporta avance a 24 km/h en los últimos 15 min.
               </p>
 </div>
@@ -358,16 +358,16 @@
 <div class="grid grid-cols-2 gap-3 bg-surface-container-low/40 rounded-lg p-3 border border-outline-variant/30">
 <div class="border-r border-outline-variant/30 pr-3">
 <span class="font-label-caps text-[10px] text-outline uppercase font-semibold">ETA Pactado Original</span>
-<div class="font-metric-stat text-2xl font-bold text-outline line-through">14:15 hs</div>
-<span class="font-body-sm text-body-sm text-on-surface-variant">Ventana cliente: 14:00 - 14:30</span>
+<div id="sol-eta-pactado" class="font-metric-stat text-2xl font-bold text-outline line-through">14:15 hs</div>
+<span id="sol-eta-ventana" class="font-body-sm text-body-sm text-on-surface-variant">Ventana cliente: 14:00 - 14:30</span>
 </div>
 <div class="pl-2">
 <span class="font-label-caps text-[10px] text-error font-bold uppercase">Nuevo ETA Estimado (Telemetría)</span>
 <div class="font-metric-stat text-2xl font-bold text-error flex items-center gap-1.5">
-                14:50 hs
-                <span class="text-xs bg-error-container text-on-error-container px-1.5 py-0.5 rounded font-bold">+35m</span>
+                <span id="sol-eta-nuevo">14:50 hs</span>
+                <span id="sol-eta-delta" class="text-xs bg-error-container text-on-error-container px-1.5 py-0.5 rounded font-bold">+35m</span>
 </div>
-<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Chofer: Walter Benítez · Scania R450</span>
+<span id="sol-eta-chofer" class="font-body-sm text-body-sm text-on-surface-variant font-medium">Chofer: Walter Benítez · Scania R450</span>
 </div>
 </div>
 <!-- WhatsApp preview message card formatted with official WhatsApp style -->
@@ -383,9 +383,9 @@
 <div class="max-w-md bg-white rounded-lg p-3 shadow-xs border-l-4 border-[#128C7E] space-y-2">
 <div class="flex items-center justify-between border-b border-gray-100 pb-1.5">
 <span class="font-label-caps text-[10px] text-[#128C7E] font-bold">SOL Empliados · Notificación Operativa</span>
-<span class="text-[10px] text-gray-400 font-code-table">13:28 hs</span>
+<span id="sol-eta-preview-hora" class="text-[10px] text-gray-400 font-code-table">13:28 hs</span>
 </div>
-<p class="font-body-sm text-body-sm text-gray-800 leading-relaxed">
+<p id="sol-eta-preview" class="font-body-sm text-body-sm text-gray-800 leading-relaxed">
                   Hola <strong class="font-semibold">PepsiCo Zárate</strong>, les informamos que el camión <strong class="font-semibold">Scania R450</strong> (Chofer Walter Benítez) asignado al viaje <strong class="font-semibold">VJ-20261014-001</strong> presenta una demora por tránsito. Nuevo ETA estimado: <strong class="text-red-700">14:50 hs</strong> (antes 14:15 hs). Pueden seguir la unidad en vivo aquí: <span class="text-secondary font-code-table text-xs underline">sol.nivel41.com/t/pep-901</span>
 </p>
 <div class="flex items-center justify-end gap-1 text-[10px] text-gray-400">
@@ -402,10 +402,10 @@
 <label class="font-body-sm text-body-sm text-on-surface-variant" for="notify-planner">Copiar aviso al encargado de depósito (PepsiCo)</label>
 </div>
 <div class="flex items-center gap-2">
-<button class="bg-surface-container-lowest border border-outline-variant/60 hover:bg-surface-container-low text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-lg transition-colors">
+<button id="sol-eta-reprogramar" class="bg-surface-container-lowest border border-outline-variant/60 hover:bg-surface-container-low text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-lg transition-colors" type="button">
                 Reprogramar ventana
               </button>
-<button class="bg-[#128C7E] hover:bg-[#075E54] text-white font-label-md text-label-md px-4 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs font-semibold">
+<button id="sol-eta-enviar" class="bg-[#128C7E] hover:bg-[#075E54] text-white font-label-md text-label-md px-4 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs font-semibold" type="button">
 <span class="material-symbols-outlined text-[16px]" data-icon="send">send</span>
                 Enviar notificación WhatsApp ahora
               </button>
@@ -420,7 +420,7 @@
 <span class="font-label-caps text-[11px] text-outline font-bold uppercase">Telemetría en Vivo</span>
 <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Radar y Estado del Corredor Logístico</h3>
 </div>
-<span class="bg-[#F0F9FF] border border-[#BAE6FD] text-[#075985] font-label-caps text-[10px] px-2 py-0.5 rounded-full font-bold">
+<span id="sol-eta-corredor" class="bg-[#F0F9FF] border border-[#BAE6FD] text-[#075985] font-label-caps text-[10px] px-2 py-0.5 rounded-full font-bold">
                 RN 9 Corredor Norte
               </span>
 </div>
@@ -429,25 +429,25 @@
 <div class="flex items-center justify-between text-xs font-semibold">
 <span class="flex items-center gap-1 text-on-surface">
 <span class="material-symbols-outlined text-[15px] text-outline" data-icon="trip_origin">trip_origin</span>
-                  CABA CD
+                  <span id="sol-eta-origen">CABA CD</span>
                 </span>
 <span class="flex items-center gap-1 text-secondary font-bold">
 <span class="material-symbols-outlined text-[15px] animate-pulse" data-icon="navigation">navigation</span>
-                  Campana (Km 78)
+                  <span id="sol-eta-punto">Campana (Km 78)</span>
                 </span>
 <span class="flex items-center gap-1 text-on-surface">
 <span class="material-symbols-outlined text-[15px] text-outline" data-icon="location_on">location_on</span>
-                  Zárate Planta
+                  <span id="sol-eta-llegada">Zárate Planta</span>
                 </span>
 </div>
 <!-- Progress bar representation -->
 <div class="relative w-full h-2.5 bg-outline-variant/30 rounded-full overflow-hidden">
-<div class="h-full bg-secondary rounded-full" style="width: 72%"></div>
+<div id="sol-eta-barra" class="h-full bg-secondary rounded-full" style="width: 72%"></div>
 </div>
 <div class="flex justify-between font-label-caps text-[10px] text-outline">
-<span>Partida: 11:30 hs</span>
-<span class="text-secondary font-bold">72% recorrido (Km 78 de 106)</span>
-<span>Restante: 28 km</span>
+<span id="sol-eta-partida">Partida: 11:30 hs</span>
+<span id="sol-eta-recorrido" class="text-secondary font-bold">72% recorrido (Km 78 de 106)</span>
+<span id="sol-eta-resta">Restante: 28 km</span>
 </div>
 </div>
 <!-- Detailed Telemetry Metrics Grid -->
@@ -455,35 +455,35 @@
 <div class="bg-surface-container-lowest border border-outline-variant/30 p-2.5 rounded-lg">
 <span class="font-label-caps text-[10px] text-outline uppercase block">Velocidad Actual</span>
 <div class="flex items-baseline gap-1 mt-0.5">
-<span class="font-code-table text-lg font-bold text-on-surface">42</span>
+<span id="sol-eta-vel" class="font-code-table text-lg font-bold text-on-surface">42</span>
 <span class="text-xs text-outline">km/h</span>
 </div>
-<span class="text-[10px] text-error font-medium">Tráfico Lento (-25 km/h vs límite)</span>
+<span id="sol-eta-vel-sub" class="text-[10px] text-error font-medium">Tráfico Lento (-25 km/h vs límite)</span>
 </div>
 <div class="bg-surface-container-lowest border border-outline-variant/30 p-2.5 rounded-lg">
 <span class="font-label-caps text-[10px] text-outline uppercase block">Estado del Tráfico</span>
 <div class="flex items-baseline gap-1 mt-0.5">
-<span class="font-label-md text-label-md font-bold text-error">Denso</span>
-<span class="text-xs text-error font-code-table">+22 min</span>
+<span id="sol-eta-trafico" class="font-label-md text-label-md font-bold text-error">Denso</span>
+<span id="sol-eta-trafico-min" class="text-xs text-error font-code-table">+22 min</span>
 </div>
-<span class="text-[10px] text-outline">Reporte Waze &amp; Peaje Campana</span>
+<span id="sol-eta-trafico-sub" class="text-[10px] text-outline">Reporte Waze &amp; Peaje Campana</span>
 </div>
 <div class="bg-surface-container-lowest border border-outline-variant/30 p-2.5 rounded-lg">
 <span class="font-label-caps text-[10px] text-outline uppercase block">Clima en Ruta</span>
 <div class="flex items-center gap-1.5 mt-0.5">
 <span class="material-symbols-outlined text-amber-500 text-[18px]" data-icon="wb_sunny">wb_sunny</span>
-<span class="font-label-md text-label-md font-bold text-on-surface">Despejado, 24°C</span>
+<span id="sol-eta-clima" class="font-label-md text-label-md font-bold text-on-surface">Despejado, 24°C</span>
 </div>
-<span class="text-[10px] text-outline">Visibilidad 10 km</span>
+<span id="sol-eta-clima-sub" class="text-[10px] text-outline">Visibilidad 10 km</span>
 </div>
 <div class="bg-surface-container-lowest border border-outline-variant/30 p-2.5 rounded-lg">
 <span class="font-label-caps text-[10px] text-outline uppercase block">Hardware &amp; Dispositivo</span>
 <div class="flex items-center gap-1.5 mt-0.5">
 <span class="material-symbols-outlined text-[#059669] text-[18px]" data-icon="battery_charging_full">battery_charging_full</span>
-<span class="font-code-table font-bold text-on-surface">92%</span>
-<span class="text-[10px] text-[#059669] font-bold">GPS Online</span>
+<span id="sol-eta-bat" class="font-code-table font-bold text-on-surface">92%</span>
+<span id="sol-eta-gps" class="text-[10px] text-[#059669] font-bold">GPS Online</span>
 </div>
-<span class="text-[10px] text-outline">Último ping hace 12 seg</span>
+<span id="sol-eta-ping" class="text-[10px] text-outline">Último ping hace 12 seg</span>
 </div>
 </div>
 </div>
@@ -493,8 +493,8 @@
 <span class="material-symbols-outlined text-[18px]" data-icon="task_alt">task_alt</span>
 </span>
 <div class="text-xs space-y-0.5">
-<div class="font-semibold text-on-surface">Aviso proactivo previo enviado hace 18m</div>
-<div class="text-outline">Cliente confirmó recepción vía WhatsApp: "Entendido, aguardamos en muelle 3".</div>
+<div id="sol-eta-aviso" class="font-semibold text-on-surface">Aviso proactivo previo enviado hace 18m</div>
+<div id="sol-eta-aviso-sub" class="text-outline">Cliente confirmó recepción vía WhatsApp: "Entendido, aguardamos en muelle 3".</div>
 </div>
 </div>
 </div>
@@ -513,14 +513,14 @@
 <!-- Search input -->
 <div class="relative w-64">
 <span class="material-symbols-outlined absolute left-2.5 top-2 text-outline text-[16px]" data-icon="search">search</span>
-<input class="w-full bg-surface-container-low/60 border border-outline-variant/40 rounded-lg pl-8 pr-3 py-1 font-body-sm text-xs text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-secondary" placeholder="Buscar por viaje, chofer, cliente..." type="text"/>
+<input id="sol-eta-buscar" class="w-full bg-surface-container-low/60 border border-outline-variant/40 rounded-lg pl-8 pr-3 py-1 font-body-sm text-xs text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-secondary" placeholder="Buscar por viaje, chofer, cliente..." type="text"/>
 </div>
 <!-- Status Pill Filter Group -->
 <div class="inline-flex rounded-lg border border-outline-variant/40 p-0.5 bg-surface-container-low">
-<button class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-on-surface shadow-xs">Todos (26)</button>
-<button class="px-2.5 py-1 text-xs font-medium text-on-surface-variant hover:text-on-surface">En tiempo (22)</button>
-<button class="px-2.5 py-1 text-xs font-medium text-error hover:text-red-700">Con demora (4)</button>
-<button class="px-2.5 py-1 text-xs font-medium text-on-surface-variant hover:text-on-surface">Reprogramados (2)</button>
+<button type="button" data-filtro="todos" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-on-surface shadow-xs">Todos (26)</button>
+<button type="button" data-filtro="tiempo" class="px-2.5 py-1 text-xs font-medium text-on-surface-variant hover:text-on-surface">En tiempo (22)</button>
+<button type="button" data-filtro="demora" class="px-2.5 py-1 text-xs font-medium text-error hover:text-red-700">Con demora (4)</button>
+<button type="button" data-filtro="reprogramado" class="px-2.5 py-1 text-xs font-medium text-on-surface-variant hover:text-on-surface">Reprogramados (2)</button>
 </div>
 <button class="p-1.5 border border-outline-variant/40 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
 <span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
@@ -541,7 +541,7 @@
 <th class="py-2.5 px-4 text-right font-semibold">Acciones</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-outline-variant/20 font-body-sm text-body-sm text-on-surface">
+<tbody id="sol-eta-body" class="divide-y divide-outline-variant/20 font-body-sm text-body-sm text-on-surface">
 <!-- Row 1 -->
 <tr class="hover:bg-surface-container-low/40 transition-colors">
 <td class="py-3 px-4">
@@ -826,7 +826,7 @@
 </div>
 <!-- Pagination & Table Summary Footer -->
 <div class="p-3 bg-surface-container-low/40 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between text-xs text-outline gap-2">
-<span class="font-body-sm text-body-sm">Mostrando 6 de 26 viajes activos · Página 1 de 5</span>
+<span id="sol-eta-pie" class="font-body-sm text-body-sm">Mostrando 6 de 26 viajes activos · Página 1 de 5</span>
 <div class="flex items-center gap-1">
 <button class="px-2.5 py-1 rounded border border-outline-variant/40 bg-white hover:bg-surface-container text-on-surface disabled:opacity-50" disabled="">Anterior</button>
 <button class="px-2.5 py-1 rounded border border-outline-variant/40 bg-primary-container text-white font-semibold">1</button>
@@ -845,7 +845,7 @@
 </div>
 <div>
 <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">¿Qué necesitás saber de ETA y Entregas?</h3>
-<span class="text-xs text-outline">Consultas en lenguaje natural con respuesta instantánea basada en telemetría</span>
+<span id="sol-eta-chat" class="text-xs text-outline">Consultas en lenguaje natural con respuesta instantánea basada en telemetría</span>
 </div>
 </div>
 <span class="inline-flex items-center gap-1 text-[11px] text-[#059669] font-medium bg-[#ECFDF5] px-2 py-0.5 rounded">
@@ -856,7 +856,7 @@
 <!-- Input box with send button -->
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3.5 top-3 text-outline text-[20px]" data-icon="psychology">psychology</span>
-<input class="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-xl pl-11 pr-24 py-2.5 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="Preguntá al agente: e.g. ¿Cuáles son los próximos viajes con riesgo de superar la ventana de tolerancia?" type="text"/>
+<input id="sol-eta-pregunta" class="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-xl pl-11 pr-24 py-2.5 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="Preguntá al agente: e.g. ¿Cuáles son los próximos viajes con riesgo de superar la ventana de tolerancia?" type="text"/>
 <button class="absolute right-2 top-1.5 bg-primary hover:bg-[#1E293B] text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all">
 <span>Consultar</span>
 <span class="material-symbols-outlined text-[15px]" data-icon="arrow_forward">arrow_forward</span>
@@ -1000,5 +1000,6 @@
 </div>
 </div>
 </footer>
+<script src="/stitch/redesign/eta-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
