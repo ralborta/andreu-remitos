@@ -402,10 +402,115 @@
     agents.querySelectorAll("a").forEach(bind);
   }
 
+  function parkAfter(el, after) {
+    if (!el || !after || !after.parentNode || el === after) return;
+    after.parentNode.insertBefore(el, after.nextSibling);
+  }
+
+  function financeRow() {
+    var best = null;
+    var bestLen = Infinity;
+    document.querySelectorAll("div").forEach(function (el) {
+      if (el.closest("main, footer, [data-sol-shell='chrome']")) return;
+      var text = norm(el.textContent || "");
+      if (text.indexOf("dashboard") < 0 || text.indexOf("conciliacion") < 0) return;
+      if (text.indexOf("gestion de viajes") >= 0) return;
+      if (text.length < 40 || text.length > 1400) return;
+      if (text.length < bestLen) {
+        best = el;
+        bestLen = text.length;
+      }
+    });
+    while (best && best.parentElement && best.parentElement.tagName !== "HEADER" && best.parentElement.tagName !== "BODY") {
+      var parentText = norm(best.parentElement.textContent || "");
+      if (parentText.indexOf("gestion de viajes") >= 0 || parentText.length > 1600) break;
+      if (parentText.indexOf("dashboard") < 0 || parentText.indexOf("conciliacion") < 0) break;
+      best = best.parentElement;
+    }
+    return best;
+  }
+
+  function installChrome() {
+    var path = here();
+    var chrome = document.querySelector('[data-sol-shell="chrome"]');
+    if (!chrome) {
+      chrome = document.createElement("header");
+      chrome.setAttribute("data-sol-shell", "chrome");
+      chrome.className = "bg-white border-b border-slate-200 sticky top-0 z-50";
+      chrome.innerHTML =
+        '<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">' +
+        '<div class="flex items-center justify-between h-16 gap-4">' +
+        '<div class="flex items-center gap-6 min-w-0">' +
+        '<a class="flex items-center gap-2.5 shrink-0" href="/" target="_parent">' +
+        '<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 font-black text-lg">E</div>' +
+        '<div class="flex flex-col">' +
+        '<span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>' +
+        '<span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>' +
+        "</div></a>" +
+        '<div class="relative w-80 hidden md:block">' +
+        '<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><span class="material-symbols-outlined text-base">search</span></div>' +
+        '<input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>' +
+        '<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd></div>' +
+        "</div></div>" +
+        '<nav data-sol-shell="top" class="flex items-center space-x-1 overflow-x-auto"></nav>' +
+        '<div class="flex items-center gap-4 shrink-0">' +
+        '<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">' +
+        '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>' +
+        "<span>Sistemas activos</span></div>" +
+        '<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" type="button" title="Notificaciones operativas">' +
+        '<span class="material-symbols-outlined text-lg">notifications</span>' +
+        '<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>' +
+        "</button>" +
+        '<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200">' +
+        '<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100">GD</div>' +
+        '<div class="hidden lg:flex flex-col text-left"><span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span><span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span></div>' +
+        '<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>' +
+        "</div></div></div></div>";
+      document.body.insertBefore(chrome, document.body.firstChild);
+    }
+    var top = chrome.querySelector('[data-sol-shell="top"]');
+    if (top) {
+      top.className = "flex items-center space-x-1 overflow-x-auto";
+      top.innerHTML = TOP_LINKS.map(function (item) {
+        return linkHtml(item, isActive(item.href, path), false);
+      }).join("");
+      top.querySelectorAll("a").forEach(bind);
+    }
+
+    var agents = document.querySelector('[data-sol-shell="agents"]');
+    if (agents && !chrome.contains(agents)) parkAfter(agents, chrome);
+    var finance = document.querySelector('[data-sol-shell="finance"]') || financeRow();
+    if (finance) {
+      finance.setAttribute("data-sol-shell", "finance");
+      parkAfter(finance, agents || chrome);
+    }
+
+    document.querySelectorAll('[data-sol-shell="top"]').forEach(function (el) {
+      if (!chrome.contains(el)) el.style.display = "none";
+    });
+    document.querySelectorAll("header").forEach(function (header) {
+      if (header === chrome) return;
+      if (header.querySelector("[data-sol-shell='agents'], [data-sol-shell='finance']")) return;
+      header.style.display = "none";
+    });
+    document.querySelectorAll("nav").forEach(function (nav) {
+      if (chrome.contains(nav) || nav.closest("main, footer")) return;
+      if (nav.getAttribute("data-sol-shell") === "agents") return;
+      if (nav.querySelector("[data-sol-shell='agents'], [data-sol-shell='finance']")) return;
+      var text = norm(nav.textContent || "");
+      if (text.indexOf("torre de control") >= 0 || text.indexOf("agente") >= 0) nav.style.display = "none";
+    });
+  }
+
+  function paintShell() {
+    unifyShell();
+    installChrome();
+  }
+
   document.querySelectorAll("a, button").forEach(bind);
-  unifyShell();
+  paintShell();
   injectFinanzas();
   decorateMenus();
   wireHeaderSearch();
-  document.addEventListener("DOMContentLoaded", unifyShell);
+  document.addEventListener("DOMContentLoaded", paintShell);
 })();
