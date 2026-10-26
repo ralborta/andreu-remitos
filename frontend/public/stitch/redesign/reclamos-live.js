@@ -376,27 +376,21 @@
 
   function responder(q) {
     q = String(q || "").trim();
-    if (!q) return;
-    if (!live) {
-      setText("sol-rec-chat", SESION);
-      return;
-    }
+    if (!q) return "";
+    if (!live) return SESION;
     var t = fold(q);
     if (t.indexOf("tiempo") >= 0 || t.indexOf("resolucion") >= 0 || t.indexOf("promedio") >= 0) {
-      setText("sol-rec-chat", "No hay tiempo medio de resolución medido. El SLA de cada caso es solo En SLA, Por vencer o Cumplido.");
-      return;
+      return "No hay tiempo medio de resolución medido. El SLA de cada caso es solo En SLA, Por vencer o Cumplido.";
     }
     if (t.indexOf("abierto") >= 0 && t.indexOf("cuant") >= 0) {
       var r = resumen || {};
-      setText("sol-rec-chat", "Hay " + (r.abiertos != null ? r.abiertos : "—") + " reclamos abiertos: " + (r.nuevo || 0) + " nuevos, " + (r.en_proceso || 0) + " en proceso y " + (r.escalado || 0) + " escalados.");
-      return;
+      return "Hay " + (r.abiertos != null ? r.abiertos : "—") + " reclamos abiertos: " + (r.nuevo || 0) + " nuevos, " + (r.en_proceso || 0) + " en proceso y " + (r.escalado || 0) + " escalados.";
     }
     if (t.indexOf("escalad") >= 0) {
       var esc = rows.filter(function (g) { return g.estado === "escalado"; });
-      setText("sol-rec-chat", esc.length
+      return esc.length
         ? esc.slice(0, 8).map(function (g) { return (g.codigo || g.id) + " · " + (g.cliente || "—") + " · " + (g.motivoLabel || "sin motivo"); }).join(" · ")
-        : "No hay reclamos escalados.");
-      return;
+        : "No hay reclamos escalados.";
     }
     var palabras = t.split(" ").filter(function (w) {
       return w.length > 3 && ["mostrame", "ultimos", "cuales", "cuantos", "reclamos", "reclamo", "hay", "estan", "esta"].indexOf(w) < 0;
@@ -406,18 +400,16 @@
       return palabras.every(function (w) { return blob.indexOf(w) >= 0; });
     });
     if (!palabras.length) {
-      setText("sol-rec-chat", "Preguntame por abiertos, escalados o un cliente. El tiempo medio no está medido.");
-      return;
+      return "Preguntame por abiertos, escalados o un cliente. El tiempo medio no está medido.";
     }
-    setText("sol-rec-chat", hallados.length
+    return hallados.length
       ? hallados.slice(0, 8).map(function (g) { return (g.codigo || g.id) + " · " + (g.cliente || "—") + " · " + (g.estadoLabel || g.estado); }).join(" · ")
-      : "No hay reclamos que coincidan con esa consulta en la cola cargada.");
+      : "No hay reclamos que coincidan con esa consulta en la cola cargada.";
   }
 
   dash();
   fichaVacia("Cargando reclamos…");
-  setText("sol-rec-chat", "Preguntame por abiertos, escalados o un cliente.");
-  vacio("Cargando la cola…");
+    vacio("Cargando la cola…");
   load();
   setInterval(function () { if (!busy) load(); }, 12000);
 
@@ -429,11 +421,9 @@
     var row = t.closest("#sol-rec-body tr[data-id]");
     var textoBtn = t.closest("button");
     var texto = textoBtn ? labelOf(textoBtn) : "";
-    var chatP = $("sol-rec-chat");
-    var chatCard = chatP && chatP.closest(".rounded-xl");
-    var chatChip = chatCard && textoBtn && textoBtn.closest(".rounded-xl") === chatCard && (String(textoBtn.className).indexOf("sol-chat-chip") >= 0 || String(textoBtn.className).indexOf("rounded-full") >= 0) ? textoBtn : null;
-    var input = $("sol-rec-pregunta");
-    var consultar = input && textoBtn && input.parentElement && (textoBtn.parentElement === input.parentElement || textoBtn.parentElement === input.parentElement.parentElement);
+    var chatChip = null;
+    var consultar = null;
+    var input = null;
     var nav = t.closest("#sol-rec-paginacion");
     var exportBtn = textoBtn && textoBtn.getAttribute("title") === "Exportar reporte";
     var handled = pill || act || row || chatChip || consultar || exportBtn || t.closest("#sol-rec-escalar") || t.closest("#sol-rec-resolver") || t.closest("#sol-rec-chofer") || t.closest("#sol-rec-historial");
@@ -507,3 +497,6 @@
     responder(q);
   });
 })();
+
+window.SolDeskChatLocal = window.SolDeskChatLocal || {};
+window.SolDeskChatLocal.reclamos = function (q) { return responder(q); };

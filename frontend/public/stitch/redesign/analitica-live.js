@@ -164,47 +164,33 @@
 
   function responder(text) {
     var q = fold(text);
-    var out = $("sol-an-chat");
-    if (!q) return;
-    if (sesion) {
-      if (out) out.textContent = "Hace falta una sesión para consultar la cola.";
-      return;
-    }
+    if (!q) return "";
+    if (sesion) return "Hace falta una sesión para consultar la cola.";
     if (q.indexOf("zona") >= 0 || q.indexOf("sla") >= 0) {
-      if (out) out.textContent = "No hay medición de SLA por zona ni de entregas en ventana. Los viajes cargados son " + n(viajes.length) + ".";
-      return;
+      return "No hay medición de SLA por zona ni de entregas en ventana. Los viajes cargados son " + n(viajes.length) + ".";
     }
     if (q.indexOf("alerta") >= 0 || q.indexOf("critic") >= 0) {
       var abiertas = resumenInc ? resumenInc.abiertas : incidencias.length;
       var altas = resumenInc ? resumenInc.alta : 0;
       var hoy = incidencias.filter(function (row) { return enDias(row, 1); }).length;
-      if (out) out.textContent = "Hay " + n(abiertas) + " incidencias abiertas, " + n(altas) + " de criticidad alta. Hoy entraron " + n(hoy) + ".";
-      return;
+      return "Hay " + n(abiertas) + " incidencias abiertas, " + n(altas) + " de criticidad alta. Hoy entraron " + n(hoy) + ".";
     }
-    if (q.indexOf("cliente") >= 0) {
+    if (q.indexOf("cliente") >= 0 || q.indexOf("viajes") >= 0) {
       var top = topClientes(5);
       var en30 = viajes.filter(function (row) { return enDias(row, 30); }).length;
-      if (!top.length) {
-        if (out) out.textContent = "Los viajes cargados no tienen cliente para armar ese ranking.";
-        return;
-      }
-      if (out) out.textContent = "La tarjeta de arriba cuenta " + n(en30) + " viaje" + (en30 === 1 ? "" : "s") + " de los últimos 30 días. En la cola completa: " + top.map(function (item, i) {
+      if (!top.length) return "Los viajes cargados no tienen cliente para armar ese ranking. Hay " + n(viajes.length) + " viajes en cola.";
+      return "La tarjeta de arriba cuenta " + n(en30) + " viaje" + (en30 === 1 ? "" : "s") + " de los últimos 30 días. En la cola completa: " + top.map(function (item, i) {
         return (i + 1) + ". " + item.nombre + " (" + n(item.n) + ")";
       }).join(" · ");
-      return;
     }
     if (q.indexOf("incidencia") >= 0 || q.indexOf("tendencia") >= 0 || q.indexOf("carga") >= 0) {
       var tipos = tiposOrdenados().slice(0, 4);
-      if (!tipos.length) {
-        if (out) out.textContent = "No hay incidencias cargadas.";
-        return;
-      }
-      if (out) out.textContent = "Incidencias cargadas: " + tipos.map(function (item) {
+      if (!tipos.length) return "No hay incidencias cargadas.";
+      return "Incidencias cargadas: " + tipos.map(function (item) {
         return item.label + " " + n(item.n);
       }).join(", ") + ". No hay serie histórica para hablar de tendencia.";
-      return;
     }
-    if (out) out.textContent = "Hay " + n(viajes.length) + " viajes y " + n(incidencias.length) + " incidencias en la cola. SLA, ciclo y variación porcentual no están medidos.";
+    return "Hay " + n(viajes.length) + " viajes y " + n(incidencias.length) + " incidencias en la cola. SLA, ciclo y variación porcentual no están medidos.";
   }
 
   function marcarSerie(btn) {
@@ -228,34 +214,11 @@
     if (!btn) return;
     var visible = textoBoton(btn);
     var label = fold(visible);
-    if (btn.id === "sol-an-consultar" || label === "consultar") {
-      e.preventDefault();
-      e.stopPropagation();
-      var box = $("sol-an-pregunta");
-      responder(box ? box.value : "");
-      return;
-    }
-    if (label.indexOf("zona con menor sla") >= 0 || label.indexOf("alertas criticas") >= 0 || label.indexOf("clientes con mas viajes") >= 0 || label.indexOf("tendencia de incidencias") >= 0) {
-      e.preventDefault();
-      e.stopPropagation();
-      var input = $("sol-an-pregunta");
-      if (input) input.value = visible;
-      responder(visible);
-      return;
-    }
     if (label.indexOf("exportar reporte") >= 0 || label.indexOf("configurar alerta") >= 0 || label.indexOf("ver detalle") >= 0 || label.indexOf("ver historial") >= 0) {
       e.preventDefault();
       e.stopPropagation();
-      setText("sol-an-chat", "Esa acción no está disponible en esta pantalla. Puedo consultar viajes, incidencias y clientes de la cola.");
     }
   }, true);
-
-  var pregunta = $("sol-an-pregunta");
-  if (pregunta) pregunta.addEventListener("keydown", function (e) {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    responder(pregunta.value);
-  });
 
   Promise.all([
     api("/api/viajes?limit=500"),
@@ -266,9 +229,10 @@
     incidencias = Array.isArray(res[1]) ? res[1] : [];
     resumenInc = res[2] || null;
     pintar();
-    setText("sol-an-chat", "Consulto la cola real. SLA, tiempos de ciclo y variaciones no están medidos.");
   }).catch(function (err) {
     if (err.status === 401) sesionOff("Hace falta una sesión para consultar la cola.");
-    else setText("sol-an-chat", err.message || "No pude consultar analítica.");
   });
+
+  window.SolDeskChatLocal = window.SolDeskChatLocal || {};
+  window.SolDeskChatLocal.analitica = function (q) { return responder(q); };
 })();

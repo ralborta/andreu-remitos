@@ -807,72 +807,9 @@
 </section>
 <!-- END: Active Receipt Inspection -->
 <!-- BEGIN: Conversational Agent & Query Assistant -->
-<section class="bg-white rounded-xl border border-slate-200 shadow-card p-6 space-y-5" data-purpose="conversational-assistant">
-<!-- Header -->
-<div class="flex items-center justify-between gap-4">
-<div class="flex items-center gap-3 min-w-0">
-<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-xl">smart_toy</span>
-</div>
-<div class="flex items-center gap-2 flex-wrap">
-<h3 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Remitos?</h3>
-<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
-</div>
-</div>
-<div class="text-xs text-slate-400 shrink-0">Motor: <span class="font-mono font-bold text-slate-700">SOL Remitos</span></div>
-</div>
-<p id="sol-rem-chat-out" class="text-sm text-slate-600 leading-relaxed">Consulto remitos ya persistidos (solo lectura, sin OCR invasivo).</p>
-<div class="flex flex-wrap items-center gap-2 text-xs">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos remitos tenemos?</button>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos están confirmados?</button>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">mostrame los últimos 10</button>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿cuántos se cargaron hoy?</button>
-</div>
-<div class="relative flex items-center">
-<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
-<input class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="Preguntá algo sobre Remitos... (ej: '¿Cuál es el remito del viaje VJ-20260821-001?')" type="text"/>
-<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5">
-<span>Consultar</span>
-<span class="material-symbols-outlined text-sm">send</span>
-</button>
-</div>
-<!-- 3 Feature & Guidance Pillars -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-xs">
-<div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80">
-<div class="flex items-center gap-2 font-bold text-slate-800 mb-2">
-<i class="ph-bold ph-chart-bar text-indigo-600"></i>
-<span>Conteos y Estadísticas</span>
-</div>
-<ul class="space-y-1.5 text-slate-600 text-[11px]">
-<li>• ¿Cuántos remitos hay en total?</li>
-<li>• ¿Cuántos confirmados vs pendientes?</li>
-<li>• ¿Cuántos ingresaron hoy?</li>
-</ul>
-</div>
-<div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80">
-<div class="flex items-center gap-2 font-bold text-slate-800 mb-2">
-<i class="ph-bold ph-list-dashes text-indigo-600"></i>
-<span>Listados y Filtros</span>
-</div>
-<ul class="space-y-1.5 text-slate-600 text-[11px]">
-<li>• Mostrame los últimos 10 remitos</li>
-<li>• Filtrá por tenant o por destino</li>
-<li>• Remitos con discrepancia abierta</li>
-</ul>
-</div>
-<div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80">
-<div class="flex items-center gap-2 font-bold text-slate-800 mb-2">
-<i class="ph-bold ph-info text-indigo-600"></i>
-<span>Regla de Operación</span>
-</div>
-<p class="text-slate-600 text-[11px] leading-relaxed">
-<strong class="text-slate-800">Solo consulta:</strong> En esta fase el chat no aprueba, rechaza ni envía mensajes de WhatsApp directos al chofer. Esas tareas se ejecutan desde el panel de mesa de control.
-            </p>
-</div>
-</div>
-</section>
+<div data-sol-desk-chat data-agent-id="remitos" data-label="Remitos" data-subtitle="Consulto remitos ya persistidos (solo lectura)." data-suggestions="¿cuántos remitos tenemos?|¿cuántos están confirmados?|mostrame los últimos 10|¿cuántos se cargaron hoy?" data-icon="description"></div>
 <!-- END: Conversational Agent -->
+
 <!-- BEGIN: Agent Architecture & End-to-End Operational Flow -->
 <section class="bg-white rounded-xl border border-slate-200 shadow-card p-6" data-purpose="agent-architecture-overview">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -1041,5 +978,6 @@
   </script>
 <!-- END: Interaction Handling Script -->
 <script src="/stitch/redesign/remitos-live.js"></script>
+<script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
