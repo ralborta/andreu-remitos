@@ -188,16 +188,16 @@
 <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Contactos</h1>
 <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] tracking-wider uppercase border border-slate-200">Central Omnicanal</span>
 </div>
-<p class="text-xs sm:text-sm text-slate-500 mt-0.5">WhatsApp con choferes — respondé desde acá con contexto operativo en tiempo real.</p>
+<p id="sol-wa-aviso" class="text-xs sm:text-sm text-slate-500 mt-0.5">WhatsApp con choferes — respondé desde acá con contexto operativo en tiempo real.</p>
 </div>
 </div>
 <!-- Acciones de cabecera -->
 <div class="flex items-center gap-2.5 self-start md:self-auto">
-<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-xs font-semibold transition active:scale-95" type="button">
+<button id="sol-wa-actualizar" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-xs font-semibold transition active:scale-95" type="button">
 <i class="fa-solid fa-rotate text-xs text-slate-400"></i>
 <span>Actualizar</span>
 </button>
-<button class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-amber-700 hover:bg-amber-50 shadow-sm text-xs font-semibold transition active:scale-95" type="button">
+<button id="sol-wa-pausar-todos" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-amber-700 hover:bg-amber-50 shadow-sm text-xs font-semibold transition active:scale-95" type="button">
 <i class="fa-solid fa-circle-pause text-xs text-amber-500"></i>
 <span>Pausar todos los bots</span>
 </button>
@@ -205,17 +205,17 @@
 </header>
 <!-- PESTAÑAS DE FILTRO RÁPIDAS -->
 <div class="flex items-center gap-2 pb-1 overflow-x-auto no-scrollbar">
-<button class="px-3.5 py-1.5 rounded-full bg-slate-900 text-white font-semibold text-xs shadow-sm whitespace-nowrap transition" type="button">
+<button id="sol-wa-f-todos" data-sol-wa-filtro="todos" class="px-3.5 py-1.5 rounded-full bg-slate-900 text-white font-semibold text-xs shadow-sm whitespace-nowrap transition" type="button">
         Todos (28)
       </button>
-<button class="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
+<button id="sol-wa-f-tsb" data-sol-wa-filtro="tsb" class="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
         TransitOne (6)
       </button>
-<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
+<button id="sol-wa-f-leer" data-sol-wa-filtro="sleer" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
 <span class="w-2 h-2 rounded-full bg-blue-500"></span>
         Sin leer (3)
       </button>
-<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
+<button id="sol-wa-f-inc" data-sol-wa-filtro="inc" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold text-xs whitespace-nowrap shadow-sm transition" type="button">
 <span class="w-2 h-2 rounded-full bg-red-500"></span>
         Incidencias abiertas (4)
       </button>
@@ -228,11 +228,11 @@
 <div class="p-3 bg-slate-50/70 border-b border-slate-200/80">
 <div class="relative">
 <span class="material-symbols-outlined absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-[18px] pointer-events-none">search</span>
-<input class="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition shadow-inner" placeholder="Buscar chofer o teléfono..." type="text"/>
+<input id="sol-wa-buscar" class="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition shadow-inner" placeholder="Buscar chofer o teléfono..." type="text"/>
 </div>
 </div>
 <!-- Feed de contactos -->
-<div class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
+<div id="sol-wa-lista" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
 <!-- Contacto 1: ACTIVO Raúl Alborta -->
 <article class="p-2.5 rounded-lg bg-blue-50/70 border border-blue-200/90 flex items-start gap-2.5 cursor-pointer shadow-xs relative transition">
 <div class="w-1 absolute inset-y-2 left-1 bg-blue-600 rounded-full"></div>
@@ -371,39 +371,39 @@
 <div class="p-3.5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between gap-3 shrink-0">
 <div class="flex items-center gap-3 min-w-0">
 <div class="relative">
-<div class="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center shadow-xs">
+<div id="sol-wa-avatar" class="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center shadow-xs">
                 RA
               </div>
 <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full absolute bottom-0 right-0 ring-2 ring-white"></span>
 </div>
 <div class="min-w-0">
 <div class="flex items-center gap-2">
-<h2 class="font-bold text-sm text-slate-900 truncate">Raúl Alborta</h2>
+<h2 id="sol-wa-nombre" class="font-bold text-sm text-slate-900 truncate">Raúl Alborta</h2>
 <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] tracking-wider uppercase border border-emerald-200">WhatsApp</span>
 </div>
-<p class="text-xs text-slate-500 truncate">
+<p id="sol-wa-meta" class="text-xs text-slate-500 truncate">
 <span class="font-mono text-slate-600">+54 9 11 3378-8190</span> • <span class="text-emerald-600 font-medium">En línea</span> • <span class="font-medium text-slate-700">Viaje VJ-24817 (Córdoba → CABA)</span>
 </p>
 </div>
 </div>
 <!-- Botones de acción rápida -->
 <div class="flex items-center gap-1.5 shrink-0">
-<button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Llamada telefónica">
+<button id="sol-wa-llamar" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Llamada telefónica">
 <i class="fa-solid fa-phone text-[11px] text-slate-500 mr-1"></i>
 <span class="hidden sm:inline">Llamar</span>
 </button>
-<button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Ficha técnica de chofer">
+<button id="sol-wa-chofer" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Ficha técnica de chofer">
 <i class="fa-solid fa-user text-[11px] text-slate-500 mr-1"></i>
 <span class="hidden sm:inline">Ver chofer</span>
 </button>
-<button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Pausar bot para este chofer">
+<button id="sol-wa-pausar" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition" title="Pausar bot para este chofer">
 <i class="fa-solid fa-circle-pause text-[11px] text-amber-500 mr-1"></i>
 <span class="hidden sm:inline">Pausar bot</span>
 </button>
 </div>
 </div>
 <!-- Historial de mensajes -->
-<div class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#f5f7fb] custom-scroll">
+<div id="sol-wa-hilo" class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#f5f7fb] custom-scroll">
 <!-- Separador de fecha -->
 <div class="flex justify-center my-1">
 <span class="px-3 py-1 rounded-full bg-slate-200/80 text-slate-600 font-bold text-[10px] tracking-wider uppercase shadow-2xs">
@@ -474,27 +474,27 @@
 <!-- Opciones y Atajos rápidos en píldoras -->
 <div class="flex flex-wrap items-center justify-between gap-2">
 <label class="flex items-center gap-2 cursor-pointer select-none">
-<input class="w-4 h-4 rounded text-blue-600 focus:ring-0 border-slate-300 cursor-pointer" type="checkbox"/>
+<input id="sol-wa-nota" class="w-4 h-4 rounded text-blue-600 focus:ring-0 border-slate-300 cursor-pointer" type="checkbox"/>
 <span class="text-xs text-slate-600 font-medium">Nota interna (no se envía a WhatsApp)</span>
 </label>
 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-<button class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
+<button data-sol-wa-atajo="¿Me pasás tu ubicación?" class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
                 [Solicitar ubicación]
               </button>
-<button class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
+<button data-sol-wa-atajo="¿Me mandás la foto del remito?" class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
                 [Pedir foto remito]
               </button>
-<button class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
+<button data-sol-wa-atajo="Te aviso que hay una demora. Te confirmo el nuevo horario." class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase transition" type="button">
                 [Aviso demora]
               </button>
 </div>
 </div>
 <!-- Formulario de escritura -->
-<form class="flex items-center gap-2" onsubmit="event.preventDefault();">
+<form id="sol-wa-form" class="flex items-center gap-2" onsubmit="event.preventDefault();">
 <button class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition" title="Adjuntar documento o imagen" type="button">
 <i class="fa-solid fa-paperclip text-sm"></i>
 </button>
-<input class="flex-1 py-2 px-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 transition shadow-inner" placeholder="Escribí al chofer por WhatsApp..." type="text"/>
+<input id="sol-wa-texto" class="flex-1 py-2 px-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 transition shadow-inner" placeholder="Escribí al chofer por WhatsApp..." type="text"/>
 <button class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition" title="Insertar emoji" type="button">
 <i class="fa-regular fa-face-smile text-sm"></i>
 </button>
@@ -516,13 +516,13 @@
 </div>
 <!-- Pestañas contextuales -->
 <div class="flex items-center gap-1 p-1 bg-slate-100 rounded-lg text-[10px] font-bold">
-<button class="flex-1 py-1.5 text-center bg-white rounded-md text-slate-900 shadow-xs uppercase font-extrabold" type="button">
+<button id="sol-wa-tab-remito" data-sol-wa-tab="remito" class="flex-1 py-1.5 text-center bg-white rounded-md text-slate-900 shadow-xs uppercase font-extrabold" type="button">
             Remito
           </button>
-<button class="flex-1 py-1.5 text-center text-slate-500 hover:text-slate-800 uppercase transition" type="button">
+<button id="sol-wa-tab-viaje" data-sol-wa-tab="viaje" class="flex-1 py-1.5 text-center text-slate-500 hover:text-slate-800 uppercase transition" type="button">
             Viaje
           </button>
-<button class="flex-1 py-1.5 text-center text-slate-500 hover:text-slate-800 uppercase transition" type="button">
+<button id="sol-wa-tab-historial" data-sol-wa-tab="historial" class="flex-1 py-1.5 text-center text-slate-500 hover:text-slate-800 uppercase transition" type="button">
             Historial
           </button>
 </div>
@@ -535,7 +535,7 @@
 </div>
 <div>
 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Documento Activo</span>
-<span class="font-mono text-sm font-bold text-slate-900">#REM-98214</span>
+<span id="sol-wa-doc" class="font-mono text-sm font-bold text-slate-900">#REM-98214</span>
 </div>
 </div>
 <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px] uppercase">
@@ -547,25 +547,25 @@
 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Estado</span>
 <div class="flex items-center gap-1.5 mt-0.5">
 <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-<span class="text-xs text-amber-700 font-bold">Pendiente de foto conforme</span>
+<span id="sol-wa-estado" class="text-xs text-amber-700 font-bold">Pendiente de foto conforme</span>
 </div>
 </div>
 <div>
 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cliente • Tránsito</span>
-<p class="text-xs text-slate-800 font-medium">Arcor S.A. • Córdoba → CABA</p>
+<p id="sol-wa-cliente" class="text-xs text-slate-800 font-medium">Arcor S.A. • Córdoba → CABA</p>
 </div>
 <div>
 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Unidad • Patente</span>
-<p class="text-xs text-slate-800">Scania R450 • <span class="font-mono font-bold text-slate-900">AB 123 CD</span></p>
+<p id="sol-wa-unidad" class="text-xs text-slate-800">Scania R450 • <span class="font-mono font-bold text-slate-900">AB 123 CD</span></p>
 </div>
 <div>
 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Mercadería</span>
-<p class="text-xs text-slate-800">Alimentos perecederos (18 pallets)</p>
+<p id="sol-wa-mercaderia" class="text-xs text-slate-800">Alimentos perecederos (18 pallets)</p>
 </div>
 </div>
 <!-- Acciones directas sobre remito -->
 <div class="flex flex-col gap-1.5 pt-1">
-<button class="w-full py-1.5 px-3 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold shadow-xs transition active:scale-95 text-center" type="button">
+<button id="sol-wa-ver-remito" class="w-full py-1.5 px-3 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold shadow-xs transition active:scale-95 text-center" type="button">
               Ver remito digital
             </button>
 <button class="w-full py-1.5 px-3 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold shadow-xs transition text-center" type="button">
@@ -582,15 +582,15 @@
 <div class="grid grid-cols-3 gap-2">
 <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-center">
 <span class="text-[10px] font-bold text-slate-400 uppercase block">Viajes</span>
-<span class="text-base font-extrabold text-slate-900 block mt-0.5">42</span>
+<span id="sol-wa-viajes" class="text-base font-extrabold text-slate-900 block mt-0.5">42</span>
 </div>
 <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-center">
 <span class="text-[10px] font-bold text-slate-400 uppercase block">SLA</span>
-<span class="text-base font-extrabold text-blue-600 block mt-0.5">96.8%</span>
+<span id="sol-wa-sla" class="text-base font-extrabold text-blue-600 block mt-0.5">96.8%</span>
 </div>
 <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-center">
 <span class="text-[10px] font-bold text-slate-400 uppercase block">Score</span>
-<span class="text-base font-extrabold text-slate-900 block mt-0.5">4.9<span class="text-[10px] text-slate-400 font-normal">/5</span></span>
+<span id="sol-wa-score" class="text-base font-extrabold text-slate-900 block mt-0.5">4.9<span class="text-[10px] text-slate-400 font-normal">/5</span></span>
 </div>
 </div>
 </section>
@@ -598,12 +598,12 @@
 <section class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2">
 <div class="flex items-center justify-between">
 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Última Posición GPS</span>
-<span class="font-mono text-[11px] text-blue-600 font-semibold">Hace 4 min</span>
+<span id="sol-wa-gps-hace" class="font-mono text-[11px] text-blue-600 font-semibold">Hace 4 min</span>
 </div>
 <div class="w-full h-28 bg-cover bg-center rounded-lg shadow-inner relative flex items-end p-2 border border-slate-200" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBaRUZLuHcAsu9XD59quTuMuSq95qyOeWKzPjk3lGEnWlvc_v56NSoFvWLgH0e7HToDjIwQQOQBAW5rD7aDnMKFfa_rcOVdrWMvDYKVmivz_XYdG57innAN71HfGycemIaOz8GZamG58W025IsJRmtRAixZb-vMGKqpcpjl9oGsVpcuqSGG68xElEaabkugFuZ1kAIdGLjGhG8HmlbCicqEyGh38xXxvYaBUVQGAfISNvP1W4hMBy_N')">
 <div class="px-2 py-1 bg-white/95 backdrop-blur rounded text-slate-800 text-[10px] font-medium flex items-center gap-1.5 shadow-sm border border-slate-200/60">
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-<span>RN 9 km 280 • 74 km/h • Próximo a Rosario</span>
+<span id="sol-wa-gps">RN 9 km 280 • 74 km/h • Próximo a Rosario</span>
 </div>
 </div>
 </section>
@@ -629,5 +629,6 @@
 </footer>
 <!-- END: Footer -->
 
+<script src="/stitch/redesign/whatsapp-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
