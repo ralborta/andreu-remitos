@@ -215,7 +215,50 @@
     });
   }
 
+  function enRemitos() {
+    var path = location.pathname || "";
+    try { path = (window.top.location.pathname || "") + " " + path; } catch (e) {}
+    return path.indexOf("/agentes/remitos") >= 0 || path.indexOf("remitos.html") >= 0;
+  }
+
+  function aplicarBusquedaRemito(value) {
+    var q = String(value || "").trim();
+    if (enRemitos()) {
+      var local = document.getElementById("sol-rem-buscar");
+      if (local) {
+        local.value = q;
+        local.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      return;
+    }
+    go("/agentes/remitos" + (q ? "?q=" + encodeURIComponent(q) : ""));
+  }
+
+  function wireHeaderSearch() {
+    document.querySelectorAll("input[placeholder*='⌘K']").forEach(function (input) {
+      if (input.getAttribute("data-sol-search")) return;
+      input.setAttribute("data-sol-search", "1");
+      try {
+        var q0 = new URLSearchParams(window.top.location.search).get("q");
+        if (q0 && enRemitos()) input.value = q0;
+      } catch (e) {}
+      var timer = null;
+      input.addEventListener("input", function () {
+        clearTimeout(timer);
+        var value = input.value;
+        timer = setTimeout(function () { aplicarBusquedaRemito(value); }, 400);
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        clearTimeout(timer);
+        aplicarBusquedaRemito(input.value);
+      });
+    });
+  }
+
   document.querySelectorAll("a, button").forEach(bind);
   injectFinanzas();
   decorateMenus();
+  wireHeaderSearch();
 })();

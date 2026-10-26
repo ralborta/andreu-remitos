@@ -236,8 +236,8 @@
 </div>
 </div>
 <div class="flex items-baseline gap-2.5 mt-3">
-<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">6.918</span>
-<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
+<span id="sol-an-viajes" class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">6.918</span>
+<span id="sol-an-viajes-delta" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
 <span class="material-symbols-outlined text-[13px]">trending_up</span>
             +16%
           </span>
@@ -258,7 +258,7 @@
 </div>
 </div>
 <div class="flex items-baseline gap-2.5 mt-3">
-<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">95,1%</span>
+<span id="sol-an-sla" class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">95,1%</span>
 <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
 <span class="material-symbols-outlined text-[13px]">trending_up</span>
             +2,9% pts
@@ -280,8 +280,8 @@
 </div>
 </div>
 <div class="flex items-baseline gap-2.5 mt-3">
-<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">64</span>
-<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-caps font-bold bg-amber-50 text-amber-700">
+<span id="sol-an-alertas" class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">64</span>
+<span id="sol-an-alertas-crit" class="inline-flex items-center px-2 py-0.5 rounded-full text-label-caps font-bold bg-amber-50 text-amber-700">
             12 críticas resueltas
           </span>
 </div>
@@ -301,7 +301,7 @@
 </div>
 </div>
 <div class="flex items-baseline gap-2.5 mt-3">
-<span class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">4,2 h</span>
+<span id="sol-an-ciclo" class="font-metric-stat text-metric-stat font-extrabold text-slate-900 tracking-tight">4,2 h</span>
 <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-caps font-bold bg-emerald-50 text-emerald-700">
 <span class="material-symbols-outlined text-[13px]">arrow_downward</span>
             -34% optimizado
@@ -330,24 +330,24 @@
 </div>
 <!-- Filter pills -->
 <div class="flex items-center bg-slate-50 p-1 rounded-lg border border-slate-200/70 text-xs font-medium text-slate-600">
-<button class="px-2.5 py-1 rounded-md bg-white text-slate-900 font-semibold shadow-2xs">Viajes totales</button>
-<button class="px-2.5 py-1 rounded-md hover:text-slate-900 transition-colors">A tiempo</button>
-<button class="px-2.5 py-1 rounded-md hover:text-slate-900 transition-colors">Desvíos</button>
+<button type="button" data-serie="viajes" class="px-2.5 py-1 rounded-md bg-white text-slate-900 font-semibold shadow-2xs">Viajes totales</button>
+<button type="button" data-serie="tiempo" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition-colors">A tiempo</button>
+<button type="button" data-serie="desvios" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition-colors">Desvíos</button>
 </div>
 </div>
 <!-- Metric highlights bar -->
 <div class="grid grid-cols-3 gap-2 py-3.5 my-2 border-b border-slate-100 text-xs">
 <div>
 <span class="text-slate-400 font-medium block">Total semana:</span>
-<span class="font-bold text-slate-800 text-sm">7.420 viajes</span>
+<span id="sol-an-semana" class="font-bold text-slate-800 text-sm">7.420 viajes</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block">Promedio diario:</span>
-<span class="font-bold text-slate-800 text-sm">1.060 viajes/día</span>
+<span id="sol-an-prom" class="font-bold text-slate-800 text-sm">1.060 viajes/día</span>
 </div>
 <div>
 <span class="text-slate-400 font-medium block">SLA ponderado:</span>
-<span class="font-bold text-emerald-600 text-sm">96,4% a tiempo</span>
+<span id="sol-an-sla-pond" class="font-bold text-emerald-600 text-sm">96,4% a tiempo</span>
 </div>
 </div>
 <!-- SVG Line Chart with gradient fills -->
@@ -419,7 +419,7 @@
             Entregas SLA cumplido
           </span>
 </div>
-<span class="text-[11px] text-slate-400">Actualizado hace 2m</span>
+<span id="sol-an-actualizado" class="text-[11px] text-slate-400">Actualizado hace 2m</span>
 </div>
 </div>
 <!-- Chart B (5/12): Incidencias por Tipo (Donut Chart) -->
@@ -431,7 +431,7 @@
 <span class="material-symbols-outlined text-amber-500 text-[20px]">pie_chart</span>
               Incidencias por Tipo
             </h2>
-<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Distribución de las últimas 140 novedades registradas</p>
+<p id="sol-an-donut-sub" class="font-body-sm text-body-sm text-slate-400 mt-0.5">Distribución de las últimas 140 novedades registradas</p>
 </div>
 <span class="px-2 py-0.5 rounded-full text-label-caps font-semibold bg-slate-100 text-slate-700">
             30 Días
@@ -460,7 +460,7 @@
 </svg>
 <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
 <span class="text-xs text-slate-400 font-semibold tracking-wider uppercase">TOTAL</span>
-<span class="font-extrabold text-slate-900 text-lg leading-tight">140</span>
+<span id="sol-an-donut-total" class="font-extrabold text-slate-900 text-lg leading-tight">140</span>
 <span class="text-[10px] text-slate-400 font-medium">eventos</span>
 </div>
 </div>
@@ -469,61 +469,61 @@
 <div class="flex items-center justify-between py-1 border-b border-slate-100">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-<span class="text-slate-700 font-medium">Desvío de Ruta</span>
+<span id="sol-an-tipo-label-0" class="text-slate-700 font-medium">Desvío de Ruta</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="font-bold text-slate-900">38</span>
-<span class="text-slate-400 text-[11px] font-mono w-8 text-right">27,1%</span>
+<span id="sol-an-tipo-n-0" class="font-bold text-slate-900">38</span>
+<span id="sol-an-tipo-p-0" class="text-slate-400 text-[11px] font-mono w-8 text-right">27,1%</span>
 </div>
 </div>
 <div class="flex items-center justify-between py-1 border-b border-slate-100">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
-<span class="text-slate-700 font-medium">Bultos / Roturas</span>
+<span id="sol-an-tipo-label-1" class="text-slate-700 font-medium">Bultos / Roturas</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="font-bold text-slate-900">24</span>
-<span class="text-slate-400 text-[11px] font-mono w-8 text-right">17,1%</span>
+<span id="sol-an-tipo-n-1" class="font-bold text-slate-900">24</span>
+<span id="sol-an-tipo-p-1" class="text-slate-400 text-[11px] font-mono w-8 text-right">17,1%</span>
 </div>
 </div>
 <div class="flex items-center justify-between py-1 border-b border-slate-100">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-<span class="text-slate-700 font-medium">Demora en Carga</span>
+<span id="sol-an-tipo-label-2" class="text-slate-700 font-medium">Demora en Carga</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="font-bold text-slate-900">22</span>
-<span class="text-slate-400 text-[11px] font-mono w-8 text-right">15,7%</span>
+<span id="sol-an-tipo-n-2" class="font-bold text-slate-900">22</span>
+<span id="sol-an-tipo-p-2" class="text-slate-400 text-[11px] font-mono w-8 text-right">15,7%</span>
 </div>
 </div>
 <div class="flex items-center justify-between py-1 border-b border-slate-100">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-<span class="text-slate-700 font-medium">Documentación</span>
+<span id="sol-an-tipo-label-3" class="text-slate-700 font-medium">Documentación</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="font-bold text-slate-900">18</span>
-<span class="text-slate-400 text-[11px] font-mono w-8 text-right">12,8%</span>
+<span id="sol-an-tipo-n-3" class="font-bold text-slate-900">18</span>
+<span id="sol-an-tipo-p-3" class="text-slate-400 text-[11px] font-mono w-8 text-right">12,8%</span>
 </div>
 </div>
 <div class="flex items-center justify-between py-1 border-b border-slate-100">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-<span class="text-slate-700 font-medium">Falla Mecánica</span>
+<span id="sol-an-tipo-label-4" class="text-slate-700 font-medium">Falla Mecánica</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="font-bold text-slate-900">16</span>
-<span class="text-slate-400 text-[11px] font-mono w-8 text-right">11,4%</span>
+<span id="sol-an-tipo-n-4" class="font-bold text-slate-900">16</span>
+<span id="sol-an-tipo-p-4" class="text-slate-400 text-[11px] font-mono w-8 text-right">11,4%</span>
 </div>
 </div>
 <div class="flex items-center justify-between py-1">
 <div class="flex items-center gap-2">
 <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-<span class="text-slate-700 font-medium">Otros Eventos</span>
+<span id="sol-an-tipo-label-5" class="text-slate-700 font-medium">Otros Eventos</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="font-bold text-slate-900">22</span>
-<span class="text-slate-400 text-[11px] font-mono w-8 text-right">15,7%</span>
+<span id="sol-an-tipo-n-5" class="font-bold text-slate-900">22</span>
+<span id="sol-an-tipo-p-5" class="text-slate-400 text-[11px] font-mono w-8 text-right">15,7%</span>
 </div>
 </div>
 </div>
@@ -532,7 +532,7 @@
 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
 <span class="flex items-center gap-1 text-amber-700 font-medium">
 <span class="material-symbols-outlined text-[15px]">info</span>
-          Desvío de Ruta creció +4% vs mes previo
+          <span id="sol-an-donut-nota">Desvío de Ruta creció +4% vs mes previo</span>
         </span>
 <a class="text-blue-600 hover:underline font-semibold" href="#">Ver detalle →</a>
 </div>
@@ -562,10 +562,10 @@
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 AMBA (CABA y Gran Buenos Aires)
               </span>
-<span class="font-bold text-emerald-700 font-mono">97%</span>
+<span id="sol-an-zona-0" class="font-bold text-emerald-700 font-mono">97%</span>
 </div>
 <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-<div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 97%"></div>
+<div id="sol-an-zona-bar-0" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 97%"></div>
 </div>
 </div>
 <!-- Centro -->
@@ -575,10 +575,10 @@
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 Centro (Córdoba / Santa Fe)
               </span>
-<span class="font-bold text-emerald-700 font-mono">95%</span>
+<span id="sol-an-zona-1" class="font-bold text-emerald-700 font-mono">95%</span>
 </div>
 <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-<div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 95%"></div>
+<div id="sol-an-zona-bar-1" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 95%"></div>
 </div>
 </div>
 <!-- Litoral -->
@@ -588,10 +588,10 @@
 <span class="w-2 h-2 rounded-full bg-teal-500"></span>
                 Litoral (Entre Ríos / Corrientes / Misiones)
               </span>
-<span class="font-bold text-teal-700 font-mono">93%</span>
+<span id="sol-an-zona-2" class="font-bold text-teal-700 font-mono">93%</span>
 </div>
 <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-<div class="bg-teal-500 h-full rounded-full transition-all duration-500" style="width: 93%"></div>
+<div id="sol-an-zona-bar-2" class="bg-teal-500 h-full rounded-full transition-all duration-500" style="width: 93%"></div>
 </div>
 </div>
 <!-- Patagonia -->
@@ -601,10 +601,10 @@
 <span class="w-2 h-2 rounded-full bg-teal-500"></span>
                 Patagonia (Neuquén / Río Negro / Chubut)
               </span>
-<span class="font-bold text-teal-700 font-mono">92%</span>
+<span id="sol-an-zona-3" class="font-bold text-teal-700 font-mono">92%</span>
 </div>
 <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-<div class="bg-teal-500 h-full rounded-full transition-all duration-500" style="width: 92%"></div>
+<div id="sol-an-zona-bar-3" class="bg-teal-500 h-full rounded-full transition-all duration-500" style="width: 92%"></div>
 </div>
 </div>
 <!-- Cuyo -->
@@ -614,10 +614,10 @@
 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                 Cuyo (Mendoza / San Juan / San Luis)
               </span>
-<span class="font-bold text-amber-700 font-mono">91%</span>
+<span id="sol-an-zona-4" class="font-bold text-amber-700 font-mono">91%</span>
 </div>
 <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-<div class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 91%"></div>
+<div id="sol-an-zona-bar-4" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 91%"></div>
 </div>
 </div>
 <!-- NOA (En alerta) -->
@@ -628,10 +628,10 @@
                 NOA (Tucumán / Salta / Jujuy)
                 <span class="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-semibold">Requiere atención</span>
 </span>
-<span class="font-bold text-rose-700 font-mono">88%</span>
+<span id="sol-an-zona-5" class="font-bold text-rose-700 font-mono">88%</span>
 </div>
 <div class="w-full bg-rose-100 h-2.5 rounded-full overflow-hidden">
-<div class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: 88%"></div>
+<div id="sol-an-zona-bar-5" class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: 88%"></div>
 </div>
 <p class="text-[11px] text-rose-600 mt-1.5 font-medium">
               Demoras por cortes viales en Ruta 34 y verificación en aduana interior.
@@ -747,7 +747,7 @@
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> En línea
             </span>
 </div>
-<p class="font-body-sm text-body-sm text-slate-400 mt-0.5">Motor SOL Analytics Core v4 · Consulta libre sobre métricas, viajes y choferes</p>
+<p id="sol-an-chat" class="font-body-sm text-body-sm text-slate-400 mt-0.5">Motor SOL Analytics Core v4 · Consulta libre sobre métricas, viajes y choferes</p>
 </div>
 </div>
 <div class="text-xs text-slate-400 font-mono">
@@ -782,9 +782,9 @@
 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
 <span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
 </div>
-<input class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/90 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-2xs" placeholder="Escribí tu consulta analítica sobre flota, rutas, tiempos o costos..." type="text"/>
+<input id="sol-an-pregunta" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/90 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-2xs" placeholder="Escribí tu consulta analítica sobre flota, rutas, tiempos o costos..." type="text"/>
 </div>
-<button class="px-4 py-2.5 rounded-lg bg-[#0e1738] hover:bg-[#14214d] text-white font-label-lg text-label-lg flex items-center gap-1.5 shadow-sm transition-colors">
+<button id="sol-an-consultar" type="button" class="px-4 py-2.5 rounded-lg bg-[#0e1738] hover:bg-[#14214d] text-white font-label-lg text-label-lg flex items-center gap-1.5 shadow-sm transition-colors">
 <span>Consultar</span>
 <span class="material-symbols-outlined text-[16px] text-cyan-400">send</span>
 </button>
@@ -955,5 +955,6 @@
 </div>
 </footer>
 <!-- END: PageFooter -->
+<script src="/stitch/redesign/analitica-live.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

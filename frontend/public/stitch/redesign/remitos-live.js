@@ -431,6 +431,10 @@
     if (tr && tr.getAttribute("data-id")) seleccionar(tr.getAttribute("data-id"), false);
   });
   var buscar = $("sol-rem-buscar");
+  var qParam = "";
+  try { qParam = new URLSearchParams(window.top.location.search).get("q") || ""; } catch (e) {}
+  if (!qParam) qParam = new URLSearchParams(location.search).get("q") || "";
+  if (qParam && buscar) buscar.value = qParam;
   if (buscar) buscar.addEventListener("input", function () { if (live) pintar(); else filtrarMuestra(); });
   var estado = $("sol-rem-estado");
   if (estado) estado.addEventListener("change", function () { showAll = false; if (live) pintar(); else filtrarMuestra(); });
