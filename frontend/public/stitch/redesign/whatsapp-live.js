@@ -7,6 +7,7 @@
   var conv = null;
   var remito = null;
   var tab = "remito";
+  var remitos = [];
   var busy = false;
   var sessionError = false;
   var typingTimer = null;
@@ -116,6 +117,31 @@
     if (u.tipo === "note") return "Nota interna";
     return u.texto || "Mensaje";
   }
+  function mediaUrl(url) {
+    if (!url) return "";
+    var u = String(url).trim();
+    if (!u) return "";
+    if (u.indexOf("/backend/") === 0) return u;
+    if (u.indexOf("/api/media/") === 0) return "/backend" + u;
+    var file = u.match(/\/v1\/files\/([a-fA-F0-9]+)/i);
+    if (file) return "/backend/api/media/bot/" + file[1];
+    return u;
+  }
+  function remitoPorTelefono(tel) {
+    var d = digits(tel);
+    if (d.length < 8) return null;
+    var tail = d.slice(-10);
+    for (var i = 0; i < remitos.length; i++) {
+      var p = digits(remitos[i].telefono_chofer);
+      if (p && (p === d || p.slice(-10) === tail)) return remitos[i];
+    }
+    return null;
+  }
+  function remitoPorId(id) {
+    if (!id) return null;
+    for (var i = 0; i < remitos.length; i++) if (remitos[i].id === id) return remitos[i];
+    return null;
+  }
   function linkify(text) {
     return esc(text).replace(/https?:\/\/[^\s<]+/g, function (url) {
       return '<a class="font-mono text-[11px] text-blue-600 break-all underline hover:text-blue-800 block" href="' + url + '" target="_blank" rel="noreferrer">' + url + "</a>";
@@ -216,9 +242,12 @@
     var nota = msg.tipo === "note";
     var cuerpo = "";
     if (msg.tipo === "image") {
-      cuerpo += '<p class="text-xs">Foto</p>';
-      if (msg.imagen_url) {
-        cuerpo += '<a class="font-mono text-[11px] text-blue-600 break-all underline" href="' + esc(msg.imagen_url) + '" target="_blank" rel="noreferrer">Abrir imagen</a>';
+      var src = mediaUrl(msg.imagen_url);
+      if (src) {
+        cuerpo += '<a href="' + esc(src) + '" target="_blank" rel="noreferrer" class="block overflow-hidden rounded-lg bg-white/60">' +
+          '<img src="' + esc(src) + '" alt="Foto" class="max-h-64 w-full object-contain"></a>';
+      } else {
+        cuerpo += '<p class="text-xs">Foto</p>';
       }
     } else if (msg.tipo === "audio") {
       cuerpo += '<p class="text-xs">Nota de voz</p>';
@@ -314,6 +343,19 @@
     var v = d[key];
     return v == null || v === "" ? "" : String(v);
   }
+  function pintarFoto() {
+    var img = $("sol-wa-foto");
+    if (!img) return;
+    if (!remito || !remito.id || tab !== "remito") {
+      img.classList.add("hidden");
+      img.removeAttribute("src");
+      return;
+    }
+    img.classList.remove("hidden");
+    img.alt = "Remito " + (dato("nro_remito") || dato("nro_guia") || "");
+    img.src = "/backend/api/remitos/" + encodeURIComponent(remito.id) + "/imagen";
+    img.onerror = function () { img.classList.add("hidden"); };
+  }
   function pintarContexto() {
     var doc = $("sol-wa-doc");
     var estado = $("sol-wa-estado");
@@ -334,6 +376,7 @@
       if (cliente) cliente.textContent = "—";
       if (unidad) unidad.textContent = "—";
       if (merc) merc.textContent = "—";
+      pintarFoto();
       return;
     }
     var nro = dato("nro_guia") || dato("nro_remito") || String(remito.id || "").slice(0, 8);
@@ -352,15 +395,17 @@
     } else {
       if (doc) doc.textContent = nro ? "#" + nro : "—";
       if (estado) estado.textContent = estadoRemito(remito.estado);
-      if (cliente) cliente.textContent = [dato("cliente") || remito.tenant || "—", ruta].filter(Boolean).join(" • ");
+      if (cliente) cliente.textContent = [dato("cliente") || dato("remito_cliente") || dato("conductor") || "—", ruta].filter(Boolean).join(" • ");
     }
-    var patente = dato("patente") || dato("chasis") || dato("tractor");
-    var unidadTxt = [dato("vehiculo") || dato("unidad"), patente].filter(Boolean).join(" • ");
+    var patente = dato("patente") || dato("patente_chasis") || dato("chasis") || dato("tractor");
+    var semi = dato("patente_acoplado") || dato("acoplado") || dato("semi");
+    var unidadTxt = [dato("vehiculo") || dato("unidad") || dato("conductor"), patente, semi].filter(Boolean).join(" • ");
     if (unidad) unidad.textContent = unidadTxt || "—";
     var peso = dato("peso_kg") || dato("peso");
-    var bultos = dato("total_bultos");
-    var mercTxt = [dato("mercaderia") || dato("producto"), bultos ? bultos + " bultos" : "", peso ? peso + " kg" : ""].filter(Boolean).join(" • ");
+    var bultos = dato("cantidad") || dato("total_bultos");
+    var mercTxt = [dato("descripcion") || dato("mercaderia") || dato("producto"), bultos ? bultos + " bultos" : "", peso ? peso + " kg" : ""].filter(Boolean).join(" • ");
     if (merc) merc.textContent = mercTxt || "—";
+    pintarFoto();
   }
 
   function pintarTabs() {
@@ -415,16 +460,18 @@
       conv.total_mensajes = item && item.total_mensajes ? item.total_mensajes : (data.mensajes || []).length;
       pintarCabeza();
       pintarHilo();
-      remito = null;
+      remito = remitoPorId(data.ultimo_remito_id) || remitoPorTelefono(data.telefono || tel);
+      pintarCabeza();
       pintarContexto();
-      if (!data.ultimo_remito_id) return;
+      if (!data.ultimo_remito_id || remitoPorId(data.ultimo_remito_id)) return;
       return api("/api/remitos/" + encodeURIComponent(data.ultimo_remito_id)).then(function (row) {
         if (selected !== tel) return;
         remito = row;
         pintarCabeza();
         pintarContexto();
       }).catch(function () {
-        remito = null;
+        if (selected !== tel) return;
+        remito = remitoPorTelefono(data.telefono || tel);
         pintarContexto();
       });
     }).catch(function (err) {
@@ -444,6 +491,7 @@
       api("/api/conversaciones?limit=200"),
       api("/api/parametros/choferes").catch(function () { return []; }),
       api("/api/incidencias?limit=500").catch(function () { return []; }),
+      api("/api/remitos?limit=200").catch(function () { return []; }),
     ]).then(function (pack) {
       sessionError = false;
       lista = Array.isArray(pack[0]) ? pack[0] : [];
@@ -453,6 +501,9 @@
           var tel = digits(raw);
           if (tel.length >= 8) choferes[tel] = ch;
         });
+      });
+      remitos = (Array.isArray(pack[3]) ? pack[3] : []).slice().sort(function (a, b) {
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       });
       abiertas = {};
       (Array.isArray(pack[2]) ? pack[2] : []).forEach(function (inc) {
