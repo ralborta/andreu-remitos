@@ -75,7 +75,7 @@ export async function createUser(input) {
   return toPublicUser(row);
 }
 
-/** @param {string} id @param {{ rol?: string; nombre?: string; activo?: boolean }} input */
+/** @param {string} id @param {{ rol?: string; nombre?: string; activo?: boolean; password?: string }} input */
 export async function updateUser(id, input) {
   const rows = readAll();
   const idx = rows.findIndex((r) => r.id === id);
@@ -92,6 +92,11 @@ export async function updateUser(id, input) {
     row.nombre = String(input.nombre).trim() || row.username;
   }
   if (input.activo !== undefined) row.activo = !!input.activo;
+  if (input.password !== undefined) {
+    const passwordStr = String(input.password || "");
+    if (passwordStr.length < 6) throw new Error("La contraseña debe tener al menos 6 caracteres");
+    row.password_hash = hashPassword(passwordStr);
+  }
   row.updated_at = new Date().toISOString();
   rows[idx] = row;
   writeAll(rows);
@@ -119,7 +124,7 @@ async function ensureSeedDemo() {
   const rows = readAll();
   if (rows.some((r) => r.username === "demo")) return null;
   const username = process.env.AUTH_SEED_DEMO_USER?.trim().toLowerCase() || "demo";
-  const password = process.env.AUTH_SEED_DEMO_PASSWORD || "SolDemo2026";
+  const password = process.env.AUTH_SEED_DEMO_PASSWORD || "demo123";
   return createUser({
     username,
     password,

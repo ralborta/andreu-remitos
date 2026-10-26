@@ -64,9 +64,9 @@ export default async function authRoutes(fastify) {
   });
 
   fastify.patch("/users/:id", { preHandler: adminOnly }, async (request, reply) => {
-    const { rol, nombre, activo } = request.body ?? {};
+    const { rol, nombre, activo, password } = request.body ?? {};
     try {
-      const user = await updateUser(request.params.id, { rol, nombre, activo });
+      const user = await updateUser(request.params.id, { rol, nombre, activo, password });
       return { user };
     } catch (err) {
       return reply.code(400).send({ error: err.message || "No se pudo actualizar usuario" });
