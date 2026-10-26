@@ -490,7 +490,7 @@
 </div>
 <div>
 <h2 class="text-xl font-bold font-display text-slate-900">¿Qué necesitás saber de Viajes?</h2>
-<p class="text-xs text-slate-500 max-w-xl mx-auto mt-1 leading-relaxed">
+<p id="sol-viaje-chat" class="text-xs text-slate-500 max-w-xl mx-auto mt-1 leading-relaxed">
             Consulto viajes reales. Demoras se ven en ETA/Incidencias (no hay estado demorado aquí). Las respuestas se generan con datos reales de Viajes.
           </p>
 </div>
@@ -777,7 +777,43 @@
   var sub = document.getElementById("sol-viaje-sub");
   var nota = document.getElementById("sol-viaje-nota");
   var guardar = document.getElementById("sol-viaje-guardar");
+  var TRANS = {
+    solicitado: ["confirmado", "cancelado"],
+    confirmado: ["asignado", "cancelado"],
+    asignado: ["en_curso", "cancelado"],
+    en_curso: ["entregado", "cancelado"],
+    entregado: ["cerrado"],
+    cerrado: [],
+    cancelado: []
+  };
+  var viajesById = {};
   var currentRow = null;
+  var chatConv = null;
+
+  function api(path, opts) {
+    opts = opts || {};
+    return fetch("/backend" + path, {
+      method: opts.method || "GET",
+      credentials: "include",
+      headers: opts.body ? { "Content-Type": "application/json" } : {},
+      body: opts.body || undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) {
+          var err = new Error(data.message || data.error || ("HTTP " + r.status));
+          err.status = r.status;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
+
+  function setVacio(msg) {
+    var vacio = document.getElementById("sol-viaje-vacio");
+    var td = vacio && vacio.querySelector("td");
+    if (td && msg) td.textContent = msg;
+  }
 
   function tableBody() {
     var table = document.querySelector("table");
@@ -870,11 +906,12 @@
     form.origen.value = data.origen || "";
     form.destino.value = data.destino || "";
     form.carga.value = data.carga || "";
-    form.fecha.value = toIso(data.fecha) || data.fechaIso || "";
+    var fechaIso = data.fechaIso || (/^\d{4}-\d{2}-\d{2}/.test(data.fecha || "") ? data.fecha : toIso(data.fecha));
+    form.fecha.value = fechaIso || "";
     form.hora.value = (data.hora || "").slice(0, 5);
     form.chofer.value = data.chofer && data.chofer !== "Sin asignar" ? data.chofer : "";
     form.unidad.value = data.unidad && data.unidad !== "--" ? data.unidad : "";
-    form.estado.value = data.estado || "solicitado";
+    fillEstado(data.estado || "solicitado", mode === "edit");
     guardar.textContent = mode === "edit" ? "Guardar ficha" : "Crear viaje";
     form.dataset.mode = mode;
     showNota("");
@@ -891,7 +928,10 @@
   }
 
   function rowHtml(data) {
-    var wa = '<button type="button" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.2a5.8 5.8 0 00-5.8 5.8c0 1.3.4 2.3 1 3.3l-.6 2.1 2.2-.6c1 .6 1.9.9 3.1.9a5.8 5.8 0 10.1-11.5z"></path></svg></button>';
+    var accion = data.chofer ? "Detalle" : "Asignar";
+    var wa = puedeTracking(data.estado)
+      ? '<button type="button" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Enviar vía WhatsApp"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.2a5.8 5.8 0 00-5.8 5.8c0 1.3.4 2.3 1 3.3l-.6 2.1 2.2-.6c1 .6 1.9.9 3.1.9a5.8 5.8 0 10.1-11.5z"></path></svg></button>'
+      : "";
     return '<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group" data-viaje-id="' + (data.id || "") + '">' +
       '<td class="py-3 px-4 font-mono font-semibold text-indigo-600"></td>' +
       '<td class="py-3 px-4 text-slate-500 whitespace-nowrap"></td>' +
@@ -902,7 +942,7 @@
       '<td class="py-3 px-4 font-mono text-slate-600"></td>' +
       '<td class="py-3 px-4"></td>' +
       '<td class="py-3 px-4 text-center whitespace-nowrap"><div class="inline-flex items-center gap-1.5">' +
-      '<button type="button" class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">Detalle</button>' +
+      '<button type="button" class="px-2.5 py-1 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded font-medium text-[11px] transition-colors">' + accion + '</button>' +
       wa +
       '<button type="button" class="p-1 text-slate-400 hover:text-slate-600 rounded">•••</button></div></td></tr>';
   }
@@ -984,6 +1024,126 @@
     applyFilters();
   }
 
+  function fillEstado(actual, editable) {
+    var opts = editable ? [actual].concat(TRANS[actual] || []) : ["solicitado"];
+    var seen = {};
+    form.estado.innerHTML = opts.filter(function (e) {
+      if (!ESTADOS[e] || seen[e]) return false;
+      seen[e] = true;
+      return true;
+    }).map(function (e) {
+      return '<option value="' + e + '">' + ESTADOS[e] + "</option>";
+    }).join("");
+    form.estado.value = editable ? actual : "solicitado";
+    form.estado.disabled = !editable;
+    form.dataset.estado = editable ? actual : "solicitado";
+  }
+
+  function fromViaje(v) {
+    return {
+      id: v.id,
+      codigo: v.codigo,
+      fecha: v.fecha || "",
+      hora: String(v.hora || "").slice(0, 5),
+      cliente: v.cliente || "",
+      origen: v.origen || "",
+      destino: v.destino || "",
+      carga: v.carga || "",
+      chofer: v.chofer || "",
+      unidad: v.tractor || "",
+      estado: v.estado || "solicitado"
+    };
+  }
+
+  function paintViaje(v) {
+    viajesById[v.id] = v;
+    var tr = document.querySelector('tr[data-viaje-id="' + v.id + '"]');
+    if (!tr) return;
+    paintRow(tr, fromViaje(v));
+  }
+
+  function chatOut(msg) {
+    var el = document.getElementById("sol-viaje-chat");
+    if (el && msg) el.textContent = msg;
+  }
+
+  function puedeTracking(estado) {
+    return estado === "confirmado" || estado === "asignado" || estado === "en_curso";
+  }
+
+  function enviarTracking(id) {
+    var v = viajesById[id];
+    if (!v || !puedeTracking(v.estado)) {
+      chatOut("El enlace de Tracking Express se genera en viajes confirmados, asignados o en curso.");
+      return;
+    }
+    chatOut("Generando enlace…");
+    api("/api/tracking/links", {
+      method: "POST",
+      body: JSON.stringify({ tripId: id, sendWhatsApp: true })
+    }).then(function (res) {
+      var note = res.reused ? "Enlace activo listo." : "Enlace generado.";
+      if (res.whatsapp && res.whatsapp.ok) {
+        note = res.reused ? "Enlace activo reenviado por WhatsApp al chofer." : "Enlace generado y enviado por WhatsApp al chofer.";
+      } else if (res.whatsapp) {
+        note += " WhatsApp: " + (res.whatsapp.error || "no enviado (revisá el teléfono del chofer).");
+      }
+      if (res.trackingUrl) note += " " + res.trackingUrl;
+      chatOut(note);
+    }).catch(function (err) {
+      chatOut(err.message || "No pude generar el enlace.");
+    });
+  }
+
+  function preguntar(text) {
+    var q = String(text || "").trim();
+    if (!q) return;
+    chatOut("Consultando…");
+    api("/api/agents/chat", {
+      method: "POST",
+      body: JSON.stringify({ agentId: "viajes", message: q, conversationId: chatConv || undefined })
+    }).then(function (res) {
+      chatConv = res.conversationId || chatConv;
+      chatOut((res.message && res.message.text) || "Sin respuesta.");
+    }).catch(function (err) {
+      chatOut(err.message || "No pude consultar los viajes.");
+    });
+  }
+
+  function renderViajes(list) {
+    dataRows().forEach(function (tr) { tr.remove(); });
+    viajesById = {};
+    var body = tableBody();
+    var vacio = document.getElementById("sol-viaje-vacio");
+    list.forEach(function (v) {
+      viajesById[v.id] = v;
+      var wrap = document.createElement("tbody");
+      wrap.innerHTML = rowHtml(fromViaje(v));
+      var tr = wrap.firstChild;
+      paintRow(tr, fromViaje(v));
+      if (vacio) body.insertBefore(tr, vacio);
+      else body.appendChild(tr);
+    });
+    setVacio("No hay viajes con esos filtros.");
+    applyFilters();
+  }
+
+  function loadViajes() {
+    dataRows().forEach(function (tr) { tr.remove(); });
+    setVacio("Cargando viajes…");
+    var vacio = document.getElementById("sol-viaje-vacio");
+    if (vacio) vacio.classList.remove("hidden");
+    return api("/api/viajes?limit=100").then(function (data) {
+      renderViajes(Array.isArray(data) ? data : []);
+    }).catch(function (err) {
+      viajesById = {};
+      setVacio(err.status === 401 ? "Hace falta una sesión para ver los viajes." : (err.message || "No pude cargar los viajes."));
+      applyFilters();
+      if (vacio) vacio.classList.remove("hidden");
+      if (err.status === 401) chatOut("Hace falta una sesión para ver y guardar los viajes.");
+    });
+  }
+
   function values() {
     return {
       cliente: form.cliente.value.trim(),
@@ -998,67 +1158,58 @@
     };
   }
 
+  function payload(data) {
+    return {
+      cliente: data.cliente,
+      origen: data.origen,
+      destino: data.destino,
+      carga: data.carga || null,
+      fecha: data.fecha || null,
+      hora: data.hora || null,
+      chofer: data.chofer || null,
+      tractor: data.unidad || null
+    };
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var data = values();
     if (!data.cliente || !data.origen || !data.destino) return;
+    guardar.disabled = true;
+    showNota("");
     if (form.dataset.mode === "edit" && currentRow) {
-      data.codigo = textOf(currentRow.querySelector("td"));
-      data.fecha = data.fecha;
-      paintRow(currentRow, data);
-      applyFilters();
       var id = currentRow.getAttribute("data-viaje-id");
-      if (id) {
-        fetch("/backend/api/viajes/" + id, {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            cliente: data.cliente,
-            origen: data.origen,
-            destino: data.destino,
-            carga: data.carga || null,
-            fecha: data.fecha || null,
-            hora: data.hora || null,
-            chofer: data.chofer || null,
-            tractor: data.unidad || null
-          })
-        }).catch(function () {});
+      if (!id || !viajesById[id]) {
+        guardar.disabled = false;
+        showNota("Este registro no está en el sistema. No se guardó.");
+        return;
       }
-      closeModal();
+      var estadoPrev = form.dataset.estado || viajesById[id].estado;
+      api("/api/viajes/" + id, { method: "PATCH", body: JSON.stringify(payload(data)) }).then(function (viaje) {
+        paintViaje(viaje);
+        applyFilters();
+        if (data.estado && data.estado !== estadoPrev) {
+          return api("/api/viajes/" + id + "/estado", {
+            method: "POST",
+            body: JSON.stringify({ estado: data.estado })
+          });
+        }
+        return viaje;
+      }).then(function (viaje) {
+        paintViaje(viaje);
+        applyFilters();
+        closeModal();
+      }).catch(function (err) {
+        showNota(err.message || "No se pudo guardar el viaje.");
+      }).finally(function () { guardar.disabled = false; });
       return;
     }
-    guardar.disabled = true;
-    fetch("/backend/api/viajes", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        cliente: data.cliente,
-        origen: data.origen,
-        destino: data.destino,
-        carga: data.carga || undefined,
-        fecha: data.fecha || undefined,
-        hora: data.hora || undefined,
-        chofer: data.chofer || undefined,
-        tractor: data.unidad || undefined
-      })
-    }).then(function (r) {
-      if (!r.ok) throw new Error("http");
-      return r.json();
-    }).then(function (viaje) {
-      data.id = viaje.id;
-      data.codigo = viaje.codigo || "VJ-NUEVO";
-      data.estado = viaje.estado || "solicitado";
-      insertRow(data);
+    api("/api/viajes", { method: "POST", body: JSON.stringify(payload(data)) }).then(function (viaje) {
+      viajesById[viaje.id] = viaje;
+      insertRow(fromViaje(viaje));
       closeModal();
-    }).catch(function () {
-      var hoy = new Date();
-      var seq = String((tableBody() ? tableBody().querySelectorAll("tr").length : 0) + 1).padStart(3, "0");
-      data.codigo = "VJ-" + hoy.getFullYear() + ("0" + (hoy.getMonth() + 1)).slice(-2) + ("0" + hoy.getDate()).slice(-2) + "-" + seq;
-      data.estado = data.estado || "solicitado";
-      insertRow(data);
-      closeModal();
+    }).catch(function (err) {
+      showNota(err.message || "No se pudo crear el viaje. No quedó guardado.");
     }).finally(function () { guardar.disabled = false; });
   });
 
@@ -1099,9 +1250,47 @@
         e.preventDefault();
         e.stopPropagation();
       }
-      var data = readRow(tr);
+      var id = tr.getAttribute("data-viaje-id");
+      if (btn && /whatsapp/i.test(btn.getAttribute("title") || "")) {
+        if (id) enviarTracking(id);
+        return;
+      }
+      var v = id && viajesById[id];
+      if (!v) return;
+      var data = fromViaje(v);
       data.tr = tr;
       openModal("edit", data, label === "asignar");
+    });
+  }
+
+  var chatInput = document.querySelector('input[placeholder^="Preguntá algo sobre Viajes"]');
+  var chatSection = chatInput ? chatInput.closest("section") : null;
+  if (chatInput) {
+    chatInput.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      preguntar(chatInput.value);
+      chatInput.value = "";
+    });
+  }
+  if (chatSection) {
+    chatSection.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      var title = b.getAttribute("title") || "";
+      var t = textOf(b);
+      if (title === "Enviar consulta") {
+        e.preventDefault();
+        e.stopPropagation();
+        preguntar(chatInput.value);
+        chatInput.value = "";
+        return;
+      }
+      if (/^¿/.test(t) || /^ultimos/i.test(fold(t))) {
+        e.preventDefault();
+        e.stopPropagation();
+        preguntar(t);
+      }
     });
   }
 
@@ -1111,7 +1300,7 @@
     el.addEventListener("input", applyFilters);
     el.addEventListener("change", applyFilters);
   });
-  applyFilters();
+  loadViajes();
 })();
 </script>
 <script src="/stitch/redesign/bridge.js"></script>
