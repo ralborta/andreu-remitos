@@ -467,6 +467,7 @@
       var nuevo = "";
       lista.forEach(function (r) { if (r.telefono === selected) nuevo = r.updated_at || ""; });
       if (selected && (!conv || previo !== selected || sello !== nuevo)) return abrir(selected);
+      if (selected) return;
       conv = null;
       remito = null;
       pintarCabeza();
