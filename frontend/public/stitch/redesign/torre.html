@@ -267,25 +267,23 @@
 
 <!-- RIGHT COLUMN: Flota en tiempo real (Map Card) & Incidencias -->
 <div class="lg:col-span-3 flex flex-col gap-4">
-<!-- Flota Map Card → Monitor -->
-<div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between h-[340px] relative overflow-hidden group/flota hover:border-indigo-200 hover:shadow-md transition-all" data-sol-torre-card="flota" data-sol-go="/monitor">
-<a class="flex items-center justify-between z-10 relative rounded-lg -m-1 p-1 hover:bg-slate-50 transition-colors" href="/monitor" target="_parent" title="Abrir Monitor de flota">
-<div class="flex items-center gap-2">
+<!-- Flota Map Card → mapa fullscreen -->
+<button type="button" class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between h-[340px] relative overflow-hidden group/flota hover:border-indigo-200 hover:shadow-md transition-all text-left w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300" data-sol-torre-card="flota" title="Ver flota en mapa">
+<span class="flex items-center justify-between z-10 relative rounded-lg -m-1 p-1 pointer-events-none">
+<span class="flex items-center gap-2">
 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
 <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
 <span class="text-xs font-bold text-slate-800">Flota en tiempo real</span>
-</div>
+</span>
 <svg class="w-4 h-4 text-slate-400 group-hover/flota:text-indigo-600 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
-</a>
-<!-- Mapa original (Leaflet/OSM) en el tamaño de la tarjeta -->
-<div class="relative w-full h-[270px] bg-slate-50/60 rounded-xl overflow-hidden mt-2 border border-slate-100">
-<iframe class="absolute inset-0 h-full w-full border-0" src="/embed/fleet-map" title="Flota en tiempo real"></iframe>
-<!-- Map Legend Overlay -->
-<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-xs p-2 rounded-lg border border-slate-200/80 text-[10px] space-y-1 shadow-xs z-10 pointer-events-none">
+</span>
+<div class="relative w-full h-[270px] bg-slate-50/60 rounded-xl overflow-hidden mt-2 border border-slate-100 pointer-events-none">
+<iframe class="absolute inset-0 h-full w-full border-0" src="/embed/fleet-map" title="Flota en tiempo real" tabindex="-1"></iframe>
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-xs p-2 rounded-lg border border-slate-200/80 text-[10px] space-y-1 shadow-xs z-10">
 <div class="flex items-center gap-1.5 font-medium text-slate-700">
 <span class="w-2 h-2 rounded-full bg-blue-500"></span> <span data-sol-flota-curso>15</span> en curso
               </div>
@@ -297,10 +295,9 @@
               </div>
 </div>
 </div>
-<a class="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-600 hover:text-indigo-700 z-10" href="/monitor" target="_parent">Abrir Monitor completo →</a>
-</div>
-<!-- Incidencias Abiertas Alert Card → Agente Incidencias -->
-<a class="bg-rose-50/60 border border-rose-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between flex-1 hover:border-rose-300 hover:shadow-md hover:bg-rose-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-300" data-sol-torre-card="incidencias" href="/agentes/incidencias" target="_parent" title="Abrir Incidencias abiertas">
+</button>
+<!-- Incidencias → panel con las 2 de criticidad alta -->
+<button type="button" class="bg-rose-50/60 border border-rose-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between flex-1 hover:border-rose-300 hover:shadow-md hover:bg-rose-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-300 text-left w-full" data-sol-torre-card="incidencias" title="Ver incidencias de criticidad alta">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-2">
 <div class="p-1.5 rounded-lg bg-rose-100 text-rose-600">
@@ -321,7 +318,7 @@
 <div class="text-[11px] text-slate-500 font-medium">Requieren seguimiento inmediato.</div>
 </div>
 </div>
-</a>
+</button>
 </div>
 </div>
 <!-- END: MainHeroGrid -->
@@ -713,7 +710,7 @@ En vivo
 </div>
 </footer>
 <!-- END: PageFooter -->
-<script src="/stitch/redesign/torre-live.js"></script>
+<script src="/stitch/redesign/torre-live.js?v=fleet-inc-v2"></script>
 <script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
