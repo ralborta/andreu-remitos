@@ -336,113 +336,22 @@
 </div>
 <!-- Section Body Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-<!-- Feed: ACTIVIDAD DE AGENTES (Col 1-5) -->
-<div class="lg:col-span-5 space-y-4">
+<!-- Feed: ACTIVIDAD DE AGENTES (Col 1-5) — simulación en vivo -->
+<div class="lg:col-span-5 flex flex-col min-h-0">
+<div class="flex items-center justify-between gap-3 mb-3">
 <h3 class="text-xs font-extrabold text-slate-700 tracking-wider uppercase">Actividad de agentes</h3>
-<div class="space-y-3.5 relative">
-<!-- Row 1: Reclamos -->
-<div class="flex items-start justify-between gap-3 text-xs group">
-<div class="flex items-start gap-2.5">
-<span class="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0"></span>
-<div class="p-1 rounded bg-rose-50 text-rose-600 shrink-0">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600">
+<span class="relative flex h-2 w-2">
+<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-60"></span>
+<span class="relative inline-flex h-2 w-2 rounded-full bg-indigo-500"></span>
+</span>
+En vivo
+</span>
 </div>
-<div>
-<div class="font-bold text-slate-800 leading-tight">Reclamo recibido · viaje identificado automáticamente</div>
-<div class="text-[11px] text-slate-500 mt-0.5">Se generó un reclamo y se vinculó al viaje VJ-24820.</div>
+<div class="rounded-xl border border-slate-100 bg-slate-50/40 max-h-[420px] overflow-y-auto scroll-thin" id="sol-torre-activity-feed" aria-live="polite" data-sol-activity-sim="1">
+<!-- Filas inyectadas por torre-live.js (simulación) -->
 </div>
-</div>
-<div class="text-right shrink-0">
-<span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Reclamos</span>
-<div class="text-[10px] text-slate-400 mt-1">10:24</div>
-</div>
-</div>
-<!-- Row 2: Remitos -->
-<div class="flex items-start justify-between gap-3 text-xs group">
-<div class="flex items-start gap-2.5">
-<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
-<div class="p-1 rounded bg-blue-50 text-blue-600 shrink-0">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-</div>
-<div>
-<div class="font-bold text-slate-800 leading-tight">Nuevo remito recibido por WhatsApp · lectura en curso</div>
-<div class="text-[11px] text-slate-500 mt-0.5">Se procesando el documento enviado por el chofer.</div>
-</div>
-</div>
-<div class="text-right shrink-0">
-<span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Remitos</span>
-<div class="text-[10px] text-slate-400 mt-1">09:47</div>
-</div>
-</div>
-<!-- Row 3: Remitos / Diferencia -->
-<div class="flex items-start justify-between gap-3 text-xs group">
-<div class="flex items-start gap-2.5">
-<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
-<div class="p-1 rounded bg-amber-50 text-amber-600 shrink-0">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-</div>
-<div>
-<div class="font-bold text-slate-800 leading-tight">Diferencia de bultos detectada · enviado a revisión</div>
-<div class="text-[11px] text-slate-500 mt-0.5">Se detectó una diferencia y se notificó al equipo.</div>
-</div>
-</div>
-<div class="text-right shrink-0">
-<span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Remitos</span>
-<div class="text-[10px] text-slate-400 mt-1">09:12</div>
-</div>
-</div>
-<!-- Row 4: Destinos -->
-<div class="flex items-start justify-between gap-3 text-xs group">
-<div class="flex items-start gap-2.5">
-<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
-<div class="p-1 rounded bg-emerald-50 text-emerald-600 shrink-0">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-</div>
-<div>
-<div class="font-bold text-slate-800 leading-tight">Destino validado · link enviado al chofer</div>
-<div class="text-[11px] text-slate-500 mt-0.5">Se compartió la ubicación de entrega con el chofer.</div>
-</div>
-</div>
-<div class="text-right shrink-0">
-<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Destinos</span>
-<div class="text-[10px] text-slate-400 mt-1">08:50</div>
-</div>
-</div>
-<!-- Row 5: Rendición -->
-<div class="flex items-start justify-between gap-3 text-xs group">
-<div class="flex items-start gap-2.5">
-<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
-<div class="p-1 rounded bg-purple-50 text-purple-600 shrink-0">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-</div>
-<div>
-<div class="font-bold text-slate-800 leading-tight">Comprobante leído y clasificado · combustible</div>
-<div class="text-[11px] text-slate-500 mt-0.5">Se procesó el comprobante de YPF.</div>
-</div>
-</div>
-<div class="text-right shrink-0">
-<span class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Rendición</span>
-<div class="text-[10px] text-slate-400 mt-1">08:20</div>
-</div>
-</div>
-<!-- Row 6: Incidencias / Check -->
-<div class="flex items-start justify-between gap-3 text-xs group">
-<div class="flex items-start gap-2.5">
-<span class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0"></span>
-<div class="p-1 rounded bg-cyan-50 text-cyan-600 shrink-0">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-</div>
-<div>
-<div class="font-bold text-slate-800 leading-tight">Evento resuelto · causa trazada en backoffice</div>
-<div class="text-[11px] text-slate-500 mt-0.5">La incidencia fue resuelta y se actualizó el historial.</div>
-</div>
-</div>
-<div class="text-right shrink-0">
-<span class="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">Incidencias</span>
-<div class="text-[10px] text-slate-400 mt-1">07:41</div>
-</div>
-</div>
-</div>
+<p class="mt-2 text-[10px] text-slate-400 font-medium">Simulación demostrativa · no refleja eventos reales de la operación.</p>
 </div>
 <!-- Charts Grid (Col 6-12) -->
 <div class="lg:col-span-7 flex flex-col gap-6">
