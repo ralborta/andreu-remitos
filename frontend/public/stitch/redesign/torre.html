@@ -267,9 +267,9 @@
 
 <!-- RIGHT COLUMN: Flota en tiempo real (Map Card) & Incidencias -->
 <div class="lg:col-span-3 flex flex-col gap-4">
-<!-- Flota Map Card -->
-<div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between h-[340px] relative overflow-hidden">
-<div class="flex items-center justify-between z-10">
+<!-- Flota Map Card → Monitor -->
+<div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between h-[340px] relative overflow-hidden group/flota hover:border-indigo-200 hover:shadow-md transition-all" data-sol-torre-card="flota" data-sol-go="/monitor">
+<a class="flex items-center justify-between z-10 relative rounded-lg -m-1 p-1 hover:bg-slate-50 transition-colors" href="/monitor" target="_parent" title="Abrir Monitor de flota">
 <div class="flex items-center gap-2">
 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -277,29 +277,30 @@
 </svg>
 <span class="text-xs font-bold text-slate-800">Flota en tiempo real</span>
 </div>
-<svg class="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-pointer" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<svg class="w-4 h-4 text-slate-400 group-hover/flota:text-indigo-600 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
 <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
-</div>
+</a>
 <!-- Mapa original (Leaflet/OSM) en el tamaño de la tarjeta -->
 <div class="relative w-full h-[270px] bg-slate-50/60 rounded-xl overflow-hidden mt-2 border border-slate-100">
 <iframe class="absolute inset-0 h-full w-full border-0" src="/embed/fleet-map" title="Flota en tiempo real"></iframe>
 <!-- Map Legend Overlay -->
 <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-xs p-2 rounded-lg border border-slate-200/80 text-[10px] space-y-1 shadow-xs z-10 pointer-events-none">
 <div class="flex items-center gap-1.5 font-medium text-slate-700">
-<span class="w-2 h-2 rounded-full bg-blue-500"></span> 15 en curso
+<span class="w-2 h-2 rounded-full bg-blue-500"></span> <span data-sol-flota-curso>15</span> en curso
               </div>
 <div class="flex items-center gap-1.5 font-medium text-slate-700">
-<span class="w-2 h-2 rounded-full bg-rose-500"></span> 3 detenidos
+<span class="w-2 h-2 rounded-full bg-rose-500"></span> <span data-sol-flota-detenidos>3</span> detenidos
               </div>
 <div class="flex items-center gap-1.5 font-medium text-slate-700">
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Entregados
               </div>
 </div>
 </div>
+<a class="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-600 hover:text-indigo-700 z-10" href="/monitor" target="_parent">Abrir Monitor completo →</a>
 </div>
-<!-- Incidencias Abiertas Alert Card -->
-<div class="bg-rose-50/60 border border-rose-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between flex-1">
+<!-- Incidencias Abiertas Alert Card → Agente Incidencias -->
+<a class="bg-rose-50/60 border border-rose-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between flex-1 hover:border-rose-300 hover:shadow-md hover:bg-rose-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-300" data-sol-torre-card="incidencias" href="/agentes/incidencias" target="_parent" title="Abrir Incidencias abiertas">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-2">
 <div class="p-1.5 rounded-lg bg-rose-100 text-rose-600">
@@ -314,13 +315,13 @@
 </svg>
 </div>
 <div class="flex items-baseline gap-3 mt-2">
-<span class="text-4xl font-black text-slate-900 tracking-tight">7</span>
+<span class="text-4xl font-black text-slate-900 tracking-tight" data-sol-inc-abiertas>7</span>
 <div>
-<div class="text-xs font-bold text-rose-600">2 de criticidad alta</div>
+<div class="text-xs font-bold text-rose-600"><span data-sol-inc-alta>2</span> de criticidad alta</div>
 <div class="text-[11px] text-slate-500 font-medium">Requieren seguimiento inmediato.</div>
 </div>
 </div>
-</div>
+</a>
 </div>
 </div>
 <!-- END: MainHeroGrid -->

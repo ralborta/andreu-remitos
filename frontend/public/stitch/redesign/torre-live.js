@@ -86,7 +86,108 @@
     );
   }
 
-  function mount() {
+  function go(href) {
+    try {
+      window.top.location.href = href;
+    } catch (e) {
+      window.location.href = href;
+    }
+  }
+
+  function setText(sel, value) {
+    document.querySelectorAll(sel).forEach(function (el) {
+      el.textContent = value == null || value === "" ? "—" : String(value);
+    });
+  }
+
+  function wireCards() {
+    document.querySelectorAll("[data-sol-torre-card]").forEach(function (card) {
+      if (card.getAttribute("data-sol-torre-wired")) return;
+      card.setAttribute("data-sol-torre-wired", "1");
+      var href = card.getAttribute("data-sol-go") || card.getAttribute("href");
+      if (!href) {
+        var kind = card.getAttribute("data-sol-torre-card");
+        href = kind === "incidencias" ? "/agentes/incidencias" : "/monitor";
+      }
+      // Si es <a>, bridge ya navega; reforzamos go en captura por si está en iframe.
+      card.addEventListener(
+        "click",
+        function (e) {
+          if (e.target.closest("iframe")) return;
+          // Dejá que el mapa no capture: solo header/links/card incidencias.
+          var isLink = e.target.closest("a[href]");
+          if (card.tagName === "A" || isLink) {
+            e.preventDefault();
+            e.stopPropagation();
+            go(isLink ? isLink.getAttribute("href") : href);
+          }
+        },
+        true,
+      );
+    });
+  }
+
+  function loadKpis() {
+    function api(path) {
+      return fetch("/backend" + path, { credentials: "include" }).then(function (r) {
+        return r.json().catch(function () {
+          return null;
+        }).then(function (data) {
+          if (!r.ok) return null;
+          return data;
+        });
+      }).catch(function () {
+        return null;
+      });
+    }
+
+    Promise.all([
+      api("/api/incidencias/resumen"),
+      api("/api/incidencias?limit=100"),
+      api("/api/viajes?limit=100"),
+    ]).then(function (pair) {
+      var resumen = pair[0];
+      var lista = Array.isArray(pair[1]) ? pair[1] : Array.isArray(pair[1] && pair[1].items) ? pair[1].items : [];
+      var viajes = Array.isArray(pair[2]) ? pair[2] : Array.isArray(pair[2] && pair[2].items) ? pair[2].items : [];
+
+      var abiertas = resumen && resumen.abiertas != null ? Number(resumen.abiertas) : null;
+      var alta = resumen && (resumen.alta != null || resumen.criticidad_alta != null)
+        ? Number(resumen.alta != null ? resumen.alta : resumen.criticidad_alta)
+        : null;
+
+      if (abiertas == null && lista.length) {
+        abiertas = lista.filter(function (g) {
+          var e = String((g && (g.estado || g.status)) || "").toLowerCase();
+          return e && e !== "resuelta" && e !== "cerrada" && e !== "resolved";
+        }).length;
+      }
+      if (alta == null && lista.length) {
+        alta = lista.filter(function (g) {
+          var e = String((g && (g.estado || g.status)) || "").toLowerCase();
+          var open = e && e !== "resuelta" && e !== "cerrada" && e !== "resolved";
+          return open && String((g && g.criticidad) || "").toLowerCase() === "alta";
+        }).length;
+      }
+      if (abiertas != null) setText("[data-sol-inc-abiertas]", abiertas);
+      if (alta != null) setText("[data-sol-inc-alta]", alta);
+
+      if (viajes.length) {
+        var curso = 0;
+        var detenidos = 0;
+        viajes.forEach(function (v) {
+          var e = String((v && (v.estado || v.status)) || "").toLowerCase();
+          if (e.indexOf("deteni") >= 0 || e.indexOf("parada") >= 0 || e.indexOf("incidencia") >= 0) detenidos += 1;
+          else if (e.indexOf("curso") >= 0 || e.indexOf("ruta") >= 0 || e.indexOf("transito") >= 0 || e === "en_viaje") curso += 1;
+        });
+        if (curso || detenidos) {
+          setText("[data-sol-flota-curso]", curso || "—");
+          setText("[data-sol-flota-detenidos]", detenidos || "0");
+        }
+      }
+    });
+  }
+
+  function mountFeed() {
     var root = document.getElementById("sol-torre-activity-feed");
     if (!root) return;
 
@@ -110,6 +211,12 @@
       events = [{ id: nextId++, agent: tpl.agent, text: tpl.text, time: nowTime(), level: tpl.level }].concat(events).slice(0, 14);
       render(true);
     }, 4200);
+  }
+
+  function mount() {
+    wireCards();
+    mountFeed();
+    loadKpis();
   }
 
   if (document.readyState === "loading") {
