@@ -390,7 +390,11 @@
     if (label.indexOf("aprobar y sincronizar") >= 0) { e.preventDefault(); aprobar(); return; }
     if (label.indexOf("pedir reenvio") >= 0) { e.preventDefault(); pedirReenvio(); return; }
     if (label.indexOf("subir") >= 0) { e.preventDefault(); ensureFile().click(); return; }
-    if (label.indexOf("sincronizar tms") >= 0 || btn.getAttribute("title") === "Actualizar datos") { load(); return; }
+    if (label.indexOf("sincronizar tms") >= 0 || btn.id === "sol-rem-sync-tms" || btn.getAttribute("title") === "Actualizar datos") {
+      e.preventDefault();
+      runFakeTmsOcrSync(btn);
+      return;
+    }
     if (label.indexOf("ver registro historico") >= 0) { e.preventDefault(); showAll = !showAll; pintar(); return; }
     if (label.indexOf("resumen del agente") >= 0) {
       e.preventDefault();
@@ -444,6 +448,95 @@
   if (estado) estado.addEventListener("change", function () { showAll = false; if (live) pintar(); else filtrarMuestra(); });
   var tenant = $("sol-rem-tenant");
   if (tenant) tenant.addEventListener("change", function () { showAll = false; if (live) pintar(); else filtrarMuestra(); });
+
+  var syncBusy = false;
+  var syncOverlay = null;
+
+  function ensureSyncOverlay() {
+    if (syncOverlay) return syncOverlay;
+    syncOverlay = document.createElement("div");
+    syncOverlay.id = "sol-rem-sync-overlay";
+    syncOverlay.className = "hidden fixed inset-0 z-[10050] flex items-center justify-center p-4";
+    syncOverlay.innerHTML =
+      '<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>' +
+      '<div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">' +
+      '<div class="px-6 pt-6 pb-5 text-center">' +
+      '<div class="mx-auto mb-4 relative w-16 h-16">' +
+      '<div class="absolute inset-0 rounded-full border-[3px] border-slate-100"></div>' +
+      '<div id="sol-rem-sync-spinner" class="absolute inset-0 rounded-full border-[3px] border-transparent border-t-indigo-600 border-r-indigo-400 animate-spin"></div>' +
+      '<div class="absolute inset-0 flex items-center justify-center">' +
+      '<svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>' +
+      "</div></div>" +
+      '<p class="text-sm font-extrabold text-slate-900" id="sol-rem-sync-title">Sincronizando TMS / OCR</p>' +
+      '<p class="text-xs text-slate-500 mt-1 font-medium" id="sol-rem-sync-step">Conectando con el TMS…</p>' +
+      '<div class="mt-4 h-1.5 rounded-full bg-slate-100 overflow-hidden">' +
+      '<div id="sol-rem-sync-bar" class="h-full w-0 bg-indigo-600 rounded-full transition-all duration-500"></div>' +
+      "</div>" +
+      '<p class="mt-3 text-[10px] text-slate-400 font-medium tabular-nums" id="sol-rem-sync-pct">0%</p>' +
+      "</div></div>";
+    document.body.appendChild(syncOverlay);
+    return syncOverlay;
+  }
+
+  function runFakeTmsOcrSync(fromBtn) {
+    if (syncBusy) return;
+    syncBusy = true;
+    var btn = document.getElementById("sol-rem-sync-tms") || fromBtn;
+    var icon = document.getElementById("sol-rem-sync-icon") || (btn && btn.querySelector("i, svg"));
+    var label = document.getElementById("sol-rem-sync-label") || (btn && btn.querySelector("span"));
+    if (btn) btn.disabled = true;
+    if (icon) icon.classList.add("animate-spin");
+    if (label) label.textContent = "Sincronizando…";
+
+    var overlay = ensureSyncOverlay();
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    var title = document.getElementById("sol-rem-sync-title");
+    var step = document.getElementById("sol-rem-sync-step");
+    var bar = document.getElementById("sol-rem-sync-bar");
+    var pct = document.getElementById("sol-rem-sync-pct");
+    var spinner = document.getElementById("sol-rem-sync-spinner");
+    if (title) title.textContent = "Sincronizando TMS / OCR";
+    if (spinner) spinner.classList.add("animate-spin");
+    if (bar) bar.style.width = "0%";
+    if (pct) pct.textContent = "0%";
+
+    var steps = [
+      { at: 0, text: "Conectando con el TMS…", pct: 10 },
+      { at: 650, text: "Consultando cola OCR Vision…", pct: 28 },
+      { at: 1400, text: "Leyendo remitos pendientes…", pct: 52 },
+      { at: 2200, text: "Conciliando documentos con viajes…", pct: 74 },
+      { at: 3000, text: "Actualizando bandeja operativa…", pct: 92 },
+    ];
+    steps.forEach(function (s) {
+      setTimeout(function () {
+        if (!syncBusy) return;
+        if (step) step.textContent = s.text;
+        if (bar) bar.style.width = s.pct + "%";
+        if (pct) pct.textContent = s.pct + "%";
+      }, s.at);
+    });
+
+    setTimeout(function () {
+      if (step) step.textContent = "Sincronización completada";
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (title) title.textContent = "TMS / OCR al día";
+      if (spinner) spinner.classList.remove("animate-spin");
+      Promise.resolve(load()).catch(function () {});
+    }, 3600);
+
+    setTimeout(function () {
+      overlay.classList.add("hidden");
+      document.body.style.overflow = "";
+      if (btn) btn.disabled = false;
+      if (icon) icon.classList.remove("animate-spin");
+      if (label) label.textContent = "Sincronizar TMS / OCR";
+      if (spinner) spinner.classList.add("animate-spin");
+      syncBusy = false;
+    }, 4300);
+  }
 
   load();
 })();

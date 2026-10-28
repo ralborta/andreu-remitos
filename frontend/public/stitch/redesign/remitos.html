@@ -188,9 +188,9 @@
 <span class="text-slate-500">Latencia: <strong class="text-slate-700 font-mono">240ms</strong></span>
 </div>
 <!-- Secondary Action: Synchronize TMS -->
-<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition-colors" type="button">
-<i class="ph-bold ph-arrows-clockwise text-indigo-600"></i>
-<span>Sincronizar TMS / OCR</span>
+<button id="sol-rem-sync-tms" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition-colors disabled:opacity-60 disabled:cursor-wait" type="button">
+<i id="sol-rem-sync-icon" class="ph-bold ph-arrows-clockwise text-indigo-600"></i>
+<span id="sol-rem-sync-label">Sincronizar TMS / OCR</span>
 </button>
 <!-- Primary Action: Upload Receipt -->
 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors" type="button">
@@ -977,7 +977,7 @@
     });
   </script>
 <!-- END: Interaction Handling Script -->
-<script src="/stitch/redesign/remitos-live.js"></script>
+<script src="/stitch/redesign/remitos-live.js?v=sync-ocr-v1"></script>
 <script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
