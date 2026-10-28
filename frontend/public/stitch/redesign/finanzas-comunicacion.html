@@ -738,31 +738,9 @@
 </section>
 <!-- END: OperationalWorkflowSection -->
 <!-- BEGIN: SOLFinancialAssistant -->
-<section class="bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 rounded-xl p-5 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4" data-purpose="ai-financial-assistant">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-xl text-indigo-300 shrink-0">
-<i class="fa-solid fa-headset"></i>
-</div>
-<div>
-<div class="flex items-center gap-2">
-<h4 class="font-bold text-sm text-white">Asistente Inteligente Financiero SOL</h4>
-<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.2 rounded-full font-mono">IA Conectada</span>
-</div>
-<p class="text-xs text-slate-300 mt-0.5">
-            ¿Necesitás redactar una intimación personalizada o calcular intereses moratorios antes del despacho?
-          </p>
-</div>
-</div>
-<div class="flex items-center gap-2 flex-wrap">
-<button class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white border border-white/10 transition">
-<i class="fa-solid fa-wand-magic-sparkles mr-1 text-indigo-300"></i> Sugerir texto según score
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition shadow-sm">
-          Consultar a SOL
-        </button>
-</div>
-</section>
+<div class="px-4 sm:px-6 lg:px-8 pb-6 max-w-[1720px] mx-auto w-full"><div data-sol-desk-chat data-agent-id="comunicacion" data-label="Comunicación" data-subtitle="Te oriento sobre recordatorios y envíos de cobranza." data-suggestions="¿Cómo armo un recordatorio?|¿A quién contactar primero?|Resumen de cartera" data-mode="local" data-icon="send"></div></div>
 <!-- END: SOLFinancialAssistant -->
+
 </main>
 <!-- END: MainContent -->
 <!-- BEGIN: MainFooter -->
@@ -805,5 +783,8 @@
     });
   </script>
 <!-- END: InteractiveHandlers -->
+<script src="/stitch/redesign/finanzas-live.js"></script>
+<script src="/stitch/redesign/finance-desk.js"></script>
+<script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

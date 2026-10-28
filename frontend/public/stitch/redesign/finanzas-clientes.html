@@ -735,33 +735,10 @@
 </div>
 </div>
 <!-- Right Column: Operational Finance Assistant -->
-<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4" data-purpose="finance-ai-assistant" data-sol-chat>
-<div class="flex items-center justify-between gap-3">
-<div class="flex items-center gap-3 min-w-0">
-<div class="w-10 h-10 rounded-xl bg-[#0e1738] text-white flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-xl">smart_toy</span>
-</div>
-<div class="flex items-center gap-2 flex-wrap">
-<h3 class="text-base font-extrabold text-slate-900">¿Qué necesitás saber de Clientes?</h3>
-<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En línea</span>
-</div>
-</div>
-</div>
-<p data-sol-chat-out class="text-sm text-slate-600 leading-relaxed">Consultá la cartera. Este módulo todavía no tiene un agente que responda con saldos reales.</p>
-<div class="flex flex-wrap items-center gap-2 text-xs">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Sugerencias rápidas:</span>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">¿Cuáles clientes tienen saldo vencido?</button>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Ver facturas de Arcor</button>
-<button type="button" class="sol-chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">Proyección cobranza semana en curso</button>
-</div>
-<div class="relative flex items-center">
-<span class="material-symbols-outlined absolute left-4 text-slate-400 text-xl">psychology</span>
-<input aria-label="Preguntar al asistente financiero" class="w-full pl-12 pr-32 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-slate-300" placeholder="¿Qué necesitás saber sobre la cartera de clientes o cobros?" type="text"/>
-<button type="button" class="absolute right-2 px-4 py-2 rounded-lg bg-[#0e1738] text-white text-xs font-semibold hover:bg-[#14214d] flex items-center gap-1.5"><span>Consultar</span><span class="material-symbols-outlined text-sm">send</span></button>
-</div>
-<div class="text-xs text-slate-400">Motor: <span class="font-mono font-bold text-slate-700">SOL Finanzas</span></div>
+<div data-sol-desk-chat data-agent-id="clientes" data-label="Clientes" data-subtitle="Consulto la cartera de clientes (saldos / vencidos)." data-suggestions="¿Cuáles clientes tienen saldo vencido?|Resumen de cartera|¿Cuántos clientes con deuda?" data-mode="local" data-icon="corporate_fare"></div>
 </div>
 </section>
+
 <!-- END: ProjectionsAndCopilotSection -->
 </main>
 <!-- END: MainContent -->
@@ -783,6 +760,8 @@
 </div>
 </footer>
 <!-- END: MainFooter -->
-<script src="/stitch/redesign/finance-chat.js"></script>
+<script src="/stitch/redesign/finanzas-live.js"></script>
+<script src="/stitch/redesign/finance-desk.js"></script>
+<script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>
