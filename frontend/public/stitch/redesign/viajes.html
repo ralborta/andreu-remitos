@@ -160,13 +160,13 @@
 </div>
 <!-- Action buttons -->
 <div class="flex items-center gap-2.5 flex-wrap">
-<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-50 transition-colors">
-<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<button type="button" id="sol-vj-sync-tms" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-50 transition-colors disabled:opacity-60 disabled:cursor-wait">
+<svg id="sol-vj-sync-icon" class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-          Sincronizar TMS
-        </button>
-<button class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
+<span id="sol-vj-sync-label">Sincronizar TMS</span>
+</button>
+<button type="button" id="sol-vj-nueva-wa" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
@@ -1159,6 +1159,124 @@
       });
     }
   });
+
+  var syncBusy = false;
+  var syncOverlay = null;
+
+  function ensureSyncOverlay() {
+    if (syncOverlay) return syncOverlay;
+    syncOverlay = document.createElement("div");
+    syncOverlay.id = "sol-vj-sync-overlay";
+    syncOverlay.className = "hidden fixed inset-0 z-[10050] flex items-center justify-center p-4";
+    syncOverlay.innerHTML =
+      '<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" data-sol-vj-sync-bg></div>' +
+      '<div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">' +
+      '<div class="px-6 pt-6 pb-5 text-center">' +
+      '<div class="mx-auto mb-4 relative w-16 h-16">' +
+      '<div class="absolute inset-0 rounded-full border-[3px] border-slate-100"></div>' +
+      '<div id="sol-vj-sync-spinner" class="absolute inset-0 rounded-full border-[3px] border-transparent border-t-indigo-600 border-r-indigo-400 animate-spin"></div>' +
+      '<div class="absolute inset-0 flex items-center justify-center">' +
+      '<svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>' +
+      "</div></div>" +
+      '<p class="text-sm font-extrabold text-slate-900" id="sol-vj-sync-title">Sincronizando TMS</p>' +
+      '<p class="text-xs text-slate-500 mt-1 font-medium" id="sol-vj-sync-step">Conectando con el TMS…</p>' +
+      '<div class="mt-4 h-1.5 rounded-full bg-slate-100 overflow-hidden">' +
+      '<div id="sol-vj-sync-bar" class="h-full w-0 bg-indigo-600 rounded-full transition-all duration-500"></div>' +
+      "</div>" +
+      '<p class="mt-3 text-[10px] text-slate-400 font-medium tabular-nums" id="sol-vj-sync-pct">0%</p>' +
+      "</div></div>";
+    document.body.appendChild(syncOverlay);
+    return syncOverlay;
+  }
+
+  function runFakeTmsSync() {
+    if (syncBusy) return;
+    syncBusy = true;
+    var btn = document.getElementById("sol-vj-sync-tms");
+    var icon = document.getElementById("sol-vj-sync-icon");
+    var label = document.getElementById("sol-vj-sync-label");
+    if (btn) btn.disabled = true;
+    if (icon) icon.classList.add("animate-spin");
+    if (label) label.textContent = "Sincronizando…";
+
+    var overlay = ensureSyncOverlay();
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    var title = document.getElementById("sol-vj-sync-title");
+    var step = document.getElementById("sol-vj-sync-step");
+    var bar = document.getElementById("sol-vj-sync-bar");
+    var pct = document.getElementById("sol-vj-sync-pct");
+    var spinner = document.getElementById("sol-vj-sync-spinner");
+    if (title) title.textContent = "Sincronizando TMS";
+
+    var steps = [
+      { at: 0, text: "Conectando con el TMS…", pct: 8 },
+      { at: 700, text: "Leyendo viajes y asignaciones…", pct: 28 },
+      { at: 1500, text: "Actualizando estados de flota…", pct: 55 },
+      { at: 2300, text: "Conciliando choferes y unidades…", pct: 78 },
+      { at: 3000, text: "Aplicando cambios en la torre…", pct: 92 },
+    ];
+    var timers = [];
+    steps.forEach(function (s) {
+      timers.push(
+        setTimeout(function () {
+          if (step) step.textContent = s.text;
+          if (bar) bar.style.width = s.pct + "%";
+          if (pct) pct.textContent = s.pct + "%";
+        }, s.at),
+      );
+    });
+
+    timers.push(
+      setTimeout(function () {
+        if (step) step.textContent = "Sincronización completada";
+        if (bar) bar.style.width = "100%";
+        if (pct) pct.textContent = "100%";
+        if (title) title.textContent = "TMS al día";
+        if (spinner) spinner.classList.remove("animate-spin");
+        try {
+          loadViajes();
+        } catch (err) {}
+        showNota("TMS sincronizado — viajes actualizados.");
+      }, 3600),
+    );
+
+    timers.push(
+      setTimeout(function () {
+        overlay.classList.add("hidden");
+        document.body.style.overflow = "";
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove("animate-spin");
+        if (label) label.textContent = "Sincronizar TMS";
+        if (spinner) spinner.classList.add("animate-spin");
+        syncBusy = false;
+      }, 4300),
+    );
+  }
+
+  var syncBtn = document.getElementById("sol-vj-sync-tms");
+  if (syncBtn) {
+    syncBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      runFakeTmsSync();
+    });
+  }
+
+  var nuevaWa = document.getElementById("sol-vj-nueva-wa");
+  if (nuevaWa) {
+    nuevaWa.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var href = "/stitch/redesign/whatsapp.html";
+      try {
+        window.top.location.href = href;
+      } catch (err) {
+        window.location.href = href;
+      }
+    });
+  }
 
   var body = tableBody();
   if (body) {
