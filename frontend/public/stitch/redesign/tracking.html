@@ -162,12 +162,12 @@
 </div>
 <!-- Action buttons -->
 <div class="flex items-center gap-2.5 flex-wrap">
-<button type="button" data-sol-trk-refresh class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-50 transition-colors">
-<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<button type="button" id="sol-trk-refresh" data-sol-trk-refresh class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-2xs hover:bg-slate-50 transition-colors disabled:opacity-60 disabled:cursor-wait">
+<svg data-sol-trk-refresh-icon class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-      Actualizar posiciones
-    </button>
+<span data-sol-trk-refresh-label>Actualizar posiciones</span>
+</button>
 <button type="button" id="sol-trk-enlace-rapido" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
@@ -419,12 +419,12 @@
 <option value="red">Alerta GPS</option>
 <option value="blue">Finalizado</option>
 </select>
-<button type="button" data-sol-trk-refresh class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">
-<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<button type="button" data-sol-trk-refresh class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-wait">
+<svg data-sol-trk-refresh-icon class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-        Actualizar
-      </button>
+<span data-sol-trk-refresh-label>Actualizar</span>
+</button>
 </div>
 </div>
 <!-- Table -->
@@ -594,7 +594,7 @@
 </footer>
 <!-- END: UnifiedFooter -->
 
-<script src="/stitch/redesign/tracking-live.js"></script>
+<script src="/stitch/redesign/tracking-live.js?v=refresh-v1"></script>
 <script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

@@ -483,6 +483,71 @@
     }).finally(function () { busy = false; });
   }
 
+  var refreshBusy = false;
+  var refreshToast = null;
+  var refreshToastTimer = null;
+
+  function showRefreshToast(text, ok) {
+    if (!refreshToast) {
+      refreshToast = document.createElement("div");
+      refreshToast.id = "sol-trk-refresh-toast";
+      refreshToast.className =
+        "fixed top-20 left-1/2 -translate-x-1/2 z-[10040] max-w-[min(92%,420px)] px-3.5 py-2 rounded-xl border text-xs font-semibold shadow-lg pointer-events-none";
+      document.body.appendChild(refreshToast);
+    }
+    refreshToast.className =
+      "fixed top-20 left-1/2 -translate-x-1/2 z-[10040] max-w-[min(92%,420px)] px-3.5 py-2 rounded-xl border text-xs font-semibold shadow-lg pointer-events-none " +
+      (ok
+        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+        : "bg-rose-50 border-rose-200 text-rose-700");
+    refreshToast.textContent = text;
+    refreshToast.classList.remove("hidden");
+    if (refreshToastTimer) clearTimeout(refreshToastTimer);
+    refreshToastTimer = setTimeout(function () {
+      refreshToast.classList.add("hidden");
+    }, 2800);
+  }
+
+  function refreshPositions() {
+    if (refreshBusy) return;
+    refreshBusy = true;
+    fitted = false;
+    var buttons = document.querySelectorAll("[data-sol-trk-refresh]");
+    buttons.forEach(function (b) {
+      b.disabled = true;
+      var icon = b.querySelector("[data-sol-trk-refresh-icon]") || b.querySelector("svg");
+      var label = b.querySelector("[data-sol-trk-refresh-label]");
+      if (icon) icon.classList.add("animate-spin");
+      if (label) {
+        if (!label.getAttribute("data-orig")) label.setAttribute("data-orig", label.textContent || "");
+        label.textContent = label.getAttribute("data-orig") === "Actualizar" ? "Actualizando…" : "Actualizando posiciones…";
+      }
+    });
+    Promise.resolve(load())
+      .then(function () {
+        var vivos = rows.filter(tienePosicion).length;
+        showRefreshToast(
+          sessionError
+            ? "Hace falta sesión para actualizar posiciones."
+            : "Posiciones actualizadas · " + vivos + " con GPS en torre",
+          !sessionError,
+        );
+      })
+      .catch(function () {
+        showRefreshToast("No se pudieron actualizar las posiciones.", false);
+      })
+      .then(function () {
+        buttons.forEach(function (b) {
+          b.disabled = false;
+          var icon = b.querySelector("[data-sol-trk-refresh-icon]") || b.querySelector("svg");
+          var label = b.querySelector("[data-sol-trk-refresh-label]");
+          if (icon) icon.classList.remove("animate-spin");
+          if (label) label.textContent = label.getAttribute("data-orig") || "Actualizar posiciones";
+        });
+        refreshBusy = false;
+      });
+  }
+
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-act], [data-trip] button, [data-tracking-center], [data-tracking-zoom], [data-sol-trk-refresh], #sol-trk-generar, #sol-trk-copiar, #sol-trk-enlace-rapido, #sol-trk-tones [data-tone]");
     if (!btn) {
@@ -497,8 +562,8 @@
     }
     if (btn.hasAttribute("data-sol-trk-refresh")) {
       e.preventDefault();
-      fitted = false;
-      load();
+      e.stopPropagation();
+      refreshPositions();
       return;
     }
     if (btn.hasAttribute("data-tracking-zoom")) {
