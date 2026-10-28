@@ -29,9 +29,35 @@
     });
   }
   function digits(s) { return String(s || "").replace(/\D/g, ""); }
+  var toastTimer = null;
+  var choferPanel = null;
+
   function aviso(text) {
     var el = $("sol-wa-aviso");
     if (el) el.textContent = text;
+  }
+
+  function toast(text, kind) {
+    var el = $("sol-wa-toast");
+    if (!el) {
+      aviso(text);
+      return;
+    }
+    var styles = {
+      warn: "bg-amber-50 border-amber-200 text-amber-800",
+      ok: "bg-emerald-50 border-emerald-200 text-emerald-800",
+      info: "bg-slate-900 border-slate-800 text-white",
+      off: "bg-rose-50 border-rose-200 text-rose-700",
+    };
+    el.className =
+      "absolute left-1/2 -translate-x-1/2 top-[4.25rem] z-20 max-w-[min(92%,420px)] px-3.5 py-2 rounded-xl border text-xs font-semibold shadow-lg pointer-events-none " +
+      (styles[kind] || styles.info);
+    el.textContent = text;
+    el.classList.remove("hidden");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      el.classList.add("hidden");
+    }, 3200);
   }
 
   function api(path, opts) {
@@ -323,9 +349,133 @@
       }
     }
     if (pausa) {
-      var label = pausa.querySelector("span");
-      if (label) label.textContent = conv && conv.bot_pausado ? "Reactivar bot" : "Pausar bot";
+      var spans = pausa.querySelectorAll("span");
+      var textSpan = spans.length ? spans[spans.length - 1] : null;
+      if (textSpan) textSpan.textContent = conv && conv.bot_pausado ? "Reactivar bot" : "Pausar bot";
+      if (conv && conv.bot_pausado) {
+        pausa.className =
+          "px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-100 text-xs font-semibold shadow-xs transition";
+        pausa.title = "Reactivar bot para este chofer";
+      } else {
+        pausa.className =
+          "px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-semibold shadow-xs transition";
+        pausa.title = "Pausar bot para este chofer";
+      }
     }
+  }
+
+  function choferDeConv() {
+    if (!conv) return null;
+    var tel = digits(conv.telefono);
+    var ch = choferes[tel] || null;
+    if (ch) return ch;
+    // Match flexible por últimos dígitos
+    var keys = Object.keys(choferes);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (k.slice(-8) === tel.slice(-8) || tel.slice(-8) === k.slice(-8)) return choferes[k];
+    }
+    return null;
+  }
+
+  function ensureChoferPanel() {
+    if (choferPanel) return choferPanel;
+    choferPanel = document.createElement("div");
+    choferPanel.id = "sol-wa-chofer-panel";
+    choferPanel.className = "hidden fixed inset-0 z-[10040]";
+    choferPanel.innerHTML =
+      '<div class="absolute inset-0 bg-slate-900/35" data-sol-wa-ch-bg></div>' +
+      '<div class="absolute inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto sm:w-[400px] bg-white shadow-2xl flex flex-col sm:rounded-l-2xl max-h-[90vh] sm:max-h-none">' +
+      '<div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">' +
+      '<div><p class="text-sm font-extrabold text-slate-900">Ficha del chofer</p>' +
+      '<p class="text-[11px] text-slate-500 font-medium" data-sol-wa-ch-sub>—</p></div>' +
+      '<button type="button" data-sol-wa-ch-close class="p-2 rounded-lg hover:bg-slate-100 text-slate-500" aria-label="Cerrar">' +
+      '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>' +
+      "</div>" +
+      '<div class="flex-1 overflow-y-auto p-5 space-y-4" data-sol-wa-ch-body></div>' +
+      "</div>";
+    document.body.appendChild(choferPanel);
+    choferPanel.querySelector("[data-sol-wa-ch-bg]").addEventListener("click", closeChoferPanel);
+    choferPanel.querySelector("[data-sol-wa-ch-close]").addEventListener("click", closeChoferPanel);
+    return choferPanel;
+  }
+
+  function closeChoferPanel() {
+    if (choferPanel) choferPanel.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  function openChoferPanel() {
+    if (!conv) {
+      toast("Elegí un contacto para ver al chofer.", "warn");
+      return;
+    }
+    var panel = ensureChoferPanel();
+    var ch = choferDeConv();
+    var nombre = nombreDe(conv);
+    var sub = panel.querySelector("[data-sol-wa-ch-sub]");
+    if (sub) sub.textContent = formatPhone(conv.telefono);
+    var viaje = remito && (dato("viaje_codigo") || dato("nro_viaje") || dato("ot"));
+    var unidad = remito && (dato("patente") || dato("unidad") || dato("tractor"));
+    var cliente = remito && (dato("cliente") || dato("remito_cliente"));
+    var origen = remito && (dato("procedencia") || dato("origen"));
+    var destino = remito && (dato("destino") || dato("destino_nombre"));
+    var ruta = [origen, destino].filter(Boolean).join(" → ");
+    var body = panel.querySelector("[data-sol-wa-ch-body]");
+    body.innerHTML =
+      '<div class="flex items-center gap-3">' +
+      '<div class="w-14 h-14 rounded-full bg-slate-900 text-white font-bold text-lg flex items-center justify-center">' +
+      esc(iniciales(nombre)) +
+      "</div>" +
+      '<div class="min-w-0">' +
+      '<p class="text-base font-extrabold text-slate-900 truncate">' +
+      esc(nombre) +
+      "</p>" +
+      '<p class="text-xs font-mono text-slate-500">' +
+      esc(formatPhone(conv.telefono)) +
+      "</p>" +
+      (conv.bot_pausado
+        ? '<p class="text-[11px] font-semibold text-amber-600 mt-1">Bot pausado en este chat</p>'
+        : '<p class="text-[11px] font-semibold text-emerald-600 mt-1">Bot activo</p>') +
+      "</div></div>" +
+      '<div class="grid grid-cols-2 gap-2 text-[11px]">' +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 col-span-2">' +
+      '<p class="text-slate-400 font-medium">Documento</p>' +
+      '<p class="font-bold text-slate-800 mt-0.5">' +
+      esc((ch && ch.documento) || "—") +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">' +
+      '<p class="text-slate-400 font-medium">Tipo</p>' +
+      '<p class="font-bold text-slate-800 mt-0.5">' +
+      esc((ch && ch.observacion) || "—") +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">' +
+      '<p class="text-slate-400 font-medium">Estado</p>' +
+      '<p class="font-bold text-slate-800 mt-0.5">' +
+      esc(ch ? (ch.activo === false ? "Inactivo" : "Activo") : "Sin ficha en parámetros") +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 col-span-2">' +
+      '<p class="text-slate-400 font-medium">Viaje vinculado</p>' +
+      '<p class="font-bold text-slate-800 mt-0.5">' +
+      esc(viaje || "—") +
+      (ruta ? ' <span class="font-medium text-slate-500">· ' + esc(ruta) + "</span>" : "") +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">' +
+      '<p class="text-slate-400 font-medium">Unidad</p>' +
+      '<p class="font-bold text-slate-800 mt-0.5">' +
+      esc(unidad || "—") +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">' +
+      '<p class="text-slate-400 font-medium">Cliente</p>' +
+      '<p class="font-bold text-slate-800 mt-0.5 truncate">' +
+      esc(cliente || "—") +
+      "</p></div>" +
+      "</div>" +
+      (!ch
+        ? '<p class="text-[11px] text-slate-500 leading-relaxed">Este número no está cargado en Parámetros → Choferes. Igual podés chatear; la ficha completa aparece cuando el teléfono coincide.</p>'
+        : "");
+    panel.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
   }
 
   function estadoRemito(estado) {
@@ -551,17 +701,33 @@
   }
 
   function pausarEste() {
-    if (busy || !conv) return;
+    if (!conv) {
+      toast("Elegí un chat para pausar o reactivar el bot.", "warn");
+      return;
+    }
+    if (busy) return;
     var next = !conv.bot_pausado;
     busy = true;
     api("/api/conversaciones/" + encodeURIComponent(conv.telefono) + "/bot-pausado", {
       method: "PATCH",
       body: JSON.stringify({ pausado: next }),
-    }).then(function () {
-      return abrir(conv.telefono);
-    }).catch(function (err) {
-      aviso(err.message || "No se pudo cambiar el bot.");
-    }).then(function () { busy = false; });
+    })
+      .then(function () {
+        toast(
+          next
+            ? "Bot pausado — respondés vos hasta reactivarlo."
+            : "Bot reactivado para este chofer.",
+          next ? "warn" : "ok",
+        );
+        return abrir(conv.telefono);
+      })
+      .catch(function (err) {
+        toast(err.message || "No se pudo cambiar el bot.", "off");
+        aviso(err.message || "No se pudo cambiar el bot.");
+      })
+      .then(function () {
+        busy = false;
+      });
   }
 
   document.addEventListener("click", function (ev) {
@@ -606,15 +772,16 @@
       return;
     }
     if (t.closest("#sol-wa-pausar-todos")) {
-      aviso("La pausa es por chofer. Abrí el chat y usá Pausar bot. No hay una pausa para todos.");
+      toast("La pausa es por chofer. Abrí el chat y usá Pausar bot.", "warn");
       return;
     }
     if (t.closest("#sol-wa-llamar")) {
-      if (conv && conv.telefono) window.top.location.href = "tel:+" + digits(conv.telefono);
+      toast("Opción NO ACTIVADA — las llamadas aún no están habilitadas.", "off");
+      aviso("Llamar: opción NO ACTIVADA.");
       return;
     }
     if (t.closest("#sol-wa-chofer")) {
-      aviso("La ficha del chofer no está en esta pantalla. El nombre y el teléfono están en el chat.");
+      openChoferPanel();
       return;
     }
     if (t.closest("#sol-wa-ver-remito")) {
@@ -642,6 +809,10 @@
       }, 800);
     });
   }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeChoferPanel();
+  });
 
   vaciarMuestra();
   cargar();
