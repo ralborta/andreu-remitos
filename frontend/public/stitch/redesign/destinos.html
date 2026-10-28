@@ -166,11 +166,11 @@
 
       <!-- Acciones de Cabecera -->
       <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all">
-          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button type="button" id="sol-des-sync-tms" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all disabled:opacity-60 disabled:cursor-wait">
+          <svg id="sol-des-sync-icon" class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
           </svg>
-          Sincronizar TMS / Google Maps
+          <span id="sol-des-sync-label">Sincronizar TMS / Google Maps</span>
         </button>
         <button class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -854,7 +854,7 @@
   </footer>
 
 
-<script src="/stitch/redesign/destinos-live.js"></script>
+<script src="/stitch/redesign/destinos-live.js?v=sync-maps-v1"></script>
 <script src="/stitch/redesign/desk-agent-chat.js"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body>

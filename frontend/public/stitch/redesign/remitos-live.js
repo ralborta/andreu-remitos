@@ -538,5 +538,18 @@
     }, 4300);
   }
 
+  var syncBtnDirect = document.getElementById("sol-rem-sync-tms");
+  if (syncBtnDirect) {
+    syncBtnDirect.addEventListener(
+      "click",
+      function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        runFakeTmsOcrSync(syncBtnDirect);
+      },
+      true,
+    );
+  }
+
   load();
 })();

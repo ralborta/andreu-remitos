@@ -433,9 +433,102 @@
       if (form) form.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    if (label === "sync" || label.indexOf("sincronizar") >= 0) { e.preventDefault(); load(); return; }
+    if (btn.id === "sol-des-sync-tms" || label === "sync" || label.indexOf("sincronizar") >= 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      runFakeTmsMapsSync(btn);
+      return;
+    }
     if (!label && btn.parentElement && btn.parentElement.contains($("sol-des-estado"))) { load(); return; }
   }, true);
+
+  var syncBusy = false;
+  var syncOverlay = null;
+
+  function ensureSyncOverlay() {
+    if (syncOverlay) return syncOverlay;
+    syncOverlay = document.createElement("div");
+    syncOverlay.id = "sol-des-sync-overlay";
+    syncOverlay.className = "hidden fixed inset-0 z-[10050] flex items-center justify-center p-4";
+    syncOverlay.innerHTML =
+      '<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>' +
+      '<div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">' +
+      '<div class="px-6 pt-6 pb-5 text-center">' +
+      '<div class="mx-auto mb-4 relative w-16 h-16">' +
+      '<div class="absolute inset-0 rounded-full border-[3px] border-slate-100"></div>' +
+      '<div id="sol-des-sync-spinner" class="absolute inset-0 rounded-full border-[3px] border-transparent border-t-indigo-600 border-r-indigo-400 animate-spin"></div>' +
+      '<div class="absolute inset-0 flex items-center justify-center">' +
+      '<svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>' +
+      "</div></div>" +
+      '<p class="text-sm font-extrabold text-slate-900" id="sol-des-sync-title">Sincronizando TMS / Maps</p>' +
+      '<p class="text-xs text-slate-500 mt-1 font-medium" id="sol-des-sync-step">Conectando con el TMS…</p>' +
+      '<div class="mt-4 h-1.5 rounded-full bg-slate-100 overflow-hidden">' +
+      '<div id="sol-des-sync-bar" class="h-full w-0 bg-indigo-600 rounded-full transition-all duration-500"></div>' +
+      "</div>" +
+      '<p class="mt-3 text-[10px] text-slate-400 font-medium tabular-nums" id="sol-des-sync-pct">0%</p>' +
+      "</div></div>";
+    document.body.appendChild(syncOverlay);
+    return syncOverlay;
+  }
+
+  function runFakeTmsMapsSync(fromBtn) {
+    if (syncBusy) return;
+    syncBusy = true;
+    var btn = document.getElementById("sol-des-sync-tms") || fromBtn;
+    var icon = document.getElementById("sol-des-sync-icon") || (btn && btn.querySelector("svg"));
+    var labelEl = document.getElementById("sol-des-sync-label");
+    if (btn) btn.disabled = true;
+    if (icon) icon.classList.add("animate-spin");
+    if (labelEl) labelEl.textContent = "Sincronizando…";
+
+    var overlay = ensureSyncOverlay();
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    var title = document.getElementById("sol-des-sync-title");
+    var step = document.getElementById("sol-des-sync-step");
+    var bar = document.getElementById("sol-des-sync-bar");
+    var pct = document.getElementById("sol-des-sync-pct");
+    var spinner = document.getElementById("sol-des-sync-spinner");
+    if (title) title.textContent = "Sincronizando TMS / Maps";
+    if (spinner) spinner.classList.add("animate-spin");
+    if (bar) bar.style.width = "0%";
+    if (pct) pct.textContent = "0%";
+
+    [
+      { at: 0, text: "Conectando con el TMS…", pct: 10 },
+      { at: 700, text: "Consultando Google Maps…", pct: 30 },
+      { at: 1500, text: "Validando direcciones pendientes…", pct: 55 },
+      { at: 2300, text: "Actualizando cola de destinos…", pct: 78 },
+      { at: 3000, text: "Aplicando geocodificaciones…", pct: 92 },
+    ].forEach(function (s) {
+      setTimeout(function () {
+        if (!syncBusy) return;
+        if (step) step.textContent = s.text;
+        if (bar) bar.style.width = s.pct + "%";
+        if (pct) pct.textContent = s.pct + "%";
+      }, s.at);
+    });
+
+    setTimeout(function () {
+      if (step) step.textContent = "Sincronización completada";
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (title) title.textContent = "TMS / Maps al día";
+      if (spinner) spinner.classList.remove("animate-spin");
+      Promise.resolve(load()).catch(function () {});
+    }, 3600);
+
+    setTimeout(function () {
+      overlay.classList.add("hidden");
+      document.body.style.overflow = "";
+      if (btn) btn.disabled = false;
+      if (icon) icon.classList.remove("animate-spin");
+      if (labelEl) labelEl.textContent = "Sincronizar TMS / Google Maps";
+      if (spinner) spinner.classList.add("animate-spin");
+      syncBusy = false;
+    }, 4300);
+  }
 
   var body = $("sol-des-body");
   if (body) body.addEventListener("click", function (e) {
