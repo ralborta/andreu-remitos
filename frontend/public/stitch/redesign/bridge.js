@@ -19,6 +19,7 @@
     "chat central": "/agentes/commander",
     "finanzas": "/finanzas",
     "modulo de finanzas": "/finanzas",
+    "dashboard": "/finanzas",
     "dashboard de cobranzas": "/finanzas",
     "clientes": "/finanzas/clientes",
     "facturas": "/finanzas/facturas/pagos",
@@ -311,9 +312,24 @@
 
   function isActive(href, path) {
     if (href === "/") return path === "/" || path === "";
+    // Top/Agentes "Finanzas": activo en cualquier subruta del módulo
     if (href === "/finanzas") return path === "/finanzas" || path.indexOf("/finanzas/") === 0;
     return path === href;
   }
+
+  function isFinanceActive(href, path) {
+    if (href === "/finanzas") return path === "/finanzas" || path === "/finanzas/";
+    return path === href || path.indexOf(href + "/") === 0;
+  }
+
+  var FINANCE_LINKS = [
+    { label: "Dashboard", href: "/finanzas", icon: "dashboard" },
+    { label: "Clientes", href: "/finanzas/clientes", icon: "corporate_fare" },
+    { label: "Facturas", href: "/finanzas/facturas/pagos", icon: "receipt_long" },
+    { label: "Cobranza", href: "/finanzas/facturas/cobranzas", icon: "handshake" },
+    { label: "Conciliación", href: "/finanzas/conciliacion", icon: "balance" },
+    { label: "Enviar Mensaje", href: "/finanzas/comunicacion", icon: "send" },
+  ];
 
   function linkHtml(item, active, agent) {
     var icon = item.icon
@@ -457,10 +473,13 @@
         '<div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">' +
         '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>' +
         "<span>Sistemas activos</span></div>" +
-        '<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" type="button" title="Notificaciones operativas">' +
+        '<div class="relative" data-sol-notif="wrap">' +
+        '<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" type="button" title="Notificaciones operativas" data-sol-notif-bell="1" aria-haspopup="true" aria-expanded="false">' +
         '<span class="material-symbols-outlined text-lg">notifications</span>' +
-        '<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">5</span>' +
+        '<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white" data-sol-notif-count>5</span>' +
         "</button>" +
+        '<div class="hidden absolute right-0 top-full mt-2 w-[360px] max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl z-[80] overflow-hidden" data-sol-notif-panel role="menu" aria-label="Notificaciones operativas"></div>' +
+        "</div>" +
         '<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200">' +
         '<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100">GD</div>' +
         '<div class="hidden lg:flex flex-col text-left"><span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span><span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span></div>' +
@@ -482,6 +501,14 @@
     var finance = document.querySelector('[data-sol-shell="finance"]') || financeRow();
     if (finance) {
       finance.setAttribute("data-sol-shell", "finance");
+      finance.className =
+        "flex items-center gap-1 overflow-x-auto py-2 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200 text-xs";
+      finance.innerHTML =
+        '<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 shrink-0">FINANZAS</span>' +
+        FINANCE_LINKS.map(function (item) {
+          return linkHtml(item, isFinanceActive(item.href, path), true);
+        }).join("");
+      finance.querySelectorAll("a").forEach(bind);
       parkAfter(finance, agents || chrome);
     }
 
@@ -502,9 +529,218 @@
     });
   }
 
+  var NOTIF_ITEMS = [
+    {
+      level: "alert",
+      title: "INC-3391 abierta · parada no prevista",
+      meta: "Incidencias · VJ-24820",
+      href: "/agentes/incidencias",
+      ago: "hace 4 min",
+    },
+    {
+      level: "warn",
+      title: "Diferencia de bultos · enviado a revisión",
+      meta: "Remitos · R-0048291",
+      href: "/agentes/remitos",
+      ago: "hace 9 min",
+    },
+    {
+      level: "warn",
+      title: "ETA recalculada · cliente por notificar",
+      meta: "ETA · VJ-24836",
+      href: "/agentes/eta",
+      ago: "hace 14 min",
+    },
+    {
+      level: "info",
+      title: "RC-1182 escalado a coordinador zona Cuyo",
+      meta: "Reclamos",
+      href: "/agentes/reclamos",
+      ago: "hace 22 min",
+    },
+    {
+      level: "ok",
+      title: "Rendición RD-7741 lista para aprobar",
+      meta: "Rendición · $242.600",
+      href: "/agentes/rendicion",
+      ago: "hace 31 min",
+    },
+  ];
+
+  var NOTIF_DOT = {
+    alert: "#ef4444",
+    warn: "#f59e0b",
+    info: "#38bdf8",
+    ok: "#22c55e",
+  };
+
+  function escNotif(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function notifPanelHtml() {
+    var rows = NOTIF_ITEMS.map(function (item) {
+      var dot = NOTIF_DOT[item.level] || NOTIF_DOT.info;
+      return (
+        '<button type="button" class="w-full text-left flex items-start gap-3 px-3.5 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0" data-sol-notif-item data-href="' +
+        escNotif(item.href) +
+        '" role="menuitem">' +
+        '<span class="mt-1.5 h-2 w-2 rounded-full shrink-0" style="background:' +
+        dot +
+        '"></span>' +
+        '<span class="min-w-0 flex-1">' +
+        '<span class="block text-sm font-semibold text-slate-800 leading-snug">' +
+        escNotif(item.title) +
+        "</span>" +
+        '<span class="mt-0.5 block text-[11px] text-slate-400">' +
+        escNotif(item.meta) +
+        " · " +
+        escNotif(item.ago) +
+        "</span>" +
+        "</span>" +
+        "</button>"
+      );
+    }).join("");
+    return (
+      '<div class="flex items-center justify-between px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/80">' +
+      '<div><p class="text-xs font-extrabold uppercase tracking-wider text-slate-700">Notificaciones</p>' +
+      '<p class="text-[10px] text-slate-400 font-medium mt-0.5">Simulación demostrativa</p></div>' +
+      '<span class="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-full">' +
+      NOTIF_ITEMS.length +
+      " nuevas</span></div>" +
+      '<div class="max-h-[340px] overflow-y-auto">' +
+      rows +
+      "</div>" +
+      '<div class="px-3.5 py-2 border-t border-slate-100 bg-white">' +
+      '<button type="button" class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700" data-sol-notif-close>Cerrar</button>' +
+      "</div>"
+    );
+  }
+
+  function closeNotif(wrap) {
+    if (!wrap) return;
+    var panel = wrap.querySelector("[data-sol-notif-panel]");
+    var bell = wrap.querySelector("[data-sol-notif-bell]");
+    if (panel) panel.classList.add("hidden");
+    if (bell) bell.setAttribute("aria-expanded", "false");
+  }
+
+  function openNotif(wrap) {
+    document.querySelectorAll("[data-sol-notif='wrap']").forEach(function (other) {
+      if (other !== wrap) closeNotif(other);
+    });
+    var panel = wrap.querySelector("[data-sol-notif-panel]");
+    var bell = wrap.querySelector("[data-sol-notif-bell]");
+    if (!panel) return;
+    if (!panel.getAttribute("data-ready")) {
+      panel.innerHTML = notifPanelHtml();
+      panel.setAttribute("data-ready", "1");
+      panel.querySelectorAll("[data-sol-notif-item]").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeNotif(wrap);
+          var href = btn.getAttribute("data-href");
+          if (href) go(href);
+        });
+      });
+      var closer = panel.querySelector("[data-sol-notif-close]");
+      if (closer) {
+        closer.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeNotif(wrap);
+        });
+      }
+    }
+    panel.classList.remove("hidden");
+    if (bell) bell.setAttribute("aria-expanded", "true");
+  }
+
+  function ensureNotifWrap(bell) {
+    if (!bell) return null;
+    var wrap = bell.closest("[data-sol-notif='wrap']");
+    if (wrap) return wrap;
+    wrap = document.createElement("div");
+    wrap.className = "relative";
+    wrap.setAttribute("data-sol-notif", "wrap");
+    bell.parentNode.insertBefore(wrap, bell);
+    wrap.appendChild(bell);
+    bell.setAttribute("data-sol-notif-bell", "1");
+    bell.setAttribute("aria-haspopup", "true");
+    bell.setAttribute("aria-expanded", "false");
+    if (!bell.querySelector("[data-sol-notif-count]")) {
+      var badge = document.createElement("span");
+      badge.className =
+        "absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white";
+      badge.setAttribute("data-sol-notif-count", "1");
+      badge.textContent = String(NOTIF_ITEMS.length);
+      bell.appendChild(badge);
+    }
+    var panel = document.createElement("div");
+    panel.className =
+      "hidden absolute right-0 top-full mt-2 w-[360px] max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl z-[80] overflow-hidden";
+    panel.setAttribute("data-sol-notif-panel", "1");
+    panel.setAttribute("role", "menu");
+    panel.setAttribute("aria-label", "Notificaciones operativas");
+    wrap.appendChild(panel);
+    return wrap;
+  }
+
+  function wireNotifications() {
+    var bells = [];
+    document.querySelectorAll("[data-sol-notif-bell]").forEach(function (b) {
+      bells.push(b);
+    });
+    document.querySelectorAll('button[title*="Notificaciones"], button[aria-label*="Notificaciones"], button[aria-label*="notificaciones"]').forEach(function (b) {
+      if (bells.indexOf(b) < 0) bells.push(b);
+    });
+    document.querySelectorAll("header button, [data-sol-shell='chrome'] button").forEach(function (b) {
+      if (b.querySelector(".material-symbols-outlined") && /notifications/.test(b.textContent || "")) {
+        if (bells.indexOf(b) < 0) bells.push(b);
+      }
+      if (b.querySelector(".fa-bell, .fa-regular.fa-bell")) {
+        if (bells.indexOf(b) < 0) bells.push(b);
+      }
+    });
+
+    bells.forEach(function (bell) {
+      if (bell.getAttribute("data-sol-notif-wired")) return;
+      var wrap = ensureNotifWrap(bell);
+      if (!wrap) return;
+      bell.setAttribute("data-sol-notif-wired", "1");
+      bell.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var panel = wrap.querySelector("[data-sol-notif-panel]");
+        if (panel && !panel.classList.contains("hidden")) closeNotif(wrap);
+        else openNotif(wrap);
+      });
+    });
+
+    if (!document.documentElement.getAttribute("data-sol-notif-global")) {
+      document.documentElement.setAttribute("data-sol-notif-global", "1");
+      document.addEventListener("click", function (e) {
+        var t = e.target;
+        if (t && t.closest && t.closest("[data-sol-notif='wrap']")) return;
+        document.querySelectorAll("[data-sol-notif='wrap']").forEach(closeNotif);
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          document.querySelectorAll("[data-sol-notif='wrap']").forEach(closeNotif);
+        }
+      });
+    }
+  }
+
   function paintShell() {
     unifyShell();
     installChrome();
+    wireNotifications();
   }
 
   document.querySelectorAll("a, button").forEach(bind);
@@ -512,5 +748,7 @@
   injectFinanzas();
   decorateMenus();
   wireHeaderSearch();
+  wireNotifications();
   document.addEventListener("DOMContentLoaded", paintShell);
 })();
+
