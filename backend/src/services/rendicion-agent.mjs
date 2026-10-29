@@ -503,10 +503,13 @@ export async function procesarGastoWhatsApp({
   };
 }
 
+const ENCARGADO_MAX_BOLETAS = 10;
+
 function mensajeEncargadoInicio() {
   return (
     `Esta línea es de *administración*: el gasto no queda a tu nombre.\n\n` +
     `Mandame la *foto del ticket* (si no la mandaste) y el *nº de viaje* y el *nombre del chofer*.\n` +
+    `Podés cargar *hasta ${ENCARGADO_MAX_BOLETAS} boletas* seguidas, de a una.\n` +
     `No le avisamos al chofer.`
   );
 }
@@ -519,15 +522,53 @@ function mensajeEncargadoPedirChofer() {
   return `¿A *qué chofer* lo imputamos? (nombre, como en Parámetros)`;
 }
 
-function mensajeEncargadoListo(gasto) {
+function mensajeEncargadoListo(gasto, { nroEnLote, max } = {}) {
   const viaje = gasto.nro_viaje_delfos || gasto.viaje_ref || "—";
+  const contador =
+    nroEnLote != null
+      ? `\n• En este lote: *${nroEnLote}* de hasta ${max || ENCARGADO_MAX_BOLETAS}`
+      : "";
   return (
     `Listo. Dejé el gasto *${gasto.codigo}* pendiente de aprobación:\n` +
     `• Chofer: *${gasto.chofer_nombre || "—"}*\n` +
     `• Viaje: *${viaje}*\n` +
-    `• Importe: ${gasto.monto != null ? `$${gasto.monto}` : "a revisar"}\n\n` +
+    `• Importe: ${gasto.monto != null ? `$${gasto.monto}` : "a revisar"}` +
+    `${contador}\n\n` +
     `El chofer *no* recibe aviso.`
   );
+}
+
+function mensajeEncargadoOtraBoleta({ nroEnLote, max, chofer, viaje }) {
+  return (
+    `¿Hay *otra boleta* para *${chofer || "este chofer"}* · viaje *${viaje || "—"}*?\n` +
+    `Vas *${nroEnLote}* de hasta *${max}*.\n\n` +
+    `Respondé *sí* / mandá la *foto*, o *no* / *cerramos* para terminar.`
+  );
+}
+
+function mensajeEncargadoLoteCerrado({ nroEnLote }) {
+  if (!nroEnLote) return `Ok, cerré la carga por administración.`;
+  return (
+    `Listo, cerré el lote: *${nroEnLote}* boleta${nroEnLote === 1 ? "" : "s"} pendiente${nroEnLote === 1 ? "" : "s"} de aprobación.\n` +
+    `Cuando quieras cargar más, mandá otra foto con viaje y chofer.`
+  );
+}
+
+function mensajeEncargadoTope({ max, chofer, viaje }) {
+  return (
+    `Llegaste al tope de *${max} boletas* en este lote (*${chofer}* · viaje *${viaje}*).\n` +
+    `Cerré la carga. Para seguir, empezá de nuevo con otra foto.`
+  );
+}
+
+function pareceCerrarLote(t) {
+  return /^(no|nop|nah|cerrar|cerramos|cierro|listo|terminar|termine|terminé|fin|basta|alcanza|ya|ok)$/i.test(
+    String(t || "").trim(),
+  );
+}
+
+function pareceOtraBoleta(t) {
+  return /^(si|sí|ok|dale|otra|mas|más|siguiente|continuar|seguimos)$/i.test(String(t || "").trim());
 }
 
 async function choferesParaImputar() {
@@ -547,6 +588,7 @@ async function persistirFotoEncargado({ imageBuffer, mime, imagenUrl }) {
 /**
  * Carga de gasto por encargado (teléfono Administración).
  * Imputa a un chofer + nº de viaje. No notifica al chofer.
+ * Permite hasta ENCARGADO_MAX_BOLETAS boletas seguidas (de a una).
  */
 export async function procesarCargaEncargadoRendicion({
   telefono,
@@ -566,7 +608,9 @@ export async function procesarCargaEncargadoRendicion({
     chofer_nombre: null,
     chofer_telefono: null,
     imagen_url: null,
+    boletas_cargadas: 0,
   };
+  if (pending.boletas_cargadas == null) pending.boletas_cargadas = 0;
 
   if (t || imageBuffer || imagenUrl) {
     await convStore.appendMensaje(
@@ -580,16 +624,58 @@ export async function procesarCargaEncargadoRendicion({
     );
   }
 
+  const pareceCancelar = /^(cancel|cancelá|cancelar|olvidate)$/i.test(t);
+
+  // Después de cada boleta: ¿otra o cerramos?
+  if (pending.fase === "mas") {
+    if (pareceCancelar || pareceCerrarLote(t)) {
+      const nro = Number(pending.boletas_cargadas) || 0;
+      await convStore.setRendicionEncargadoPendiente(phone, null);
+      const msg = mensajeEncargadoLoteCerrado({ nroEnLote: nro });
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_encargado_lote_cerrado", mensaje: msg, message: msg, boletas: nro };
+    }
+    if (imageBuffer?.length || imagenUrl) {
+      pending.imagen_url = await persistirFotoEncargado({ imageBuffer, mime, imagenUrl });
+      pending.fase = "foto";
+    } else if (pareceOtraBoleta(t) || !t) {
+      pending.imagen_url = null;
+      pending.fase = "foto";
+      await convStore.setRendicionEncargadoPendiente(phone, pending);
+      const msg = `Perfecto. Mandame la *foto de la siguiente boleta* (*${pending.chofer_nombre}* · viaje *${pending.nro_viaje}*).`;
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_encargado_otra_foto", mensaje: msg, message: msg };
+    } else {
+      await convStore.setRendicionEncargadoPendiente(phone, pending);
+      const msg = mensajeEncargadoOtraBoleta({
+        nroEnLote: pending.boletas_cargadas,
+        max: ENCARGADO_MAX_BOLETAS,
+        chofer: pending.chofer_nombre,
+        viaje: pending.nro_viaje,
+      });
+      await enviar(phone, msg, { nombre });
+      return { flow: "rendicion_encargado_mas", mensaje: msg, message: msg };
+    }
+  }
+
   if (imageBuffer?.length || imagenUrl) {
     pending.imagen_url = await persistirFotoEncargado({ imageBuffer, mime, imagenUrl });
   }
 
-  const pareceCancelar = /^(cancel|cancelá|cancelar|olvidate|no)$/i.test(t);
-  if (pareceCancelar) {
+  if (pareceCancelar || (pareceCerrarLote(t) && !(imageBuffer?.length || imagenUrl))) {
+    const nro = Number(pending.boletas_cargadas) || 0;
     await convStore.setRendicionEncargadoPendiente(phone, null);
-    const msg = `Ok, cancelé la carga por administración.`;
+    const msg =
+      nro > 0
+        ? mensajeEncargadoLoteCerrado({ nroEnLote: nro })
+        : `Ok, cancelé la carga por administración.`;
     await enviar(phone, msg, { nombre });
-    return { flow: "rendicion_encargado_cancelado", mensaje: msg, message: msg };
+    return {
+      flow: nro > 0 ? "rendicion_encargado_lote_cerrado" : "rendicion_encargado_cancelado",
+      mensaje: msg,
+      message: msg,
+      boletas: nro,
+    };
   }
 
   if (!pending.nro_viaje) {
@@ -632,7 +718,11 @@ export async function procesarCargaEncargadoRendicion({
   if (!pending.imagen_url) {
     pending.fase = "foto";
     await convStore.setRendicionEncargadoPendiente(phone, pending);
-    const msg = `Dale, ahora mandame la *foto del ticket* para imputarlo a *${pending.chofer_nombre}* · viaje *${pending.nro_viaje}*.`;
+    const ya = Number(pending.boletas_cargadas) || 0;
+    const msg =
+      ya > 0
+        ? `Dale, mandame la *foto de la boleta ${ya + 1}* (*${pending.chofer_nombre}* · viaje *${pending.nro_viaje}*).`
+        : `Dale, ahora mandame la *foto del ticket* para imputarlo a *${pending.chofer_nombre}* · viaje *${pending.nro_viaje}*.`;
     await enviar(phone, msg, { nombre });
     return { flow: "rendicion_encargado_foto", mensaje: msg, message: msg };
   }
@@ -682,9 +772,10 @@ export async function procesarCargaEncargadoRendicion({
     cargado_por_nombre: nombre || null,
   });
 
-  await convStore.setRendicionEncargadoPendiente(phone, null);
-  const mensaje = mensajeEncargadoListo(gasto);
-  await enviar(phone, mensaje, { nombre, gasto_id: gasto.id });
+  pending.boletas_cargadas = (Number(pending.boletas_cargadas) || 0) + 1;
+  pending.imagen_url = null;
+  const nroEnLote = pending.boletas_cargadas;
+
   log?.info?.(
     {
       id: gasto.id,
@@ -692,13 +783,46 @@ export async function procesarCargaEncargadoRendicion({
       chofer: gasto.chofer_nombre,
       viaje: gasto.nro_viaje_delfos,
       por: phone,
+      lote: nroEnLote,
     },
     "Rendición: gasto cargado por administración",
   );
+
+  const resumen = mensajeEncargadoListo(gasto, { nroEnLote, max: ENCARGADO_MAX_BOLETAS });
+
+  if (nroEnLote >= ENCARGADO_MAX_BOLETAS) {
+    await convStore.setRendicionEncargadoPendiente(phone, null);
+    const tope = mensajeEncargadoTope({
+      max: ENCARGADO_MAX_BOLETAS,
+      chofer: pending.chofer_nombre,
+      viaje: pending.nro_viaje,
+    });
+    const mensaje = `${resumen}\n\n${tope}`;
+    await enviar(phone, mensaje, { nombre, gasto_id: gasto.id });
+    return {
+      flow: "rendicion_encargado_lote_completo",
+      gasto,
+      mensaje,
+      message: mensaje,
+      boletas: nroEnLote,
+    };
+  }
+
+  pending.fase = "mas";
+  await convStore.setRendicionEncargadoPendiente(phone, pending);
+  const pregunta = mensajeEncargadoOtraBoleta({
+    nroEnLote,
+    max: ENCARGADO_MAX_BOLETAS,
+    chofer: pending.chofer_nombre,
+    viaje: pending.nro_viaje,
+  });
+  const mensaje = `${resumen}\n\n${pregunta}`;
+  await enviar(phone, mensaje, { nombre, gasto_id: gasto.id });
   return {
     flow: "rendicion_encargado_pendiente_aprobacion",
     gasto,
     mensaje,
     message: mensaje,
+    boletas: nroEnLote,
   };
 }
