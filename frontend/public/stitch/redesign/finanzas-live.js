@@ -10,8 +10,10 @@
   var apiRows = [];
   var cobros = [];
   var selectedId = null;
+  var selectedClienteKey = null;
   var menuEl = null;
   var drawerEl = null;
+  var fichaEl = null;
 
   function fold(s) {
     return String(s || "")
@@ -160,9 +162,199 @@
     return null;
   }
 
+  function clienteKeyOf(row) {
+    if (!row) return "";
+    if (row._cliente_key) return row._cliente_key;
+    var cuit = String(row.cuit || row.cuit_emisor || "").replace(/\D/g, "");
+    var rz = String(row.razon_social || "").trim();
+    return cuit || fold(rz) || String(row.id || "");
+  }
+
+  function rowsOfCliente(key) {
+    var k = String(key || "");
+    if (!k) return [];
+    return apiRows
+      .map(localOf)
+      .filter(function (r) {
+        return clienteKeyOf(r) === k;
+      });
+  }
+
+  function buildClienteProfile(keyOrRow) {
+    var key = typeof keyOrRow === "string" ? keyOrRow : clienteKeyOf(keyOrRow);
+    var rows = rowsOfCliente(key);
+    if (!rows.length && keyOrRow && typeof keyOrRow === "object") {
+      rows = [localOf(keyOrRow)];
+      key = clienteKeyOf(rows[0]);
+    }
+    var first = rows[0] || {};
+    var saldoTotal = 0;
+    var abiertas = 0;
+    var vencidas = 0;
+    var aplicadas = 0;
+    var facturado = 0;
+    var ultimoPago = null;
+    var plazos = [];
+    var timeline = [];
+    var today = new Date();
+    rows.forEach(function (r) {
+      var s = saldo(r);
+      var monto = Number(r.monto || 0);
+      var aplicado = Number(r.monto_aplicado || 0);
+      facturado += monto;
+      aplicadas += aplicado;
+      saldoTotal += s;
+      if (s > 0.009) abiertas += 1;
+      var vto = r.fecha_vto ? new Date(r.fecha_vto) : null;
+      if (s > 0.009 && vto && !isNaN(vto) && vto < today) vencidas += 1;
+      if (vto && r.fecha) {
+        var em = new Date(r.fecha);
+        if (!isNaN(em) && !isNaN(vto)) plazos.push(Math.round((vto - em) / 86400000));
+      }
+      if (aplicado > 0) {
+        var payAt = r.updated_at || r.fecha;
+        if (payAt && (!ultimoPago || payAt > ultimoPago)) ultimoPago = payAt;
+      }
+      (r.pasos || []).forEach(function (p) {
+        timeline.push({
+          at: p.at || r.updated_at || r.fecha || "",
+          label: p.label || "Evento",
+          agente: p.agente || "",
+          canal: p.canal || "",
+          factura: r.numero || r.id,
+          factura_id: r.id,
+        });
+      });
+    });
+    timeline.sort(function (a, b) {
+      return String(b.at).localeCompare(String(a.at));
+    });
+    var plazoMedio =
+      plazos.length > 0
+        ? Math.round(plazos.reduce(function (a, b) {
+            return a + b;
+          }, 0) / plazos.length)
+        : 30;
+    var criticidad = vencidas >= 2 || saldoTotal > 1000000 ? "ALTA" : vencidas >= 1 || abiertas >= 2 ? "MEDIA" : "BAJA";
+    return {
+      key: key,
+      razon_social: first.razon_social || "Cliente",
+      cuit: first.cuit || first.cuit_emisor || "—",
+      telefono: first.telefono || "",
+      email: first.email || "",
+      facturas: rows,
+      metrics: {
+        saldoPendiente: saldoTotal,
+        facturado: facturado,
+        aplicado: aplicadas,
+        facturasTotal: rows.length,
+        facturasAbiertas: abiertas,
+        facturasVencidas: vencidas,
+        plazoMedio: plazoMedio,
+        ultimoPagoAt: ultimoPago,
+        criticidad: criticidad,
+      },
+      timeline: timeline.slice(0, 20),
+    };
+  }
+
+  function buildAiAnalisis(profile) {
+    var m = profile.metrics || {};
+    var nombre = profile.razon_social || "El cliente";
+    var keyPoints = [];
+    var nextSteps = [];
+    var sentiment = "neutral";
+    var summary = "";
+    if (m.facturasVencidas > 0) {
+      sentiment = "negative";
+      summary =
+        nombre +
+        " concentra " +
+        money(m.saldoPendiente) +
+        " de saldo abierto, con " +
+        m.facturasVencidas +
+        " factura(s) vencida(s) sobre " +
+        m.facturasAbiertas +
+        " abierta(s). El riesgo de mora es " +
+        String(m.criticidad || "MEDIA").toLowerCase() +
+        "; conviene priorizar gestión comercial y acordar fecha cierta de pago.";
+      keyPoints.push(m.facturasVencidas + " factura(s) en mora · saldo " + money(m.saldoPendiente));
+      keyPoints.push("Plazo contractual medio ≈ " + m.plazoMedio + " días");
+      if (profile.timeline && profile.timeline.length) {
+        keyPoints.push("Última gestión: " + (profile.timeline[0].label || "sin detalle"));
+      } else {
+        keyPoints.push("Sin gestiones recientes registradas en el timeline");
+      }
+      nextSteps.push("Contactar hoy por WhatsApp/email con detalle de facturas vencidas");
+      nextSteps.push("Pedir promesa de pago con fecha y canal (transferencia / DEBIN)");
+      nextSteps.push("Si no hay respuesta en 48 hs, escalar a intimación formal");
+    } else if (m.facturasAbiertas > 0) {
+      sentiment = "neutral";
+      summary =
+        nombre +
+        " tiene " +
+        m.facturasAbiertas +
+        " factura(s) abierta(s) por " +
+        money(m.saldoPendiente) +
+        ", todavía dentro de plazo. Cartera sana si se anticipa el recordatorio antes del vencimiento.";
+      keyPoints.push("Saldo corriente " + money(m.saldoPendiente) + " · sin mora detectada");
+      keyPoints.push("Plazo medio de cobro ≈ " + m.plazoMedio + " días");
+      keyPoints.push("Aplicado acumulado " + money(m.aplicado) + " de " + money(m.facturado) + " facturado");
+      nextSteps.push("Programar recordatorio suave 3–5 días antes del vencimiento");
+      nextSteps.push("Confirmar contacto de cuentas a pagar actualizado");
+      nextSteps.push("Ofrecer link DEBIN si el monto es operativo de un solo pago");
+    } else {
+      sentiment = "positive";
+      summary =
+        nombre +
+        " figura al día: no hay saldo pendiente en la cartera demo. Mantener relación comercial y monitorear nuevas emisiones.";
+      keyPoints.push("Sin facturas abiertas en este momento");
+      keyPoints.push("Histórico facturado " + money(m.facturado));
+      nextSteps.push("Archivar gestiones abiertas y dejar seguimiento pasivo");
+      nextSteps.push("Revisar al emitir la próxima factura del cliente");
+    }
+    return {
+      summary: summary,
+      keyPoints: keyPoints,
+      nextSteps: nextSteps,
+      sentiment: sentiment,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  function criticidadBadge(c) {
+    var map = {
+      ALTA: "bg-rose-50 text-rose-700 border-rose-200",
+      MEDIA: "bg-amber-50 text-amber-700 border-amber-200",
+      BAJA: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    };
+    return map[c] || "bg-slate-50 text-slate-700 border-slate-200";
+  }
+
+  function fmtDate(v, withTime) {
+    if (!v) return "—";
+    var d = new Date(v);
+    if (isNaN(d)) return String(v).slice(0, 10);
+    try {
+      return d.toLocaleString("es-AR", withTime ? undefined : { day: "2-digit", month: "2-digit", year: "numeric" });
+    } catch (_) {
+      return String(v).slice(0, withTime ? 16 : 10);
+    }
+  }
+
   function rowFromEl(el) {
-    var tr = el && el.closest ? el.closest("tr[data-sol-fin-id], tr") : null;
+    var tr = el && el.closest ? el.closest("tr[data-sol-fin-cliente], tr[data-sol-fin-id], tr") : null;
     if (!tr) return null;
+    var ck = tr.getAttribute("data-sol-fin-cliente");
+    if (ck) {
+      var prof = buildClienteProfile(ck);
+      return Object.assign({}, prof.facturas[0] || {}, {
+        _cliente_key: ck,
+        razon_social: prof.razon_social,
+        cuit: prof.cuit,
+        id: (prof.facturas[0] && prof.facturas[0].id) || ck,
+      });
+    }
     var id = tr.getAttribute("data-sol-fin-id");
     if (id) return findRow(id);
     return {
@@ -277,8 +469,230 @@
     if (drawerEl) drawerEl.classList.add("hidden");
   }
 
+  function closeFicha() {
+    if (fichaEl) fichaEl.classList.add("hidden");
+    selectedClienteKey = null;
+  }
+
+  function ensureFicha() {
+    if (fichaEl) return fichaEl;
+    fichaEl = document.createElement("div");
+    fichaEl.id = "sol-fin-ficha";
+    fichaEl.className = "hidden fixed inset-0 z-[10035]";
+    fichaEl.innerHTML =
+      '<div data-sol-fin-ficha-bg class="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]"></div>' +
+      '<aside class="absolute right-0 top-0 h-full w-full max-w-3xl bg-[#f8f9ff] shadow-2xl border-l border-slate-200 flex flex-col">' +
+      '<div class="flex items-start justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-white">' +
+      '<div class="min-w-0">' +
+      '<button type="button" data-sol-fin-ficha-back class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 mb-1">' +
+      '<span class="material-symbols-outlined text-[16px]">arrow_back</span> Volver a clientes</button>' +
+      '<p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Historia clínica del cliente</p>' +
+      '<h2 class="text-lg font-extrabold text-slate-900 truncate" data-sol-fin-ficha-title>—</h2>' +
+      '<p class="text-xs text-slate-500 mt-0.5" data-sol-fin-ficha-sub></p>' +
+      "</div>" +
+      '<div class="flex items-center gap-2 shrink-0">' +
+      '<span data-sol-fin-ficha-crit class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold border"></span>' +
+      '<button type="button" data-sol-fin-ficha-close class="p-2 rounded-lg hover:bg-slate-100 text-slate-500" aria-label="Cerrar">' +
+      '<span class="material-symbols-outlined text-[20px]">close</span></button>' +
+      "</div></div>" +
+      '<div class="flex-1 overflow-y-auto px-5 py-4 space-y-4" data-sol-fin-ficha-body></div>' +
+      '<div class="border-t border-slate-200 bg-white p-4 flex flex-wrap gap-2" data-sol-fin-ficha-actions></div>' +
+      "</aside>";
+    document.body.appendChild(fichaEl);
+    fichaEl.querySelector("[data-sol-fin-ficha-bg]").addEventListener("click", closeFicha);
+    fichaEl.querySelector("[data-sol-fin-ficha-close]").addEventListener("click", closeFicha);
+    fichaEl.querySelector("[data-sol-fin-ficha-back]").addEventListener("click", closeFicha);
+    return fichaEl;
+  }
+
+  function openClienteFicha(keyOrRow) {
+    var profile = buildClienteProfile(keyOrRow);
+    if (!profile || !profile.facturas || !profile.facturas.length) {
+      toast("No hay cobranzas cargadas para este cliente.", "err");
+      return;
+    }
+    selectedClienteKey = profile.key;
+    selectedId = profile.facturas[0].id || null;
+    closeDrawer();
+    closeMenu();
+    var el = ensureFicha();
+    var m = profile.metrics;
+    var ai = buildAiAnalisis(profile);
+    el.querySelector("[data-sol-fin-ficha-title]").textContent = profile.razon_social;
+    el.querySelector("[data-sol-fin-ficha-sub]").textContent =
+      "CUIT " + (profile.cuit || "—") +
+      (profile.email ? " · " + profile.email : "") +
+      (profile.telefono ? " · " + profile.telefono : "");
+    var crit = el.querySelector("[data-sol-fin-ficha-crit]");
+    crit.className = "inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold border " + criticidadBadge(m.criticidad);
+    crit.textContent = "Criticidad " + m.criticidad;
+
+    var sentimentLabel =
+      ai.sentiment === "positive" ? "Positivo" : ai.sentiment === "negative" ? "Negativo" : "Neutral";
+    var sentimentCls =
+      ai.sentiment === "positive"
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : ai.sentiment === "negative"
+          ? "bg-rose-50 text-rose-700 border-rose-200"
+          : "bg-slate-100 text-slate-700 border-slate-200";
+
+    var facturasHtml = profile.facturas
+      .map(function (f) {
+        var st = estadoFactura(f);
+        return (
+          '<tr class="border-t border-slate-100 hover:bg-slate-50/80" data-sol-fin-id="' +
+          esc(f.id) +
+          '">' +
+          '<td class="py-2.5 px-3"><button type="button" data-sol-fin-ficha-fac="' +
+          esc(f.id) +
+          '" class="font-semibold text-blue-600 hover:underline text-left">' +
+          esc(f.numero || f.id) +
+          "</button></td>" +
+          '<td class="py-2.5 px-3 font-mono text-right">' +
+          esc(money(f.monto)) +
+          "</td>" +
+          '<td class="py-2.5 px-3 font-mono text-right">' +
+          esc(money(f.monto_aplicado || 0)) +
+          "</td>" +
+          '<td class="py-2.5 px-3 font-mono text-right font-bold">' +
+          esc(money(saldo(f))) +
+          "</td>" +
+          '<td class="py-2.5 px-3">' +
+          esc(fmtDate(f.fecha_vto)) +
+          "</td>" +
+          '<td class="py-2.5 px-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ' +
+          st.cls +
+          '">' +
+          esc(st.label) +
+          "</span></td></tr>"
+        );
+      })
+      .join("");
+
+    var timelineHtml = profile.timeline.length
+      ? profile.timeline
+          .map(function (ev) {
+            return (
+              '<div class="relative flex gap-3 pl-1">' +
+              '<div class="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-50 shrink-0"></div>' +
+              '<div class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white p-3">' +
+              '<div class="flex flex-wrap items-start justify-between gap-2">' +
+              '<p class="text-sm font-semibold text-slate-900">' +
+              esc(ev.label) +
+              "</p>" +
+              '<span class="text-[11px] text-slate-400">' +
+              esc(fmtDate(ev.at, true)) +
+              "</span></div>" +
+              '<p class="mt-1 text-[11px] text-slate-500">' +
+              esc(ev.factura || "") +
+              (ev.agente ? " · " + ev.agente : "") +
+              (ev.canal ? " · " + ev.canal : "") +
+              "</p></div></div>"
+            );
+          })
+          .join("")
+      : '<p class="py-6 text-center text-sm text-slate-500">Sin gestiones registradas todavía.</p>';
+
+    el.querySelector("[data-sol-fin-ficha-body]").innerHTML =
+      '<div class="grid gap-3 sm:grid-cols-4">' +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Saldo pendiente</p><p class="mt-1 text-xl font-black text-slate-900 font-mono">' +
+      esc(money(m.saldoPendiente)) +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Facturas abiertas</p><p class="mt-1 text-xl font-black text-slate-900">' +
+      m.facturasAbiertas +
+      '</p><p class="text-[11px] text-rose-600 font-semibold">' +
+      m.facturasVencidas +
+      " vencidas</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Facturado / aplicado</p><p class="mt-1 text-sm font-bold text-slate-900 font-mono">' +
+      esc(money(m.facturado)) +
+      " / " +
+      esc(money(m.aplicado)) +
+      "</p></div>" +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Último cobro</p><p class="mt-1 text-sm font-bold text-slate-900">' +
+      esc(fmtDate(m.ultimoPagoAt, true)) +
+      "</p></div></div>" +
+      '<section class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">' +
+      '<header class="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">' +
+      '<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">auto_awesome</span>' +
+      '<h3 class="text-sm font-bold">Análisis IA · cobranza</h3></div>' +
+      '<span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ' +
+      sentimentCls +
+      ' bg-white/15 border-white/30 text-white">' +
+      esc(sentimentLabel) +
+      "</span></header>" +
+      '<div class="p-4 space-y-3">' +
+      '<div class="rounded-lg border-l-4 border-indigo-500 bg-indigo-50/80 py-3 px-3"><p class="text-sm leading-relaxed text-slate-800">' +
+      esc(ai.summary) +
+      "</p></div>" +
+      '<div class="grid gap-4 sm:grid-cols-2">' +
+      "<div><p class=\"text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5\">Puntos clave</p><ul class=\"space-y-1.5\">" +
+      ai.keyPoints
+        .map(function (p) {
+          return (
+            '<li class="flex items-start gap-2 text-sm text-slate-700"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0"></span>' +
+            esc(p) +
+            "</li>"
+          );
+        })
+        .join("") +
+      "</ul></div>" +
+      "<div><p class=\"text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5\">Próximos pasos</p><ul class=\"space-y-1.5\">" +
+      ai.nextSteps
+        .map(function (p) {
+          return (
+            '<li class="flex items-start gap-2 text-sm text-slate-700"><span class="text-indigo-600 font-bold shrink-0">→</span>' +
+            esc(p) +
+            "</li>"
+          );
+        })
+        .join("") +
+      "</ul></div></div>" +
+      '<p class="text-[10px] text-slate-400">Generado ' +
+      esc(fmtDate(ai.generatedAt, true)) +
+      " · patrón Constanza (resumen + puntos clave + próximos pasos)</p>" +
+      "</div></section>" +
+      '<section class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">' +
+      '<header class="px-4 py-3 border-b border-slate-100 bg-white"><h3 class="text-sm font-bold text-slate-900">Cobranzas / facturas del cliente</h3>' +
+      '<p class="text-[11px] text-slate-500">Listado de comprobantes a cobrar imputados a esta cuenta</p></header>' +
+      '<div class="overflow-x-auto"><table class="w-full text-left text-xs">' +
+      "<thead><tr class=\"bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]\">" +
+      "<th class=\"py-2.5 px-3\">Factura</th><th class=\"py-2.5 px-3 text-right\">Monto</th><th class=\"py-2.5 px-3 text-right\">Aplicado</th>" +
+      "<th class=\"py-2.5 px-3 text-right\">Saldo</th><th class=\"py-2.5 px-3\">Vencimiento</th><th class=\"py-2.5 px-3 text-center\">Estado</th>" +
+      "</tr></thead><tbody>" +
+      facturasHtml +
+      "</tbody></table></div></section>" +
+      '<section class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">' +
+      '<header class="px-4 py-3 border-b border-slate-100"><h3 class="text-sm font-bold text-slate-900">Timeline de gestiones</h3></header>' +
+      '<div class="p-4 space-y-3 relative">' +
+      timelineHtml +
+      "</div></section>";
+
+    var first = profile.facturas[0];
+    var acts = el.querySelector("[data-sol-fin-ficha-actions]");
+    acts.innerHTML =
+      '<button type="button" data-sol-fin-ficha-act="comunicar" class="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">Comunicar</button>' +
+      '<button type="button" data-sol-fin-ficha-act="cobrar" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Registrar cobro</button>' +
+      '<button type="button" data-sol-fin-ficha-act="ir_conciliacion" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Ir a conciliación</button>';
+    acts.querySelectorAll("[data-sol-fin-ficha-act]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        handleAction(btn.getAttribute("data-sol-fin-ficha-act"), btn, first);
+      });
+    });
+    el.querySelectorAll("[data-sol-fin-ficha-fac]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var fac = findRow(btn.getAttribute("data-sol-fin-ficha-fac"));
+        if (fac) openDrawer(fac);
+      });
+    });
+    el.classList.remove("hidden");
+  }
+
   function openDrawer(row) {
     if (!row) return;
+    if (pageKey() === "clientes" && (row._cliente_key || (!row.numero && row.razon_social))) {
+      openClienteFicha(row);
+      return;
+    }
     row = localOf(row);
     selectedId = row.id || null;
     var d = ensureDrawer();
@@ -635,10 +1049,18 @@
       return;
     }
     if (kind === "detalle") {
+      if (pageKey() === "clientes") {
+        openClienteFicha(row || selectedClienteKey);
+        return;
+      }
       openDrawer(row || { numero: "Sin ID", razon_social: "Fila de demostración" });
       return;
     }
-    if (kind === "nuevo_cobro" || kind === "ver_cobranza") {
+    if (kind === "ver_cobranza" || kind === "ficha_cliente") {
+      openClienteFicha(row || selectedClienteKey);
+      return;
+    }
+    if (kind === "nuevo_cobro") {
       go("/finanzas/facturas/cobranzas");
       return;
     }
@@ -752,7 +1174,8 @@
     if (btn.getAttribute("data-sol-fin-chip")) return null;
     if (/notifications/.test(btn.textContent || "") && btn.querySelector(".material-symbols-outlined")) return null;
     if (all.indexOf("nuevo cobro") >= 0) return "nuevo_cobro";
-    if (all.indexOf("ver cobranza") >= 0) return "ver_cobranza";
+    if (all.indexOf("ver cobranza") >= 0 || all.indexOf("ver cobranzas") >= 0) return "ver_cobranza";
+    if (all.indexOf("ver cliente") >= 0 || all.indexOf("historia clinica") >= 0) return "ficha_cliente";
     if (all === "cobrar" || all.indexOf("registrar pago") >= 0) return "cobrar";
     if (all.indexOf("pagar") >= 0 || all.indexOf("autorizar") >= 0) return "pagar";
     if (all.indexOf("comunicar seleccionadas") >= 0 || all.indexOf("enviar recordatorio a seleccionado") >= 0) return "enviar_seleccion";
@@ -786,13 +1209,29 @@
       "click",
       function (e) {
         if (e.target.closest && e.target.closest("#sol-fin-menu")) return;
+        var nameHit = e.target.closest("[data-sol-fin-open-cliente]");
+        if (nameHit) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu();
+          openClienteFicha(rowFromEl(nameHit) || nameHit.getAttribute("data-sol-fin-open-cliente"));
+          return;
+        }
+        var rowHit = e.target.closest("tr[data-sol-fin-cliente]");
+        if (rowHit && !e.target.closest("button, a, input, label") && pageKey() === "clientes") {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu();
+          openClienteFicha(rowFromEl(rowHit) || rowHit.getAttribute("data-sol-fin-cliente"));
+          return;
+        }
         var btn = e.target.closest("button");
         if (!btn) {
           closeMenu();
           return;
         }
         if (btn.closest("[data-sol-desk-chat], [data-sol-shell='chrome'], [data-sol-notif]")) return;
-        if (!btn.closest("main, aside, [data-purpose], #sol-fin-drawer")) return;
+        if (!btn.closest("main, aside, [data-purpose], #sol-fin-drawer, #sol-fin-ficha")) return;
         var kind = actionKind(btn);
         if (!kind) {
           if (!btn.closest("#sol-fin-menu")) closeMenu();
@@ -808,6 +1247,7 @@
       if (e.key === "Escape") {
         closeMenu();
         closeDrawer();
+        closeFicha();
       }
     });
   }
@@ -872,32 +1312,91 @@
     if (key === "clientes") {
       var byClient = {};
       rows.forEach(function (r) {
-        var k = r.razon_social || r.cuit || r.id;
-        if (!byClient[k]) byClient[k] = { razon_social: r.razon_social, cuit: r.cuit || r.cuit_emisor, saldo: 0, n: 0, id: r.id };
-        byClient[k].saldo += saldo(r);
+        var k = clienteKeyOf(r);
+        if (!byClient[k]) {
+          byClient[k] = {
+            key: k,
+            razon_social: r.razon_social,
+            cuit: r.cuit || r.cuit_emisor,
+            saldo: 0,
+            n: 0,
+            abiertas: 0,
+            vencidas: 0,
+            id: r.id,
+            ultimo: null,
+            plazo: 30,
+          };
+        }
+        var s = saldo(r);
+        byClient[k].saldo += s;
         byClient[k].n += 1;
+        if (s > 0.009) byClient[k].abiertas += 1;
+        var st = estadoFactura(r);
+        if (st.key === "vencidas") byClient[k].vencidas += 1;
+        var payAt = Number(r.monto_aplicado || 0) > 0 ? r.updated_at || r.fecha : null;
+        if (payAt && (!byClient[k].ultimo || payAt > byClient[k].ultimo)) byClient[k].ultimo = payAt;
+        if (r.fecha && r.fecha_vto) {
+          var em = new Date(r.fecha);
+          var vt = new Date(r.fecha_vto);
+          if (!isNaN(em) && !isNaN(vt)) byClient[k].plazo = Math.max(1, Math.round((vt - em) / 86400000));
+        }
       });
       var clients = Object.keys(byClient).map(function (k) {
         return byClient[k];
       });
       tbody.innerHTML = clients
         .map(function (c) {
+          var inicial = String(c.razon_social || "?").trim().charAt(0).toUpperCase() || "?";
+          var estadoLabel = c.vencidas > 0 ? "Vencido" : c.saldo > 0 ? "Saldo corriente" : "Al día";
+          var estadoCls =
+            c.vencidas > 0
+              ? "bg-rose-50 text-rose-700 border-rose-200"
+              : c.saldo > 0
+                ? "bg-amber-50 text-amber-700 border-amber-200"
+                : "bg-emerald-50 text-emerald-700 border-emerald-200";
+          var dot =
+            c.vencidas > 0 ? "bg-rose-500" : c.saldo > 0 ? "bg-amber-500" : "bg-emerald-500";
           return (
-            '<tr class="hover:bg-slate-50" data-sol-fin-id="' +
+            '<tr class="hover:bg-slate-50/90 transition-colors cursor-pointer" data-sol-fin-cliente="' +
+            esc(c.key) +
+            '" data-sol-fin-id="' +
             esc(c.id) +
             '">' +
-            '<td class="py-3 px-4"><div class="font-semibold text-slate-800">' +
+            '<td class="py-3.5 px-4">' +
+            '<div class="flex items-center gap-2.5">' +
+            '<div class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-black flex items-center justify-center text-xs">' +
+            esc(inicial) +
+            "</div><div>" +
+            '<span data-sol-fin-open-cliente="' +
+            esc(c.key) +
+            '" class="font-bold text-slate-900 block hover:text-blue-600 cursor-pointer">' +
             esc(c.razon_social || "—") +
-            '</div><div class="text-[11px] text-slate-400 font-mono">' +
+            '</span><span class="text-[10px] text-slate-400 font-mono">' +
             esc(c.cuit || "") +
-            "</div></td>" +
-            '<td class="py-3 px-4 text-sm">' +
-            c.n +
-            " factura(s)</td>" +
-            '<td class="py-3 px-4 text-right font-mono font-bold">' +
+            "</span></div></div></td>" +
+            '<td class="py-3.5 px-4 font-mono text-slate-600">' +
+            esc(c.cuit || "—") +
+            "</td>" +
+            '<td class="py-3.5 px-4 text-center"><span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">' +
+            c.abiertas +
+            "</span></td>" +
+            '<td class="py-3.5 px-4 font-mono font-bold text-slate-900">' +
             esc(money(c.saldo)) +
             "</td>" +
-            '<td class="py-3 px-4 text-right"><div class="inline-flex items-center gap-1">' +
+            '<td class="py-3.5 px-4 text-center text-slate-500">' +
+            c.plazo +
+            " días</td>" +
+            '<td class="py-3.5 px-4 font-mono text-slate-600">' +
+            esc(c.ultimo ? fmtDate(c.ultimo) : "—") +
+            "</td>" +
+            '<td class="py-3.5 px-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ' +
+            estadoCls +
+            '"><span class="w-1.5 h-1.5 rounded-full ' +
+            dot +
+            '"></span> ' +
+            esc(estadoLabel) +
+            "</span></td>" +
+            '<td class="py-3.5 px-4 text-right pr-6"><div class="inline-flex items-center justify-end gap-2">' +
             actionsHtml(c) +
             "</div></td></tr>"
           );
