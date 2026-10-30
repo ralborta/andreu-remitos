@@ -783,17 +783,24 @@
     var q = fold(query);
     var total = 0;
     var shown = 0;
+    var counts = { todas: 0, por_vencer: 0, vencidas: 0, pagadas_mes: 0, al_dia: 0, en_gestion: 0, pendientes: 0 };
     mainTables().forEach(function (tbody) {
       Array.prototype.forEach.call(tbody.rows, function (tr) {
+        if (tr.querySelector("td[colspan]")) return;
         total += 1;
         var st = rowStatus(tr);
+        counts.todas += 1;
+        if (counts[st] != null) counts[st] += 1;
+        if (st === "al_dia") counts.pagadas_mes += 1;
         var okFilter =
           filter === "todas" ||
           filter === "todos" ||
           filter === st ||
+          (filter === "pagadas_mes" && st === "al_dia") ||
           (filter === "parciales" && st === "en_gestion") ||
           (filter === "con_saldo" && (st === "vencidas" || st === "por_vencer" || st === "en_gestion")) ||
-          (filter === "conciliados" && st === "al_dia");
+          (filter === "conciliados" && st === "al_dia") ||
+          (filter === "al_dia" && st === "al_dia");
         var okQuery = !q || fold(tr.textContent).indexOf(q) >= 0;
         var show = okFilter && okQuery;
         tr.style.display = show ? "" : "none";
@@ -809,23 +816,63 @@
         }
       });
     });
+    paintChipCounts(counts);
     updateSelectedLabel();
+  }
+
+  function paintChipCounts(counts) {
+    document.querySelectorAll("[data-sol-fin-chip]").forEach(function (b) {
+      var key = b.getAttribute("data-sol-fin-chip");
+      var n = counts[key];
+      if (n == null) return;
+      var label = b.getAttribute("data-sol-fin-chip-label") || "";
+      if (!label) {
+        label = String(b.textContent || "")
+          .replace(/\s+\d+\s*$/, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        b.setAttribute("data-sol-fin-chip-label", label);
+      }
+      var tone =
+        key === "por_vencer"
+          ? "text-amber-400"
+          : key === "vencidas"
+            ? "text-rose-500"
+            : key === "pagadas_mes" || key === "al_dia"
+              ? "text-emerald-600"
+              : "text-slate-400";
+      if (b.getAttribute("aria-pressed") === "true" && (key === "por_vencer" || key === "vencidas" || key === "pagadas_mes")) {
+        tone = key === "vencidas" ? "text-rose-300" : key === "pagadas_mes" ? "text-emerald-300" : "text-amber-300";
+      }
+      b.innerHTML = esc(label) + ' <span class="' + tone + ' font-semibold ml-0.5">' + n + "</span>";
+    });
   }
 
   function paintChipActive(btn) {
     document.querySelectorAll("[data-sol-fin-chip]").forEach(function (b) {
-      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      var on = b === btn;
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on) {
+        b.className =
+          "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-xs shrink-0";
+      } else {
+        b.className =
+          "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:border-slate-300 shrink-0";
+      }
     });
   }
 
   function classifyChip(label) {
     var t = fold(label);
     if (t.indexOf("todas") === 0 || t.indexOf("todos") === 0) return "todas";
+    if (t.indexOf("pagadas este mes") === 0 || t.indexOf("pagadas del mes") === 0 || t.indexOf("pagad") === 0) {
+      return "pagadas_mes";
+    }
     if (t.indexOf("vencid") === 0) return "vencidas";
     if (t.indexOf("por vencer") === 0) return "por_vencer";
     if (t.indexOf("en gestion") === 0) return "en_gestion";
     if (t.indexOf("parcial") === 0) return "parciales";
-    if (t.indexOf("al dia") === 0 || t.indexOf("pagad") === 0) return "al_dia";
+    if (t.indexOf("al dia") === 0) return "al_dia";
     if (t.indexOf("pendiente") === 0) return "pendientes";
     if (t.indexOf("conciliad") === 0) return "conciliados";
     if (t.indexOf("discrepan") === 0) return "discrepancias";
@@ -837,9 +884,18 @@
   function wireChips() {
     document.querySelectorAll("main button").forEach(function (btn) {
       if (btn.closest("[data-sol-desk-chat], [data-sol-shell='chrome'], [data-sol-notif]")) return;
+      if (btn.getAttribute("data-sol-fin-chip-wired")) return;
       var key = classifyChip(btn.textContent || "");
       if (!key) return;
       btn.setAttribute("data-sol-fin-chip", key);
+      btn.setAttribute("data-sol-fin-chip-wired", "1");
+      btn.setAttribute(
+        "data-sol-fin-chip-label",
+        String(btn.textContent || "")
+          .replace(/\s+\d+\s*$/, "")
+          .replace(/\s+/g, " ")
+          .trim(),
+      );
       btn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -848,6 +904,8 @@
         applyFilters();
       });
     });
+    var active = document.querySelector('[data-sol-fin-chip="' + filter + '"]') || document.querySelector('[data-sol-fin-chip="todas"]');
+    if (active) paintChipActive(active);
   }
 
   function wireSearch() {
@@ -1177,7 +1235,8 @@
     if (all.indexOf("ver cobranza") >= 0 || all.indexOf("ver cobranzas") >= 0) return "ver_cobranza";
     if (all.indexOf("ver cliente") >= 0 || all.indexOf("historia clinica") >= 0) return "ficha_cliente";
     if (all === "cobrar" || all.indexOf("registrar pago") >= 0) return "cobrar";
-    if (all.indexOf("pagar") >= 0 || all.indexOf("autorizar") >= 0) return "pagar";
+    if (all.indexOf("pagadas") >= 0) return null;
+    if (/(^|\s)pagar(\s|\/|$)/.test(all) || all.indexOf("autorizar") >= 0) return "pagar";
     if (all.indexOf("comunicar seleccionadas") >= 0 || all.indexOf("enviar recordatorio a seleccionado") >= 0) return "enviar_seleccion";
     if (all.indexOf("recordatorio masivo") >= 0 || all.indexOf("emitir reclamo") >= 0 || all.indexOf("comunicar masivo") >= 0) return "comunicar_masivo";
     if (all.indexOf("comunicar") >= 0 || all.indexOf("reclamar") >= 0 || all.indexOf("intimar") >= 0 || all.indexOf("recordar") >= 0 || all.indexOf("anticipar") >= 0) return "comunicar";
@@ -1300,15 +1359,38 @@
     );
   }
 
+  function isoOffset(days) {
+    var d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function demoPagarRows() {
+    return [
+      { id: "FAC-PAY-001", tipo: "pagar", numero: "FA-0003-00112", razon_social: "YPF Distribución", cuit_emisor: "30-54667674-9", fecha: isoOffset(-12), fecha_vto: isoOffset(3), monto: 2180000, monto_aplicado: 0, estado: "abierta" },
+      { id: "FAC-PAY-002", tipo: "pagar", numero: "FA-0003-00118", razon_social: "Neumáticos del Sur", cuit_emisor: "30-71112223-4", fecha: isoOffset(-20), fecha_vto: isoOffset(-8), monto: 420000, monto_aplicado: 420000, estado: "saldada", demo_pagada: true },
+      { id: "FAC-PAY-003", tipo: "pagar", numero: "FA-0001-000884", razon_social: "Shell Argentina", cuit_emisor: "30-50123456-9", fecha: isoOffset(-5), fecha_vto: isoOffset(5), monto: 980000, monto_aplicado: 0, estado: "abierta" },
+      { id: "FAC-PAY-004", tipo: "pagar", numero: "FA-0002-000441", razon_social: "Mercado Libre Logistic", cuit_emisor: "30-70987654-1", fecha: isoOffset(-40), fecha_vto: isoOffset(-15), monto: 312000, monto_aplicado: 0, estado: "abierta" },
+      { id: "FAC-PAY-005", tipo: "pagar", numero: "FA-0004-000210", razon_social: "Pirelli Neumáticos", cuit_emisor: "30-69874512-3", fecha: isoOffset(-10), fecha_vto: isoOffset(2), monto: 756000, monto_aplicado: 0, estado: "abierta" },
+      { id: "FAC-PAY-006", tipo: "pagar", numero: "FA-0005-000099", razon_social: "Telecom Arg.", cuit_emisor: "30-65432109-8", fecha: isoOffset(-25), fecha_vto: isoOffset(-2), monto: 145000, monto_aplicado: 145000, estado: "saldada", demo_pagada: true },
+      { id: "FAC-PAY-007", tipo: "pagar", numero: "FA-0006-000333", razon_social: "Axion Energy", cuit_emisor: "30-61234567-0", fecha: isoOffset(-3), fecha_vto: isoOffset(10), monto: 1540000, monto_aplicado: 0, estado: "abierta" },
+      { id: "FAC-PAY-008", tipo: "pagar", numero: "FA-0007-000512", razon_social: "Iveco Argentina", cuit_emisor: "30-58765432-2", fecha: isoOffset(-18), fecha_vto: isoOffset(-1), monto: 890000, monto_aplicado: 0, estado: "abierta" },
+    ];
+  }
+
   function renderRows(rows) {
     var tbody = document.querySelector("main table tbody");
     if (!tbody) return;
+    var key = pageKey();
     rows = (rows || []).map(localOf);
+    if (!rows.length && key === "facturas") {
+      rows = demoPagarRows().map(localOf);
+      apiRows = rows.slice();
+    }
     if (!rows.length) {
       tbody.innerHTML = '<tr><td class="py-6 px-4 text-sm text-slate-500" colspan="8">Sin datos de prueba en este listado.</td></tr>';
       return;
     }
-    var key = pageKey();
     if (key === "clientes") {
       var byClient = {};
       rows.forEach(function (r) {
@@ -1398,6 +1480,50 @@
             "</span></td>" +
             '<td class="py-3.5 px-4 text-right pr-6"><div class="inline-flex items-center justify-end gap-2">' +
             actionsHtml(c) +
+            "</div></td></tr>"
+          );
+        })
+        .join("");
+    } else if (key === "facturas") {
+      tbody.innerHTML = rows
+        .slice(0, 40)
+        .map(function (r) {
+          var st = estadoFactura(r);
+          var paid = st.key === "al_dia";
+          return (
+            '<tr class="hover:bg-slate-50/80 transition-colors" data-sol-fin-id="' +
+            esc(r.id) +
+            '">' +
+            '<td class="py-3.5 px-4 whitespace-nowrap"><span class="font-mono font-bold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">' +
+            esc(r.numero || r.id) +
+            "</span></td>" +
+            '<td class="py-3.5 px-4"><div class="font-bold text-slate-900">' +
+            esc(r.razon_social || "—") +
+            '</div><div class="text-[11px] text-slate-400 font-normal">' +
+            esc(r.descripcion || r.concepto || (r.tipo === "pagar" ? "Factura a pagar" : "Factura a cobrar")) +
+            "</div></td>" +
+            '<td class="py-3.5 px-4 whitespace-nowrap font-mono text-slate-600 text-[11px]">' +
+            esc(r.cuit || r.cuit_emisor || r.cuit_receptor || "—") +
+            "</td>" +
+            '<td class="py-3.5 px-4 whitespace-nowrap text-slate-600">' +
+            esc(fmtDate(r.fecha)) +
+            "</td>" +
+            '<td class="py-3.5 px-4 whitespace-nowrap">' +
+            esc(fmtDate(r.fecha_vto)) +
+            "</td>" +
+            '<td class="py-3.5 px-4 whitespace-nowrap text-right font-bold text-slate-900 font-mono text-sm">' +
+            esc(money(r.monto != null ? r.monto : saldo(r))) +
+            "</td>" +
+            '<td class="py-3.5 px-4 whitespace-nowrap text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ' +
+            st.cls +
+            '">' +
+            esc(paid && r.tipo === "pagar" ? "Pagada" : st.label) +
+            "</span></td>" +
+            '<td class="py-3.5 px-4 whitespace-nowrap text-right"><div class="inline-flex items-center gap-1.5 justify-end">' +
+            (paid
+              ? '<button type="button" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded">Ver Recibo</button>'
+              : '<button type="button" class="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded shadow-xs">Pagar / Autorizar</button>') +
+            '<button type="button" class="p-1 text-slate-400 hover:text-slate-700 rounded" title="Más opciones"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>' +
             "</div></td></tr>"
           );
         })
@@ -1555,16 +1681,19 @@
       }
       if (Array.isArray(facturas)) {
         live = true;
-        apiRows = facturas;
+        apiRows = facturas.length ? facturas : key === "facturas" ? demoPagarRows() : [];
       } else {
-        apiRows = apiRows.length ? apiRows : [];
+        apiRows = apiRows.length ? apiRows : key === "facturas" ? demoPagarRows() : [];
       }
       refreshTables();
+      wireChips();
+      applyFilters();
     });
   }
 
   function boot() {
     bannerDemo();
+    if (pageKey() === "facturas") filter = "todas";
     wireChips();
     wireSearch();
     wireCheckboxes();
