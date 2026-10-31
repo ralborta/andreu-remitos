@@ -866,13 +866,24 @@
   }
 
   function rowStatus(tr) {
+    var forced = tr.getAttribute("data-sol-fin-status");
+    if (forced) return forced;
+    var cobro = tr.getAttribute("data-sol-fin-cobro");
+    if (cobro) {
+      var t0 = fold(tr.textContent || "");
+      if (t0.indexOf("discrepan") >= 0 || t0.indexOf("revision") >= 0) return "discrepancias";
+      if (t0.indexOf("rechaz") >= 0) return "rechazados";
+      if (t0.indexOf("pendiente") >= 0) return "pendientes";
+      if (t0.indexOf("conciliad") >= 0) return "al_dia";
+    }
     var id = tr.getAttribute("data-sol-fin-id");
-    if (id) {
+    if (id && pageKey() !== "conciliacion") {
       var row = findRow(id);
       if (row) return estadoFactura(row).key;
     }
     var t = fold(tr.textContent || "");
-    if (t.indexOf("discrepan") >= 0) return "discrepancias";
+    if (t.indexOf("discrepan") >= 0 || t.indexOf("revision manual") >= 0) return "discrepancias";
+    if (t.indexOf("rechaz") >= 0) return "rechazados";
     if (t.indexOf("vencida") >= 0 || t.indexOf("mora") >= 0) return "vencidas";
     if (t.indexOf("por vencer") >= 0 || t.indexOf("vence en") >= 0) return "por_vencer";
     if (t.indexOf("en gestion") >= 0 || t.indexOf("parcial") >= 0) return "en_gestion";
@@ -1018,7 +1029,7 @@
     if (t.indexOf("parcial") === 0) return "parciales";
     if (t.indexOf("al dia") === 0) return "al_dia";
     if (t.indexOf("pendiente") === 0) return "pendientes";
-    if (t.indexOf("conciliad") === 0) return "conciliados";
+    if (t.indexOf("conciliad") === 0) return "al_dia";
     if (t.indexOf("discrepan") === 0) return "discrepancias";
     if (t.indexOf("rechaz") === 0) return "rechazados";
     if (t.indexOf("con saldo") === 0) return "con_saldo";
@@ -2085,45 +2096,65 @@
       : apiRows.slice(0, 8).map(function (f, i) {
           return {
             id: "demo-cobro-" + i,
-            monto: Math.round(saldo(localOf(f)) * 0.4) || 1000,
+            monto: Math.round(saldo(localOf(f)) * 0.4) || Number(f.monto || 0) || 1000,
             estado: i % 3 === 0 ? "pendiente" : "aplicado",
             factura_id: f.id,
             factura_numero: f.numero,
             external_ref: "DEMO-" + (1000 + i),
-            created_at: f.fecha || "",
+            cuit: f.cuit_emisor || f.cuit,
+            created_at: f.fecha || f.updated_at || "",
+            pasarela: i % 2 === 0 ? "Mercado Pago" : "Interbanking",
           };
         });
     tbody.innerHTML = rows
       .map(function (c) {
         var fac = c.factura_id ? findRow(c.factura_id) : null;
-        var label = c.estado === "aplicado" ? "Conciliado" : "Pendiente";
-        var cls = c.estado === "aplicado" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-800 border-amber-200";
+        var aplicado = c.estado === "aplicado";
+        var label = aplicado ? "Conciliado" : "Pendiente";
+        var stKey = aplicado ? "al_dia" : "pendientes";
+        var cls = aplicado
+          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+          : "bg-amber-50 text-amber-800 border-amber-200";
         return (
-          '<tr data-sol-fin-id="' +
+          '<tr class="hover:bg-slate-50/80" data-sol-fin-id="' +
           esc(fac ? fac.id : "") +
           '" data-sol-fin-cobro="' +
           esc(c.id) +
+          '" data-sol-fin-status="' +
+          stKey +
           '">' +
-          '<td class="py-3 px-4 font-mono text-sm">' +
+          '<td class="px-4 py-3 font-mono text-sm font-semibold text-indigo-700">' +
           esc(c.external_ref || c.id) +
           "</td>" +
-          '<td class="py-3 px-4 text-sm">' +
+          '<td class="px-4 py-3"><div class="font-medium text-slate-900">' +
           esc((fac && fac.razon_social) || c.cuit || "Pasarela demo") +
+          '</div><div class="font-mono text-[11px] text-slate-500">' +
+          esc((fac && (fac.cuit || fac.cuit_emisor)) || c.cuit || "") +
+          "</div></td>" +
+          '<td class="px-4 py-3"><div class="font-mono text-sm font-semibold text-indigo-700">' +
+          esc(c.factura_numero || (fac && fac.numero) || "—") +
+          '</div><div class="text-[11px] text-slate-400">Remito demo</div></td>' +
+          '<td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-slate-200 text-xs">' +
+          esc(c.pasarela || c.origen || "Pasarela") +
+          "</span></td>" +
+          '<td class="px-4 py-3 font-mono text-xs text-slate-600">' +
+          esc(fmtDate(c.settled_at || c.created_at || c.updated_at, true)) +
           "</td>" +
-          '<td class="py-3 px-4 text-right font-mono font-bold">' +
+          '<td class="px-4 py-3 text-right font-mono font-bold text-slate-900">' +
           esc(money(c.monto)) +
           "</td>" +
-          '<td class="py-3 px-4 text-sm">' +
-          esc(c.factura_numero || (fac && fac.numero) || "—") +
-          "</td>" +
-          '<td class="py-3 px-4 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ' +
+          '<td class="px-4 py-3 text-center"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ' +
           cls +
-          '">' +
+          '"><span class="h-1.5 w-1.5 rounded-full ' +
+          (aplicado ? "bg-emerald-500" : "bg-amber-500") +
+          '"></span>' +
           label +
           "</span></td>" +
-          '<td class="py-3 px-4 text-right"><div class="inline-flex gap-1">' +
-          '<button type="button" class="px-2 py-1 rounded text-xs font-semibold border border-slate-200">Conciliar</button>' +
-          '<button type="button" class="p-1 rounded" title="Más opciones"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>' +
+          '<td class="px-4 py-3 text-right"><div class="inline-flex gap-1 justify-end">' +
+          (aplicado
+            ? '<button type="button" class="px-2 py-1 rounded border border-slate-200 text-xs font-semibold">Ver Detalle</button>'
+            : '<button type="button" class="px-2.5 py-1 rounded bg-slate-900 text-white text-xs font-semibold">Conciliar</button>') +
+          '<button type="button" class="p-1 rounded text-slate-400" title="Más opciones"><span class="material-symbols-outlined text-[16px]">more_vert</span></button>' +
           "</div></td></tr>"
         );
       })
