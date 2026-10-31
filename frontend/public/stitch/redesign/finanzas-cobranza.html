@@ -849,8 +849,8 @@
 </div>
 </div>
 </section>
-<!-- INTERACTIVE COLLECTION ACTION PREVIEW (SOL WHATSAPP BOT DRAWER/CARD) -->
-<section class="bg-surface-container-lowest rounded-xl border border-secondary/30 shadow-md p-space-lg flex flex-col lg:flex-row items-stretch gap-space-lg relative overflow-hidden">
+<!-- INTERACTIVE COLLECTION ACTION (SOL WHATSAPP BOT) -->
+<section data-sol-fin-wa-panel class="bg-surface-container-lowest rounded-xl border border-secondary/30 shadow-md p-space-lg flex flex-col lg:flex-row items-stretch gap-space-lg relative overflow-hidden">
 <!-- Decorative background glow for AI automation -->
 <div class="absolute -right-20 -top-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 <!-- Left Column: Context & Metadata -->
@@ -861,46 +861,47 @@
 <span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider">MÓDULO DE ACCIÓN AUTOMATIZADA · WHATSAPP BOT SOL</span>
 </div>
 <h2 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight mb-2">
-            Simulación de Disparo de Cobranza IA por WhatsApp
+            Disparo de Cobranza IA por WhatsApp
           </h2>
 <p class="font-body-md text-body-md text-on-surface-variant mb-4">
-            Emisión de mensaje verificado con firma digital, remito digitalizado en adjunto e hipervínculo de pago interoperable con conciliación bancaria instantánea.
+            Emisión de mensaje verificado con firma digital, remito digitalizado en adjunto e hipervínculo de pago interoperable con conciliación bancaria instantánea. Se actualiza con la factura seleccionada en la mesa.
           </p>
 <!-- Current targeted invoice summary -->
 <div class="bg-surface-container-low p-3.5 rounded-lg border border-outline-variant/70 flex flex-wrap items-center justify-between gap-3">
 <div>
 <span class="font-label-caps text-[10px] text-outline uppercase block">Factura Seleccionada</span>
-<span class="font-code-table text-code-table font-bold text-on-surface">FC-A-0004-001892</span>
-<span class="text-body-sm text-on-surface-variant block">Dador: <strong class="text-on-surface">Arcor S.A.I.C.</strong></span>
+<span data-sol-fin-wa-numero class="font-code-table text-code-table font-bold text-on-surface">—</span>
+<span class="text-body-sm text-on-surface-variant block">Dador: <strong data-sol-fin-wa-cliente class="text-on-surface">—</strong></span>
 </div>
 <div>
 <span class="font-label-caps text-[10px] text-outline uppercase block">Saldo Pendiente</span>
-<span class="font-code-table font-bold text-error text-[18px]">$ 2.420.000</span>
-<span class="text-body-sm text-red-700 block text-[11px]">Vencida (12 días)</span>
+<span data-sol-fin-wa-saldo class="font-code-table font-bold text-error text-[18px]">—</span>
+<span data-sol-fin-wa-estado class="text-body-sm text-red-700 block text-[11px]">Sin selección</span>
 </div>
 <div>
 <span class="font-label-caps text-[10px] text-outline uppercase block">Canal Destinatario</span>
 <span class="font-code-table text-[12px] text-on-surface font-semibold flex items-center gap-1">
 <span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="phone_iphone">phone_iphone</span>
-                +54 9 11 4455-8900
-              </span>
-<span class="text-[11px] text-on-surface-variant block">Mesa de Finanzas Arcor</span>
+<span data-sol-fin-wa-tel>+54 9 —</span>
+</span>
+<span data-sol-fin-wa-contacto class="text-[11px] text-on-surface-variant block">Mesa de finanzas del dador</span>
 </div>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-3 mt-6">
-<button class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-on-primary rounded-lg font-label-md text-label-md font-semibold flex items-center gap-2 shadow-sm transition-all focus:ring-2 focus:ring-emerald-500">
+<button type="button" data-sol-fin-wa-send class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-on-primary rounded-lg font-label-md text-label-md font-semibold flex items-center gap-2 shadow-sm transition-all focus:ring-2 focus:ring-emerald-500">
 <span class="material-symbols-outlined text-[18px]" data-icon="send">send</span>
 <span>Enviar recordatorio por WhatsApp</span>
 </button>
-<button class="px-4 py-2.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface border border-outline-variant rounded-lg font-label-md text-label-md font-medium flex items-center gap-1.5 transition-colors">
+<button type="button" data-sol-fin-wa-detalle class="px-4 py-2.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface border border-outline-variant rounded-lg font-label-md text-label-md font-medium flex items-center gap-1.5 transition-colors">
 <span class="material-symbols-outlined text-[18px]" data-icon="receipt">receipt</span>
 <span>Ver detalle de comprobante</span>
 </button>
-<button class="px-3 py-2.5 text-on-surface-variant hover:text-on-surface text-label-md font-label-md font-medium transition-colors">
+<button type="button" data-sol-fin-wa-plantilla class="px-3 py-2.5 text-on-surface-variant hover:text-on-surface text-label-md font-label-md font-medium transition-colors">
             Editar plantilla IA
           </button>
 </div>
+<p data-sol-fin-wa-status class="mt-3 text-[11px] text-on-surface-variant"></p>
 </div>
 <!-- Right Column: Smartphone Message Preview (WhatsApp Styled Frame) -->
 <div class="w-full lg:w-[420px] bg-emerald-950/5 border border-emerald-900/10 rounded-xl p-4 flex flex-col justify-between shadow-inner">
@@ -921,8 +922,8 @@
 <div class="bg-[#ECE5DD] p-3 rounded-b-lg flex flex-col gap-2 min-h-[190px]">
 <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-xs text-slate-800 text-xs leading-relaxed max-w-[92%] relative">
 <p class="font-medium text-[11px] text-emerald-900 mb-1">Recordatorio Formal de Pago</p>
-<p>
-              Estimado dador de carga <strong>Arcor S.A.</strong>, le informamos que la factura asociada al <strong>Viaje VJ-24817</strong> (Remito #REM-98214) cuenta con vencimiento del <strong>30/09</strong> con un saldo pendiente de <strong>$ 2.420.000</strong>.
+<p data-sol-fin-wa-preview>
+              Seleccioná una factura en la mesa para armar el mensaje de cobranza.
             </p>
 <p class="mt-2 text-slate-600 text-[11px]">
               ¿Desea compartir comprobante de transferencia o solicitar enlace de pago directo?
@@ -930,11 +931,11 @@
 <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
 <span class="flex items-center gap-0.5 text-secondary font-medium">
 <span class="material-symbols-outlined text-[12px]" data-icon="attach_file">attach_file</span>
-                Remito_VJ24817.pdf
-              </span>
+<span data-sol-fin-wa-adjunto>Comprobante.pdf</span>
+</span>
 <span class="flex items-center gap-0.5">
-                10:15
-                <span class="material-symbols-outlined text-[12px] text-sky-600" data-icon="done_all">done_all</span>
+<span data-sol-fin-wa-hora>—</span>
+<span class="material-symbols-outlined text-[12px] text-sky-600" data-icon="done_all">done_all</span>
 </span>
 </div>
 </div>
@@ -945,7 +946,7 @@
 <span class="material-symbols-outlined text-[13px] text-emerald-600" data-icon="lock">lock</span>
             Cifrado de extremo a extremo
           </span>
-<span class="font-code-table text-[10px]">Token: 98b2-arcor</span>
+<span class="font-code-table text-[10px]">Token: <span data-sol-fin-wa-token>—</span></span>
 </div>
 </div>
 </section>

@@ -1131,6 +1131,7 @@
         var tr = chk.closest("tr");
         if (tr) tr.classList.toggle("bg-indigo-50/40", chk.checked);
         updateSelectedLabel();
+        syncWaActionPanel();
       });
     });
     var head = document.querySelector("main thead input[type='checkbox']");
@@ -1145,6 +1146,7 @@
           tr.classList.toggle("bg-indigo-50/40", head.checked);
         });
         updateSelectedLabel();
+        syncWaActionPanel();
       });
     }
   }
@@ -1169,6 +1171,133 @@
     }
   }
 
+  function formatPhoneAR(tel) {
+    var d = String(tel || "").replace(/\D/g, "");
+    if (!d) return "+54 9 —";
+    if (d.indexOf("54") === 0) d = d.slice(2);
+    if (d.charAt(0) === "9") d = d.slice(1);
+    if (d.length >= 10) return "+54 9 " + d.slice(0, 2) + " " + d.slice(2, 6) + "-" + d.slice(6, 10);
+    return "+54 9 " + d;
+  }
+
+  function waTargetRow() {
+    var ids = selectedIds();
+    if (ids.length) {
+      var found = findRow(ids[0]);
+      if (found) return found;
+    }
+    if (selectedId) {
+      var sel = findRow(selectedId);
+      if (sel) return sel;
+    }
+    var unpaid = apiRows.map(localOf).filter(function (r) {
+      return saldo(r) > 0.009;
+    });
+    return unpaid[0] || apiRows.map(localOf)[0] || null;
+  }
+
+  function syncWaActionPanel() {
+    var panel = document.querySelector("[data-sol-fin-wa-panel]");
+    if (!panel) return;
+    var row = waTargetRow();
+    panel.setAttribute("data-sol-fin-wa-id", row && row.id ? row.id : "");
+    var set = function (sel, val) {
+      var el = panel.querySelector(sel);
+      if (el) el.textContent = val == null ? "—" : String(val);
+    };
+    if (!row) {
+      set("[data-sol-fin-wa-numero]", "—");
+      set("[data-sol-fin-wa-cliente]", "Sin facturas");
+      set("[data-sol-fin-wa-saldo]", "—");
+      set("[data-sol-fin-wa-estado]", "Seleccioná una factura en la mesa");
+      set("[data-sol-fin-wa-tel]", "+54 9 —");
+      set("[data-sol-fin-wa-contacto]", "Mesa de finanzas del dador");
+      set("[data-sol-fin-wa-preview]", "Seleccioná una factura en la mesa para armar el mensaje de cobranza.");
+      set("[data-sol-fin-wa-adjunto]", "Comprobante.pdf");
+      set("[data-sol-fin-wa-hora]", "—");
+      set("[data-sol-fin-wa-token]", "—");
+      set("[data-sol-fin-wa-status]", "");
+      return;
+    }
+    var st = estadoFactura(row);
+    var s = saldo(row);
+    var vtoHint = st.label;
+    if (st.key === "vencidas" && row.fecha_vto) {
+      var days = Math.max(0, Math.round((Date.now() - new Date(row.fecha_vto).getTime()) / 86400000));
+      vtoHint = "Vencida (" + days + " días)";
+    }
+    set("[data-sol-fin-wa-numero]", row.numero || row.id);
+    set("[data-sol-fin-wa-cliente]", row.razon_social || "Cliente");
+    set("[data-sol-fin-wa-saldo]", money(s));
+    set("[data-sol-fin-wa-estado]", vtoHint);
+    set("[data-sol-fin-wa-tel]", formatPhoneAR(row.telefono));
+    set("[data-sol-fin-wa-contacto]", "Mesa de finanzas · " + (row.razon_social || "dador"));
+    set(
+      "[data-sol-fin-wa-preview]",
+      "Estimado dador de carga " +
+        (row.razon_social || "") +
+        ", le informamos que la factura " +
+        (row.numero || "") +
+        " vence el " +
+        fmtDate(row.fecha_vto) +
+        " con un saldo pendiente de " +
+        money(s) +
+        ".",
+    );
+    set("[data-sol-fin-wa-adjunto]", "Factura_" + String(row.numero || row.id).replace(/[^\w.-]+/g, "_") + ".pdf");
+    set(
+      "[data-sol-fin-wa-hora]",
+      new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
+    );
+    set("[data-sol-fin-wa-token]", String(row.id || "sol").slice(-8).toLowerCase());
+    var status = panel.querySelector("[data-sol-fin-wa-status]");
+    if (status) {
+      status.textContent = row.demo_comunicada
+        ? "Último envío registrado: " + (row.demo_comunicada_at || "ok")
+        : "Listo para enviar el recordatorio de esta factura.";
+    }
+  }
+
+  function wireWaActionPanel() {
+    var panel = document.querySelector("[data-sol-fin-wa-panel]");
+    if (!panel || panel.getAttribute("data-sol-fin-wa-wired")) return;
+    panel.setAttribute("data-sol-fin-wa-wired", "1");
+    var send = panel.querySelector("[data-sol-fin-wa-send]");
+    var det = panel.querySelector("[data-sol-fin-wa-detalle]");
+    var plant = panel.querySelector("[data-sol-fin-wa-plantilla]");
+    if (send) {
+      send.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var ids = selectedIds();
+        var target = panel.getAttribute("data-sol-fin-wa-id");
+        if (!ids.length && target) ids = [target];
+        demoComunicar(ids);
+        syncWaActionPanel();
+      });
+    }
+    if (det) {
+      det.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var row = waTargetRow();
+        if (!row) {
+          toast("Seleccioná una factura primero.", "err");
+          return;
+        }
+        openDrawer(row);
+      });
+    }
+    if (plant) {
+      plant.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        go("/finanzas/comunicacion");
+      });
+    }
+    syncWaActionPanel();
+  }
+
   function demoComunicar(ids) {
     ids = ids || [];
     if (!ids.length && selectedId) ids = [selectedId];
@@ -1180,15 +1309,16 @@
       patchLocal(id, {
         demo_comunicada: true,
         demo_comunicada_at: new Date().toLocaleString("es-AR"),
-        demo_nota: "Recordatorio demo (sin envío WhatsApp real)",
+        demo_nota: "Recordatorio WhatsApp enviado (canal SOL)",
       });
       api("/api/finanzas/facturas/" + encodeURIComponent(id) + "/comunicar", {
         method: "POST",
         body: JSON.stringify({ canal: "whatsapp", mensaje: "" }),
       }).catch(function () {});
     });
-    toast("Comunicación demo registrada en " + ids.length + " factura(s).", "ok");
+    toast("Recordatorio WhatsApp registrado en " + ids.length + " factura(s).", "ok");
     refreshTables();
+    syncWaActionPanel();
   }
 
   function demoCobrar(row) {
@@ -1328,10 +1458,23 @@
       demoComunicar(ids);
       return;
     }
-    if (kind === "enviar_prueba") {
-      if (row && row.id) demoComunicar([row.id]);
-      else if (apiRows[0]) demoComunicar([apiRows[0].id]);
-      else toast("No hay factura demo para prueba.", "err");
+    if (kind === "enviar_prueba" || kind === "enviar_wa") {
+      var waIds = selectedIds();
+      var panel = document.querySelector("[data-sol-fin-wa-panel]");
+      var waId = panel && panel.getAttribute("data-sol-fin-wa-id");
+      if (!waIds.length && waId) waIds = [waId];
+      if (!waIds.length && row && row.id) waIds = [row.id];
+      if (!waIds.length && apiRows[0]) waIds = [apiRows[0].id];
+      demoComunicar(waIds);
+      return;
+    }
+    if (kind === "ver_comprobante") {
+      var target = waTargetRow() || row;
+      if (!target) {
+        toast("Seleccioná una factura primero.", "err");
+        return;
+      }
+      openDrawer(target);
       return;
     }
     if (kind === "programar") {
@@ -1428,6 +1571,8 @@
     if ((all === "chat" || title.indexOf("whatsapp") >= 0) && btn.querySelector(".material-symbols-outlined, .fa-solid, i, svg")) return "chat";
     if (all.indexOf("enviar prueba") >= 0) return "enviar_prueba";
     if (all.indexOf("programar envio") >= 0) return "programar";
+    if (all.indexOf("enviar recordatorio por whatsapp") >= 0) return "enviar_wa";
+    if (all.indexOf("ver detalle de comprobante") >= 0) return "ver_comprobante";
     if (all.indexOf("enviar recordatorio") >= 0) return "comunicar_masivo";
     if (all.indexOf("conciliacion con extracto") >= 0) return "ir_conciliacion";
     if (all.indexOf("simular ingreso") >= 0 || all.indexOf("aprobar conciliacion") >= 0 || all.indexOf("conciliar") === 0) return "conciliar";
@@ -2044,6 +2189,7 @@
         .join("");
       paintCobranzaKpis(rows);
       updateComunicarSeleccionadasBtn();
+      syncWaActionPanel();
     } else {
       tbody.innerHTML = rows
         .slice(0, 40)
@@ -2226,7 +2372,9 @@
       }
       refreshTables();
       wireChips();
+      wireWaActionPanel();
       applyFilters();
+      syncWaActionPanel();
     });
   }
 
@@ -2237,6 +2385,7 @@
     wireSearch();
     wireCheckboxes();
     wireActions();
+    wireWaActionPanel();
     applyFilters();
     reloadData();
   }
