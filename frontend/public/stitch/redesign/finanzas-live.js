@@ -443,6 +443,14 @@
         { id: "comunicar", label: "Comunicar" },
         { id: "export_row", label: "Copiar razón social" },
       ];
+    } else if (key === "cobranza") {
+      items = [
+        { id: "detalle", label: "Ver cliente / historial IA" },
+        { id: "cobrar", label: "Registrar cobro (demo)" },
+        { id: "comunicar", label: "Comunicar / WhatsApp" },
+        { id: "ir_conciliacion", label: "Ir a conciliación" },
+        { id: "export_row", label: "Copiar N° factura" },
+      ];
     } else if (key === "conciliacion") {
       items = [
         { id: "detalle", label: "Ver movimiento" },
@@ -779,7 +787,7 @@
 
   function openDrawer(row) {
     if (!row) return;
-    if (pageKey() === "clientes" && (row._cliente_key || (!row.numero && row.razon_social))) {
+    if ((pageKey() === "clientes" || pageKey() === "cobranza") && (row._cliente_key || (!row.numero && row.razon_social))) {
       openCuentaFicha(row, "cliente");
       return;
     }
@@ -1068,7 +1076,28 @@
     return ids;
   }
 
+  function updateComunicarSeleccionadasBtn() {
+    var n = selectedCount();
+    document.querySelectorAll("main button").forEach(function (btn) {
+      var t = fold(btn.textContent || "");
+      if (t.indexOf("comunicar seleccionadas") < 0) return;
+      var span = btn.querySelector("span:last-child") || btn;
+      if (span === btn) {
+        btn.innerHTML =
+          '<span class="material-symbols-outlined text-[17px]">mark_chat_unread</span><span>Comunicar seleccionadas (' +
+          n +
+          ")</span>";
+      } else {
+        span.textContent = "Comunicar seleccionadas (" + n + ")";
+      }
+      btn.disabled = n === 0;
+      btn.classList.toggle("opacity-50", n === 0);
+      btn.classList.toggle("pointer-events-none", n === 0);
+    });
+  }
+
   function updateSelectedLabel() {
+    updateComunicarSeleccionadasBtn();
     var n = selectedCount();
     document.querySelectorAll("main button").forEach(function (btn) {
       var t = fold(btn.textContent || "");
@@ -1243,7 +1272,7 @@
       return;
     }
     if (kind === "detalle") {
-      if (pageKey() === "clientes") {
+      if (pageKey() === "clientes" || pageKey() === "cobranza") {
         openCuentaFicha(row || selectedClienteKey, "cliente");
         return;
       }
@@ -1435,14 +1464,14 @@
         var facRow = e.target.closest("tr[data-sol-fin-id]");
         if (
           facRow &&
-          pageKey() === "facturas" &&
+          (pageKey() === "facturas" || pageKey() === "cobranza") &&
           !e.target.closest("button, a, input, label") &&
           !e.target.closest("#sol-fin-ficha, #sol-fin-drawer")
         ) {
           e.preventDefault();
           e.stopPropagation();
           closeMenu();
-          openCuentaFicha(rowFromEl(facRow), "proveedor");
+          openCuentaFicha(rowFromEl(facRow), pageKey() === "facturas" ? "proveedor" : "cliente");
           return;
         }
         var btn = e.target.closest("button");
@@ -1491,12 +1520,74 @@
       setKpiByLabel("Deuda Pendiente", money(res.cartera_abierta));
       setKpiByLabel("Cartera abierta", money(res.cartera_abierta));
       setKpiByLabel("Cartera Total a Cobrar", money(res.cartera_abierta));
+      setKpiByLabel("Total a Cobrar (Cartera)", money(res.cartera_abierta));
     }
-    if (res.cobrado != null) setKpiByLabel("Monto Total Cobrado", money(res.cobrado));
+    if (res.cobrado != null) {
+      setKpiByLabel("Monto Total Cobrado", money(res.cobrado));
+      setKpiByLabel("Cobrado este Mes", money(res.cobrado));
+    }
     if (res.eficiencia != null) setKpiByLabel("Eficiencia de Cobro", String(res.eficiencia) + "%");
     if (res.vencidas != null) setKpiByLabel("Facturas vencidas", String(res.vencidas));
     if (res.pendiente_conciliar != null) setKpiByLabel("Pendiente de conciliar", money(res.pendiente_conciliar));
     if (res.facturas_cobrar != null) setKpiByLabel("Clientes con saldo", String(res.facturas_cobrar));
+  }
+
+  function paintCobranzaKpis(rows) {
+    if (pageKey() !== "cobranza") return;
+    rows = (rows || []).map(localOf);
+    var cartera = 0;
+    var cobrado = 0;
+    var vencido = 0;
+    var activas = 0;
+    var wa = 0;
+    var now = new Date();
+    rows.forEach(function (r) {
+      var s = saldo(r);
+      var aplicado = Number(r.monto_aplicado || 0);
+      cobrado += aplicado;
+      if (s > 0.009) {
+        activas += 1;
+        cartera += s;
+        var vto = r.fecha_vto ? new Date(r.fecha_vto) : null;
+        if (vto && !isNaN(vto) && (now - vto) / 86400000 > 30) vencido += s;
+      }
+      (r.pasos || []).forEach(function (p) {
+        if (fold(p.canal || "").indexOf("whatsapp") >= 0 || fold(p.agente || "").indexOf("comunicacion") >= 0) wa += 1;
+      });
+      if (r.demo_comunicada) wa += 1;
+    });
+    setKpiByLabel("Total a Cobrar (Cartera)", money(cartera));
+    setKpiByLabel("Cobrado este Mes", money(cobrado));
+    setKpiByLabel("Saldo Vencido (>30 Días)", money(vencido));
+    setKpiByLabel("Saldo Vencido", money(vencido));
+    setKpiByLabel("Recordatorios Enviados (WA)", String(wa || rows.filter(function (r) { return r.demo_comunicada; }).length));
+    // footers bajo KPI cartera
+    document.querySelectorAll("main .font-body-sm, main span").forEach(function (el) {
+      var t = String(el.textContent || "");
+      if (/\d+\s+facturas activas/i.test(t) && el.children.length === 0) {
+        el.textContent = activas + " facturas activas · Demo SOL";
+      }
+    });
+  }
+
+  function lastWaContact(row) {
+    var pasos = (row && row.pasos) || [];
+    for (var i = pasos.length - 1; i >= 0; i--) {
+      var p = pasos[i];
+      var canal = fold(p.canal || "");
+      var agente = fold(p.agente || "");
+      if (canal.indexOf("whatsapp") >= 0 || agente.indexOf("comunicacion") >= 0 || /whatsapp|aviso|recordatorio/i.test(p.label || "")) {
+        return {
+          at: p.at,
+          label: p.label || "Contacto WhatsApp",
+          ok: p.ok !== false,
+        };
+      }
+    }
+    if (row && row.demo_comunicada) {
+      return { at: row.demo_comunicada_at || new Date().toISOString(), label: "Comunicación demo", ok: true };
+    }
+    return null;
   }
 
   function actionsHtml(row) {
@@ -1865,6 +1956,83 @@
           );
         })
         .join("");
+    } else if (key === "cobranza") {
+      tbody.innerHTML = rows
+        .slice(0, 40)
+        .map(function (r) {
+          var st = estadoFactura(r);
+          var ck = clienteKeyOf(r);
+          var s = saldo(r);
+          var aplicado = Number(r.monto_aplicado || 0);
+          var wa = lastWaContact(r);
+          var vtoHint = "";
+          if (st.key === "vencidas" && r.fecha_vto) {
+            var days = Math.max(0, Math.round((Date.now() - new Date(r.fecha_vto).getTime()) / 86400000));
+            vtoHint = '<span class="inline-block mt-0.5 text-rose-600 font-bold text-[10px]">Vencida hace ' + days + "d</span>";
+          } else if (st.key === "por_vencer" && r.fecha_vto) {
+            var left = Math.max(0, Math.round((new Date(r.fecha_vto).getTime() - Date.now()) / 86400000));
+            vtoHint = '<span class="inline-block mt-0.5 text-amber-700 font-bold text-[10px]">Vence en ' + left + "d</span>";
+          }
+          return (
+            '<tr class="hover:bg-slate-50/80 transition-colors" data-sol-fin-id="' +
+            esc(r.id) +
+            '" data-sol-fin-cliente="' +
+            esc(ck) +
+            '">' +
+            '<td class="px-3 py-3 text-center"><input class="w-4 h-4 rounded border-slate-300" type="checkbox"/></td>' +
+            '<td class="px-3 py-3"><div class="flex flex-col"><span class="font-mono font-semibold text-slate-900">' +
+            esc(r.numero || r.id) +
+            '</span><span class="text-[11px] text-slate-400 mt-0.5">Viaje / remito demo</span></div></td>' +
+            '<td class="px-3 py-3"><div class="flex flex-col">' +
+            '<span data-sol-fin-open-cliente="' +
+            esc(ck) +
+            '" class="font-semibold text-slate-900 hover:text-blue-600 cursor-pointer">' +
+            esc(r.razon_social || "—") +
+            '</span><span class="text-[11px] text-slate-500">CUIT: ' +
+            esc(r.cuit || r.cuit_emisor || "—") +
+            (r.email ? " · " + esc(r.email) : "") +
+            "</span></div></td>" +
+            '<td class="px-3 py-3"><div class="flex flex-col"><span class="font-mono text-[12px] text-slate-600">' +
+            esc(fmtDate(r.fecha)) +
+            " → <strong class=\"text-slate-900\">" +
+            esc(fmtDate(r.fecha_vto)) +
+            "</strong></span>" +
+            vtoHint +
+            "</div></td>" +
+            '<td class="px-3 py-3 text-right font-mono text-slate-800">' +
+            esc(money(r.monto)) +
+            "</td>" +
+            '<td class="px-3 py-3 text-right font-mono text-slate-500">' +
+            esc(money(aplicado)) +
+            "</td>" +
+            '<td class="px-3 py-3 text-right font-mono font-bold text-slate-900">' +
+            esc(money(s)) +
+            "</td>" +
+            '<td class="px-3 py-3 text-center"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ' +
+            st.cls +
+            '"><span class="w-1.5 h-1.5 rounded-full ' +
+            (st.key === "vencidas" ? "bg-rose-600" : st.key === "por_vencer" ? "bg-amber-500" : st.key === "en_gestion" ? "bg-sky-500" : "bg-emerald-500") +
+            '"></span>' +
+            esc(st.label) +
+            "</span></td>" +
+            '<td class="px-3 py-3">' +
+            (wa
+              ? '<div class="flex items-center gap-1.5 text-[11px] text-slate-600"><span class="material-symbols-outlined text-[16px] text-emerald-600">chat</span><span>' +
+                esc(fmtDate(wa.at, true)) +
+                (wa.ok ? ' · <span class="text-emerald-700 font-semibold">Leído</span>' : "") +
+                "</span></div>"
+              : '<span class="text-[11px] text-slate-400">Sin contacto WA</span>') +
+            "</td>" +
+            '<td class="px-3 py-3 text-right"><div class="inline-flex items-center justify-end gap-1.5">' +
+            '<button type="button" class="px-2.5 py-1 rounded text-[11px] font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50" title="Registrar Pago">Cobrar</button>' +
+            '<button type="button" class="p-1 rounded text-emerald-600 hover:bg-emerald-50" title="Enviar Recordatorio WhatsApp"><span class="material-symbols-outlined text-[18px]">chat</span></button>' +
+            '<button type="button" class="p-1 rounded text-slate-400 hover:text-slate-700" title="Más opciones"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>' +
+            "</div></td></tr>"
+          );
+        })
+        .join("");
+      paintCobranzaKpis(rows);
+      updateComunicarSeleccionadasBtn();
     } else {
       tbody.innerHTML = rows
         .slice(0, 40)
