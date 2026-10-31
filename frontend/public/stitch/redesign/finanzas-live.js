@@ -258,26 +258,35 @@
     };
   }
 
-  function buildAiAnalisis(profile) {
+  function buildAiAnalisis(profile, mode) {
     var m = profile.metrics || {};
-    var nombre = profile.razon_social || "El cliente";
+    var pagar = mode === "proveedor";
+    var nombre = profile.razon_social || (pagar ? "El proveedor" : "El cliente");
     var keyPoints = [];
     var nextSteps = [];
     var sentiment = "neutral";
     var summary = "";
     if (m.facturasVencidas > 0) {
       sentiment = "negative";
-      summary =
-        nombre +
-        " concentra " +
-        money(m.saldoPendiente) +
-        " de saldo abierto, con " +
-        m.facturasVencidas +
-        " factura(s) vencida(s) sobre " +
-        m.facturasAbiertas +
-        " abierta(s). El riesgo de mora es " +
-        String(m.criticidad || "MEDIA").toLowerCase() +
-        "; conviene priorizar gestión comercial y acordar fecha cierta de pago.";
+      summary = pagar
+        ? nombre +
+          " tiene " +
+          money(m.saldoPendiente) +
+          " pendientes de pago, con " +
+          m.facturasVencidas +
+          " factura(s) vencida(s). Criticidad " +
+          String(m.criticidad || "MEDIA").toLowerCase() +
+          ": priorizar autorización de pago o renegociar fecha con el proveedor."
+        : nombre +
+          " concentra " +
+          money(m.saldoPendiente) +
+          " de saldo abierto, con " +
+          m.facturasVencidas +
+          " factura(s) vencida(s) sobre " +
+          m.facturasAbiertas +
+          " abierta(s). El riesgo de mora es " +
+          String(m.criticidad || "MEDIA").toLowerCase() +
+          "; conviene priorizar gestión comercial y acordar fecha cierta de pago.";
       keyPoints.push(m.facturasVencidas + " factura(s) en mora · saldo " + money(m.saldoPendiente));
       keyPoints.push("Plazo contractual medio ≈ " + m.plazoMedio + " días");
       if (profile.timeline && profile.timeline.length) {
@@ -285,33 +294,53 @@
       } else {
         keyPoints.push("Sin gestiones recientes registradas en el timeline");
       }
-      nextSteps.push("Contactar hoy por WhatsApp/email con detalle de facturas vencidas");
-      nextSteps.push("Pedir promesa de pago con fecha y canal (transferencia / DEBIN)");
-      nextSteps.push("Si no hay respuesta en 48 hs, escalar a intimación formal");
+      if (pagar) {
+        nextSteps.push("Autorizar pago de las facturas vencidas o pedir prórroga formal");
+        nextSteps.push("Conciliar con extracto / OC-remito antes de liberar fondos");
+        nextSteps.push("Avisar a mesa de pagos el impacto de caja de esta semana");
+      } else {
+        nextSteps.push("Contactar hoy por WhatsApp/email con detalle de facturas vencidas");
+        nextSteps.push("Pedir promesa de pago con fecha y canal (transferencia / DEBIN)");
+        nextSteps.push("Si no hay respuesta en 48 hs, escalar a intimación formal");
+      }
     } else if (m.facturasAbiertas > 0) {
       sentiment = "neutral";
-      summary =
-        nombre +
-        " tiene " +
-        m.facturasAbiertas +
-        " factura(s) abierta(s) por " +
-        money(m.saldoPendiente) +
-        ", todavía dentro de plazo. Cartera sana si se anticipa el recordatorio antes del vencimiento.";
+      summary = pagar
+        ? nombre +
+          " tiene " +
+          m.facturasAbiertas +
+          " factura(s) a pagar por " +
+          money(m.saldoPendiente) +
+          ", dentro de plazo. Programar autorización antes del vencimiento para evitar mora con el proveedor."
+        : nombre +
+          " tiene " +
+          m.facturasAbiertas +
+          " factura(s) abierta(s) por " +
+          money(m.saldoPendiente) +
+          ", todavía dentro de plazo. Cartera sana si se anticipa el recordatorio antes del vencimiento.";
       keyPoints.push("Saldo corriente " + money(m.saldoPendiente) + " · sin mora detectada");
-      keyPoints.push("Plazo medio de cobro ≈ " + m.plazoMedio + " días");
-      keyPoints.push("Aplicado acumulado " + money(m.aplicado) + " de " + money(m.facturado) + " facturado");
-      nextSteps.push("Programar recordatorio suave 3–5 días antes del vencimiento");
-      nextSteps.push("Confirmar contacto de cuentas a pagar actualizado");
-      nextSteps.push("Ofrecer link DEBIN si el monto es operativo de un solo pago");
+      keyPoints.push((pagar ? "Plazo medio de pago ≈ " : "Plazo medio de cobro ≈ ") + m.plazoMedio + " días");
+      keyPoints.push("Aplicado acumulado " + money(m.aplicado) + " de " + money(m.facturado));
+      if (pagar) {
+        nextSteps.push("Agendar autorización 2–3 días antes del vencimiento");
+        nextSteps.push("Validar matching con remito/OC y retenciones");
+        nextSteps.push("Confirmar CBU / medio de pago del proveedor");
+      } else {
+        nextSteps.push("Programar recordatorio suave 3–5 días antes del vencimiento");
+        nextSteps.push("Confirmar contacto de cuentas a pagar actualizado");
+        nextSteps.push("Ofrecer link DEBIN si el monto es operativo de un solo pago");
+      }
     } else {
       sentiment = "positive";
-      summary =
-        nombre +
-        " figura al día: no hay saldo pendiente en la cartera demo. Mantener relación comercial y monitorear nuevas emisiones.";
+      summary = pagar
+        ? nombre +
+          " no tiene saldo pendiente a pagar en la demo. Relación al día; monitorear próximas cargas OCR/AFIP."
+        : nombre +
+          " figura al día: no hay saldo pendiente en la cartera demo. Mantener relación comercial y monitorear nuevas emisiones.";
       keyPoints.push("Sin facturas abiertas en este momento");
-      keyPoints.push("Histórico facturado " + money(m.facturado));
-      nextSteps.push("Archivar gestiones abiertas y dejar seguimiento pasivo");
-      nextSteps.push("Revisar al emitir la próxima factura del cliente");
+      keyPoints.push("Histórico " + money(m.facturado));
+      nextSteps.push(pagar ? "Mantener seguimiento pasivo de nuevas facturas del proveedor" : "Archivar gestiones abiertas y dejar seguimiento pasivo");
+      nextSteps.push(pagar ? "Revisar al ingresar la próxima factura OCR" : "Revisar al emitir la próxima factura del cliente");
     }
     return {
       summary: summary,
@@ -386,7 +415,7 @@
     var items = [];
     if (key === "facturas") {
       items = [
-        { id: "detalle", label: "Ver detalle" },
+        { id: "ficha_proveedor", label: "Ver proveedor / historial" },
         { id: "pagar", label: "Pagar / Autorizar (demo)" },
         { id: "export_row", label: "Copiar N° factura" },
         { id: "ir_conciliacion", label: "Ir a conciliación" },
@@ -485,8 +514,8 @@
       '<div class="flex items-start justify-between gap-3 px-5 py-4 border-b border-slate-200 bg-white">' +
       '<div class="min-w-0">' +
       '<button type="button" data-sol-fin-ficha-back class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 mb-1">' +
-      '<span class="material-symbols-outlined text-[16px]">arrow_back</span> Volver a clientes</button>' +
-      '<p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Historia clínica del cliente</p>' +
+      '<span class="material-symbols-outlined text-[16px]">arrow_back</span> Volver</button>' +
+      '<p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400" data-sol-fin-ficha-eyebrow>Historia clínica</p>' +
       '<h2 class="text-lg font-extrabold text-slate-900 truncate" data-sol-fin-ficha-title>—</h2>' +
       '<p class="text-xs text-slate-500 mt-0.5" data-sol-fin-ficha-sub></p>' +
       "</div>" +
@@ -506,9 +535,19 @@
   }
 
   function openClienteFicha(keyOrRow) {
+    openCuentaFicha(keyOrRow, "cliente");
+  }
+
+  function openProveedorFicha(keyOrRow) {
+    openCuentaFicha(keyOrRow, "proveedor");
+  }
+
+  function openCuentaFicha(keyOrRow, mode) {
+    mode = mode || (pageKey() === "facturas" ? "proveedor" : "cliente");
+    var pagar = mode === "proveedor";
     var profile = buildClienteProfile(keyOrRow);
     if (!profile || !profile.facturas || !profile.facturas.length) {
-      toast("No hay cobranzas cargadas para este cliente.", "err");
+      toast(pagar ? "No hay facturas a pagar para este proveedor." : "No hay cobranzas cargadas para este cliente.", "err");
       return;
     }
     selectedClienteKey = profile.key;
@@ -517,7 +556,17 @@
     closeMenu();
     var el = ensureFicha();
     var m = profile.metrics;
-    var ai = buildAiAnalisis(profile);
+    var ai = buildAiAnalisis(profile, mode);
+    var back = el.querySelector("[data-sol-fin-ficha-back]");
+    if (back) {
+      back.innerHTML =
+        '<span class="material-symbols-outlined text-[16px]">arrow_back</span> Volver a ' +
+        (pagar ? "facturas" : "clientes");
+    }
+    var eyebrow = el.querySelector("[data-sol-fin-ficha-eyebrow]");
+    if (eyebrow) {
+      eyebrow.textContent = pagar ? "Historia clínica del proveedor" : "Historia clínica del cliente";
+    }
     el.querySelector("[data-sol-fin-ficha-title]").textContent = profile.razon_social;
     el.querySelector("[data-sol-fin-ficha-sub]").textContent =
       "CUIT " + (profile.cuit || "—") +
@@ -539,6 +588,7 @@
     var facturasHtml = profile.facturas
       .map(function (f) {
         var st = estadoFactura(f);
+        var label = st.key === "al_dia" && pagar ? "Pagada" : st.label;
         return (
           '<tr class="border-t border-slate-100 hover:bg-slate-50/80" data-sol-fin-id="' +
           esc(f.id) +
@@ -563,7 +613,7 @@
           '<td class="py-2.5 px-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold border ' +
           st.cls +
           '">' +
-          esc(st.label) +
+          esc(label) +
           "</span></td></tr>"
         );
       })
@@ -595,7 +645,9 @@
 
     el.querySelector("[data-sol-fin-ficha-body]").innerHTML =
       '<div class="grid gap-3 sm:grid-cols-4">' +
-      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Saldo pendiente</p><p class="mt-1 text-xl font-black text-slate-900 font-mono">' +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">' +
+      (pagar ? "Saldo a pagar" : "Saldo pendiente") +
+      '</p><p class="mt-1 text-xl font-black text-slate-900 font-mono">' +
       esc(money(m.saldoPendiente)) +
       "</p></div>" +
       '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Facturas abiertas</p><p class="mt-1 text-xl font-black text-slate-900">' +
@@ -603,18 +655,24 @@
       '</p><p class="text-[11px] text-rose-600 font-semibold">' +
       m.facturasVencidas +
       " vencidas</p></div>" +
-      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Facturado / aplicado</p><p class="mt-1 text-sm font-bold text-slate-900 font-mono">' +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">' +
+      (pagar ? "Cargado / pagado" : "Facturado / aplicado") +
+      '</p><p class="mt-1 text-sm font-bold text-slate-900 font-mono">' +
       esc(money(m.facturado)) +
       " / " +
       esc(money(m.aplicado)) +
       "</p></div>" +
-      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Último cobro</p><p class="mt-1 text-sm font-bold text-slate-900">' +
+      '<div class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">' +
+      (pagar ? "Último pago" : "Último cobro") +
+      '</p><p class="mt-1 text-sm font-bold text-slate-900">' +
       esc(fmtDate(m.ultimoPagoAt, true)) +
       "</p></div></div>" +
       '<section class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">' +
       '<header class="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">' +
       '<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">auto_awesome</span>' +
-      '<h3 class="text-sm font-bold">Análisis IA · cobranza</h3></div>' +
+      '<h3 class="text-sm font-bold">Análisis IA · ' +
+      (pagar ? "cuentas a pagar" : "cobranza") +
+      "</h3></div>" +
       '<span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ' +
       sentimentCls +
       ' bg-white/15 border-white/30 text-white">' +
@@ -652,8 +710,14 @@
       " · patrón Constanza (resumen + puntos clave + próximos pasos)</p>" +
       "</div></section>" +
       '<section class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">' +
-      '<header class="px-4 py-3 border-b border-slate-100 bg-white"><h3 class="text-sm font-bold text-slate-900">Cobranzas / facturas del cliente</h3>' +
-      '<p class="text-[11px] text-slate-500">Listado de comprobantes a cobrar imputados a esta cuenta</p></header>' +
+      '<header class="px-4 py-3 border-b border-slate-100 bg-white"><h3 class="text-sm font-bold text-slate-900">' +
+      (pagar ? "Facturas a pagar del proveedor" : "Cobranzas / facturas del cliente") +
+      "</h3>" +
+      '<p class="text-[11px] text-slate-500">' +
+      (pagar
+        ? "Comprobantes cargados (OCR/AFIP) imputados a este proveedor"
+        : "Listado de comprobantes a cobrar imputados a esta cuenta") +
+      "</p></header>" +
       '<div class="overflow-x-auto"><table class="w-full text-left text-xs">' +
       "<thead><tr class=\"bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]\">" +
       "<th class=\"py-2.5 px-3\">Factura</th><th class=\"py-2.5 px-3 text-right\">Monto</th><th class=\"py-2.5 px-3 text-right\">Aplicado</th>" +
@@ -668,14 +732,24 @@
       "</div></section>";
 
     var first = profile.facturas[0];
+    var unpaid = profile.facturas.find(function (f) {
+      return saldo(f) > 0.009;
+    }) || first;
     var acts = el.querySelector("[data-sol-fin-ficha-actions]");
-    acts.innerHTML =
-      '<button type="button" data-sol-fin-ficha-act="comunicar" class="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">Comunicar</button>' +
-      '<button type="button" data-sol-fin-ficha-act="cobrar" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Registrar cobro</button>' +
-      '<button type="button" data-sol-fin-ficha-act="ir_conciliacion" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Ir a conciliación</button>';
+    if (pagar) {
+      acts.innerHTML =
+        '<button type="button" data-sol-fin-ficha-act="pagar" class="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">Pagar / Autorizar</button>' +
+        '<button type="button" data-sol-fin-ficha-act="ir_conciliacion" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Ir a conciliación</button>' +
+        '<button type="button" data-sol-fin-ficha-act="comunicar" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Comunicar</button>';
+    } else {
+      acts.innerHTML =
+        '<button type="button" data-sol-fin-ficha-act="comunicar" class="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white">Comunicar</button>' +
+        '<button type="button" data-sol-fin-ficha-act="cobrar" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Registrar cobro</button>' +
+        '<button type="button" data-sol-fin-ficha-act="ir_conciliacion" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Ir a conciliación</button>';
+    }
     acts.querySelectorAll("[data-sol-fin-ficha-act]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        handleAction(btn.getAttribute("data-sol-fin-ficha-act"), btn, first);
+        handleAction(btn.getAttribute("data-sol-fin-ficha-act"), btn, unpaid);
       });
     });
     el.querySelectorAll("[data-sol-fin-ficha-fac]").forEach(function (btn) {
@@ -690,7 +764,11 @@
   function openDrawer(row) {
     if (!row) return;
     if (pageKey() === "clientes" && (row._cliente_key || (!row.numero && row.razon_social))) {
-      openClienteFicha(row);
+      openCuentaFicha(row, "cliente");
+      return;
+    }
+    if (pageKey() === "facturas" && row._cliente_key) {
+      openCuentaFicha(row, "proveedor");
       return;
     }
     row = localOf(row);
@@ -1108,14 +1186,22 @@
     }
     if (kind === "detalle") {
       if (pageKey() === "clientes") {
-        openClienteFicha(row || selectedClienteKey);
+        openCuentaFicha(row || selectedClienteKey, "cliente");
+        return;
+      }
+      if (pageKey() === "facturas") {
+        openCuentaFicha(row || selectedClienteKey, "proveedor");
         return;
       }
       openDrawer(row || { numero: "Sin ID", razon_social: "Fila de demostración" });
       return;
     }
     if (kind === "ver_cobranza" || kind === "ficha_cliente") {
-      openClienteFicha(row || selectedClienteKey);
+      openCuentaFicha(row || selectedClienteKey, "cliente");
+      return;
+    }
+    if (kind === "ficha_proveedor") {
+      openCuentaFicha(row || selectedClienteKey, "proveedor");
       return;
     }
     if (kind === "nuevo_cobro") {
@@ -1234,6 +1320,7 @@
     if (all.indexOf("nuevo cobro") >= 0) return "nuevo_cobro";
     if (all.indexOf("ver cobranza") >= 0 || all.indexOf("ver cobranzas") >= 0) return "ver_cobranza";
     if (all.indexOf("ver cliente") >= 0 || all.indexOf("historia clinica") >= 0) return "ficha_cliente";
+    if (all.indexOf("ver proveedor") >= 0 || all.indexOf("ver recibo") >= 0) return pageKey() === "facturas" ? "ficha_proveedor" : "detalle";
     if (all === "cobrar" || all.indexOf("registrar pago") >= 0) return "cobrar";
     if (all.indexOf("pagadas") >= 0) return null;
     if (/(^|\s)pagar(\s|\/|$)/.test(all) || all.indexOf("autorizar") >= 0) return "pagar";
@@ -1253,7 +1340,7 @@
     if (all.indexOf("cargar factura") >= 0 || all.indexOf("ocr") >= 0) return "cargar_factura";
     if (all.indexOf("registrar nuevo cliente") >= 0) return "nuevo_cliente";
     if (all.indexOf("nueva plantilla") >= 0 || all.indexOf("editar plantilla") >= 0) return "plantilla";
-    if (all.indexOf("detalle") >= 0 || all.indexOf("ver recibo") >= 0 || all.indexOf("ver detalle") >= 0) return "detalle";
+    if (all.indexOf("detalle") >= 0 || all.indexOf("ver detalle") >= 0) return "detalle";
     if (all.indexOf("filtros") >= 0) return "filtros";
     if (all === "anterior" || all === "siguiente" || /^\d+$/.test(t)) return "pager";
     if (all === "more_vert" || all.indexOf("mas opciones") >= 0 || all.indexOf("más opciones") >= 0) return "more";
@@ -1273,7 +1360,10 @@
           e.preventDefault();
           e.stopPropagation();
           closeMenu();
-          openClienteFicha(rowFromEl(nameHit) || nameHit.getAttribute("data-sol-fin-open-cliente"));
+          openCuentaFicha(
+            rowFromEl(nameHit) || nameHit.getAttribute("data-sol-fin-open-cliente"),
+            pageKey() === "facturas" ? "proveedor" : "cliente",
+          );
           return;
         }
         var rowHit = e.target.closest("tr[data-sol-fin-cliente]");
@@ -1281,7 +1371,20 @@
           e.preventDefault();
           e.stopPropagation();
           closeMenu();
-          openClienteFicha(rowFromEl(rowHit) || rowHit.getAttribute("data-sol-fin-cliente"));
+          openCuentaFicha(rowFromEl(rowHit) || rowHit.getAttribute("data-sol-fin-cliente"), "cliente");
+          return;
+        }
+        var facRow = e.target.closest("tr[data-sol-fin-id]");
+        if (
+          facRow &&
+          pageKey() === "facturas" &&
+          !e.target.closest("button, a, input, label") &&
+          !e.target.closest("#sol-fin-ficha, #sol-fin-drawer")
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu();
+          openCuentaFicha(rowFromEl(facRow), "proveedor");
           return;
         }
         var btn = e.target.closest("button");
@@ -1365,16 +1468,136 @@
     return d.toISOString().slice(0, 10);
   }
 
+  function demoPaso(days, agente, label, extra) {
+    var d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(11, 0, 0, 0);
+    return Object.assign({ at: d.toISOString(), agente: agente, label: label }, extra || {});
+  }
+
   function demoPagarRows() {
     return [
-      { id: "FAC-PAY-001", tipo: "pagar", numero: "FA-0003-00112", razon_social: "YPF Distribución", cuit_emisor: "30-54667674-9", fecha: isoOffset(-12), fecha_vto: isoOffset(3), monto: 2180000, monto_aplicado: 0, estado: "abierta" },
-      { id: "FAC-PAY-002", tipo: "pagar", numero: "FA-0003-00118", razon_social: "Neumáticos del Sur", cuit_emisor: "30-71112223-4", fecha: isoOffset(-20), fecha_vto: isoOffset(-8), monto: 420000, monto_aplicado: 420000, estado: "saldada", demo_pagada: true },
-      { id: "FAC-PAY-003", tipo: "pagar", numero: "FA-0001-000884", razon_social: "Shell Argentina", cuit_emisor: "30-50123456-9", fecha: isoOffset(-5), fecha_vto: isoOffset(5), monto: 980000, monto_aplicado: 0, estado: "abierta" },
-      { id: "FAC-PAY-004", tipo: "pagar", numero: "FA-0002-000441", razon_social: "Mercado Libre Logistic", cuit_emisor: "30-70987654-1", fecha: isoOffset(-40), fecha_vto: isoOffset(-15), monto: 312000, monto_aplicado: 0, estado: "abierta" },
-      { id: "FAC-PAY-005", tipo: "pagar", numero: "FA-0004-000210", razon_social: "Pirelli Neumáticos", cuit_emisor: "30-69874512-3", fecha: isoOffset(-10), fecha_vto: isoOffset(2), monto: 756000, monto_aplicado: 0, estado: "abierta" },
-      { id: "FAC-PAY-006", tipo: "pagar", numero: "FA-0005-000099", razon_social: "Telecom Arg.", cuit_emisor: "30-65432109-8", fecha: isoOffset(-25), fecha_vto: isoOffset(-2), monto: 145000, monto_aplicado: 145000, estado: "saldada", demo_pagada: true },
-      { id: "FAC-PAY-007", tipo: "pagar", numero: "FA-0006-000333", razon_social: "Axion Energy", cuit_emisor: "30-61234567-0", fecha: isoOffset(-3), fecha_vto: isoOffset(10), monto: 1540000, monto_aplicado: 0, estado: "abierta" },
-      { id: "FAC-PAY-008", tipo: "pagar", numero: "FA-0007-000512", razon_social: "Iveco Argentina", cuit_emisor: "30-58765432-2", fecha: isoOffset(-18), fecha_vto: isoOffset(-1), monto: 890000, monto_aplicado: 0, estado: "abierta" },
+      {
+        id: "FAC-PAY-001",
+        tipo: "pagar",
+        numero: "FA-0003-00112",
+        razon_social: "YPF Distribución",
+        cuit_emisor: "30-54667674-9",
+        fecha: isoOffset(-12),
+        fecha_vto: isoOffset(3),
+        monto: 2180000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [
+          demoPaso(-12, "facturas", "OCR + validación CUIT AFIP"),
+          demoPaso(-2, "facturas", "Matching remito/OC OK · pendiente autorización"),
+        ],
+      },
+      {
+        id: "FAC-PAY-002",
+        tipo: "pagar",
+        numero: "FA-0003-00118",
+        razon_social: "Neumáticos del Sur",
+        cuit_emisor: "30-71112223-4",
+        fecha: isoOffset(-20),
+        fecha_vto: isoOffset(-8),
+        monto: 420000,
+        monto_aplicado: 420000,
+        estado: "saldada",
+        demo_pagada: true,
+        pasos: [
+          demoPaso(-20, "facturas", "Factura cargada por OCR"),
+          demoPaso(-9, "conciliacion", "Pago autorizado y conciliado"),
+        ],
+      },
+      {
+        id: "FAC-PAY-003",
+        tipo: "pagar",
+        numero: "FA-0001-000884",
+        razon_social: "Shell Argentina",
+        cuit_emisor: "30-50123456-9",
+        fecha: isoOffset(-5),
+        fecha_vto: isoOffset(5),
+        monto: 980000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [demoPaso(-5, "facturas", "Ingreso manual · pendiente de pago")],
+      },
+      {
+        id: "FAC-PAY-004",
+        tipo: "pagar",
+        numero: "FA-0002-000441",
+        razon_social: "Mercado Libre Logistic",
+        cuit_emisor: "30-70987654-1",
+        fecha: isoOffset(-40),
+        fecha_vto: isoOffset(-15),
+        monto: 312000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [
+          demoPaso(-40, "facturas", "Factura ingresada"),
+          demoPaso(-10, "facturas", "Alerta de vencimiento · sin autorización"),
+        ],
+      },
+      {
+        id: "FAC-PAY-005",
+        tipo: "pagar",
+        numero: "FA-0004-000210",
+        razon_social: "Pirelli Neumáticos",
+        cuit_emisor: "30-69874512-3",
+        fecha: isoOffset(-10),
+        fecha_vto: isoOffset(2),
+        monto: 756000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [demoPaso(-10, "facturas", "OCR OK · retenciones estimadas")],
+      },
+      {
+        id: "FAC-PAY-006",
+        tipo: "pagar",
+        numero: "FA-0005-000099",
+        razon_social: "Telecom Arg.",
+        cuit_emisor: "30-65432109-8",
+        fecha: isoOffset(-25),
+        fecha_vto: isoOffset(-2),
+        monto: 145000,
+        monto_aplicado: 145000,
+        estado: "saldada",
+        demo_pagada: true,
+        pasos: [
+          demoPaso(-25, "facturas", "Servicios · factura cargada"),
+          demoPaso(-3, "conciliacion", "Debitado y conciliado"),
+        ],
+      },
+      {
+        id: "FAC-PAY-007",
+        tipo: "pagar",
+        numero: "FA-0006-000333",
+        razon_social: "Axion Energy",
+        cuit_emisor: "30-61234567-0",
+        fecha: isoOffset(-3),
+        fecha_vto: isoOffset(10),
+        monto: 1540000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [demoPaso(-3, "facturas", "Combustible · en revisión")],
+      },
+      {
+        id: "FAC-PAY-008",
+        tipo: "pagar",
+        numero: "FA-0007-000512",
+        razon_social: "Iveco Argentina",
+        cuit_emisor: "30-58765432-2",
+        fecha: isoOffset(-18),
+        fecha_vto: isoOffset(-1),
+        monto: 890000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [
+          demoPaso(-18, "facturas", "Repuestos · cargada"),
+          demoPaso(-1, "facturas", "Vencida · pendiente de caja"),
+        ],
+      },
     ];
   }
 
@@ -1490,14 +1713,19 @@
         .map(function (r) {
           var st = estadoFactura(r);
           var paid = st.key === "al_dia";
+          var ck = clienteKeyOf(r);
           return (
-            '<tr class="hover:bg-slate-50/80 transition-colors" data-sol-fin-id="' +
+            '<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer" data-sol-fin-id="' +
             esc(r.id) +
+            '" data-sol-fin-cliente="' +
+            esc(ck) +
             '">' +
             '<td class="py-3.5 px-4 whitespace-nowrap"><span class="font-mono font-bold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">' +
             esc(r.numero || r.id) +
             "</span></td>" +
-            '<td class="py-3.5 px-4"><div class="font-bold text-slate-900">' +
+            '<td class="py-3.5 px-4"><div data-sol-fin-open-cliente="' +
+            esc(ck) +
+            '" class="font-bold text-slate-900 hover:text-blue-600 cursor-pointer">' +
             esc(r.razon_social || "—") +
             '</div><div class="text-[11px] text-slate-400 font-normal">' +
             esc(r.descripcion || r.concepto || (r.tipo === "pagar" ? "Factura a pagar" : "Factura a cobrar")) +
