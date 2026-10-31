@@ -124,7 +124,13 @@ function isoAtOffset(days, hours = 10) {
   return d.toISOString();
 }
 
-const DEMO_COBRAR_IDS = ["FAC-SYS-0001", "FAC-SYS-0002", "FAC-SYS-0003"];
+const DEMO_COBRAR_IDS = [
+  "FAC-SYS-0001",
+  "FAC-SYS-0002",
+  "FAC-SYS-0003",
+  "FAC-SYS-0004",
+  "FAC-SYS-0005",
+];
 
 /**
  * Demo SOL: misma historia en Facturas (a cobrar), Cobranzas, Conciliación y Comunicación.
@@ -206,7 +212,7 @@ export async function ensureSeedFacturasCobrar() {
       id: "FAC-SYS-0003",
       tipo: "cobrar",
       origen: "sistema",
-      estado: "abierta",
+      estado: "parcial",
       tipo_comprobante: "B",
       punto_venta: "0008",
       numero: "B-0008-00004410",
@@ -218,7 +224,7 @@ export async function ensureSeedFacturasCobrar() {
       telefono: "5492615551003",
       email: "pagos@mye.example",
       monto: 312400,
-      monto_aplicado: 0,
+      monto_aplicado: 120000,
       moneda: "ARS",
       cae: null,
       confianza: 1,
@@ -231,11 +237,76 @@ export async function ensureSeedFacturasCobrar() {
         {
           at: isoAtOffset(-1, 14),
           agente: "conciliacion",
-          label: "Pasarela avisó $312.400 ref PAS-MYE-4410 — pendiente de imputar",
+          label: "Cobro parcial $120.000 imputado · saldo $192.400",
           cobro_id: "COB-SYS-0001",
         },
       ],
       created_at: isoAtOffset(-18, 9),
+      updated_at: now,
+    },
+    {
+      id: "FAC-SYS-0004",
+      tipo: "cobrar",
+      origen: "sistema",
+      estado: "saldada",
+      tipo_comprobante: "A",
+      punto_venta: "0002",
+      numero: "A-0002-00005501",
+      fecha: isoDateOffset(-45),
+      fecha_vto: isoDateOffset(-15),
+      cuit_emisor: "30-74444444-1",
+      razon_social: "Andes Cargo SRL",
+      cuit_receptor: "30-71757543-4",
+      telefono: "5492615551004",
+      email: "admin@andescargo.example",
+      monto: 540000,
+      monto_aplicado: 540000,
+      moneda: "ARS",
+      cae: null,
+      confianza: 1,
+      pasos: [
+        {
+          at: isoAtOffset(-45, 9),
+          agente: "facturas",
+          label: "Emitida por sistema · flete Andes",
+        },
+        {
+          at: isoAtOffset(-14, 12),
+          agente: "conciliacion",
+          label: "Cobro total conciliado · factura al día",
+        },
+      ],
+      created_at: isoAtOffset(-45, 9),
+      updated_at: now,
+    },
+    {
+      id: "FAC-SYS-0005",
+      tipo: "cobrar",
+      origen: "sistema",
+      estado: "abierta",
+      tipo_comprobante: "A",
+      punto_venta: "0005",
+      numero: "A-0005-00001220",
+      fecha: isoDateOffset(-2),
+      fecha_vto: isoDateOffset(12),
+      cuit_emisor: "30-75555555-8",
+      razon_social: "Cuyo Express",
+      cuit_receptor: "30-71757543-4",
+      telefono: "5492615551005",
+      email: "cx@cuyoexpress.example",
+      monto: 275000,
+      monto_aplicado: 0,
+      moneda: "ARS",
+      cae: null,
+      confianza: 1,
+      pasos: [
+        {
+          at: isoAtOffset(-2, 10),
+          agente: "facturas",
+          label: "Emitida por sistema · flete Cuyo Express",
+        },
+      ],
+      created_at: isoAtOffset(-2, 10),
       updated_at: now,
     },
   ];
@@ -243,8 +314,12 @@ export async function ensureSeedFacturasCobrar() {
   const demo = new Set(DEMO_COBRAR_IDS);
   const have = rows.filter((r) => demo.has(r.id));
   const tsb = have.find((r) => r.id === "FAC-SYS-0001");
-  const needsStory = have.length < 3 || (tsb && (tsb.pasos || []).length < 2);
-  if (have.length === 3 && !needsStory) return false;
+  const mye = have.find((r) => r.id === "FAC-SYS-0003");
+  const needsStory =
+    have.length < 5 ||
+    (tsb && (tsb.pasos || []).length < 2) ||
+    (mye && Number(mye.monto_aplicado || 0) < 1);
+  if (have.length === 5 && !needsStory) return false;
   const others = rows.filter((r) => !demo.has(r.id));
   writeAll([...seed, ...others]);
   return true;

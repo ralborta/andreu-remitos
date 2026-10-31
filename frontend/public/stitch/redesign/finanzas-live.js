@@ -148,13 +148,29 @@
     if (row.demo_flag === "discrepancia") return { key: "discrepancias", label: "Discrepancia", cls: "bg-amber-50 text-amber-800 border-amber-200" };
     if (row.demo_flag === "observada") return { key: "pendientes", label: "Observada", cls: "bg-slate-100 text-slate-700 border-slate-200" };
     var s = saldo(row);
-    if (s <= 0 || row.estado === "saldada" || row.demo_pagada) return { key: "al_dia", label: row.tipo === "pagar" ? "Pagada" : "Al día", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    var aplicado = Number(row.monto_aplicado || 0);
+    // Al día / Pagada = sin saldo (no confundir con “aún no vence”)
+    if (s <= 0.009 || row.estado === "saldada" || row.demo_pagada) {
+      return {
+        key: "al_dia",
+        label: row.tipo === "pagar" ? "Pagada" : "Al día",
+        cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      };
+    }
     var vto = row.fecha_vto ? new Date(row.fecha_vto) : null;
     var now = new Date();
-    if (vto && !isNaN(vto) && vto < now) return { key: "vencidas", label: "Vencida", cls: "bg-red-50 text-red-700 border-red-200" };
-    if (vto && !isNaN(vto) && (vto - now) / 86400000 <= 7) return { key: "por_vencer", label: "Por vencer", cls: "bg-amber-50 text-amber-800 border-amber-200" };
-    if (Number(row.monto_aplicado || 0) > 0 || row.demo_comunicada) return { key: "en_gestion", label: row.demo_comunicada ? "En gestión" : "Parcial", cls: "bg-blue-50 text-blue-700 border-blue-200" };
-    return { key: "al_dia", label: "Al día", cls: "bg-slate-100 text-slate-700 border-slate-200" };
+    var vencida = vto && !isNaN(vto) && vto < now;
+    // Parcial: cobro/pago imputado pero sigue con saldo
+    if (aplicado > 0.009 || row.demo_comunicada) {
+      return {
+        key: "en_gestion",
+        label: row.demo_comunicada && aplicado <= 0.009 ? "En gestión" : "Parcial",
+        cls: "bg-blue-50 text-blue-700 border-blue-200",
+      };
+    }
+    if (vencida) return { key: "vencidas", label: "Vencida", cls: "bg-red-50 text-red-700 border-red-200" };
+    // Con saldo y no vencida → por vencer (corriente)
+    return { key: "por_vencer", label: "Por vencer", cls: "bg-amber-50 text-amber-800 border-amber-200" };
   }
 
   function findRow(id) {
@@ -857,11 +873,29 @@
     return "otras";
   }
 
+  function chipCountFor(key, counts) {
+    if (key === "parciales") return counts.en_gestion || 0;
+    if (key === "pagadas_mes") return counts.pagadas_mes || counts.al_dia || 0;
+    if (key === "en_gestion") return counts.en_gestion || 0;
+    if (counts[key] != null) return counts[key];
+    return 0;
+  }
+
   function applyFilters() {
     var q = fold(query);
     var total = 0;
     var shown = 0;
-    var counts = { todas: 0, por_vencer: 0, vencidas: 0, pagadas_mes: 0, al_dia: 0, en_gestion: 0, pendientes: 0 };
+    var counts = {
+      todas: 0,
+      por_vencer: 0,
+      vencidas: 0,
+      pagadas_mes: 0,
+      al_dia: 0,
+      en_gestion: 0,
+      parciales: 0,
+      pendientes: 0,
+      otras: 0,
+    };
     mainTables().forEach(function (tbody) {
       Array.prototype.forEach.call(tbody.rows, function (tr) {
         if (tr.querySelector("td[colspan]")) return;
@@ -869,16 +903,18 @@
         var st = rowStatus(tr);
         counts.todas += 1;
         if (counts[st] != null) counts[st] += 1;
+        else counts.otras += 1;
         if (st === "al_dia") counts.pagadas_mes += 1;
+        if (st === "en_gestion") counts.parciales += 1;
         var okFilter =
           filter === "todas" ||
           filter === "todos" ||
           filter === st ||
           (filter === "pagadas_mes" && st === "al_dia") ||
           (filter === "parciales" && st === "en_gestion") ||
+          (filter === "en_gestion" && st === "en_gestion") ||
           (filter === "con_saldo" && (st === "vencidas" || st === "por_vencer" || st === "en_gestion")) ||
-          (filter === "conciliados" && st === "al_dia") ||
-          (filter === "al_dia" && st === "al_dia");
+          (filter === "conciliados" && st === "al_dia");
         var okQuery = !q || fold(tr.textContent).indexOf(q) >= 0;
         var show = okFilter && okQuery;
         tr.style.display = show ? "" : "none";
@@ -889,8 +925,8 @@
       root.querySelectorAll("*").forEach(function (el) {
         if (el.children && el.children.length) return;
         var txt = String(el.textContent || "");
-        if (/Mostrando\s+\d+\s+de\s+\d+/i.test(txt)) {
-          el.textContent = "Mostrando " + shown + " de " + total + " filas";
+        if (/Mostrando\s+\d+(\s+de\s+\d+)?(\s+filas|\s+registros)?/i.test(txt)) {
+          el.textContent = "Mostrando " + shown + " de " + total + " registros";
         }
       });
     });
@@ -901,41 +937,63 @@
   function paintChipCounts(counts) {
     document.querySelectorAll("[data-sol-fin-chip]").forEach(function (b) {
       var key = b.getAttribute("data-sol-fin-chip");
-      var n = counts[key];
-      if (n == null) return;
+      var n = chipCountFor(key, counts);
       var label = b.getAttribute("data-sol-fin-chip-label") || "";
       if (!label) {
-        label = String(b.textContent || "")
+        var first = b.querySelector("span:first-child");
+        label = String((first && first.textContent) || b.textContent || "")
           .replace(/\s+\d+\s*$/, "")
           .replace(/\s+/g, " ")
           .trim();
         b.setAttribute("data-sol-fin-chip-label", label);
       }
-      var tone =
-        key === "por_vencer"
-          ? "text-amber-400"
-          : key === "vencidas"
-            ? "text-rose-500"
-            : key === "pagadas_mes" || key === "al_dia"
-              ? "text-emerald-600"
-              : "text-slate-400";
-      if (b.getAttribute("aria-pressed") === "true" && (key === "por_vencer" || key === "vencidas" || key === "pagadas_mes")) {
-        tone = key === "vencidas" ? "text-rose-300" : key === "pagadas_mes" ? "text-emerald-300" : "text-amber-300";
-      }
-      b.innerHTML = esc(label) + ' <span class="' + tone + ' font-semibold ml-0.5">' + n + "</span>";
+      var on = b.getAttribute("aria-pressed") === "true";
+      var badgeCls =
+        key === "vencidas"
+          ? on
+            ? "bg-white/20 text-rose-200"
+            : "bg-red-50 text-red-700 border border-red-200"
+          : key === "por_vencer"
+            ? on
+              ? "bg-white/20 text-amber-200"
+              : "bg-amber-50 text-amber-800 border border-amber-200"
+            : key === "parciales" || key === "en_gestion"
+              ? on
+                ? "bg-white/20 text-sky-200"
+                : "bg-sky-50 text-sky-800 border border-sky-200"
+              : key === "al_dia" || key === "pagadas_mes"
+                ? on
+                  ? "bg-white/20 text-emerald-200"
+                  : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                : on
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-100 text-slate-600";
+      b.innerHTML =
+        "<span>" +
+        esc(label) +
+        '</span><span class="' +
+        badgeCls +
+        ' px-1.5 py-0.5 rounded-full text-[10px] font-bold">' +
+        n +
+        "</span>";
     });
   }
 
   function paintChipActive(btn) {
+    var cobranzaStyle = pageKey() === "cobranza";
     document.querySelectorAll("[data-sol-fin-chip]").forEach(function (b) {
       var on = b === btn;
       b.setAttribute("aria-pressed", on ? "true" : "false");
-      if (on) {
+      if (cobranzaStyle) {
+        b.className = on
+          ? "px-3 py-1.5 rounded-md bg-slate-900 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs shrink-0"
+          : "px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium flex items-center gap-1.5 transition-colors border border-transparent shrink-0";
+      } else if (on) {
         b.className =
-          "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-xs shrink-0";
+          "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-xs shrink-0 inline-flex items-center gap-1";
       } else {
         b.className =
-          "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:border-slate-300 shrink-0";
+          "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:border-slate-300 shrink-0 inline-flex items-center gap-1";
       }
     });
   }
@@ -1475,6 +1533,57 @@
     return Object.assign({ at: d.toISOString(), agente: agente, label: label }, extra || {});
   }
 
+  /** Asegura variedad de estados en Cobranza para que los chips filtren con sentido. */
+  function enrichCobrarDemo(rows) {
+    var list = (rows || []).map(localOf);
+    var byId = {};
+    list.forEach(function (r) {
+      byId[r.id] = r;
+    });
+    // Parcial: si MYE no tiene aplicado, forzar demo local
+    if (byId["FAC-SYS-0003"] && Number(byId["FAC-SYS-0003"].monto_aplicado || 0) < 1) {
+      byId["FAC-SYS-0003"] = Object.assign({}, byId["FAC-SYS-0003"], {
+        monto_aplicado: 120000,
+        estado: "parcial",
+      });
+    }
+    var extras = [
+      {
+        id: "FAC-SYS-0004",
+        tipo: "cobrar",
+        numero: "A-0002-00005501",
+        razon_social: "Andes Cargo SRL",
+        cuit_emisor: "30-74444444-1",
+        fecha: isoOffset(-45),
+        fecha_vto: isoOffset(-15),
+        monto: 540000,
+        monto_aplicado: 540000,
+        estado: "saldada",
+        demo_pagada: true,
+        pasos: [demoPaso(-14, "conciliacion", "Cobro total conciliado · factura al día")],
+      },
+      {
+        id: "FAC-SYS-0005",
+        tipo: "cobrar",
+        numero: "A-0005-00001220",
+        razon_social: "Cuyo Express",
+        cuit_emisor: "30-75555555-8",
+        fecha: isoOffset(-2),
+        fecha_vto: isoOffset(12),
+        monto: 275000,
+        monto_aplicado: 0,
+        estado: "abierta",
+        pasos: [demoPaso(-2, "facturas", "Emitida · flete Cuyo Express")],
+      },
+    ];
+    extras.forEach(function (ex) {
+      if (!byId[ex.id]) byId[ex.id] = ex;
+    });
+    return Object.keys(byId).map(function (k) {
+      return byId[k];
+    });
+  }
+
   function demoPagarRows() {
     return [
       {
@@ -1913,6 +2022,9 @@
       } else {
         apiRows = apiRows.length ? apiRows : key === "facturas" ? demoPagarRows() : [];
       }
+      if (key === "cobranza" || key === "clientes" || key === "comunicacion" || key === "dashboard") {
+        apiRows = enrichCobrarDemo(apiRows);
+      }
       refreshTables();
       wireChips();
       applyFilters();
@@ -1921,7 +2033,7 @@
 
   function boot() {
     bannerDemo();
-    if (pageKey() === "facturas") filter = "todas";
+    if (pageKey() === "facturas" || pageKey() === "cobranza") filter = "todas";
     wireChips();
     wireSearch();
     wireCheckboxes();
