@@ -782,32 +782,32 @@
 <div class="mt-6"><div data-sol-desk-chat data-agent-id="conciliacion" data-label="Conciliación" data-subtitle="Consulto cobros y diferencias de conciliación." data-suggestions="¿Qué cobros están pendientes de imputar?|Resumen de conciliación|Cartera abierta" data-mode="local" data-icon="balance"></div></div>
 
 <!-- ========================================================================= -->
-<!-- MAIN OPERATIVE SECTION: 2-COLUMN SIMULATOR & PREDICTIVE MATCH -->
+<!-- MAIN OPERATIVE SECTION: AVISO DE PASARELA + MATCH -->
 <!-- ========================================================================= -->
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-<!-- LEFT COLUMN: Formulario de Simulación de Pasarela (7 Cols) -->
+<div data-sol-fin-pasarela class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Formulario de Aviso de Pasarela (7 Cols) -->
 <section class="lg:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant p-space-xl shadow-sm">
 <div class="flex items-center justify-between pb-space-md border-b border-outline-variant mb-space-lg">
 <div>
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-secondary text-[20px]">hub</span>
-<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Simulador de Aviso de Pasarela (Webhook / Push API)</h2>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Aviso de Pasarela (Webhook / Push API)</h2>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Dispará una simulación de evento de cobro de pasarela para validar el motor de conciliación automática.
+              Registrá un cobro entrante y ejecutá el auto-match contra la factura sugerida.
             </p>
 </div>
 <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface-container-low text-secondary border border-outline-variant font-code-table text-xs">
             REST v2.4 / JSON
           </span>
 </div>
-<form class="space-y-space-md" onsubmit="event.preventDefault();">
+<form data-sol-fin-pasarela-form class="space-y-space-md" onsubmit="event.preventDefault();">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
 <!-- Canal / Pasarela -->
 <div>
 <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">PASARELA / CANAL RECEPTOR</label>
 <div class="relative">
-<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm font-medium focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none">
+<select data-sol-fin-pasarela-canal class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm font-medium focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none">
 <option selected="">Mercado Pago API (Webhook instantáneo)</option>
 <option>Interbanking (Extracto Multibanco batch)</option>
 <option>Prisma / PagoMisCuentas (B2B)</option>
@@ -821,19 +821,19 @@
 <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">MONTO PERCIBIDO ($ ARS)</label>
 <div class="relative">
 <span class="absolute left-3 top-1/2 -translate-y-1/2 font-code-table text-on-surface-variant text-body-sm font-bold">$ ARS</span>
-<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-16 pr-3 py-2 font-code-table text-body-md font-semibold text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" type="text" value="1.850.400,00"/>
+<input data-sol-fin-pasarela-monto class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-16 pr-3 py-2 font-code-table text-body-md font-semibold text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" type="text" value=""/>
 </div>
 </div>
 <!-- Referencia de Operación -->
 <div>
 <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">NÚMERO DE OPERACIÓN / REFERENCIA</label>
-<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-code-table text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" type="text" value="OP-MP-892348102"/>
+<input data-sol-fin-pasarela-ref class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-code-table text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" type="text" value=""/>
 </div>
 <!-- Factura o Remito Asociado -->
 <div>
 <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">FACTURA O REMITO ASOCIADO (SUGERIDO)</label>
 <div class="relative">
-<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" type="text" value="FC-A-0004-00089214 · Cervecería Quilmes"/>
+<input data-sol-fin-pasarela-factura class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" type="text" value=""/>
 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary text-[18px]">verified</span>
 </div>
 </div>
@@ -842,29 +842,29 @@
 <div>
 <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">CUIT &amp; RAZÓN SOCIAL DEL EMISOR</label>
 <div class="flex gap-2">
-<input class="w-48 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-code-table text-body-sm text-on-surface" readonly="" type="text" value="30-50279317-9"/>
-<input class="flex-1 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm text-on-surface" readonly="" type="text" value="Cervecería y Maltería Quilmes S.A.I.C.A. y G."/>
+<input data-sol-fin-pasarela-cuit class="w-48 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-code-table text-body-sm text-on-surface" type="text" value=""/>
+<input data-sol-fin-pasarela-razon class="flex-1 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm text-on-surface" type="text" value=""/>
 </div>
 </div>
 <!-- Metadata & Observaciones -->
 <div>
 <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">OBSERVACIONES O METADATA DEL EVENTO</label>
-<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2.5 font-code-table text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" rows="2">Pago automático 48hs contra remito conformado #REM-98214 - Retención IIBB CABA Aplicada según alícuota 1.5%</textarea>
+<textarea data-sol-fin-pasarela-obs class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2.5 font-code-table text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none" rows="2"></textarea>
 </div>
 <!-- Submission & Status Feedback -->
 <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-space-md">
 <div class="flex items-center gap-2 text-on-surface-variant font-label-caps">
 <span class="w-2 h-2 rounded-full bg-secondary"></span>
-<span>Canal webhook activo · Latencia 85ms · Token verificado</span>
+<span data-sol-fin-pasarela-canal-status>Canal webhook activo · listo para ingresar cobro</span>
 </div>
-<button class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-tertiary hover:bg-inverse-surface text-on-tertiary font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]" type="button">
+<button data-sol-fin-pasarela-submit class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-tertiary hover:bg-inverse-surface text-on-tertiary font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]" type="submit">
 <span class="material-symbols-outlined text-[18px]">play_arrow</span>
-<span>Simular Ingreso y Ejecutar Auto-Match</span>
+<span>Registrar ingreso y ejecutar auto-match</span>
 </button>
 </div>
 </form>
 </section>
-<!-- RIGHT COLUMN: Cola Rápida & Match IA (5 Cols) -->
+<!-- RIGHT COLUMN: Match IA (5 Cols) -->
 <section class="lg:col-span-5 bg-surface-container-lowest rounded-xl border border-outline-variant p-space-xl shadow-sm space-y-space-md">
 <div class="flex items-center justify-between pb-space-md border-b border-outline-variant">
 <div>
@@ -881,55 +881,55 @@
 <div class="space-y-0.5">
 <span class="font-label-caps text-label-caps text-secondary">NIVEL DE COINCIDENCIA IA</span>
 <div class="font-headline-md text-headline-md font-bold text-on-surface flex items-center gap-2">
-<span>99.2% Confirmed</span>
+<span data-sol-fin-match-score>—</span>
 <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
 </div>
-<p class="font-body-sm text-on-surface-variant">4 vectores verificados: CUIT, Remito, Monto e IIBB.</p>
+<p data-sol-fin-match-vectores class="font-body-sm text-on-surface-variant">Completá el aviso de pasarela para evaluar el match.</p>
 </div>
-<!-- Spark Circular Representation -->
-<div class="w-12 h-12 rounded-full bg-surface-container-lowest border-2 border-secondary flex items-center justify-center font-code-table font-bold text-xs text-secondary">
-            A+
+<div data-sol-fin-match-grade class="w-12 h-12 rounded-full bg-surface-container-lowest border-2 border-secondary flex items-center justify-center font-code-table font-bold text-xs text-secondary">
+            —
           </div>
 </div>
 <!-- Comparative Breakdown Breakdown Table -->
 <div class="border border-outline-variant rounded-lg overflow-hidden font-body-sm">
 <div class="bg-surface-container px-3 py-2 border-b border-outline-variant font-label-caps text-label-caps text-on-surface font-bold flex justify-between">
 <span>DETALLE DE AUDITORÍA CRUZADA</span>
-<span class="font-code-table">ID #EVT-48192</span>
+<span class="font-code-table">ID <span data-sol-fin-match-evt>#—</span></span>
 </div>
 <div class="p-3 space-y-2.5 bg-surface-container-lowest">
 <div class="flex justify-between items-center text-body-sm">
 <span class="text-on-surface-variant">Importe Facturado Original:</span>
-<span class="font-code-table font-semibold text-on-surface">$ 1.878.578,68</span>
+<span data-sol-fin-match-bruto class="font-code-table font-semibold text-on-surface">—</span>
 </div>
 <div class="flex justify-between items-center text-body-sm">
-<span class="text-on-surface-variant">Retenciones IIBB CABA (1.5%):</span>
-<span class="font-code-table text-error">- $ 28.178,68</span>
+<span class="text-on-surface-variant">Retenciones IIBB (estimadas):</span>
+<span data-sol-fin-match-iibb class="font-code-table text-error">—</span>
 </div>
 <div class="flex justify-between items-center text-body-sm border-t border-outline-variant pt-2">
 <span class="text-on-surface font-semibold">Importe Neto Percibido:</span>
-<span class="font-code-table font-bold text-secondary text-base">$ 1.850.400,00</span>
+<span data-sol-fin-match-neto class="font-code-table font-bold text-secondary text-base">—</span>
 </div>
 <div class="flex justify-between items-center text-body-sm bg-surface-container-low p-2 rounded border border-outline-variant">
 <span class="text-on-surface-variant flex items-center gap-1">
 <span class="material-symbols-outlined text-[15px] text-secondary">receipt_long</span>
-                Remito Digital:
+                Factura match:
               </span>
-<span class="font-code-table font-bold text-secondary underline cursor-pointer">#REM-98214 (Conforme)</span>
+<span data-sol-fin-match-fac class="font-code-table font-bold text-secondary">—</span>
 </div>
 </div>
 </div>
 <!-- Action CTAs -->
 <div class="pt-2 flex flex-col sm:flex-row gap-2">
-<button class="flex-1 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-container hover:text-on-secondary-fixed text-on-secondary font-label-md text-label-md font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors">
+<button type="button" data-sol-fin-match-aprobar class="flex-1 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-container hover:text-on-secondary-fixed text-on-secondary font-label-md text-label-md font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors">
 <span class="material-symbols-outlined text-[16px]">task_alt</span>
 <span>Aprobar Conciliación Automática</span>
 </button>
-<button class="px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center justify-center gap-1 transition-colors">
+<button type="button" data-sol-fin-match-discrepancia class="px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center justify-center gap-1 transition-colors">
 <span class="material-symbols-outlined text-[16px] text-on-surface-variant">flag</span>
 <span>Observar Discrepancia</span>
 </button>
 </div>
+<p data-sol-fin-match-status class="text-[11px] text-on-surface-variant"></p>
 </section>
 </div>
 <!-- ========================================================================= -->

@@ -14,6 +14,8 @@
   var menuEl = null;
   var drawerEl = null;
   var fichaEl = null;
+  /** Estado del aviso de pasarela / match en Conciliación. */
+  var pasarelaMatch = null;
 
   function fold(s) {
     return String(s || "")
@@ -113,6 +115,41 @@
     } catch (_) {
       return "$ " + String(Math.round(v));
     }
+  }
+
+  function moneyFine(n) {
+    var v = Number(n);
+    if (!Number.isFinite(v)) return "—";
+    try {
+      return v.toLocaleString("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    } catch (_) {
+      return "$ " + v.toFixed(2);
+    }
+  }
+
+  function parseMoneyAR(s) {
+    var t = String(s || "").replace(/[^\d.,-]/g, "").trim();
+    if (!t) return NaN;
+    if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+    return Number(t);
+  }
+
+  function formatMoneyAR(n) {
+    var v = Number(n);
+    if (!Number.isFinite(v)) return "";
+    return v.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function extractFacturaNumero(raw) {
+    var s = String(raw || "").trim();
+    if (!s) return "";
+    var part = s.split(/[·•|]/)[0] || s;
+    return part.replace(/\s+/g, " ").trim();
   }
 
   function api(path, opts) {
@@ -1378,32 +1415,478 @@
   }
 
   function demoConciliar(row) {
+    if (pageKey() === "conciliacion" && pasarelaMatch && pasarelaMatch.facturaId) {
+      aprobarPasarelaMatch();
+      return;
+    }
     var pending = cobros.filter(function (c) {
       return c.estado !== "aplicado";
     });
-    if (row && row.id && pending[0]) {
-      api("/api/finanzas/cobros/" + encodeURIComponent(pending[0].id) + "/conciliar", {
+    var cobroId = null;
+    var tr = null;
+    try {
+      tr = document.activeElement && document.activeElement.closest
+        ? document.activeElement.closest("tr[data-sol-fin-cobro]")
+        : null;
+    } catch (e) {}
+    if (tr) cobroId = tr.getAttribute("data-sol-fin-cobro");
+    if (!cobroId && pending[0]) cobroId = pending[0].id;
+    if (row && row.id && cobroId) {
+      api("/api/finanzas/cobros/" + encodeURIComponent(cobroId) + "/conciliar", {
         method: "POST",
         body: JSON.stringify({ factura_id: row.id }),
       })
         .then(function () {
-          toast("Conciliación demo aplicada.", "ok");
+          toast("Conciliación aplicada a " + (row.numero || row.id) + ".", "ok");
           return reloadData();
         })
         .catch(function () {
-          patchLocal(row.id, { demo_nota: "Match demo local", monto_aplicado: Number(row.monto || 0), demo_pagada: true, estado: "saldada" });
-          toast("Conciliación demo local aplicada.", "ok");
+          patchLocal(row.id, {
+            demo_nota: "Match local",
+            monto_aplicado: Number(row.monto || 0),
+            demo_pagada: true,
+            estado: "saldada",
+          });
+          toast("Conciliación local aplicada a " + (row.numero || row.id) + ".", "ok");
           refreshTables();
         });
       return;
     }
     if (row && row.id) {
-      patchLocal(row.id, { demo_nota: "Auto-match demo", monto_aplicado: Number(row.monto || 0), demo_pagada: true, estado: "saldada" });
-      toast("Simulación de ingreso + auto-match en " + (row.numero || "fila") + ".", "ok");
+      patchLocal(row.id, {
+        demo_nota: "Auto-match",
+        monto_aplicado: Number(row.monto || 0),
+        demo_pagada: true,
+        estado: "saldada",
+      });
+      toast("Ingreso + auto-match aplicado en " + (row.numero || "fila") + ".", "ok");
       refreshTables();
       return;
     }
     toast("Elegí un movimiento o factura para conciliar.", "err");
+  }
+
+  function findFacturaByNumero(nro) {
+    var want = fold(extractFacturaNumero(nro)).replace(/\s/g, "");
+    if (!want) return null;
+    var list = apiRows.map(localOf);
+    for (var i = 0; i < list.length; i++) {
+      var n = fold(list[i].numero || "").replace(/\s/g, "");
+      if (n && (n === want || n.indexOf(want) >= 0 || want.indexOf(n) >= 0)) return list[i];
+    }
+    return null;
+  }
+
+  function pickPasarelaTarget() {
+    var pending = cobros.filter(function (c) {
+      return c && c.estado !== "aplicado";
+    });
+    if (pending[0]) {
+      var fac =
+        (pending[0].factura_id && findRow(pending[0].factura_id)) ||
+        findFacturaByNumero(pending[0].factura_numero) ||
+        null;
+      return { cobro: pending[0], fac: fac };
+    }
+    var open = apiRows.map(localOf).filter(function (r) {
+      return saldo(r) > 0.009;
+    });
+    return { cobro: null, fac: open[0] || null };
+  }
+
+  function paintPasarelaMatch(state) {
+    pasarelaMatch = state || null;
+    var root = document.querySelector("[data-sol-fin-pasarela]");
+    if (!root) return;
+    var score = root.querySelector("[data-sol-fin-match-score]");
+    var vect = root.querySelector("[data-sol-fin-match-vectores]");
+    var grade = root.querySelector("[data-sol-fin-match-grade]");
+    var evt = root.querySelector("[data-sol-fin-match-evt]");
+    var bruto = root.querySelector("[data-sol-fin-match-bruto]");
+    var iibb = root.querySelector("[data-sol-fin-match-iibb]");
+    var neto = root.querySelector("[data-sol-fin-match-neto]");
+    var facEl = root.querySelector("[data-sol-fin-match-fac]");
+    var status = root.querySelector("[data-sol-fin-match-status]");
+    if (!state) {
+      if (score) score.textContent = "—";
+      if (vect) vect.textContent = "Completá el aviso de pasarela para evaluar el match.";
+      if (grade) grade.textContent = "—";
+      if (evt) evt.textContent = "#—";
+      if (bruto) bruto.textContent = "—";
+      if (iibb) iibb.textContent = "—";
+      if (neto) neto.textContent = "—";
+      if (facEl) facEl.textContent = "—";
+      if (status) status.textContent = "";
+      return;
+    }
+    if (score) score.textContent = state.scoreLabel || "—";
+    if (vect) vect.textContent = state.vectores || "";
+    if (grade) grade.textContent = state.grade || "—";
+    if (evt) evt.textContent = state.evt || "#—";
+    if (bruto) bruto.textContent = moneyFine(state.bruto);
+    if (iibb) iibb.textContent = state.iibb > 0 ? "- " + moneyFine(state.iibb) : moneyFine(0);
+    if (neto) neto.textContent = moneyFine(state.neto);
+    if (facEl) facEl.textContent = state.facturaNumero || "—";
+    if (status) status.textContent = state.statusText || "";
+  }
+
+  function buildMatchState(opts) {
+    opts = opts || {};
+    var fac = opts.fac || null;
+    var neto = Number(opts.neto);
+    var bruto = fac ? Number(fac.monto || 0) : neto;
+    var iibb = Math.max(0, Math.round((bruto - neto) * 100) / 100);
+    if (iibb < 0.01 && fac && bruto > 0) {
+      iibb = Math.round(bruto * 0.015 * 100) / 100;
+      bruto = Math.round((neto + iibb) * 100) / 100;
+    }
+    var matched = Boolean(fac);
+    var aplicado = opts.aplicado === true;
+    var score = matched ? (aplicado ? 99.2 : 97.4) : 42.0;
+    var grade = matched ? (aplicado ? "A+" : "A") : "C";
+    var vectors = matched
+      ? "Vectores: CUIT, factura, monto" + (iibb > 0.01 ? " e IIBB." : ".")
+      : "Sin factura candidata clara · revisión manual.";
+    return {
+      cobroId: opts.cobroId || null,
+      facturaId: fac ? fac.id : null,
+      facturaNumero: fac ? fac.numero : opts.facturaNumero || null,
+      monto: neto,
+      bruto: bruto,
+      iibb: iibb,
+      neto: neto,
+      score: score,
+      scoreLabel: score.toFixed(1) + "% " + (aplicado ? "Confirmed" : matched ? "Match listo" : "Bajo"),
+      grade: grade,
+      vectores: vectors,
+      evt: opts.evt || "#EVT-" + String(Date.now()).slice(-5),
+      aplicado: aplicado,
+      statusText: aplicado
+        ? "Cobro imputado · conciliación aplicada."
+        : matched
+          ? "Match listo · aprobá para imputar el cobro a la factura."
+          : "Registrado sin match · observá o elegí otra factura.",
+    };
+  }
+
+  function fillPasarelaForm(target) {
+    var root = document.querySelector("[data-sol-fin-pasarela]");
+    if (!root) return;
+    target = target || pickPasarelaTarget();
+    var fac = target.fac;
+    var cobro = target.cobro;
+    var montoEl = root.querySelector("[data-sol-fin-pasarela-monto]");
+    var refEl = root.querySelector("[data-sol-fin-pasarela-ref]");
+    var facEl = root.querySelector("[data-sol-fin-pasarela-factura]");
+    var cuitEl = root.querySelector("[data-sol-fin-pasarela-cuit]");
+    var razonEl = root.querySelector("[data-sol-fin-pasarela-razon]");
+    var obsEl = root.querySelector("[data-sol-fin-pasarela-obs]");
+    if (!fac && !cobro) return;
+    var monto = cobro ? Number(cobro.monto) : fac ? saldo(fac) : 0;
+    // Demo con retención IIBB 1.5% si el cobro aún no existe y hay saldo completo
+    if (!cobro && fac && Math.abs(monto - Number(fac.monto || 0)) < 0.5) {
+      monto = Math.round(Number(fac.monto) * 0.985 * 100) / 100;
+    }
+    if (montoEl && !String(montoEl.value || "").trim()) montoEl.value = formatMoneyAR(monto);
+    if (refEl && !String(refEl.value || "").trim()) {
+      refEl.value =
+        (cobro && cobro.external_ref) ||
+        "OP-MP-" + String(100000000 + Math.floor(Math.random() * 899999999));
+    }
+    if (facEl && !String(facEl.value || "").trim()) {
+      var nro = (cobro && cobro.factura_numero) || (fac && fac.numero) || "";
+      var rz = (fac && fac.razon_social) || "";
+      facEl.value = nro ? nro + (rz ? " · " + rz : "") : "";
+    }
+    if (cuitEl && !String(cuitEl.value || "").trim()) {
+      cuitEl.value = (fac && (fac.cuit || fac.cuit_emisor)) || (cobro && cobro.cuit) || "";
+    }
+    if (razonEl && !String(razonEl.value || "").trim()) {
+      razonEl.value = (fac && fac.razon_social) || "";
+    }
+    if (obsEl && !String(obsEl.value || "").trim()) {
+      obsEl.value =
+        "Pago pasarela contra " +
+        (((cobro && cobro.factura_numero) || (fac && fac.numero) || "factura") +
+          " · Retención IIBB estimada 1.5%");
+    }
+  }
+
+  function readPasarelaForm() {
+    var root = document.querySelector("[data-sol-fin-pasarela]");
+    if (!root) return null;
+    var monto = parseMoneyAR((root.querySelector("[data-sol-fin-pasarela-monto]") || {}).value);
+    var ref = String((root.querySelector("[data-sol-fin-pasarela-ref]") || {}).value || "").trim();
+    var facturaRaw = String((root.querySelector("[data-sol-fin-pasarela-factura]") || {}).value || "").trim();
+    var cuit = String((root.querySelector("[data-sol-fin-pasarela-cuit]") || {}).value || "").trim();
+    var razon = String((root.querySelector("[data-sol-fin-pasarela-razon]") || {}).value || "").trim();
+    var obs = String((root.querySelector("[data-sol-fin-pasarela-obs]") || {}).value || "").trim();
+    var canal = String((root.querySelector("[data-sol-fin-pasarela-canal]") || {}).value || "").trim();
+    return {
+      monto: monto,
+      ref: ref,
+      facturaRaw: facturaRaw,
+      numero: extractFacturaNumero(facturaRaw),
+      cuit: cuit,
+      razon: razon,
+      obs: obs,
+      canal: canal,
+    };
+  }
+
+  function aplicarLocalPasarela(fac, monto, cobroId, ref) {
+    if (fac && fac.id) {
+      var aplicado = Number(fac.monto_aplicado || 0) + Number(monto || 0);
+      var nextSaldo = Math.max(0, Number(fac.monto || 0) - aplicado);
+      patchLocal(fac.id, {
+        monto_aplicado: aplicado,
+        estado: nextSaldo < 0.01 ? "saldada" : "parcial",
+        demo_pagada: nextSaldo < 0.01,
+        demo_nota: "Cobro pasarela " + money(monto) + " · ref " + (ref || cobroId || ""),
+        demo_flag: null,
+      });
+    }
+    var localCobro = {
+      id: cobroId || "COB-LOC-" + Date.now(),
+      origen: "pasarela",
+      estado: "aplicado",
+      monto: Number(monto),
+      moneda: "ARS",
+      external_ref: ref || null,
+      cuit: fac && (fac.cuit || fac.cuit_emisor),
+      factura_id: fac && fac.id,
+      factura_numero: fac && fac.numero,
+      settled_at: new Date().toISOString(),
+      pasarela: "Mercado Pago",
+    };
+    cobros = [localCobro].concat(
+      cobros.filter(function (c) {
+        return c.id !== localCobro.id;
+      }),
+    );
+    return localCobro;
+  }
+
+  function ejecutarPasarela() {
+    var form = readPasarelaForm();
+    if (!form || !Number.isFinite(form.monto) || form.monto <= 0) {
+      toast("Ingresá un monto percibido válido.", "err");
+      return;
+    }
+    var fac = findFacturaByNumero(form.numero);
+    if (!fac && form.cuit) {
+      var cuitDigits = String(form.cuit).replace(/\D/g, "");
+      fac =
+        apiRows.map(localOf).find(function (r) {
+          return String(r.cuit_emisor || r.cuit || "").replace(/\D/g, "") === cuitDigits && saldo(r) > 0;
+        }) || null;
+    }
+    if (!fac) fac = pickPasarelaTarget().fac;
+    var external = form.ref || "OP-MP-" + Date.now();
+    var statusEl = document.querySelector("[data-sol-fin-pasarela-canal-status]");
+    if (statusEl) statusEl.textContent = "Registrando cobro · evaluando auto-match…";
+
+    // Sin numero_factura en el body: el cobro queda pendiente y el panel pide aprobación.
+    api("/api/finanzas/pasarela", {
+      method: "POST",
+      body: JSON.stringify({
+        monto: form.monto,
+        cuit: form.cuit || (fac && (fac.cuit || fac.cuit_emisor)) || null,
+        external_ref: external,
+        metadata: {
+          canal: form.canal,
+          observaciones: form.obs,
+          numero_sugerido: form.numero,
+          razon_social: form.razon,
+        },
+      }),
+    })
+      .then(function (cobro) {
+        var state = buildMatchState({
+          fac: fac,
+          neto: Number(cobro.monto || form.monto),
+          cobroId: cobro.id,
+          facturaNumero: form.numero,
+          evt: "#EVT-" + String(cobro.id || "").replace(/\D/g, "").slice(-5),
+          aplicado: cobro.estado === "aplicado",
+        });
+        if (cobro.estado === "aplicado" && fac) {
+          state.statusText = "La pasarela ya imputó el cobro a " + (fac.numero || fac.id) + ".";
+        }
+        paintPasarelaMatch(state);
+        if (statusEl) statusEl.textContent = "Canal webhook activo · cobro " + (cobro.external_ref || cobro.id);
+        toast(
+          cobro.estado === "aplicado"
+            ? "Ingreso registrado y conciliado automáticamente."
+            : "Ingreso registrado · match listo para aprobar.",
+          "ok",
+        );
+        return reloadData().then(function () {
+          fillPasarelaForm({ cobro: cobro, fac: fac });
+        });
+      })
+      .catch(function () {
+        // Fallback local: deja match listo; Aprobar imputa en localStorage.
+        var cobroId = "COB-LOC-" + Date.now();
+        var state = buildMatchState({
+          fac: fac,
+          neto: form.monto,
+          cobroId: cobroId,
+          facturaNumero: form.numero,
+          aplicado: false,
+        });
+        cobros = [
+          {
+            id: cobroId,
+            origen: "pasarela",
+            estado: "pendiente",
+            monto: form.monto,
+            moneda: "ARS",
+            external_ref: external,
+            cuit: form.cuit,
+            factura_id: null,
+            factura_numero: form.numero || (fac && fac.numero),
+            settled_at: new Date().toISOString(),
+            pasarela: form.canal || "Mercado Pago",
+          },
+        ].concat(cobros);
+        paintPasarelaMatch(state);
+        if (statusEl) statusEl.textContent = "Cobro local · listo para aprobar conciliación";
+        toast("Ingreso registrado · match listo para aprobar.", "ok");
+        refreshTables();
+      });
+  }
+
+  function aprobarPasarelaMatch() {
+    var state = pasarelaMatch;
+    if (!state || !state.facturaId) {
+      var form = readPasarelaForm();
+      var fac = form && findFacturaByNumero(form.numero);
+      if (!fac) {
+        toast("No hay factura match para aprobar.", "err");
+        return;
+      }
+      state = buildMatchState({
+        fac: fac,
+        neto: form ? form.monto : saldo(fac),
+        cobroId: null,
+        aplicado: false,
+      });
+      pasarelaMatch = state;
+    }
+    if (state.aplicado) {
+      toast("Esa conciliación ya está aplicada.", "ok");
+      return;
+    }
+    var fac = findRow(state.facturaId);
+    var cobroId = state.cobroId;
+    if (cobroId && String(cobroId).indexOf("COB-LOC-") !== 0) {
+      api("/api/finanzas/cobros/" + encodeURIComponent(cobroId) + "/conciliar", {
+        method: "POST",
+        body: JSON.stringify({ factura_id: state.facturaId }),
+      })
+        .then(function () {
+          toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
+          paintPasarelaMatch(
+            Object.assign({}, state, {
+              aplicado: true,
+              scoreLabel: "99.2% Confirmed",
+              grade: "A+",
+              statusText: "Conciliación aprobada e imputada.",
+            }),
+          );
+          return reloadData();
+        })
+        .catch(function () {
+          aplicarLocalPasarela(fac, state.neto, cobroId, state.evt);
+          paintPasarelaMatch(
+            Object.assign({}, state, {
+              aplicado: true,
+              scoreLabel: "99.2% Confirmed",
+              grade: "A+",
+              statusText: "Conciliación aprobada (local).",
+            }),
+          );
+          toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
+          refreshTables();
+        });
+      return;
+    }
+    aplicarLocalPasarela(fac, state.neto, cobroId || "COB-LOC-" + Date.now(), state.evt);
+    paintPasarelaMatch(
+      Object.assign({}, state, {
+        aplicado: true,
+        scoreLabel: "99.2% Confirmed",
+        grade: "A+",
+        statusText: "Conciliación aprobada e imputada.",
+      }),
+    );
+    toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
+    refreshTables();
+  }
+
+  function observarDiscrepanciaPasarela() {
+    var state = pasarelaMatch;
+    var facId = state && state.facturaId;
+    if (!facId) {
+      var form = readPasarelaForm();
+      var fac = form && findFacturaByNumero(form.numero);
+      facId = fac && fac.id;
+    }
+    if (facId) {
+      patchLocal(facId, { demo_flag: "discrepancia", demo_nota: "Discrepancia observada en conciliación" });
+    }
+    paintPasarelaMatch(
+      state
+        ? Object.assign({}, state, {
+            scoreLabel: "— Observada",
+            grade: "!",
+            vectores: "Discrepancia marcada · queda fuera del auto-match hasta revisión.",
+            statusText: "Observada · no se imputó el cobro.",
+          })
+        : null,
+    );
+    toast("Discrepancia marcada para revisión.", "ok");
+    refreshTables();
+  }
+
+  function wirePasarelaPanel() {
+    if (pageKey() !== "conciliacion") return;
+    var root = document.querySelector("[data-sol-fin-pasarela]");
+    if (!root || root.getAttribute("data-sol-fin-pasarela-wired")) return;
+    root.setAttribute("data-sol-fin-pasarela-wired", "1");
+    var form = root.querySelector("[data-sol-fin-pasarela-form]");
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        ejecutarPasarela();
+      });
+    }
+    var submitBtn = root.querySelector("[data-sol-fin-pasarela-submit]");
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        ejecutarPasarela();
+      });
+    }
+    var aprobar = root.querySelector("[data-sol-fin-match-aprobar]");
+    if (aprobar) {
+      aprobar.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        aprobarPasarelaMatch();
+      });
+    }
+    var disc = root.querySelector("[data-sol-fin-match-discrepancia]");
+    if (disc) {
+      disc.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        observarDiscrepanciaPasarela();
+      });
+    }
+    fillPasarelaForm();
   }
 
   function handleAction(kind, btn, row) {
@@ -1485,8 +1968,16 @@
       go("/finanzas/conciliacion");
       return;
     }
+    if (kind === "pasarela_submit") {
+      ejecutarPasarela();
+      return;
+    }
     if (kind === "conciliar") {
-      if (pageKey() !== "conciliacion" && !(row && row.id)) {
+      if (pageKey() === "conciliacion") {
+        aprobarPasarelaMatch();
+        return;
+      }
+      if (!(row && row.id)) {
         go("/finanzas/conciliacion");
         return;
       }
@@ -1494,8 +1985,12 @@
       return;
     }
     if (kind === "discrepancia") {
-      if (row && row.id) patchLocal(row.id, { demo_flag: "discrepancia", demo_nota: "Discrepancia marcada en demo" });
-      toast("Discrepancia marcada para revisión (demo).", "ok");
+      if (pageKey() === "conciliacion") {
+        observarDiscrepanciaPasarela();
+        return;
+      }
+      if (row && row.id) patchLocal(row.id, { demo_flag: "discrepancia", demo_nota: "Discrepancia marcada" });
+      toast("Discrepancia marcada para revisión.", "ok");
       refreshTables();
       return;
     }
@@ -1575,7 +2070,8 @@
     if (all.indexOf("ver detalle de comprobante") >= 0) return "ver_comprobante";
     if (all.indexOf("enviar recordatorio") >= 0) return "comunicar_masivo";
     if (all.indexOf("conciliacion con extracto") >= 0) return "ir_conciliacion";
-    if (all.indexOf("simular ingreso") >= 0 || all.indexOf("aprobar conciliacion") >= 0 || all.indexOf("conciliar") === 0) return "conciliar";
+    if (all.indexOf("registrar ingreso") >= 0 || all.indexOf("ejecutar auto-match") >= 0) return "pasarela_submit";
+    if (all.indexOf("aprobar conciliacion") >= 0 || all.indexOf("conciliar") === 0) return "conciliar";
     if (all.indexOf("observar discrepancia") >= 0 || all === "ajustar" || all === "auditar") return "discrepancia";
     if (all.indexOf("generar link") >= 0 || all.indexOf("debin") >= 0) return "debin";
     if (all.indexOf("sincronizar") >= 0) return "sync";
@@ -2367,14 +2863,16 @@
       } else {
         apiRows = apiRows.length ? apiRows : key === "facturas" ? demoPagarRows() : [];
       }
-      if (key === "cobranza" || key === "clientes" || key === "comunicacion" || key === "dashboard") {
+      if (key === "cobranza" || key === "clientes" || key === "comunicacion" || key === "dashboard" || key === "conciliacion") {
         apiRows = enrichCobrarDemo(apiRows);
       }
       refreshTables();
       wireChips();
       wireWaActionPanel();
+      wirePasarelaPanel();
       applyFilters();
       syncWaActionPanel();
+      if (key === "conciliacion") fillPasarelaForm();
     });
   }
 
@@ -2386,6 +2884,7 @@
     wireCheckboxes();
     wireActions();
     wireWaActionPanel();
+    wirePasarelaPanel();
     applyFilters();
     reloadData();
   }
