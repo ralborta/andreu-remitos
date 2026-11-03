@@ -26,6 +26,19 @@
     "cobranza": "/finanzas/facturas/cobranzas",
     "conciliacion": "/finanzas/conciliacion",
     "enviar mensaje": "/finanzas/comunicacion",
+    "marketing": "/marketing",
+    "modulo de marketing": "/marketing",
+    "planificador": "/marketing/estrategia",
+    "planificador de campanas": "/marketing/estrategia",
+    "email": "/marketing/email",
+    "email marketing": "/marketing/email",
+    "contenidos": "/marketing/contenidos",
+    "promociones": "/marketing/ofertas",
+    "ofertas": "/marketing/ofertas",
+    "rankear": "/marketing/visibilidad",
+    "visibilidad": "/marketing/visibilidad",
+    "menciones": "/marketing/difusion",
+    "difusion": "/marketing/difusion",
     "configuracion": "/parametros",
   };
 
@@ -68,6 +81,7 @@
     if (label.indexOf("torre") === 0) return "/";
     if (label.indexOf("whatsapp") >= 0) return "/contactos";
     if (label.indexOf("finanza") >= 0) return "/finanzas";
+    if (label.indexOf("marketing") >= 0) return "/marketing";
     return null;
   }
 
@@ -132,6 +146,35 @@
     }
   }
 
+  function injectMarketing() {
+    if (document.querySelector('[data-sol-shell="agents"] a[href="/marketing"]')) return;
+    if (document.querySelector("[data-sol-marketing]")) return;
+    var aside = document.querySelector("aside");
+    if (aside && aside.querySelector("nav") && aside.offsetWidth > 120) {
+      var block = document.createElement("div");
+      block.setAttribute("data-sol-marketing", "1");
+      block.innerHTML =
+        '<h3 class="px-5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 mt-2">Marketing</h3>' +
+        '<nav class="space-y-0.5 px-3">' +
+        MARKETING_LINKS.map(function (item) {
+          return (
+            '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="' +
+            item.href +
+            '"><span>' +
+            item.label +
+            "</span></a>"
+          );
+        }).join("") +
+        "</nav>";
+      var fin = aside.querySelector("[data-sol-finanzas]");
+      var footer = aside.querySelector(".border-t");
+      if (fin && fin.nextSibling) aside.insertBefore(block, fin.nextSibling);
+      else if (footer && footer.parentNode === aside) aside.insertBefore(block, footer);
+      else aside.appendChild(block);
+      block.querySelectorAll("a").forEach(bind);
+    }
+  }
+
   var MENU_ICONS = {
     "gestion de viajes": "local_shipping",
     "tracking express": "share_location",
@@ -144,12 +187,19 @@
     "reclamos": "support_agent",
     "analitica": "monitoring",
     "finanzas": "account_balance",
+    "marketing": "campaign",
     "dashboard": "dashboard",
     "clientes": "corporate_fare",
     "facturas": "receipt_long",
     "cobranza": "handshake",
     "conciliacion": "balance",
     "enviar mensaje": "send",
+    "planificador": "calendar_month",
+    "email": "mail",
+    "contenidos": "newspaper",
+    "promociones": "percent",
+    "rankear": "visibility",
+    "menciones": "campaign",
   };
 
   function ensureIconFont() {
@@ -265,6 +315,7 @@
     { label: "WhatsApp", href: "/contactos", badge: "Nuevo" },
     { label: "Métricas", href: "/backoffice" },
     { label: "Finanzas", href: "/finanzas" },
+    { label: "Marketing", href: "/marketing", badge: "Nuevo" },
   ];
   var AGENT_LINKS = [
     { label: "Gestión de Viajes", href: "/agentes/viajes", icon: "local_shipping" },
@@ -278,6 +329,7 @@
     { label: "Reclamos", href: "/agentes/reclamos", icon: "support_agent" },
     { label: "Analítica", href: "/agentes/analitica", icon: "monitoring" },
     { label: "Finanzas", href: "/finanzas", icon: "account_balance", nuevo: true },
+    { label: "Marketing", href: "/marketing", icon: "campaign", nuevo: true },
   ];
   var FILE_ROUTES = {
     "torre.html": "/",
@@ -300,6 +352,14 @@
     "finanzas-cobranza.html": "/finanzas/facturas/cobranzas",
     "finanzas-conciliacion.html": "/finanzas/conciliacion",
     "finanzas-comunicacion.html": "/finanzas/comunicacion",
+    "marketing.html": "/marketing",
+    "marketing-estrategia.html": "/marketing/estrategia",
+    "marketing-email.html": "/marketing/email",
+    "marketing-contenidos.html": "/marketing/contenidos",
+    "marketing-ofertas.html": "/marketing/ofertas",
+    "marketing-visibilidad.html": "/marketing/visibilidad",
+    "marketing-difusion.html": "/marketing/difusion",
+    "marketing-resultados.html": "/marketing/resultados",
   };
 
   function here() {
@@ -312,13 +372,19 @@
 
   function isActive(href, path) {
     if (href === "/") return path === "/" || path === "";
-    // Top/Agentes "Finanzas": activo en cualquier subruta del módulo
+    // Top/Agentes "Finanzas" / "Marketing": activo en cualquier subruta del módulo
     if (href === "/finanzas") return path === "/finanzas" || path.indexOf("/finanzas/") === 0;
+    if (href === "/marketing") return path === "/marketing" || path.indexOf("/marketing/") === 0;
     return path === href;
   }
 
   function isFinanceActive(href, path) {
     if (href === "/finanzas") return path === "/finanzas" || path === "/finanzas/";
+    return path === href || path.indexOf(href + "/") === 0;
+  }
+
+  function isMarketingActive(href, path) {
+    if (href === "/marketing") return path === "/marketing" || path === "/marketing/";
     return path === href || path.indexOf(href + "/") === 0;
   }
 
@@ -329,6 +395,17 @@
     { label: "Cobranza", href: "/finanzas/facturas/cobranzas", icon: "handshake" },
     { label: "Conciliación", href: "/finanzas/conciliacion", icon: "balance" },
     { label: "Enviar Mensaje", href: "/finanzas/comunicacion", icon: "send" },
+  ];
+
+  var MARKETING_LINKS = [
+    { label: "Dashboard", href: "/marketing", icon: "dashboard" },
+    { label: "Planificador", href: "/marketing/estrategia", icon: "calendar_month" },
+    { label: "Email", href: "/marketing/email", icon: "mail" },
+    { label: "Contenidos", href: "/marketing/contenidos", icon: "newspaper" },
+    { label: "Promociones", href: "/marketing/ofertas", icon: "percent" },
+    { label: "Rankear", href: "/marketing/visibilidad", icon: "visibility" },
+    { label: "Menciones", href: "/marketing/difusion", icon: "campaign" },
+    { label: "Analítica", href: "/marketing/resultados", icon: "monitoring" },
   ];
 
   function linkHtml(item, active, agent) {
@@ -499,7 +576,9 @@
     var agents = document.querySelector('[data-sol-shell="agents"]');
     if (agents && !chrome.contains(agents)) parkAfter(agents, chrome);
     var finance = document.querySelector('[data-sol-shell="finance"]') || financeRow();
-    if (finance) {
+    var onMarketing = path === "/marketing" || path.indexOf("/marketing/") === 0;
+    var onFinanzas = path === "/finanzas" || path.indexOf("/finanzas/") === 0;
+    if (finance && onFinanzas) {
       finance.setAttribute("data-sol-shell", "finance");
       finance.className =
         "flex items-center gap-1 overflow-x-auto py-2 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200 text-xs";
@@ -510,6 +589,29 @@
         }).join("");
       finance.querySelectorAll("a").forEach(bind);
       parkAfter(finance, agents || chrome);
+    } else if (finance && onMarketing) {
+      finance.style.display = "none";
+    }
+
+    var marketing = document.querySelector('[data-sol-shell="marketing"]');
+    if (onMarketing) {
+      if (!marketing) {
+        marketing = document.createElement("div");
+        marketing.setAttribute("data-sol-shell", "marketing");
+        parkAfter(marketing, agents || chrome);
+      }
+      marketing.style.display = "";
+      marketing.className =
+        "flex items-center gap-1 overflow-x-auto py-2 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200 text-xs";
+      marketing.innerHTML =
+        '<span class="font-extrabold uppercase tracking-wider text-[10px] text-slate-400 mr-2 shrink-0">MARKETING</span>' +
+        MARKETING_LINKS.map(function (item) {
+          return linkHtml(item, isMarketingActive(item.href, path), true);
+        }).join("");
+      marketing.querySelectorAll("a").forEach(bind);
+      parkAfter(marketing, agents || chrome);
+    } else if (marketing) {
+      marketing.style.display = "none";
     }
 
     document.querySelectorAll('[data-sol-shell="top"]').forEach(function (el) {
@@ -746,6 +848,7 @@
   document.querySelectorAll("a, button").forEach(bind);
   paintShell();
   injectFinanzas();
+  injectMarketing();
   decorateMenus();
   wireHeaderSearch();
   wireNotifications();

@@ -20,6 +20,14 @@ export const STITCH_REDESIGN: Record<string, { src: string; title: string }> = {
   "/finanzas/facturas/cobranzas": { src: "/stitch/redesign/finanzas-cobranza.html", title: "Finanzas · Cobranza" },
   "/finanzas/conciliacion": { src: "/stitch/redesign/finanzas-conciliacion.html", title: "Finanzas · Conciliación" },
   "/finanzas/comunicacion": { src: "/stitch/redesign/finanzas-comunicacion.html", title: "Finanzas · Enviar mensaje" },
+  "/marketing": { src: "/stitch/redesign/marketing.html", title: "Marketing" },
+  "/marketing/estrategia": { src: "/stitch/redesign/marketing-estrategia.html", title: "Marketing · Planificador" },
+  "/marketing/email": { src: "/stitch/redesign/marketing-email.html", title: "Marketing · Email" },
+  "/marketing/contenidos": { src: "/stitch/redesign/marketing-contenidos.html", title: "Marketing · Contenidos" },
+  "/marketing/ofertas": { src: "/stitch/redesign/marketing-ofertas.html", title: "Marketing · Promociones" },
+  "/marketing/visibilidad": { src: "/stitch/redesign/marketing-visibilidad.html", title: "Marketing · Rankear" },
+  "/marketing/difusion": { src: "/stitch/redesign/marketing-difusion.html", title: "Marketing · Menciones" },
+  "/marketing/resultados": { src: "/stitch/redesign/marketing-resultados.html", title: "Marketing · Analítica" },
 };
 
 export function stitchRedesignFor(pathname: string) {

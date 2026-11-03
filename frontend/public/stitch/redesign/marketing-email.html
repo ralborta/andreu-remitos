@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SOL · Marketing — Email Marketing</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error": "#ba1a1a",
+            "on-primary": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "on-tertiary": "#ffffff",
+            "inverse-primary": "#bec6e0",
+            "outline-variant": "#c6c6cd",
+            "secondary-container": "#5bb8fe",
+            "on-secondary-fixed-variant": "#004b73",
+            "tertiary-container": "#001f28",
+            "surface-container-lowest": "#ffffff",
+            "primary-container": "#131b2e",
+            "primary-fixed-dim": "#bec6e0",
+            "on-error-container": "#93000a",
+            "surface-variant": "#d3e4fe",
+            "secondary-fixed": "#cce5ff",
+            "tertiary-fixed": "#b7eaff",
+            "on-secondary-fixed": "#001d31",
+            "tertiary-fixed-dim": "#6cd3f7",
+            "surface-container-low": "#eff4ff",
+            "surface-container-high": "#dce9ff",
+            "on-surface-variant": "#45464d",
+            "surface-dim": "#cbdbf5",
+            "on-primary-fixed": "#131b2e",
+            "on-tertiary-fixed": "#001f28",
+            "inverse-on-surface": "#eaf1ff",
+            "on-secondary": "#ffffff",
+            "on-primary-container": "#7c839b",
+            "on-background": "#0b1c30",
+            "error-container": "#ffdad6",
+            "surface-container-highest": "#d3e4fe",
+            "surface-tint": "#565e74",
+            "outline": "#76777d",
+            "on-primary-fixed-variant": "#3f465c",
+            "on-error": "#ffffff",
+            "tertiary": "#000000",
+            "inverse-surface": "#213145",
+            "primary": "#000000",
+            "surface-container": "#e5eeff",
+            "on-secondary-container": "#00476e",
+            "secondary-fixed-dim": "#93ccff",
+            "on-tertiary-container": "#028fb0",
+            "secondary": "#006398",
+            "on-tertiary-fixed-variant": "#004e61",
+            "surface": "#f8f9ff",
+            "on-surface": "#0b1c30",
+            "primary-fixed": "#dae2fd",
+            "background": "#f8f9ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin-tablet": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "margin-desktop": "2rem",
+            "gutter-desktop": "1.5rem",
+            "gutter": "1rem",
+            "space-2xs": "0.125rem",
+            "space-2xl": "2rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "code-table": ["JetBrains Mono"],
+            "label-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "metric-stat": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-lg": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+            "display-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "code-table": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "metric-stat": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #c6c6cd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col font-body-md text-on-surface bg-surface antialiased selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- chrome replaced by bridge.js -->
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant">
+<div class="h-14 px-space-xl flex items-center gap-4">
+<span class="font-headline-sm font-bold">EMPLIADOS</span>
+<nav class="hidden lg:flex gap-1 text-sm text-on-surface-variant">
+<a href="/">Torre de Control</a>
+<a href="/finanzas">Finanzas</a>
+<a href="/marketing">Marketing</a>
+</nav>
+</div>
+<div class="h-10 px-space-xl bg-surface-container-low border-t border-outline-variant flex items-center gap-2 text-sm">
+<span class="font-label-caps text-outline">AGENTES</span>
+</div>
+<!-- markers: planificador + analítica so marketingRow finds this strip -->
+<div data-sol-shell="marketing" class="px-space-xl py-2 bg-surface-container-lowest border-t border-outline-variant flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-xs overflow-x-auto custom-scroll">
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing"><span class="material-symbols-outlined text-[17px] leading-none">dashboard</span>Dashboard</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing/estrategia"><span class="material-symbols-outlined text-[17px] leading-none">calendar_month</span>Planificador</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold shadow-xs" href="/marketing/email"><span class="material-symbols-outlined text-[17px] leading-none">mail</span>Email</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing/contenidos"><span class="material-symbols-outlined text-[17px] leading-none">newspaper</span>Contenidos</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing/ofertas"><span class="material-symbols-outlined text-[17px] leading-none">percent</span>Promociones</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing/visibilidad"><span class="material-symbols-outlined text-[17px] leading-none">visibility</span>Rankear</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing/difusion"><span class="material-symbols-outlined text-[17px] leading-none">campaign</span>Menciones</a><a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="/marketing/resultados"><span class="material-symbols-outlined text-[17px] leading-none">monitoring</span>Analítica</a>
+</div>
+<div class="flex items-center gap-2 text-outline font-body-sm text-xs">
+<span class="flex items-center gap-1 font-label-md text-secondary"><span class="material-symbols-outlined text-[14px]">campaign</span><span>Motor de Marketing SOL</span></span>
+<span>·</span><span>Demo operable</span>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-[1600px] mx-auto p-space-lg md:p-space-xl space-y-space-xl">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-outline-variant pb-space-lg">
+<div class="space-y-1">
+<div class="flex items-center gap-space-md flex-wrap">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight flex items-center gap-2"><span class="material-symbols-outlined text-[28px] text-secondary">mail</span>Email Marketing</h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>En línea</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Borradores de email desde campañas. Envío real se habilita con dominio del cliente.</p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<button type="button" data-sol-mkt-action="sync" class="h-9 px-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">sync</span>Sincronizar</button>
+<button type="button" data-sol-mkt-action="nuevo" class="h-9 px-4 rounded-lg bg-primary-container hover:bg-on-background text-on-primary font-label-md text-label-md font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">add</span>Nuevo</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-outline font-bold">Campañas activas</span>
+<div class="w-9 h-9 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">campaign</span>
+</div>
+</div>
+<div class="my-3 font-code-table text-metric-stat font-bold text-on-surface tracking-tight">12</div>
+<div class="pt-2 border-t border-surface-container text-body-sm text-[12px] text-on-surface-variant">Demo SOL · datos de prueba</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-outline font-bold">Emails en borrador</span>
+<div class="w-9 h-9 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+</div>
+<div class="my-3 font-code-table text-metric-stat font-bold text-on-surface tracking-tight">8</div>
+<div class="pt-2 border-t border-surface-container text-body-sm text-[12px] text-on-surface-variant">Demo SOL · datos de prueba</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-outline font-bold">Piezas de contenido</span>
+<div class="w-9 h-9 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">newspaper</span>
+</div>
+</div>
+<div class="my-3 font-code-table text-metric-stat font-bold text-on-surface tracking-tight">24</div>
+<div class="pt-2 border-t border-surface-container text-body-sm text-[12px] text-on-surface-variant">Demo SOL · datos de prueba</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-outline font-bold">Oportunidades abiertas</span>
+<div class="w-9 h-9 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</div>
+</div>
+<div class="my-3 font-code-table text-metric-stat font-bold text-on-surface tracking-tight">17</div>
+<div class="pt-2 border-t border-surface-container text-body-sm text-[12px] text-on-surface-variant">Demo SOL · datos de prueba</div>
+</div></div>
+
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm font-bold">Cola operativa · Email Marketing</h2>
+<span class="font-label-caps text-label-caps text-outline">DEMO</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container text-[11px] uppercase tracking-wider text-on-surface-variant">
+<tr><th class="px-4 py-2">Ítem</th><th class="px-4 py-2">Origen</th><th class="px-4 py-2 text-center">Estado</th><th class="px-4 py-2 text-right">Acción</th></tr>
+</thead>
+<tbody class="divide-y divide-outline-variant" data-sol-mkt-table><tr class="hover:bg-surface-container-low/60" data-sol-mkt-id="demo-1">
+<td class="px-4 py-3 font-semibold text-sm">Camp. Visibilidad IA</td>
+<td class="px-4 py-3 text-sm text-on-surface-variant">Rankear</td>
+<td class="px-4 py-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant bg-surface-container">proposed</span></td>
+<td class="px-4 py-3 text-right"><button type="button" class="px-2.5 py-1 rounded bg-primary-container text-on-primary text-xs font-semibold">Abrir</button></td>
+</tr><tr class="hover:bg-surface-container-low/60" data-sol-mkt-id="demo-2">
+<td class="px-4 py-3 font-semibold text-sm">Promo verano fletes</td>
+<td class="px-4 py-3 text-sm text-on-surface-variant">Promociones</td>
+<td class="px-4 py-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant bg-surface-container">active</span></td>
+<td class="px-4 py-3 text-right"><button type="button" class="px-2.5 py-1 rounded bg-primary-container text-on-primary text-xs font-semibold">Abrir</button></td>
+</tr><tr class="hover:bg-surface-container-low/60" data-sol-mkt-id="demo-3">
+<td class="px-4 py-3 font-semibold text-sm">Newsletter reactivación</td>
+<td class="px-4 py-3 text-sm text-on-surface-variant">Email</td>
+<td class="px-4 py-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant bg-surface-container">draft</span></td>
+<td class="px-4 py-3 text-right"><button type="button" class="px-2.5 py-1 rounded bg-primary-container text-on-primary text-xs font-semibold">Abrir</button></td>
+</tr><tr class="hover:bg-surface-container-low/60" data-sol-mkt-id="demo-4">
+<td class="px-4 py-3 font-semibold text-sm">Artículo: logística Cuyo</td>
+<td class="px-4 py-3 text-sm text-on-surface-variant">Contenidos</td>
+<td class="px-4 py-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant bg-surface-container">published</span></td>
+<td class="px-4 py-3 text-right"><button type="button" class="px-2.5 py-1 rounded bg-primary-container text-on-primary text-xs font-semibold">Abrir</button></td>
+</tr></tbody>
+</table>
+</div>
+</section>
+</main>
+<div class="px-4 sm:px-6 lg:px-8 pb-8 max-w-[1720px] mx-auto w-full"><div data-sol-desk-chat data-agent-id="marketing" data-label="Marketing" data-subtitle="Consulto campañas y agentes de marketing." data-suggestions="Resumen de campañas|Oportunidades Rankear|Emails en borrador" data-mode="local" data-icon="campaign"></div></div>
+<script src="/stitch/redesign/marketing-live.js"></script>
+<script src="/stitch/redesign/bridge.js"></script>
+</body></html>

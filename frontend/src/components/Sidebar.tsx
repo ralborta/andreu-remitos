@@ -21,6 +21,7 @@ import {
   LogOut,
   Truck,
   Wallet,
+  Megaphone,
 } from "lucide-react";
 import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
 import { REMITO_TENANTS } from "@/lib/tenants";
@@ -62,6 +63,8 @@ export function Sidebar({
   const [remitosExpanded, setRemitosExpanded] = useState(remitosSectionOpen);
   const finanzasSectionOpen = pathname === "/finanzas" || pathname.startsWith("/finanzas/");
   const [finanzasExpanded, setFinanzasExpanded] = useState(finanzasSectionOpen);
+  const marketingSectionOpen = pathname === "/marketing" || pathname.startsWith("/marketing/");
+  const [marketingExpanded, setMarketingExpanded] = useState(marketingSectionOpen);
   const activeTenants = REMITO_TENANTS.filter((t) => t.active);
 
   useEffect(() => {
@@ -71,6 +74,10 @@ export function Sidebar({
   useEffect(() => {
     if (finanzasSectionOpen) setFinanzasExpanded(true);
   }, [finanzasSectionOpen]);
+
+  useEffect(() => {
+    if (marketingSectionOpen) setMarketingExpanded(true);
+  }, [marketingSectionOpen]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -286,6 +293,58 @@ export function Sidebar({
                   ["/finanzas/comunicacion", "Enviar Mensaje"],
                 ].map(([href, label]) => {
                   const active = href === "/finanzas" ? pathname === "/finanzas" : pathname.startsWith(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={onClose}
+                      className={clsx(
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                        active
+                          ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
+                          : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+            Marketing
+          </p>
+          <div className="mb-0.5">
+            <button
+              type="button"
+              onClick={() => setMarketingExpanded((v) => !v)}
+              className={clsx(navClass(marketingSectionOpen), "w-full")}
+            >
+              <Megaphone size={18} />
+              <span className="flex-1 text-left">Módulo de Marketing</span>
+              <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
+                Nuevo
+              </span>
+              <ChevronDown
+                size={14}
+                className={clsx("shrink-0 transition-transform", marketingExpanded && "rotate-180")}
+              />
+            </button>
+            {marketingExpanded && (
+              <div className="ml-4 mt-0.5 border-l border-[var(--border)] pl-2">
+                {[
+                  ["/marketing", "Dashboard"],
+                  ["/marketing/estrategia", "Planificador"],
+                  ["/marketing/email", "Email"],
+                  ["/marketing/contenidos", "Contenidos"],
+                  ["/marketing/ofertas", "Promociones"],
+                  ["/marketing/visibilidad", "Rankear"],
+                  ["/marketing/difusion", "Menciones"],
+                  ["/marketing/resultados", "Analítica"],
+                ].map(([href, label]) => {
+                  const active = href === "/marketing" ? pathname === "/marketing" : pathname.startsWith(href);
                   return (
                     <Link
                       key={href}
