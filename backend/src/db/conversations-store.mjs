@@ -299,3 +299,18 @@ export async function setCorinaClienteMarca(telefono, marca) {
   writeAll(rows);
   return conv;
 }
+
+/**
+ * Cambia el servicio/tenant de la conversación (ej. salió de Corina → Beraldi)
+ * y limpia la marca Cervecería/Eco.
+ */
+export async function setTenantServicioConversacion(telefono, tenant) {
+  if (!telefono || !tenant) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, tenant);
+  conv.tenant = tenant;
+  delete conv.corina_cliente_marca;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}

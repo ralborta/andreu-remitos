@@ -9,6 +9,8 @@ import {
   mensajeCorinaListoParaFoto,
   mensajeCorinaFaltaCliente,
   parseClienteMarcaCorina,
+  parseTenantServicioAlternativo,
+  etiquetaTenantRemito,
   mensajeWhatsApp,
   normalizeBuilderBotPayload,
   resolveTenant,
@@ -309,6 +311,17 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
       const msg = mensajeCorinaListoParaFoto(marcaParseada);
       if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
       return respuestaWebhook({ message: msg, flow: "corina_cliente_ok", cliente_marca: marcaParseada });
+    }
+    // Chofer pegado en Corina pero el viaje es Beraldi/TSB/MYE (ej. respondió "Beraldi")
+    const tenantAlt = parseTenantServicioAlternativo(texto);
+    if (tenantAlt) {
+      await convStore.setTenantServicioConversacion(phone, tenantAlt);
+      const label = etiquetaTenantRemito(tenantAlt);
+      const msg =
+        `Perfecto — servicio *${label}*.\n\n` +
+        `Ahora mandame una *foto clara* del remito ${label}.`;
+      if (!pausado) await notificarChofer(phone, msg, { tenant: tenantAlt, log });
+      return respuestaWebhook({ message: msg, flow: "servicio_alternativo_ok", tenant: tenantAlt });
     }
     if (!conv?.corina_cliente_marca) {
       const msg = mensajeSaludo("corina", choferRemitos?.nombre);
@@ -1091,11 +1104,9 @@ async function runLegacyRemitosIngest(request, ev, tenantCfg) {
   const pausado = !!convFoto?.bot_pausado;
   const tenantFoto = tenantCfg ?? convFoto?.tenant;
 
-  if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
-    const msg = mensajeCorinaFaltaCliente();
-    if (!pausado) await notificarChofer(ev.from, msg, { tenant: "corina", log: request.log });
-    return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
-  }
+  // Solo forzar Corina si el chofer ya eligió Cervecería/Eco.
+  // Si quedó pegado en Corina pero manda papel Beraldi/TSB/MYE, el OCR manda.
+  const forzarCorina = tenantFoto === "corina" && Boolean(convFoto?.corina_cliente_marca);
 
   if (ev.from && !pausado) {
     await notificarChofer(ev.from, mensajeProcesandoRemito(), {
@@ -1107,13 +1118,19 @@ async function runLegacyRemitosIngest(request, ev, tenantCfg) {
   const resultado = await ingestarRemito(buffer, {
     filename,
     telefono,
-    tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
+    tenantForzado: forzarCorina ? "corina" : undefined,
     tenantSugerido: tenantFoto ?? tenantCfg ?? undefined,
-    corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
+    corinaClienteMarca: forzarCorina ? convFoto.corina_cliente_marca : undefined,
   });
 
   if (ev.from && resultado.id) {
     await convStore.setUltimoRemito(ev.from, resultado.id, resultado.tenant);
+    if (resultado.tenant && resultado.tenant !== "corina") {
+      await convStore.setTenantServicioConversacion(ev.from, resultado.tenant);
+    } else if (resultado.tenant === "corina" && !convFoto?.corina_cliente_marca && !pausado) {
+      const hint = mensajeCorinaFaltaCliente();
+      await notificarChofer(ev.from, hint, { tenant: "corina", log: request.log });
+    }
   }
 
   const message = mensajeWhatsApp(resultado);
@@ -1908,12 +1925,9 @@ export default async function webhooksRoutes(fastify) {
         const pausado = !!convFoto?.bot_pausado;
         const tenantFoto = tenantCfg ?? convFoto?.tenant;
 
-        // Corina: exigir Cervecería / Eco antes de OCR
-        if (tenantFoto === "corina" && ev.from && !convFoto?.corina_cliente_marca) {
-          const msg = mensajeCorinaFaltaCliente();
-          if (!pausado) await notificarChofer(ev.from, msg, { tenant: "corina", log: request.log });
-          return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
-        }
+        // Solo forzar Corina si el chofer ya eligió Cervecería/Eco.
+        // Si quedó pegado en Corina pero manda papel Beraldi/TSB/MYE, el OCR manda.
+        const forzarCorina = tenantFoto === "corina" && Boolean(convFoto?.corina_cliente_marca);
 
         if (ev.from && !pausado) {
           await notificarChofer(ev.from, mensajeProcesandoRemito(), {
@@ -1922,18 +1936,22 @@ export default async function webhooksRoutes(fastify) {
           });
         }
 
-        // No forzar TSB/Beraldi/M&E por conversación previa: el papel manda.
-        // Solo Corina se fuerza (flujo de marca de cliente).
         const resultado = await ingestarRemito(buffer, {
           filename,
           telefono,
-          tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
+          tenantForzado: forzarCorina ? "corina" : undefined,
           tenantSugerido: tenantFoto ?? tenantCfg ?? undefined,
-          corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
+          corinaClienteMarca: forzarCorina ? convFoto.corina_cliente_marca : undefined,
         });
 
         if (ev.from && resultado.id) {
           await convStore.setUltimoRemito(ev.from, resultado.id, resultado.tenant);
+          if (resultado.tenant && resultado.tenant !== "corina") {
+            await convStore.setTenantServicioConversacion(ev.from, resultado.tenant);
+          } else if (resultado.tenant === "corina" && !convFoto?.corina_cliente_marca && !pausado) {
+            const hint = mensajeCorinaFaltaCliente();
+            await notificarChofer(ev.from, hint, { tenant: "corina", log: request.log });
+          }
         }
 
         const message = mensajeWhatsApp(resultado);
