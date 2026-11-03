@@ -26,6 +26,7 @@ import vincularRoutes from "./routes/vincular.mjs";
 import configRoutes from "./routes/config.mjs";
 import trackingRoutes from "./routes/tracking.mjs";
 import finanzasRoutes from "./routes/finanzas.mjs";
+import marketingRoutes from "./routes/marketing.mjs";
 import { registerAuthGuard } from "./plugins/auth-guard.mjs";
 import { ensureSeedAdmin } from "./db/users-store.mjs";
 import { startSeguimientoIncidencias } from "./services/incidencias-agent.mjs";
@@ -72,6 +73,7 @@ await app.register(vincularRoutes, { prefix: "/api/vincular" });
 await app.register(configRoutes, { prefix: "/api/config" });
 await app.register(trackingRoutes, { prefix: "/api/tracking" });
 await app.register(finanzasRoutes, { prefix: "/api/finanzas" });
+await app.register(marketingRoutes, { prefix: "/api/marketing" });
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const host = process.env.HOST || "0.0.0.0";
