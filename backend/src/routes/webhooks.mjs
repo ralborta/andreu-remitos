@@ -9,6 +9,8 @@ import {
   mensajeCorinaListoParaFoto,
   mensajeCorinaFaltaCliente,
   parseClienteMarcaCorina,
+  parseTenantServicioAlternativo,
+  etiquetaTenantRemito,
   mensajeWhatsApp,
   normalizeBuilderBotPayload,
   resolveTenant,
@@ -250,6 +252,17 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
       const msg = mensajeCorinaListoParaFoto(marcaParseada);
       if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
       return respuestaWebhook({ message: msg, flow: "corina_cliente_ok", cliente_marca: marcaParseada });
+    }
+    // Chofer pegado en Corina pero el viaje es Beraldi/TSB/MYE (ej. respondió "Beraldi")
+    const tenantAlt = parseTenantServicioAlternativo(texto);
+    if (tenantAlt) {
+      await convStore.setTenantServicioConversacion(phone, tenantAlt);
+      const label = etiquetaTenantRemito(tenantAlt);
+      const msg =
+        `Perfecto — servicio *${label}*.\n\n` +
+        `Ahora mandame una *foto clara* del remito ${label}.`;
+      if (!pausado) await notificarChofer(phone, msg, { tenant: tenantAlt, log });
+      return respuestaWebhook({ message: msg, flow: "servicio_alternativo_ok", tenant: tenantAlt });
     }
     if (!conv?.corina_cliente_marca) {
       const chofer = await master.resolverChoferPorTelefono(phone);
@@ -551,11 +564,9 @@ async function procesarBufferComoRemito(ev, buffer, filename, tenantCfg, log) {
   const pausado = !!convFoto?.bot_pausado;
   const tenantFoto = tenantCfg ?? convFoto?.tenant;
 
-  if (tenantFoto === "corina" && telefono && !convFoto?.corina_cliente_marca) {
-    const msg = mensajeCorinaFaltaCliente();
-    if (!pausado) await notificarChofer(telefono, msg, { tenant: "corina", log });
-    return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
-  }
+  // Solo forzar Corina si el chofer ya eligió Cervecería/Eco.
+  // Si quedó pegado en Corina pero manda papel Beraldi/TSB/MYE, el OCR manda.
+  const forzarCorina = tenantFoto === "corina" && Boolean(convFoto?.corina_cliente_marca);
 
   if (telefono && !pausado) {
     await notificarChofer(telefono, mensajeProcesandoRemito(), {
@@ -569,9 +580,9 @@ async function procesarBufferComoRemito(ev, buffer, filename, tenantCfg, log) {
   const resultado = await ingestarRemito(buffer, {
     filename,
     telefono,
-    tenantForzado: tenantFoto === "corina" ? "corina" : undefined,
+    tenantForzado: forzarCorina ? "corina" : undefined,
     tenantSugerido: sugerido,
-    corinaClienteMarca: convFoto?.corina_cliente_marca ?? undefined,
+    corinaClienteMarca: forzarCorina ? convFoto.corina_cliente_marca : undefined,
   });
 
   if (telefono) {
@@ -581,6 +592,12 @@ async function procesarBufferComoRemito(ev, buffer, filename, tenantCfg, log) {
 
   if (telefono && resultado.id) {
     await convStore.setUltimoRemito(telefono, resultado.id, resultado.tenant);
+    if (resultado.tenant && resultado.tenant !== "corina") {
+      await convStore.setTenantServicioConversacion(telefono, resultado.tenant);
+    } else if (resultado.tenant === "corina" && !convFoto?.corina_cliente_marca && !pausado) {
+      const hint = mensajeCorinaFaltaCliente();
+      await notificarChofer(telefono, hint, { tenant: "corina", log });
+    }
   }
 
   const message = mensajeWhatsApp(resultado);

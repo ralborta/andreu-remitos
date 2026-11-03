@@ -283,6 +283,21 @@ export async function setCorinaClienteMarca(telefono, marca) {
   return conv;
 }
 
+/**
+ * Cambia el servicio/tenant de la conversación (ej. salió de Corina → Beraldi)
+ * y limpia la marca Cervecería/Eco.
+ */
+export async function setTenantServicioConversacion(telefono, tenant) {
+  if (!telefono || !tenant) return null;
+  const rows = readAll();
+  const conv = findOrCreate(rows, telefono, tenant);
+  conv.tenant = tenant;
+  delete conv.corina_cliente_marca;
+  conv.updated_at = new Date().toISOString();
+  writeAll(rows);
+  return conv;
+}
+
 /** Esperando que el chofer confirme el nº de viaje leído en la hoja de ruta. */
 export async function setHojaNumeroPendiente(telefono, payload) {
   if (!telefono) return null;
