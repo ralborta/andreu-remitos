@@ -47,9 +47,9 @@ function LoginForm() {
 
         <form
           onSubmit={onSubmit}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--bg-2)]/80 p-6 shadow-xl backdrop-blur"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--panel)]/95 p-6 shadow-xl backdrop-blur"
         >
-          <h1 className="mb-1 text-lg font-semibold text-white">Iniciar sesión</h1>
+          <h1 className="mb-1 text-lg font-semibold text-[var(--text)]">Iniciar sesión</h1>
           <p className="mb-5 text-xs text-[var(--text-faint)]">
             Perfiles: operador, supervisor y administrador
           </p>
@@ -61,7 +61,7 @@ function LoginForm() {
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="surface-dark mt-1 w-full rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+              className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--text)] outline-none transition-all focus:border-[var(--violet)] focus:ring-2 focus:ring-[var(--violet)]/20"
               placeholder="admin"
             />
           </label>
@@ -73,7 +73,7 @@ function LoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="surface-dark mt-1 w-full rounded-xl border border-[var(--border)] bg-[#2a3942] px-3 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-[var(--violet)]"
+              className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm text-[var(--text)] outline-none transition-all focus:border-[var(--violet)] focus:ring-2 focus:ring-[var(--violet)]/20"
             />
           </label>
 

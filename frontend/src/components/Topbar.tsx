@@ -19,13 +19,46 @@ function applyTheme(theme: "light" | "dark") {
   localStorage.setItem(THEME_KEY, theme);
 }
 
+interface SystemStatus {
+  ok: boolean;
+  services: {
+    whatsapp: {
+      ok: boolean;
+      status: string;
+    };
+    api: {
+      ok: boolean;
+    };
+    bot: {
+      ok: boolean;
+    };
+  };
+}
+
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
 
   useEffect(() => {
     const t = readTheme();
     setTheme(t);
     applyTheme(t);
+    
+    async function fetchStatus() {
+      try {
+        const res = await fetch("/api/monitor/status");
+        if (res.ok) {
+          const data = await res.json();
+          setSystemStatus(data);
+        }
+      } catch (err) {
+        console.error("Error fetching system status:", err);
+      }
+    }
+    
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   function toggleTheme() {
@@ -55,13 +88,37 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </div>
 
       <div className="ml-auto flex shrink-0 items-center justify-end gap-3">
-        <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">
-          <span className="relative flex h-2 w-2">
-            <span className="dot-pulse absolute inline-flex h-2 w-2 rounded-full bg-[var(--green)]" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--green)]" />
-          </span>
-          <span className="text-xs font-medium text-[var(--text-dim)]">Sistemas activos</span>
-        </div>
+        {systemStatus && (
+          <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">
+            <span className="relative flex h-2 w-2">
+              <span
+                className={`dot-pulse absolute inline-flex h-2 w-2 rounded-full ${
+                  systemStatus.ok
+                    ? "bg-[var(--green)]"
+                    : systemStatus.services?.whatsapp?.ok
+                    ? "bg-[var(--yellow)]"
+                    : "bg-[var(--red)]"
+                }`}
+              />
+              <span
+                className={`relative inline-flex h-2 w-2 rounded-full ${
+                  systemStatus.ok
+                    ? "bg-[var(--green)]"
+                    : systemStatus.services?.whatsapp?.ok
+                    ? "bg-[var(--yellow)]"
+                    : "bg-[var(--red)]"
+                }`}
+              />
+            </span>
+            <span className="text-xs font-medium text-[var(--text-dim)]">
+              {systemStatus.ok
+                ? "Sistemas activos"
+                : systemStatus.services?.whatsapp?.ok
+                ? "Sistema degradado"
+                : "Sistema caído"}
+            </span>
+          </div>
+        )}
 
         <button
           type="button"
