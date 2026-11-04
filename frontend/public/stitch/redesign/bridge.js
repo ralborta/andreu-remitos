@@ -980,6 +980,7 @@
     paintSystemStatus();
   }
 
+  // Execute immediately
   document.querySelectorAll("a, button").forEach(bind);
   paintShell();
   injectFinanzas();
@@ -988,6 +989,12 @@
   wireHeaderSearch();
   wireNotifications();
   installUserMenu(document);
-  document.addEventListener("DOMContentLoaded", paintShell);
+  
+  // Also run on DOMContentLoaded to catch late-loading pages
+  document.addEventListener("DOMContentLoaded", function() {
+    paintShell();
+    // Re-run system status check after a short delay to ensure header is rendered
+    setTimeout(paintSystemStatus, 500);
+  });
 })();
 
