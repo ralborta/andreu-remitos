@@ -279,7 +279,16 @@
       cuerpo += '<p class="text-xs">Nota de voz</p>';
       if (msg.transcripcion) cuerpo += '<p class="text-xs leading-relaxed">' + linkify(msg.transcripcion) + "</p>";
     }
-    if (msg.texto && msg.tipo !== "audio") cuerpo += '<p class="text-xs leading-relaxed">' + linkify(msg.texto) + "</p>";
+    // Filter out JavaScript errors from message text (Bug #11)
+    var texto = msg.texto || "";
+    var isJsError = /Cannot read propert|TypeError:|ReferenceError:|undefined is not|null is not/i.test(texto);
+    if (texto && msg.tipo !== "audio" && !isJsError) {
+      cuerpo += '<p class="text-xs leading-relaxed">' + linkify(texto) + "</p>";
+    } else if (isJsError) {
+      // Log error for debugging but show user-friendly message
+      console.error("WhatsApp message contains JS error:", texto);
+      cuerpo += '<p class="text-xs text-rose-600">⚠ Error procesando mensaje</p>';
+    }
     var hora = '<div class="flex items-center justify-end gap-1 text-[11px] text-slate-400 pt-0.5"><span>' + esc(horaMensaje(msg.at)) + "</span>";
     if (!incoming) hora += '<i class="fa-solid fa-check-double text-[11px] text-blue-500"></i>';
     hora += "</div>";
