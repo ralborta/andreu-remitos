@@ -434,14 +434,14 @@ async function tryProcesarViajes(ev, { texto, log, conv, forzar = false } = {}) 
       received: true,
     };
   } catch (err) {
-    log?.warn?.({ err: err.message, from: ev.from }, "viajes webhook error");
+    log?.error?.({ err: err.message, stack: err.stack, from: ev.from }, "viajes webhook error");
     const msg =
-      `Recibí tu mensaje de viaje pero tuve un problema: ${err.message}\n\n` +
+      `Recibí tu mensaje de viaje pero tuve un problema al procesarlo.\n\n` +
       `Probá de nuevo o pedí a tráfico que lo cargue.`;
     if (ev.from) {
       await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
     }
-    return { flow: "viajes_error", error: err.message, message: msg };
+    return { flow: "viajes_error", error: "Error interno", message: msg };
   }
 }
 
@@ -529,10 +529,10 @@ async function tryProcesarRendicion(ev, { texto, log, imageBuffer, mime, forzar 
     if (!out) return null;
     return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
   } catch (err) {
-    log?.warn?.({ err: err.message, from: ev.from }, "rendicion webhook error");
-    const msg = `Recibí tu gasto pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    log?.error?.({ err: err.message, stack: err.stack, from: ev.from }, "rendicion webhook error");
+    const msg = `Recibí tu gasto pero tuve un problema al procesarlo. Probá de nuevo.`;
     if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
-    return { flow: "rendicion_error", error: err.message, message: msg };
+    return { flow: "rendicion_error", error: "Error interno", message: msg };
   }
 }
 
@@ -587,10 +587,10 @@ async function tryProcesarPod(ev, { texto, log, imageBuffer, mime, forzar = fals
     if (!out) return null;
     return { ...out, message: out.message ?? out.mensaje ?? "", received: true };
   } catch (err) {
-    log?.warn?.({ err: err.message, from: ev.from }, "pod webhook error");
-    const msg = `Recibí tu POD pero tuve un problema: ${err.message}. Probá de nuevo.`;
+    log?.error?.({ err: err.message, stack: err.stack, from: ev.from }, "pod webhook error");
+    const msg = `Recibí tu POD pero tuve un problema al procesarlo. Probá de nuevo.`;
     if (ev.from) await notificarChofer(ev.from, msg, { log, tenant: null }).catch(() => {});
-    return { flow: "pod_error", error: err.message, message: msg };
+    return { flow: "pod_error", error: "Error interno", message: msg };
   }
 }
 

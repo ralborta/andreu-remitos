@@ -138,10 +138,12 @@
   function textoUltimo(row) {
     var u = row.ultimo_mensaje;
     if (!u) return "Sin mensajes";
-    if (u.tipo === "image") return u.texto || "Foto";
-    if (u.tipo === "audio") return u.texto || u.transcripcion || "Nota de voz";
+    var texto = u.texto || "";
+    var isJsError = /Cannot read propert|TypeError|ReferenceError|undefined is not|null is not|reading ['"]|Prob\.\.\.|Error:/i.test(texto);
+    if (u.tipo === "image") return isJsError ? "⚠ Error procesando" : (texto || "Foto");
+    if (u.tipo === "audio") return isJsError ? "⚠ Error procesando" : (texto || u.transcripcion || "Nota de voz");
     if (u.tipo === "note") return "Nota interna";
-    return u.texto || "Mensaje";
+    return isJsError ? "⚠ Error procesando" : (texto || "Mensaje");
   }
   function mediaUrl(url) {
     if (!url) return "";
