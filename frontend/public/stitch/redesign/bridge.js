@@ -43,10 +43,45 @@
   };
 
   function go(href) {
+    // Try postMessage for client-side navigation first (no page reload)
+    var navigated = false;
+    
     try {
-      window.top.location.href = href;
+      // Send navigation request to parent Next.js shell
+      window.parent.postMessage({
+        type: 'stitch-navigate',
+        href: href
+      }, '*');
+      
+      // Wait for ack from parent
+      var timeout = setTimeout(function() {
+        if (!navigated) {
+          // Fallback: full page reload if parent doesn't respond
+          try {
+            window.top.location.href = href;
+          } catch (e) {
+            window.location.href = href;
+          }
+        }
+      }, 150);
+      
+      // Listen for ack
+      var ackListener = function(event) {
+        if (event.data && event.data.type === 'stitch-navigate-ack') {
+          navigated = true;
+          clearTimeout(timeout);
+          window.removeEventListener('message', ackListener);
+        }
+      };
+      window.addEventListener('message', ackListener);
+      
     } catch (e) {
-      window.location.href = href;
+      // Fallback on any error
+      try {
+        window.top.location.href = href;
+      } catch (e2) {
+        window.location.href = href;
+      }
     }
   }
 
@@ -209,7 +244,7 @@
     });
     var face = document.createElement("link");
     face.rel = "stylesheet";
-    face.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block";
+    face.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block";
     document.head.appendChild(face);
     var style = document.createElement("style");
     style.id = "sol-icon-style";
