@@ -88,37 +88,35 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </div>
 
       <div className="ml-auto flex shrink-0 items-center justify-end gap-3">
-        {systemStatus && (
-          <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">
-            <span className="relative flex h-2 w-2">
-              <span
-                className={`dot-pulse absolute inline-flex h-2 w-2 rounded-full ${
-                  systemStatus.ok
-                    ? "bg-[var(--green)]"
-                    : systemStatus.services?.whatsapp?.ok
-                    ? "bg-[var(--yellow)]"
-                    : "bg-[var(--red)]"
-                }`}
-              />
-              <span
-                className={`relative inline-flex h-2 w-2 rounded-full ${
-                  systemStatus.ok
-                    ? "bg-[var(--green)]"
-                    : systemStatus.services?.whatsapp?.ok
-                    ? "bg-[var(--yellow)]"
-                    : "bg-[var(--red)]"
-                }`}
-              />
-            </span>
-            <span className="text-xs font-medium text-[var(--text-dim)]">
-              {systemStatus.ok
-                ? "Sistemas activos"
-                : systemStatus.services?.whatsapp?.ok
-                ? "Sistema degradado"
-                : "Sistema caído"}
-            </span>
-          </div>
-        )}
+        {systemStatus && (() => {
+          const waOk = systemStatus.services?.whatsapp?.ok ?? false;
+          const apiOk = systemStatus.services?.api?.ok ?? true;
+          const allOk = systemStatus.ok && waOk && apiOk;
+          
+          const statusColor = allOk 
+            ? "bg-emerald-500" 
+            : waOk 
+            ? "bg-amber-500" 
+            : "bg-rose-500";
+            
+          const statusText = allOk
+            ? "Sistemas activos"
+            : !waOk
+            ? "WhatsApp caído"
+            : "Servicios degradados";
+          
+          return (
+            <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-3 py-1.5 sm:flex">
+              <span className="relative flex h-2 w-2">
+                <span className={`dot-pulse absolute inline-flex h-2 w-2 rounded-full ${statusColor}`} />
+                <span className={`relative inline-flex h-2 w-2 rounded-full ${statusColor}`} />
+              </span>
+              <span className="text-xs font-medium text-[var(--text-dim)]">
+                {statusText}
+              </span>
+            </div>
+          );
+        })()}
 
         <button
           type="button"
