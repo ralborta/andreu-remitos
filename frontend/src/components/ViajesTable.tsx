@@ -80,7 +80,19 @@ export function ViajesTable() {
         </span>
       ),
     },
-    { key: "carga", header: "Carga", className: "text-[var(--text-dim)]" },
+    { 
+      key: "carga", 
+      header: "Carga", 
+      className: "text-[var(--text-dim)]",
+      render: (t) => {
+        // Format numbers with proper locale formatting to avoid float artifacts
+        const cargaFormatted = t.carga.replace(/(\d+\.?\d*)\s*t/, (match, num) => {
+          const numValue = parseFloat(num);
+          return `${numValue.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} t`;
+        });
+        return <span>{cargaFormatted}</span>;
+      }
+    },
     { key: "chofer", header: "Chofer", className: "text-[var(--text-dim)]" },
     { key: "patente", header: "Unidad", className: "text-[var(--text-dim)]" },
     {
