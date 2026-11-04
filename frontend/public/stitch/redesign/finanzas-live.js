@@ -1367,20 +1367,53 @@
       toast("Seleccioná al menos una factura.", "err");
       return;
     }
-    ids.forEach(function (id) {
-      patchLocal(id, {
-        demo_comunicada: true,
-        demo_comunicada_at: new Date().toLocaleString("es-AR"),
-        demo_nota: "Recordatorio WhatsApp enviado (canal SOL)",
-      });
-      api("/api/finanzas/facturas/" + encodeURIComponent(id) + "/comunicar", {
-        method: "POST",
-        body: JSON.stringify({ canal: "whatsapp", mensaje: "" }),
-      }).catch(function () {});
+
+    var facturaText = ids.length === 1 ? "1 factura" : ids.length + " facturas";
+    var clientesPreview = ids
+      .slice(0, 3)
+      .map(function (id) {
+        var row = localOf({ id: id });
+        return row && row.razon_social ? row.razon_social : "Factura " + id;
+      })
+      .join(", ");
+    if (ids.length > 3) clientesPreview += "...";
+
+    if (!window.SOL_MODAL || !window.SOL_MODAL.confirm) {
+      console.warn("SOL_MODAL no disponible, ejecutando sin confirmación");
+      ejecutarComunicar();
+      return;
+    }
+
+    window.SOL_MODAL.confirm({
+      title: "Confirmar envío de recordatorio WhatsApp",
+      message:
+        "Se enviará un recordatorio de pago por WhatsApp a " +
+        facturaText +
+        ":\n\n" +
+        clientesPreview +
+        "\n\n¿Confirmar envío?",
+      confirmText: "Enviar WhatsApp",
+      cancelText: "Cancelar",
+      confirmClass: "bg-emerald-700 text-white hover:bg-emerald-800",
+      onConfirm: ejecutarComunicar,
     });
-    toast("Recordatorio WhatsApp registrado en " + ids.length + " factura(s).", "ok");
-    refreshTables();
-    syncWaActionPanel();
+
+    function ejecutarComunicar() {
+      ids.forEach(function (id) {
+        patchLocal(id, {
+          demo_comunicada: true,
+          demo_comunicada_at: new Date().toLocaleString("es-AR"),
+          demo_nota: "Recordatorio WhatsApp enviado (canal SOL)",
+        });
+        api("/api/finanzas/facturas/" + encodeURIComponent(id) + "/comunicar", {
+          method: "POST",
+          body: JSON.stringify({ canal: "whatsapp", mensaje: "" }),
+        }).catch(function () {});
+      });
+      toast("Recordatorio WhatsApp registrado en " + ids.length + " factura(s).", "ok");
+      refreshTables();
+      syncWaActionPanel();
+    }
   }
 
   function demoCobrar(row) {
@@ -1394,30 +1427,62 @@
       return;
     }
     var apply = Math.max(1, Math.round(s));
-    patchLocal(row.id, {
-      monto_aplicado: Number(row.monto_aplicado || 0) + apply,
-      demo_pagada: true,
-      estado: "saldada",
-      demo_nota: "Cobro demo imputado " + money(apply),
+    var cliente = row.razon_social || row.cliente || "Cliente";
+    var numeroFactura = row.numero || row.id;
+
+    if (!window.SOL_MODAL || !window.SOL_MODAL.confirm) {
+      console.warn("SOL_MODAL no disponible, ejecutando sin confirmación");
+      ejecutarCobro();
+      return;
+    }
+
+    window.SOL_MODAL.confirm({
+      title: "Confirmar cobro de factura",
+      message:
+        "¿Registrar cobro de " +
+        money(apply) +
+        "?\n\n" +
+        "Factura: " +
+        numeroFactura +
+        "\n" +
+        "Cliente: " +
+        cliente +
+        "\n" +
+        "Saldo pendiente: " +
+        money(s) +
+        "\n\nEsta acción registrará el cobro en la pasarela de pagos.",
+      confirmText: "Confirmar cobro",
+      cancelText: "Cancelar",
+      confirmClass: "bg-emerald-700 text-white hover:bg-emerald-800",
+      onConfirm: ejecutarCobro,
     });
-    // intentar pasarela demo
-    api("/api/finanzas/pasarela", {
-      method: "POST",
-      body: JSON.stringify({
-        monto: apply,
-        numero_factura: row.numero,
-        cuit: row.cuit || row.cuit_emisor,
-        external_ref: "demo-" + row.id + "-" + Date.now(),
-      }),
-    })
-      .then(function () {
-        toast("Cobro demo registrado e imputado a " + (row.numero || row.id) + ".", "ok");
-        return reloadData();
-      })
-      .catch(function () {
-        toast("Cobro demo local en " + (row.numero || row.id) + " (API pasarela no disponible).", "ok");
-        refreshTables();
+
+    function ejecutarCobro() {
+      patchLocal(row.id, {
+        monto_aplicado: Number(row.monto_aplicado || 0) + apply,
+        demo_pagada: true,
+        estado: "saldada",
+        demo_nota: "Cobro demo imputado " + money(apply),
       });
+      // intentar pasarela demo
+      api("/api/finanzas/pasarela", {
+        method: "POST",
+        body: JSON.stringify({
+          monto: apply,
+          numero_factura: row.numero,
+          cuit: row.cuit || row.cuit_emisor,
+          external_ref: "demo-" + row.id + "-" + Date.now(),
+        }),
+      })
+        .then(function () {
+          toast("Cobro demo registrado e imputado a " + (row.numero || row.id) + ".", "ok");
+          return reloadData();
+        })
+        .catch(function () {
+          toast("Cobro demo local en " + (row.numero || row.id) + " (API pasarela no disponible).", "ok");
+          refreshTables();
+        });
+    }
   }
 
   function demoPagar(row) {
@@ -1425,18 +1490,49 @@
       toast("Elegí una factura a pagar.", "err");
       return;
     }
-    patchLocal(row.id, {
-      demo_pagada: true,
-      estado: "pagada",
-      monto_aplicado: Number(row.monto || 0),
-      demo_nota: "Pago/autorización demo",
+
+    var monto = Number(row.monto || 0);
+    var cliente = row.razon_social || row.proveedor || "Proveedor";
+    var numeroFactura = row.numero || row.id;
+
+    if (!window.SOL_MODAL || !window.SOL_MODAL.confirm) {
+      console.warn("SOL_MODAL no disponible, ejecutando sin confirmación");
+      ejecutarPago();
+      return;
+    }
+
+    window.SOL_MODAL.confirm({
+      title: "Confirmar pago/autorización de factura",
+      message:
+        "¿Autorizar pago de " +
+        money(monto) +
+        "?\n\n" +
+        "Factura: " +
+        numeroFactura +
+        "\n" +
+        "Proveedor: " +
+        cliente +
+        "\n\nEsta acción marcará la factura como pagada/autorizada.",
+      confirmText: "Confirmar pago",
+      cancelText: "Cancelar",
+      confirmClass: "bg-emerald-700 text-white hover:bg-emerald-800",
+      onConfirm: ejecutarPago,
     });
-    api("/api/finanzas/facturas/" + encodeURIComponent(row.id), {
-      method: "PATCH",
-      body: JSON.stringify({ estado: "confirmada" }),
-    }).catch(function () {});
-    toast("Factura " + (row.numero || "") + " marcada como autorizada (demo).", "ok");
-    refreshTables();
+
+    function ejecutarPago() {
+      patchLocal(row.id, {
+        demo_pagada: true,
+        estado: "pagada",
+        monto_aplicado: Number(row.monto || 0),
+        demo_nota: "Pago/autorización demo",
+      });
+      api("/api/finanzas/facturas/" + encodeURIComponent(row.id), {
+        method: "PATCH",
+        body: JSON.stringify({ estado: "confirmada" }),
+      }).catch(function () {});
+      toast("Factura " + (row.numero || "") + " marcada como autorizada (demo).", "ok");
+      refreshTables();
+    }
   }
 
   function demoConciliar(row) {
@@ -1456,28 +1552,64 @@
     } catch (e) {}
     if (tr) cobroId = tr.getAttribute("data-sol-fin-cobro");
     if (!cobroId && pending[0]) cobroId = pending[0].id;
-    if (row && row.id && cobroId) {
-      api("/api/finanzas/cobros/" + encodeURIComponent(cobroId) + "/conciliar", {
-        method: "POST",
-        body: JSON.stringify({ factura_id: row.id }),
-      })
-        .then(function () {
-          toast("Conciliación aplicada a " + (row.numero || row.id) + ".", "ok");
-          return reloadData();
-        })
-        .catch(function () {
-          patchLocal(row.id, {
-            demo_nota: "Match local",
-            monto_aplicado: Number(row.monto || 0),
-            demo_pagada: true,
-            estado: "saldada",
-          });
-          toast("Conciliación local aplicada a " + (row.numero || row.id) + ".", "ok");
-          refreshTables();
-        });
+
+    if (!row || !row.id) {
+      toast("Elegí un movimiento o factura para conciliar.", "err");
       return;
     }
-    if (row && row.id) {
+
+    var monto = Number(row.monto || 0);
+    var cliente = row.razon_social || row.cliente || "Cliente";
+    var numeroFactura = row.numero || row.id;
+    var mensajeBase =
+      "¿Conciliar cobro con la factura " +
+      numeroFactura +
+      "?\n\n" +
+      "Cliente: " +
+      cliente +
+      "\n" +
+      "Monto: " +
+      money(monto);
+
+    if (!window.SOL_MODAL || !window.SOL_MODAL.confirm) {
+      console.warn("SOL_MODAL no disponible, ejecutando sin confirmación");
+      ejecutarConciliacion();
+      return;
+    }
+
+    window.SOL_MODAL.confirm({
+      title: "Confirmar conciliación de cobro",
+      message: cobroId
+        ? mensajeBase + "\n\nSe aplicará el cobro #" + cobroId + " a esta factura."
+        : mensajeBase + "\n\nSe registrará un auto-match del cobro.",
+      confirmText: "Confirmar conciliación",
+      cancelText: "Cancelar",
+      confirmClass: "bg-emerald-700 text-white hover:bg-emerald-800",
+      onConfirm: ejecutarConciliacion,
+    });
+
+    function ejecutarConciliacion() {
+      if (cobroId) {
+        api("/api/finanzas/cobros/" + encodeURIComponent(cobroId) + "/conciliar", {
+          method: "POST",
+          body: JSON.stringify({ factura_id: row.id }),
+        })
+          .then(function () {
+            toast("Conciliación aplicada a " + (row.numero || row.id) + ".", "ok");
+            return reloadData();
+          })
+          .catch(function () {
+            patchLocal(row.id, {
+              demo_nota: "Match local",
+              monto_aplicado: Number(row.monto || 0),
+              demo_pagada: true,
+              estado: "saldada",
+            });
+            toast("Conciliación local aplicada a " + (row.numero || row.id) + ".", "ok");
+            refreshTables();
+          });
+        return;
+      }
       patchLocal(row.id, {
         demo_nota: "Auto-match",
         monto_aplicado: Number(row.monto || 0),
@@ -1486,9 +1618,7 @@
       });
       toast("Ingreso + auto-match aplicado en " + (row.numero || "fila") + ".", "ok");
       refreshTables();
-      return;
     }
-    toast("Elegí un movimiento o factura para conciliar.", "err");
   }
 
   function findFacturaByNumero(nro) {
@@ -1707,79 +1837,112 @@
         }) || null;
     }
     if (!fac) fac = pickPasarelaTarget().fac;
-    var external = form.ref || "OP-MP-" + Date.now();
-    var statusEl = document.querySelector("[data-sol-fin-pasarela-canal-status]");
-    if (statusEl) statusEl.textContent = "Registrando cobro · evaluando auto-match…";
 
-    // Sin numero_factura en el body: el cobro queda pendiente y el panel pide aprobación.
-    api("/api/finanzas/pasarela", {
-      method: "POST",
-      body: JSON.stringify({
-        monto: form.monto,
-        cuit: form.cuit || (fac && (fac.cuit || fac.cuit_emisor)) || null,
-        external_ref: external,
-        metadata: {
-          canal: form.canal,
-          observaciones: form.obs,
-          numero_sugerido: form.numero,
-          razon_social: form.razon,
-        },
-      }),
-    })
-      .then(function (cobro) {
-        var state = buildMatchState({
-          fac: fac,
-          neto: Number(cobro.monto || form.monto),
-          cobroId: cobro.id,
-          facturaNumero: form.numero,
-          evt: "#EVT-" + String(cobro.id || "").replace(/\D/g, "").slice(-5),
-          aplicado: cobro.estado === "aplicado",
-        });
-        if (cobro.estado === "aplicado" && fac) {
-          state.statusText = "La pasarela ya imputó el cobro a " + (fac.numero || fac.id) + ".";
-        }
-        paintPasarelaMatch(state);
-        if (statusEl) statusEl.textContent = "Canal webhook activo · cobro " + (cobro.external_ref || cobro.id);
-        toast(
-          cobro.estado === "aplicado"
-            ? "Ingreso registrado y conciliado automáticamente."
-            : "Ingreso registrado · match listo para aprobar.",
-          "ok",
-        );
-        return reloadData().then(function () {
-          fillPasarelaForm({ cobro: cobro, fac: fac });
-        });
-      })
-      .catch(function () {
-        // Fallback local: deja match listo; Aprobar imputa en localStorage.
-        var cobroId = "COB-LOC-" + Date.now();
-        var state = buildMatchState({
-          fac: fac,
-          neto: form.monto,
-          cobroId: cobroId,
-          facturaNumero: form.numero,
-          aplicado: false,
-        });
-        cobros = [
-          {
-            id: cobroId,
-            origen: "pasarela",
-            estado: "pendiente",
-            monto: form.monto,
-            moneda: "ARS",
-            external_ref: external,
-            cuit: form.cuit,
-            factura_id: null,
-            factura_numero: form.numero || (fac && fac.numero),
-            settled_at: new Date().toISOString(),
-            pasarela: form.canal || "Mercado Pago",
+    var cliente = (fac && fac.razon_social) || form.razon || "Cliente";
+    var numeroFactura = form.numero || (fac && fac.numero) || "—";
+
+    if (!window.SOL_MODAL || !window.SOL_MODAL.confirm) {
+      console.warn("SOL_MODAL no disponible, ejecutando sin confirmación");
+      ejecutarRegistroPasarela();
+      return;
+    }
+
+    window.SOL_MODAL.confirm({
+      title: "Confirmar registro de cobro en pasarela",
+      message:
+        "¿Registrar cobro de " +
+        money(form.monto) +
+        " en la pasarela?\n\n" +
+        "Factura: " +
+        numeroFactura +
+        "\n" +
+        "Cliente: " +
+        cliente +
+        "\n" +
+        "Canal: " +
+        (form.canal || "Mercado Pago") +
+        "\n\nSe intentará conciliar automáticamente con la factura correspondiente.",
+      confirmText: "Registrar cobro",
+      cancelText: "Cancelar",
+      confirmClass: "bg-emerald-700 text-white hover:bg-emerald-800",
+      onConfirm: ejecutarRegistroPasarela,
+    });
+
+    function ejecutarRegistroPasarela() {
+      var external = form.ref || "OP-MP-" + Date.now();
+      var statusEl = document.querySelector("[data-sol-fin-pasarela-canal-status]");
+      if (statusEl) statusEl.textContent = "Registrando cobro · evaluando auto-match…";
+
+      // Sin numero_factura en el body: el cobro queda pendiente y el panel pide aprobación.
+      api("/api/finanzas/pasarela", {
+        method: "POST",
+        body: JSON.stringify({
+          monto: form.monto,
+          cuit: form.cuit || (fac && (fac.cuit || fac.cuit_emisor)) || null,
+          external_ref: external,
+          metadata: {
+            canal: form.canal,
+            observaciones: form.obs,
+            numero_sugerido: form.numero,
+            razon_social: form.razon,
           },
-        ].concat(cobros);
-        paintPasarelaMatch(state);
-        if (statusEl) statusEl.textContent = "Cobro local · listo para aprobar conciliación";
-        toast("Ingreso registrado · match listo para aprobar.", "ok");
-        refreshTables();
-      });
+        }),
+      })
+        .then(function (cobro) {
+          var state = buildMatchState({
+            fac: fac,
+            neto: Number(cobro.monto || form.monto),
+            cobroId: cobro.id,
+            facturaNumero: form.numero,
+            evt: "#EVT-" + String(cobro.id || "").replace(/\D/g, "").slice(-5),
+            aplicado: cobro.estado === "aplicado",
+          });
+          if (cobro.estado === "aplicado" && fac) {
+            state.statusText = "La pasarela ya imputó el cobro a " + (fac.numero || fac.id) + ".";
+          }
+          paintPasarelaMatch(state);
+          if (statusEl) statusEl.textContent = "Canal webhook activo · cobro " + (cobro.external_ref || cobro.id);
+          toast(
+            cobro.estado === "aplicado"
+              ? "Ingreso registrado y conciliado automáticamente."
+              : "Ingreso registrado · match listo para aprobar.",
+            "ok",
+          );
+          return reloadData().then(function () {
+            fillPasarelaForm({ cobro: cobro, fac: fac });
+          });
+        })
+        .catch(function () {
+          // Fallback local: deja match listo; Aprobar imputa en localStorage.
+          var cobroId = "COB-LOC-" + Date.now();
+          var state = buildMatchState({
+            fac: fac,
+            neto: form.monto,
+            cobroId: cobroId,
+            facturaNumero: form.numero,
+            aplicado: false,
+          });
+          cobros = [
+            {
+              id: cobroId,
+              origen: "pasarela",
+              estado: "pendiente",
+              monto: form.monto,
+              moneda: "ARS",
+              external_ref: external,
+              cuit: form.cuit,
+              factura_id: null,
+              factura_numero: form.numero || (fac && fac.numero),
+              settled_at: new Date().toISOString(),
+              pasarela: form.canal || "Mercado Pago",
+            },
+          ].concat(cobros);
+          paintPasarelaMatch(state);
+          if (statusEl) statusEl.textContent = "Cobro local · listo para aprobar conciliación";
+          toast("Ingreso registrado · match listo para aprobar.", "ok");
+          refreshTables();
+        });
+    }
   }
 
   function aprobarPasarelaMatch() {
@@ -1805,49 +1968,84 @@
     }
     var fac = findRow(state.facturaId);
     var cobroId = state.cobroId;
-    if (cobroId && String(cobroId).indexOf("COB-LOC-") !== 0) {
-      api("/api/finanzas/cobros/" + encodeURIComponent(cobroId) + "/conciliar", {
-        method: "POST",
-        body: JSON.stringify({ factura_id: state.facturaId }),
-      })
-        .then(function () {
-          toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
-          paintPasarelaMatch(
-            Object.assign({}, state, {
-              aplicado: true,
-              scoreLabel: "99.2% Confirmed",
-              grade: "A+",
-              statusText: "Conciliación aprobada e imputada.",
-            }),
-          );
-          return reloadData();
-        })
-        .catch(function () {
-          aplicarLocalPasarela(fac, state.neto, cobroId, state.evt);
-          paintPasarelaMatch(
-            Object.assign({}, state, {
-              aplicado: true,
-              scoreLabel: "99.2% Confirmed",
-              grade: "A+",
-              statusText: "Conciliación aprobada (local).",
-            }),
-          );
-          toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
-          refreshTables();
-        });
+
+    if (!window.SOL_MODAL || !window.SOL_MODAL.confirm) {
+      console.warn("SOL_MODAL no disponible, ejecutando sin confirmación");
+      ejecutarAprobacionPasarela();
       return;
     }
-    aplicarLocalPasarela(fac, state.neto, cobroId || "COB-LOC-" + Date.now(), state.evt);
-    paintPasarelaMatch(
-      Object.assign({}, state, {
-        aplicado: true,
-        scoreLabel: "99.2% Confirmed",
-        grade: "A+",
-        statusText: "Conciliación aprobada e imputada.",
-      }),
-    );
-    toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
-    refreshTables();
+
+    var cliente = (fac && fac.razon_social) || "Cliente";
+    var numeroFactura = state.facturaNumero || (fac && fac.numero) || "—";
+    var monto = state.neto || 0;
+
+    window.SOL_MODAL.confirm({
+      title: "Aprobar conciliación automática",
+      message:
+        "¿Aprobar el match automático de pasarela?\n\n" +
+        "Factura: " +
+        numeroFactura +
+        "\n" +
+        "Cliente: " +
+        cliente +
+        "\n" +
+        "Monto: " +
+        money(monto) +
+        "\n" +
+        "Confianza: " +
+        (state.scoreLabel || "Alta") +
+        "\n\nSe aplicará el cobro a la factura correspondiente.",
+      confirmText: "Aprobar conciliación",
+      cancelText: "Cancelar",
+      confirmClass: "bg-emerald-700 text-white hover:bg-emerald-800",
+      onConfirm: ejecutarAprobacionPasarela,
+    });
+
+    function ejecutarAprobacionPasarela() {
+      if (cobroId && String(cobroId).indexOf("COB-LOC-") !== 0) {
+        api("/api/finanzas/cobros/" + encodeURIComponent(cobroId) + "/conciliar", {
+          method: "POST",
+          body: JSON.stringify({ factura_id: state.facturaId }),
+        })
+          .then(function () {
+            toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
+            paintPasarelaMatch(
+              Object.assign({}, state, {
+                aplicado: true,
+                scoreLabel: "99.2% Confirmed",
+                grade: "A+",
+                statusText: "Conciliación aprobada e imputada.",
+              }),
+            );
+            return reloadData();
+          })
+          .catch(function () {
+            aplicarLocalPasarela(fac, state.neto, cobroId, state.evt);
+            paintPasarelaMatch(
+              Object.assign({}, state, {
+                aplicado: true,
+                scoreLabel: "99.2% Confirmed",
+                grade: "A+",
+                statusText: "Conciliación aprobada (local).",
+              }),
+            );
+            toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
+            refreshTables();
+          });
+        return;
+      }
+      aplicarLocalPasarela(fac, state.neto, cobroId || "COB-LOC-" + Date.now(), state.evt);
+      paintPasarelaMatch(
+        Object.assign({}, state, {
+          aplicado: true,
+          scoreLabel: "99.2% Confirmed",
+          grade: "A+",
+          statusText: "Conciliación aprobada e imputada.",
+        }),
+      );
+      toast("Conciliación automática aprobada · " + (state.facturaNumero || state.facturaId), "ok");
+      refreshTables();
+    }
   }
 
   function observarDiscrepanciaPasarela() {
