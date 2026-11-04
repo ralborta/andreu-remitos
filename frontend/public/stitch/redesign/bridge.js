@@ -912,11 +912,72 @@
     }
   }
 
+  function paintSystemStatus() {
+    var pills = document.querySelectorAll('[data-sol-system-status]');
+    if (!pills.length) return;
+    
+    fetch("/backend/api/monitor/status", { credentials: "include" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        var allOk = data.ok === true;
+        
+        pills.forEach(function (pill) {
+          var dot = pill.querySelector('span[class*="rounded-full"][class*="bg-"]');
+          var ping = pill.querySelector('span[class*="animate-ping"]');
+          
+          if (allOk) {
+            pill.className = pill.className.replace(/bg-(rose|amber)-\d+/g, 'bg-emerald-$1');
+            pill.className = pill.className.replace(/text-(rose|amber)-\d+/g, 'text-emerald-$1');
+            pill.className = pill.className.replace(/border-(rose|amber)-\d+/g, 'border-emerald-$1');
+            if (!pill.className.includes('bg-emerald')) {
+              pill.className = pill.className.replace(/bg-\w+-\d+/, 'bg-emerald-50');
+            }
+            if (!pill.className.includes('text-emerald')) {
+              pill.className = pill.className.replace(/text-\w+-\d+/, 'text-emerald-700');
+            }
+            if (!pill.className.includes('border-emerald')) {
+              pill.className = pill.className.replace(/border-\w+-\d+\/?\d*/, 'border-emerald-200/60');
+            }
+            if (dot) {
+              dot.className = dot.className.replace(/bg-\w+-\d+/, 'bg-emerald-500');
+            }
+            if (ping) {
+              ping.className = ping.className.replace(/bg-\w+-\d+/, 'bg-emerald-400');
+            }
+          } else {
+            pill.className = pill.className.replace(/bg-emerald-\d+/g, 'bg-rose-$1');
+            pill.className = pill.className.replace(/text-emerald-\d+/g, 'text-rose-$1');
+            pill.className = pill.className.replace(/border-emerald-\d+/g, 'border-rose-$1');
+            if (pill.className.includes('bg-emerald')) {
+              pill.className = pill.className.replace(/bg-emerald-\d+/, 'bg-rose-50');
+            }
+            if (pill.className.includes('text-emerald')) {
+              pill.className = pill.className.replace(/text-emerald-\d+/, 'text-rose-700');
+            }
+            if (pill.className.includes('border-emerald')) {
+              pill.className = pill.className.replace(/border-emerald-\d+\/?\d*/, 'border-rose-200/60');
+            }
+            if (dot) {
+              dot.className = dot.className.replace(/bg-emerald-\d+/, 'bg-rose-500');
+            }
+            if (ping) {
+              ping.className = ping.className.replace(/bg-emerald-\d+/, 'bg-rose-400');
+            }
+          }
+        });
+      })
+      .catch(function () {
+        // Keep default state on error
+      });
+  }
+
   function paintShell() {
     unifyShell();
     installChrome();
     installUserMenu(document);
     wireNotifications();
+    paintSystemStatus();
   }
 
   document.querySelectorAll("a, button").forEach(bind);

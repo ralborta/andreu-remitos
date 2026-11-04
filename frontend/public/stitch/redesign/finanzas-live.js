@@ -1110,7 +1110,11 @@
     try {
       el.textContent =
         "Hoy (" +
-        new Date().toLocaleDateString("es-AR", { day: "numeric", month: "short" }) +
+        new Date().toLocaleDateString("es-AR", { 
+          day: "numeric", 
+          month: "short",
+          timeZone: "America/Argentina/Buenos_Aires"
+        }) +
         ")";
     } catch (e) {
       el.textContent = "Hoy";
