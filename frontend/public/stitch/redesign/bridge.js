@@ -961,6 +961,243 @@
       });
   }
 
+  // ============================================================================
+  // NEW: Sidebar única collapsible (V2 - careful implementation)
+  // ============================================================================
+
+  function ensureMaterialIconsFont() {
+    if (document.getElementById('sol-material-icons-font')) return;
+    var link = document.createElement('link');
+    link.id = 'sol-material-icons-font';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block';
+    document.head.appendChild(link);
+  }
+
+  function createSidebarNav() {
+    var existing = document.querySelector('[data-sol-sidebar]');
+    if (existing) return existing;
+
+    var path = here();
+    var sidebar = document.createElement('aside');
+    sidebar.setAttribute('data-sol-sidebar', '1');
+    sidebar.className = 'fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-y-auto';
+    
+    // Build sections with REAL anchor links
+    var sections = [
+      { title: 'Operación', links: [
+        { label: 'Torre', href: '/', icon: 'dashboard' },
+        { label: 'Monitor', href: '/monitor', icon: 'monitor_heart' },
+        { label: 'WhatsApp', href: '/contactos', icon: 'chat' },
+        { label: 'Métricas', href: '/backoffice', icon: 'analytics' }
+      ]},
+      { title: 'Agentes', links: AGENT_LINKS },
+      { title: 'Finanzas', links: FINANCE_LINKS },
+      { title: 'Marketing', links: MARKETING_LINKS }
+    ];
+    
+    var html = '<div class="h-full flex flex-col">';
+    
+    // Logo
+    html += '<div class="p-4 border-b border-slate-200">';
+    html += '<a class="flex items-center gap-2.5" href="/" target="_parent">';
+    html += '<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 font-black text-lg">E</div>';
+    html += '<div class="flex flex-col">';
+    html += '<span class="text-base font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>';
+    html += '<span class="text-[9px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>';
+    html += '</div></a></div>';
+    
+    // Navigation sections
+    html += '<nav class="flex-1 px-3 py-4 space-y-6">';
+    for (var i = 0; i < sections.length; i++) {
+      var section = sections[i];
+      html += '<div>';
+      html += '<h3 class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">' + section.title + '</h3>';
+      html += '<div class="space-y-0.5">';
+      for (var j = 0; j < section.links.length; j++) {
+        var link = section.links[j];
+        var active = isActive(link.href, path);
+        var cls = active 
+          ? 'flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg bg-[#0e1738] text-white'
+          : 'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors';
+        var icon = link.icon ? '<span class="material-symbols-outlined text-[18px]">' + link.icon + '</span>' : '';
+        html += '<a class="' + cls + '" href="' + link.href + '" target="_parent">' + icon + '<span>' + link.label + '</span></a>';
+      }
+      html += '</div></div>';
+    }
+    html += '</nav>';
+    
+    // Footer with status pill
+    html += '<div class="p-4 border-t border-slate-200">';
+    html += '<div data-sol-system-status class="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-lg text-xs font-medium">';
+    html += '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>';
+    html += '<span>Sistemas activos</span></div></div>';
+    html += '</div>';
+    
+    sidebar.innerHTML = html;
+    
+    // Bind all anchor links
+    sidebar.querySelectorAll('a').forEach(function(a) {
+      bind(a);
+    });
+    
+    document.body.insertBefore(sidebar, document.body.firstChild);
+    return sidebar;
+  }
+
+  function toggleSidebarNav() {
+    var sidebar = document.querySelector('[data-sol-sidebar]');
+    var overlay = document.querySelector('[data-sol-sidebar-overlay]');
+    if (!sidebar) return;
+    
+    var isOpen = !sidebar.classList.contains('-translate-x-full');
+    if (isOpen) {
+      sidebar.classList.add('-translate-x-full');
+      if (overlay) overlay.classList.add('hidden');
+    } else {
+      sidebar.classList.remove('-translate-x-full');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.setAttribute('data-sol-sidebar-overlay', '1');
+        overlay.className = 'fixed inset-0 bg-slate-900/50 z-30 lg:hidden';
+        overlay.addEventListener('click', toggleSidebarNav);
+        document.body.appendChild(overlay);
+      }
+      overlay.classList.remove('hidden');
+    }
+  }
+
+  function updateSystemStatus(data) {
+    var allOk = data && data.ok === true;
+    var degraded = data && data.degraded === true;
+    
+    // Determine status
+    var status = {
+      color: allOk ? 'emerald' : (degraded ? 'amber' : 'rose'),
+      bgClass: allOk ? 'bg-emerald-50' : (degraded ? 'bg-amber-50' : 'bg-rose-50'),
+      textClass: allOk ? 'text-emerald-700' : (degraded ? 'text-amber-700' : 'text-rose-700'),
+      borderClass: allOk ? 'border-emerald-200/60' : (degraded ? 'border-amber-200/60' : 'border-rose-200/60'),
+      dotClass: allOk ? 'bg-emerald-500' : (degraded ? 'bg-amber-500' : 'bg-rose-500'),
+      pingClass: allOk ? 'bg-emerald-400' : (degraded ? 'bg-amber-400' : 'bg-rose-400'),
+      text: allOk ? 'Sistemas activos' : (degraded ? 'Servicios degradados' : 'WhatsApp desconectado')
+    };
+    
+    // If not ok and not degraded, check specific service
+    if (!allOk && !degraded && data && data.services) {
+      if (data.services.whatsapp === false) status.text = 'WhatsApp desconectado';
+      else if (data.services.monitor === false) status.text = 'Monitor caído';
+      else if (data.services.agentes === false) status.text = 'Agentes caídos';
+    }
+    
+    // Update all status pills
+    document.querySelectorAll('[data-sol-system-status]').forEach(function(pill) {
+      // Update classes
+      pill.className = 'flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium ' + 
+                       status.bgClass + ' ' + status.textClass + ' border ' + status.borderClass;
+      
+      // Update dot
+      var dot = pill.querySelector('span.bg-emerald-500, span.bg-amber-500, span.bg-rose-500, span.bg-red-500');
+      if (dot) {
+        dot.className = 'relative inline-flex rounded-full h-2 w-2 ' + status.dotClass;
+      }
+      
+      // Update ping
+      var ping = pill.querySelector('span.animate-ping');
+      if (ping) {
+        ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ' + status.pingClass;
+      }
+      
+      // Update text
+      var textSpan = pill.querySelector('span:last-child');
+      if (textSpan && !textSpan.classList.contains('animate-ping') && !textSpan.classList.contains('rounded-full')) {
+        textSpan.textContent = status.text;
+      }
+    });
+    
+    // Update footer "Monitor SOL Activo"
+    document.querySelectorAll('footer').forEach(function(footer) {
+      footer.querySelectorAll('span').forEach(function(span) {
+        var text = span.textContent || '';
+        if (/Monitor SOL/i.test(text)) {
+          var parent = span.parentElement;
+          if (!parent) return;
+          
+          // Update dot
+          var dot = parent.querySelector('span[class*="rounded-full"][class*="bg-"]');
+          if (dot) {
+            dot.className = dot.className
+              .replace(/bg-emerald-\d+/, status.dotClass.replace('bg-', 'bg-'))
+              .replace(/bg-amber-\d+/, status.dotClass.replace('bg-', 'bg-'))
+              .replace(/bg-rose-\d+/, status.dotClass.replace('bg-', 'bg-'));
+          }
+          
+          // Update text
+          if (allOk) span.textContent = 'Monitor SOL Activo';
+          else if (degraded) span.textContent = 'Monitor SOL Degradado';
+          else span.textContent = 'Monitor SOL: Sistema Caído';
+        }
+      });
+    });
+  }
+
+  function fetchAndUpdateStatus() {
+    fetch('/backend/api/monitor/status', { credentials: 'include' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data) updateSystemStatus(data);
+      })
+      .catch(function() {
+        // Keep default state on error
+      });
+  }
+
+  function installSidebar() {
+    ensureMaterialIconsFont();
+    var sidebar = createSidebarNav();
+    
+    // Verify sidebar has links
+    var linkCount = sidebar ? sidebar.querySelectorAll('a[href]').length : 0;
+    console.log('[SOL] Sidebar created with ' + linkCount + ' links');
+    
+    if (linkCount > 0) {
+      // Adjust main content
+      var main = document.querySelector('main');
+      if (main && !main.classList.contains('lg:ml-64')) {
+        main.classList.add('lg:ml-64');
+      }
+      
+      // Add hamburger to existing chrome if present
+      var chrome = document.querySelector('[data-sol-shell="chrome"]');
+      if (chrome) {
+        var hamburger = chrome.querySelector('[data-sol-hamburger]');
+        if (!hamburger) {
+          var firstDiv = chrome.querySelector('div > div');
+          if (firstDiv) {
+            var btn = document.createElement('button');
+            btn.className = 'lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors';
+            btn.setAttribute('data-sol-hamburger', '1');
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Abrir menú');
+            btn.innerHTML = '<span class="material-symbols-outlined text-xl">menu</span>';
+            btn.addEventListener('click', toggleSidebarNav);
+            firstDiv.insertBefore(btn, firstDiv.firstChild);
+          }
+        }
+      }
+      
+      // NOW we can hide old nav rows (only if sidebar has links)
+      document.querySelectorAll('[data-sol-shell="agents"], [data-sol-shell="finance"], [data-sol-shell="marketing"]').forEach(function(el) {
+        el.style.display = 'none';
+      });
+      
+      // Also hide top-level nav row in chrome if present
+      var topNav = chrome ? chrome.querySelector('[data-sol-shell="top"]') : null;
+      if (topNav) topNav.style.display = 'none';
+    } else {
+      console.warn('[SOL] Sidebar has no links, keeping old navigation');
+    }
+  }
+
   function paintShell() {
     unifyShell();
     installChrome();
@@ -979,11 +1216,19 @@
   wireNotifications();
   installUserMenu(document);
   
+  // Install sidebar after initial setup
+  installSidebar();
+  
+  // Fetch and update status
+  fetchAndUpdateStatus();
+  
   // Also run on DOMContentLoaded to catch late-loading pages
   document.addEventListener("DOMContentLoaded", function() {
     paintShell();
-    // Re-run system status check after a short delay to ensure header is rendered
-    setTimeout(paintSystemStatus, 500);
+    installSidebar();
+    fetchAndUpdateStatus();
+    // Re-run status check periodically
+    setTimeout(fetchAndUpdateStatus, 1000);
   });
 })();
 
