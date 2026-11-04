@@ -5,29 +5,17 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard,
   X,
-  FileText,
-  Upload,
   ChevronDown,
-  MessageCircle,
-  Settings2,
-  FileSpreadsheet,
-  Users,
-  Activity,
-  ChartColumn,
-  Radio,
-  Sparkles,
   LogOut,
   Truck,
+  FileText,
   Wallet,
   Megaphone,
+  Settings2,
 } from "lucide-react";
-import { agents, STATUS_COLOR, STATUS_LABEL } from "@/lib/agents";
-import { REMITO_TENANTS } from "@/lib/tenants";
 import { useAuth } from "@/lib/auth-context";
-import { canMutateParametros, isAdmin, ROL_LABEL } from "@/lib/auth-types";
-import { AgentIcon } from "./Icon";
+import { isAdmin, ROL_LABEL } from "@/lib/auth-types";
 import { Brand } from "./Brand";
 import { BRAND } from "@/lib/brand";
 
@@ -50,34 +38,54 @@ export function Sidebar({
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const admin = isAdmin(user);
-  const parametros = canMutateParametros(user);
-  const remitosSectionOpen =
-    pathname === "/remitos" ||
-    pathname.startsWith("/remitos/") ||
-    pathname === "/planillas" ||
-    pathname.startsWith("/planillas/") ||
-    pathname === "/subir" ||
-    pathname.startsWith("/subir/") ||
-    pathname === "/agentes/remitos" ||
-    pathname.startsWith("/agentes/remitos/");
-  const [remitosExpanded, setRemitosExpanded] = useState(remitosSectionOpen);
-  const finanzasSectionOpen = pathname === "/finanzas" || pathname.startsWith("/finanzas/");
-  const [finanzasExpanded, setFinanzasExpanded] = useState(finanzasSectionOpen);
-  const marketingSectionOpen = pathname === "/marketing" || pathname.startsWith("/marketing/");
-  const [marketingExpanded, setMarketingExpanded] = useState(marketingSectionOpen);
-  const activeTenants = REMITO_TENANTS.filter((t) => t.active);
+  
+  // Determinar qué secciones están activas
+  const operacionActive = 
+    pathname === "/" || 
+    pathname === "/contactos" || 
+    pathname === "/agentes/viajes" || 
+    pathname === "/agentes/tracking" ||
+    pathname === "/agentes/incidencias";
+  
+  const documentacionActive =
+    pathname.startsWith("/agentes/remitos") ||
+    pathname === "/agentes/pod" ||
+    pathname === "/agentes/rendicion" ||
+    pathname === "/agentes/reclamos";
+  
+  const finanzasActive = pathname.startsWith("/finanzas");
+  const marketingActive = pathname.startsWith("/marketing");
+  const sistemaActive = 
+    pathname === "/monitor" || 
+    pathname === "/backoffice" || 
+    pathname.startsWith("/agentes/commander");
+  
+  // Estados de expansión
+  const [operacionExpanded, setOperacionExpanded] = useState(operacionActive);
+  const [documentacionExpanded, setDocumentacionExpanded] = useState(documentacionActive);
+  const [finanzasExpanded, setFinanzasExpanded] = useState(finanzasActive);
+  const [marketingExpanded, setMarketingExpanded] = useState(marketingActive);
+  const [sistemaExpanded, setSistemaExpanded] = useState(sistemaActive);
 
   useEffect(() => {
-    if (remitosSectionOpen) setRemitosExpanded(true);
-  }, [remitosSectionOpen]);
+    if (operacionActive) setOperacionExpanded(true);
+  }, [operacionActive]);
 
   useEffect(() => {
-    if (finanzasSectionOpen) setFinanzasExpanded(true);
-  }, [finanzasSectionOpen]);
+    if (documentacionActive) setDocumentacionExpanded(true);
+  }, [documentacionActive]);
 
   useEffect(() => {
-    if (marketingSectionOpen) setMarketingExpanded(true);
-  }, [marketingSectionOpen]);
+    if (finanzasActive) setFinanzasExpanded(true);
+  }, [finanzasActive]);
+
+  useEffect(() => {
+    if (marketingActive) setMarketingExpanded(true);
+  }, [marketingActive]);
+  
+  useEffect(() => {
+    if (sistemaActive) setSistemaExpanded(true);
+  }, [sistemaActive]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -123,275 +131,230 @@ export function Sidebar({
         </div>
 
         <nav className="flex-1 overflow-y-auto scroll-thin px-3 pb-4">
+          {/* Operación */}
           <p className="px-3 pb-2 pt-2 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
-            Monitoreo
+            Operación
           </p>
-          <Link href="/" onClick={onClose} className={navClass(isActive("/"))}>
-            <LayoutDashboard size={18} />
-            Torre de Control
-          </Link>
-          <Link href="/monitor" onClick={onClose} className={navClass(isActive("/monitor"))}>
-            <Activity size={18} />
-            Monitor Flota
-          </Link>
-          <Link href="/contactos" onClick={onClose} className={navClass(isActive("/contactos"))}>
-            <MessageCircle size={18} />
-            WhatsApp
-          </Link>
-          {admin && (
-            <Link href="/backoffice" onClick={onClose} className={navClass(isActive("/backoffice"))}>
-              <ChartColumn size={18} />
-              Métricas
-            </Link>
-          )}
-
-          <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
-            Agentes
-          </p>
-
-          {agents
-            .filter((a) => a.slug !== "commander")
-            .map((a) => {
-              const href = `/agentes/${a.slug}`;
-              const isRemitosAgent = a.slug === "remitos";
-              const active = isRemitosAgent ? remitosSectionOpen : isActive(href);
-
-              if (isRemitosAgent) {
-                return (
-                  <div key={a.slug} className="mb-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setRemitosExpanded((v) => !v)}
-                      className={clsx(navClass(active), "w-full")}
-                    >
-                      <span
-                        className={clsx(
-                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                          active ? "bg-white/15 text-white" : "bg-[var(--panel-2)] text-[var(--text-dim)]",
-                        )}
-                      >
-                        <AgentIcon name={a.icon} size={15} />
-                      </span>
-                      <span className="flex-1 truncate text-left">{a.short}</span>
-                      <ChevronDown
-                        size={16}
-                        className={clsx("shrink-0 transition-transform", remitosExpanded && "rotate-180")}
-                      />
-                    </button>
-                    {remitosExpanded && (
-                      <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
-                        <Link
-                          href="/agentes/remitos"
-                          onClick={onClose}
-                          className={clsx(
-                            "block rounded-lg px-3 py-2 text-sm transition-colors",
-                            pathname.startsWith("/agentes/remitos")
-                              ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
-                              : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
-                          )}
-                        >
-                          Resumen del agente
-                        </Link>
-                        <Link
-                          href="/remitos"
-                          onClick={onClose}
-                          className={clsx(
-                            "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                            pathname === "/remitos" || pathname.startsWith("/remitos/")
-                              ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
-                              : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
-                          )}
-                        >
-                          <FileText size={14} className="shrink-0 opacity-70" />
-                          Remitos
-                        </Link>
-                        {activeTenants.map((t) => {
-                          const planillaHref = `/planillas/${t.slug}`;
-                          return (
-                            <Link
-                              key={`planilla-${t.slug}`}
-                              href={planillaHref}
-                              onClick={onClose}
-                              className={clsx(
-                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                                pathname.startsWith(planillaHref)
-                                  ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
-                                  : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
-                              )}
-                            >
-                              <FileSpreadsheet size={14} className="shrink-0 opacity-70" />
-                              {activeTenants.length === 1 ? "Planilla" : `Planilla ${t.short}`}
-                            </Link>
-                          );
-                        })}
-                        <Link
-                          href="/subir"
-                          onClick={onClose}
-                          className={clsx(
-                            "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                            isActive("/subir")
-                              ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
-                              : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
-                          )}
-                        >
-                          <Upload size={14} className="shrink-0 opacity-70" />
-                          Subir remito
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                <Link key={a.slug} href={href} onClick={onClose} className={navClass(active)}>
-                  <span
-                    className={clsx(
-                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                      active ? "bg-white/15 text-white" : "bg-[var(--panel-2)] text-[var(--text-dim)]",
-                    )}
-                  >
-                    <AgentIcon name={a.icon} size={15} />
-                  </span>
-                  <span className="flex-1 truncate">{a.short}</span>
-                  <span
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    title={STATUS_LABEL[a.status]}
-                    style={{ background: STATUS_COLOR[a.status] }}
-                  />
+          <div className="mb-0.5">
+            <button
+              type="button"
+              onClick={() => setOperacionExpanded((v) => !v)}
+              className={clsx(navClass(operacionActive), "w-full")}
+            >
+              <Truck size={18} />
+              <span className="flex-1 text-left">Operación</span>
+              <ChevronDown
+                size={14}
+                className={clsx("shrink-0 transition-transform", operacionExpanded && "rotate-180")}
+              />
+            </button>
+            {operacionExpanded && (
+              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
+                <Link href="/" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Torre de Control
                 </Link>
-              );
-            })}
+                <Link href="/agentes/viajes" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/agentes/viajes" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Viajes
+                </Link>
+                <Link href="/agentes/tracking" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/agentes/tracking" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Tracking
+                </Link>
+                <Link href="/agentes/incidencias" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/agentes/incidencias" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Incidencias
+                </Link>
+                <Link href="/contactos" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/contactos" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  WhatsApp
+                </Link>
+              </div>
+            )}
+          </div>
 
-          <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+          {/* Documentación */}
+          <p className="px-3 pb-2 pt-4 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+            Documentación
+          </p>
+          <div className="mb-0.5">
+            <button
+              type="button"
+              onClick={() => setDocumentacionExpanded((v) => !v)}
+              className={clsx(navClass(documentacionActive), "w-full")}
+            >
+              <FileText size={18} />
+              <span className="flex-1 text-left">Documentación</span>
+              <ChevronDown
+                size={14}
+                className={clsx("shrink-0 transition-transform", documentacionExpanded && "rotate-180")}
+              />
+            </button>
+            {documentacionExpanded && (
+              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
+                <Link href="/agentes/remitos" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname.startsWith("/agentes/remitos") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Remitos
+                </Link>
+                <Link href="/agentes/pod" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/agentes/pod" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  POD
+                </Link>
+                <Link href="/agentes/rendicion" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/agentes/rendicion" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Rendición
+                </Link>
+                <Link href="/agentes/reclamos" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/agentes/reclamos" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Reclamos
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Finanzas */}
+          <p className="px-3 pb-2 pt-4 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Finanzas
           </p>
           <div className="mb-0.5">
             <button
               type="button"
               onClick={() => setFinanzasExpanded((v) => !v)}
-              className={clsx(navClass(finanzasSectionOpen), "w-full")}
+              className={clsx(navClass(finanzasActive), "w-full")}
             >
               <Wallet size={18} />
-              <span className="flex-1 text-left">Módulo de Finanzas</span>
-              <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
-                Nuevo
-              </span>
+              <span className="flex-1 text-left">Finanzas</span>
               <ChevronDown
                 size={14}
                 className={clsx("shrink-0 transition-transform", finanzasExpanded && "rotate-180")}
               />
             </button>
             {finanzasExpanded && (
-              <div className="ml-4 mt-0.5 border-l border-[var(--border)] pl-2">
-                {[
-                  ["/finanzas", "Dashboard"],
-                  ["/finanzas/clientes", "Clientes"],
-                  ["/finanzas/facturas/pagos", "Facturas"],
-                  ["/finanzas/facturas/cobranzas", "Cobranza"],
-                  ["/finanzas/conciliacion", "Conciliación"],
-                  ["/finanzas/comunicacion", "Enviar Mensaje"],
-                ].map(([href, label]) => {
-                  const active = href === "/finanzas" ? pathname === "/finanzas" : pathname.startsWith(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={onClose}
-                      className={clsx(
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                        active
-                          ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
-                          : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
-                      )}
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
+              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
+                <Link href="/finanzas/facturas/cobranzas" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname.startsWith("/finanzas/facturas/cobranzas") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Cobranzas
+                </Link>
+                <Link href="/finanzas/facturas/pagos" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname.startsWith("/finanzas/facturas/pagos") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Facturas
+                </Link>
+                <Link href="/finanzas/conciliacion" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/finanzas/conciliacion" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Conciliación
+                </Link>
               </div>
             )}
           </div>
 
-          <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+          {/* Marketing */}
+          <p className="px-3 pb-2 pt-4 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
             Marketing
           </p>
           <div className="mb-0.5">
             <button
               type="button"
               onClick={() => setMarketingExpanded((v) => !v)}
-              className={clsx(navClass(marketingSectionOpen), "w-full")}
+              className={clsx(navClass(marketingActive), "w-full")}
             >
               <Megaphone size={18} />
-              <span className="flex-1 text-left">Módulo de Marketing</span>
-              <span className="rounded-full bg-[#6ffbbe]/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#005236]">
-                Nuevo
-              </span>
+              <span className="flex-1 text-left">Marketing</span>
               <ChevronDown
                 size={14}
                 className={clsx("shrink-0 transition-transform", marketingExpanded && "rotate-180")}
               />
             </button>
             {marketingExpanded && (
-              <div className="ml-4 mt-0.5 border-l border-[var(--border)] pl-2">
-                {[
-                  ["/marketing", "Dashboard"],
-                  ["/marketing/estrategia", "Planificador"],
-                  ["/marketing/email", "Email"],
-                  ["/marketing/contenidos", "Contenidos"],
-                  ["/marketing/ofertas", "Promociones"],
-                  ["/marketing/visibilidad", "Rankear"],
-                  ["/marketing/difusion", "Menciones"],
-                  ["/marketing/resultados", "Analítica"],
-                ].map(([href, label]) => {
-                  const active = href === "/marketing" ? pathname === "/marketing" : pathname.startsWith(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={onClose}
-                      className={clsx(
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                        active
-                          ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
-                          : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]",
-                      )}
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
+              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
+                <Link href="/marketing" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/marketing" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Hub
+                </Link>
+                <Link href="/marketing/estrategia" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/marketing/estrategia" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Campañas
+                </Link>
+                <Link href="/marketing/visibilidad" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/marketing/visibilidad" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Rankear
+                </Link>
               </div>
             )}
           </div>
 
-          <p className="px-3 pb-2 pt-5 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
-            Operación
+          {/* Sistema */}
+          <p className="px-3 pb-2 pt-4 font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
+            Sistema
           </p>
-          <Link
-            href="/agentes/commander"
-            onClick={onClose}
-            className={navClass(isActive("/agentes/commander"))}
-          >
-            <Radio size={18} />
-            Chat Central
-          </Link>
-          {admin && (
-            <Link href="/usuarios" onClick={onClose} className={navClass(isActive("/usuarios"))}>
-              <Users size={18} />
-              Usuarios
-            </Link>
-          )}
-          {parametros && (
-            <Link href="/parametros" onClick={onClose} className={navClass(isActive("/parametros"))}>
+          <div className="mb-0.5">
+            <button
+              type="button"
+              onClick={() => setSistemaExpanded((v) => !v)}
+              className={clsx(navClass(sistemaActive), "w-full")}
+            >
               <Settings2 size={18} />
-              Parámetros
-            </Link>
-          )}
-          <Link href="/salas-demo" onClick={onClose} className={navClass(isActive("/salas-demo"))}>
-            <Sparkles size={18} />
-            <span className="flex-1">DEMO</span>
-          </Link>
+              <span className="flex-1 text-left">Sistema</span>
+              <ChevronDown
+                size={14}
+                className={clsx("shrink-0 transition-transform", sistemaExpanded && "rotate-180")}
+              />
+            </button>
+            {sistemaExpanded && (
+              <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
+                <Link href="/monitor" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/monitor" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Monitor
+                </Link>
+                {admin && (
+                  <Link href="/backoffice" onClick={onClose} className={clsx(
+                    "block rounded-lg px-3 py-2 text-sm transition-colors",
+                    pathname === "/backoffice" ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                  )}>
+                    Métricas
+                  </Link>
+                )}
+                <Link href="/agentes/commander" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname.startsWith("/agentes/commander") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Chat Central
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="bg-[var(--bg-2)] p-3">
