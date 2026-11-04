@@ -1,5 +1,5 @@
+import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
 export default function MarketingPage() {
-  // Stitch iframe rendered by AppShell layout
-  return null;
+  return <StitchRedesignFrame path="/marketing" />;
 }
