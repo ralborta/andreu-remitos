@@ -1,5 +1,4 @@
-import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
-
 export default function DashboardPage() {
-  return <StitchRedesignFrame path="/" />;
+  // Stitch iframe rendered by AppShell layout
+  return null;
 }
