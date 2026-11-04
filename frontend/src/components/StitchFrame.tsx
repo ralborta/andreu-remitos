@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /** 
- * HTML Stitch a pantalla completa con double-buffering.
- * Mantiene el iframe anterior visible mientras el nuevo carga completamente.
+ * Single persistent iframe that swaps content internally.
+ * Never creates a new document - fetches HTML and replaces body content.
  */
 export function StitchFrame({
   src,
@@ -13,88 +13,93 @@ export function StitchFrame({
   src: string;
   title: string;
 }) {
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const [nextSrc, setNextSrc] = useState<string | null>(null);
-  const currentIframeRef = useRef<HTMLIFrameElement>(null);
-  const nextIframeRef = useRef<HTMLIFrameElement>(null);
-  const [showNext, setShowNext] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const currentSrcRef = useRef(src);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
-    if (src !== currentSrc && !nextSrc) {
-      // Start loading new src in hidden iframe
-      setNextSrc(src);
-      setShowNext(false);
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    // Initial load: let iframe load normally
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      currentSrcRef.current = src;
+      return;
     }
-  }, [src, currentSrc, nextSrc]);
 
-  useEffect(() => {
-    if (!nextSrc || !nextIframeRef.current) return;
+    // Subsequent navigations: fetch and swap content
+    if (src !== currentSrcRef.current) {
+      const iframeWindow = iframe.contentWindow;
+      const iframeDocument = iframe.contentDocument;
+      
+      if (!iframeWindow || !iframeDocument) return;
 
-    const nextIframe = nextIframeRef.current;
-    let swapped = false;
+      console.log(`[StitchFrame] Swapping content: ${currentSrcRef.current} → ${src}`);
 
-    const handleLoad = () => {
-      if (swapped) return;
+      // Fetch new HTML
+      fetch(src, { credentials: 'include' })
+        .then(response => response.text())
+        .then(html => {
+          // Parse new HTML
+          const parser = new DOMParser();
+          const newDoc = parser.parseFromString(html, 'text/html');
 
-      // Wait for fonts to be ready in the new iframe
-      const iframeWindow = nextIframe.contentWindow;
-      if (!iframeWindow) return;
+          // Replace title
+          iframeDocument.title = newDoc.title;
 
-      const iframeDocument = iframeWindow.document;
-      if (iframeDocument.fonts && iframeDocument.fonts.ready) {
-        iframeDocument.fonts.ready
-          .then(() => {
-            if (swapped) return;
-            swapped = true;
-            // Swap: show new, hide old
-            setShowNext(true);
-            setCurrentSrc(nextSrc);
-            setNextSrc(null);
-          })
-          .catch(() => {
-            // Fallback: swap after timeout
-            if (swapped) return;
-            swapped = true;
-            setTimeout(() => {
-              setShowNext(true);
-              setCurrentSrc(nextSrc);
-              setNextSrc(null);
-            }, 200);
+          // Replace body content
+          if (iframeDocument.body && newDoc.body) {
+            iframeDocument.body.innerHTML = newDoc.body.innerHTML;
+            
+            // Copy body classes/attributes
+            iframeDocument.body.className = newDoc.body.className;
+            Array.from(newDoc.body.attributes).forEach(attr => {
+              if (attr.name !== 'class') {
+                iframeDocument.body.setAttribute(attr.name, attr.value);
+              }
+            });
+          }
+
+          // Execute new scripts
+          const scripts = newDoc.querySelectorAll('script');
+          scripts.forEach(oldScript => {
+            const newScript = iframeDocument.createElement('script');
+            
+            if (oldScript.src) {
+              newScript.src = oldScript.src;
+            } else {
+              newScript.textContent = oldScript.textContent;
+            }
+            
+            Array.from(oldScript.attributes).forEach(attr => {
+              newScript.setAttribute(attr.name, attr.value);
+            });
+            
+            // Append to trigger execution
+            iframeDocument.body.appendChild(newScript);
           });
-      } else {
-        // No fonts API, swap immediately after load
-        swapped = true;
-        setShowNext(true);
-        setCurrentSrc(nextSrc);
-        setNextSrc(null);
-      }
-    };
 
-    nextIframe.addEventListener('load', handleLoad);
-    return () => nextIframe.removeEventListener('load', handleLoad);
-  }, [nextSrc]);
+          // Update current src
+          currentSrcRef.current = src;
+          
+          console.log(`[StitchFrame] Content swapped successfully`);
+        })
+        .catch(error => {
+          console.error(`[StitchFrame] Failed to fetch ${src}:`, error);
+          // Fallback: full reload
+          iframe.src = src;
+          currentSrcRef.current = src;
+        });
+    }
+  }, [src]);
 
   return (
-    <>
-      {/* Current visible iframe */}
-      <iframe
-        ref={currentIframeRef}
-        title={title}
-        src={currentSrc}
-        className="fixed inset-0 z-[60] h-[100dvh] w-full max-w-full border-0 bg-slate-50 transition-opacity duration-200"
-        style={{ opacity: showNext ? 0 : 1, pointerEvents: showNext ? 'none' : 'auto' }}
-      />
-      
-      {/* Next iframe (hidden while loading) */}
-      {nextSrc && (
-        <iframe
-          ref={nextIframeRef}
-          title={`${title} (loading)`}
-          src={nextSrc}
-          className="fixed inset-0 z-[61] h-[100dvh] w-full max-w-full border-0 bg-slate-50 transition-opacity duration-200"
-          style={{ opacity: showNext ? 1 : 0, pointerEvents: showNext ? 'auto' : 'none' }}
-        />
-      )}
-    </>
+    <iframe
+      ref={iframeRef}
+      title={title}
+      src={src}
+      className="fixed inset-0 z-[60] h-[100dvh] w-full max-w-full border-0 bg-slate-50"
+    />
   );
 }
