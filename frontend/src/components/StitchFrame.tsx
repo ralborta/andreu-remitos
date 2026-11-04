@@ -36,38 +36,17 @@ export function StitchFrame({
     const handleLoad = () => {
       if (swapped) return;
 
-      // Wait for fonts to be ready in the new iframe
-      const iframeWindow = nextIframe.contentWindow;
-      if (!iframeWindow) return;
-
-      const iframeDocument = iframeWindow.document;
-      if (iframeDocument.fonts && iframeDocument.fonts.ready) {
-        iframeDocument.fonts.ready
-          .then(() => {
-            if (swapped) return;
-            swapped = true;
-            // Swap: show new, hide old
-            setShowNext(true);
-            setCurrentSrc(nextSrc);
-            setNextSrc(null);
-          })
-          .catch(() => {
-            // Fallback: swap after timeout
-            if (swapped) return;
-            swapped = true;
-            setTimeout(() => {
-              setShowNext(true);
-              setCurrentSrc(nextSrc);
-              setNextSrc(null);
-            }, 200);
-          });
-      } else {
-        // No fonts API, swap immediately after load
-        swapped = true;
-        setShowNext(true);
-        setCurrentSrc(nextSrc);
-        setNextSrc(null);
-      }
+      // Wait two animation frames to ensure the browser has painted the new content
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (swapped) return;
+          swapped = true;
+          // Swap: show new, hide old
+          setShowNext(true);
+          setCurrentSrc(nextSrc);
+          setNextSrc(null);
+        });
+      });
     };
 
     nextIframe.addEventListener('load', handleLoad);

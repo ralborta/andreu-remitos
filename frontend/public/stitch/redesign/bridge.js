@@ -53,7 +53,7 @@
         href: href
       }, '*');
       
-      // Wait for ack from parent
+      // Wait for ack from parent (longer timeout to ensure ack is received)
       var timeout = setTimeout(function() {
         if (!navigated) {
           // Fallback: full page reload if parent doesn't respond
@@ -63,7 +63,7 @@
             window.location.href = href;
           }
         }
-      }, 150);
+      }, 1000);
       
       // Listen for ack
       var ackListener = function(event) {
@@ -125,7 +125,11 @@
     if (!href) return;
     if (el.tagName === "A") {
       el.setAttribute("href", href);
-      el.setAttribute("target", "_parent");
+      // Only set target="_parent" if NOT inside a parent shell
+      // (when inside shell, postMessage navigation handles it)
+      if (window.parent === window) {
+        el.setAttribute("target", "_parent");
+      }
     }
     el.addEventListener("click", function (e) {
       e.preventDefault();
@@ -1003,6 +1007,25 @@
     wireNotifications();
     paintSystemStatus();
   }
+
+  // Delegated capture-phase click listener to catch all navigation clicks
+  // This ensures clicks are intercepted even on dynamically added elements
+  document.addEventListener("click", function(e) {
+    var target = e.target;
+    // Walk up the DOM to find a clickable nav element
+    while (target && target !== document) {
+      if ((target.tagName === "A" || target.tagName === "BUTTON") && target.getAttribute("href")) {
+        var href = routeFor(target);
+        if (href) {
+          e.preventDefault();
+          e.stopPropagation();
+          go(href);
+          return;
+        }
+      }
+      target = target.parentElement;
+    }
+  }, true); // true = capture phase
 
   // Wait for Material Symbols font before showing icons to prevent text flash
   function initWithFonts() {
