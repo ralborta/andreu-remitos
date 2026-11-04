@@ -178,13 +178,13 @@
 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Monitor de Servicios</h1>
 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            8 agentes en línea
+            <span id="sol-monitor-agentes-online">— agentes en línea</span>
           </span>
 </div>
 <p class="text-sm text-slate-500 mt-1 flex items-center gap-2">
 <span><i class="fa-regular fa-clock text-slate-400"></i> Chequeo cada 15s · infraestructura + estado de agentes</span>
 <span class="hidden sm:inline text-slate-300">•</span>
-<span class="hidden sm:inline font-medium text-slate-600">Martes 12 de marzo de 2026 - 10:25:25 p. m.</span>
+<span id="sol-monitor-fecha" class="hidden sm:inline font-medium text-slate-600"></span>
 </p>
 </div>
 <!-- Botones de Acción -->
@@ -330,22 +330,22 @@
 <!-- Activo -->
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700">
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Activo <span class="bg-emerald-600 text-white rounded px-1.5 py-0.2 text-[10px]">2</span>
+            Activo <span id="sol-mon-n-activo" class="bg-emerald-600 text-white rounded px-1.5 py-0.2 text-[10px]">2</span>
 </div>
 <!-- En espera -->
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs font-bold text-blue-700">
 <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-            En espera <span class="bg-blue-600 text-white rounded px-1.5 py-0.2 text-[10px]">2</span>
+            En espera <span id="sol-mon-n-espera" class="bg-blue-600 text-white rounded px-1.5 py-0.2 text-[10px]">2</span>
 </div>
 <!-- En hold -->
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-xs font-bold text-amber-700">
 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            En hold <span class="bg-amber-600 text-white rounded px-1.5 py-0.2 text-[10px]">0</span>
+            En hold <span id="sol-mon-n-hold" class="bg-amber-600 text-white rounded px-1.5 py-0.2 text-[10px]">0</span>
 </div>
 <!-- Offline -->
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600">
 <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-            Offline <span class="bg-slate-500 text-white rounded px-1.5 py-0.2 text-[10px]">7</span>
+            Offline <span id="sol-mon-n-offline" class="bg-slate-500 text-white rounded px-1.5 py-0.2 text-[10px]">7</span>
 </div>
 </div>
 </div>
@@ -715,5 +715,6 @@
 </footer>
 <!-- END: Footer -->
 
+<script src="/stitch/redesign/monitor-live.js?v=qa-clock-v1"></script>
 <script src="/stitch/redesign/bridge.js"></script>
 </body></html>

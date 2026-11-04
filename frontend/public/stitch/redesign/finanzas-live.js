@@ -998,6 +998,7 @@
       if (!label) {
         var first = b.querySelector("span:first-child");
         label = String((first && first.textContent) || b.textContent || "")
+          .replace(/\s*\(\d+\)\s*$/, "")
           .replace(/\s+\d+\s*$/, "")
           .replace(/\s+/g, " ")
           .trim();
@@ -1077,17 +1078,20 @@
     document.querySelectorAll("main button").forEach(function (btn) {
       if (btn.closest("[data-sol-desk-chat], [data-sol-shell='chrome'], [data-sol-notif]")) return;
       if (btn.getAttribute("data-sol-fin-chip-wired")) return;
-      var key = classifyChip(btn.textContent || "");
+      var key = btn.getAttribute("data-sol-fin-chip") || classifyChip(btn.textContent || "");
       if (!key) return;
       btn.setAttribute("data-sol-fin-chip", key);
       btn.setAttribute("data-sol-fin-chip-wired", "1");
-      btn.setAttribute(
-        "data-sol-fin-chip-label",
-        String(btn.textContent || "")
-          .replace(/\s+\d+\s*$/, "")
-          .replace(/\s+/g, " ")
-          .trim(),
-      );
+      if (!btn.getAttribute("data-sol-fin-chip-label")) {
+        btn.setAttribute(
+          "data-sol-fin-chip-label",
+          String(btn.textContent || "")
+            .replace(/\s*\(\d+\)\s*$/, "")
+            .replace(/\s+\d+\s*$/, "")
+            .replace(/\s+/g, " ")
+            .trim(),
+        );
+      }
       btn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1098,6 +1102,19 @@
     });
     var active = document.querySelector('[data-sol-fin-chip="' + filter + '"]') || document.querySelector('[data-sol-fin-chip="todas"]');
     if (active) paintChipActive(active);
+  }
+
+  function paintHoyChip() {
+    var el = document.getElementById("sol-fin-hoy-chip");
+    if (!el) return;
+    try {
+      el.textContent =
+        "Hoy (" +
+        new Date().toLocaleDateString("es-AR", { day: "numeric", month: "short" }) +
+        ")";
+    } catch (e) {
+      el.textContent = "Hoy";
+    }
   }
 
   function wireSearch() {
@@ -2878,6 +2895,7 @@
 
   function boot() {
     bannerDemo();
+    paintHoyChip();
     if (pageKey() === "facturas" || pageKey() === "cobranza") filter = "todas";
     wireChips();
     wireSearch();

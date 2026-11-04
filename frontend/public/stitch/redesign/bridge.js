@@ -557,12 +557,17 @@
         "</button>" +
         '<div class="hidden absolute right-0 top-full mt-2 w-[360px] max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl z-[80] overflow-hidden" data-sol-notif-panel role="menu" aria-label="Notificaciones operativas"></div>' +
         "</div>" +
-        '<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200">' +
+        '<div class="relative flex items-center gap-2.5 pl-2 border-l border-slate-200" data-sol-user-menu="wrap">' +
+        '<button type="button" class="flex items-center gap-2.5 rounded-lg px-1.5 py-1 hover:bg-slate-50 transition-colors" data-sol-user-menu-btn="1" aria-haspopup="true" aria-expanded="false" title="Menú de usuario">' +
         '<div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-indigo-100">GD</div>' +
         '<div class="hidden lg:flex flex-col text-left"><span class="text-xs font-bold text-slate-900 leading-tight">Gonzalo Demo</span><span class="text-[10px] text-slate-400 font-medium leading-tight">Administrador</span></div>' +
         '<span class="material-symbols-outlined text-slate-400 text-xs hidden lg:block">expand_more</span>' +
-        "</div></div></div></div>";
+        "</button>" +
+        '<div class="hidden absolute right-0 top-full mt-2 w-48 rounded-xl border border-slate-200 bg-white shadow-xl z-[80] overflow-hidden py-1" data-sol-user-menu-panel role="menu">' +
+        '<button type="button" role="menuitem" class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" data-sol-logout="1">Cerrar sesión</button>' +
+        "</div></div></div></div></div>";
       document.body.insertBefore(chrome, document.body.firstChild);
+      installUserMenu(chrome);
     }
     var top = chrome.querySelector('[data-sol-shell="top"]');
     if (top) {
@@ -793,6 +798,74 @@
     return wrap;
   }
 
+  function installUserMenu(root) {
+    var scope = root || document;
+    var wraps = scope.querySelectorAll
+      ? scope.querySelectorAll("[data-sol-user-menu='wrap']")
+      : [];
+    if (!wraps.length && scope.getAttribute && scope.getAttribute("data-sol-user-menu") === "wrap") {
+      wraps = [scope];
+    }
+    Array.prototype.forEach.call(wraps, function (wrap) {
+      if (wrap.getAttribute("data-sol-user-wired")) return;
+      wrap.setAttribute("data-sol-user-wired", "1");
+      var btn = wrap.querySelector("[data-sol-user-menu-btn]");
+      var panel = wrap.querySelector("[data-sol-user-menu-panel]");
+      if (!btn || !panel) return;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var open = !panel.classList.contains("hidden");
+        document.querySelectorAll("[data-sol-user-menu-panel]").forEach(function (p) {
+          p.classList.add("hidden");
+        });
+        if (!open) {
+          panel.classList.remove("hidden");
+          btn.setAttribute("aria-expanded", "true");
+        } else {
+          btn.setAttribute("aria-expanded", "false");
+        }
+      });
+      var logoutBtn = wrap.querySelector("[data-sol-logout]");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var goLogin = function () {
+            try {
+              window.top.location.href = "/login";
+            } catch (err) {
+              window.location.href = "/login";
+            }
+          };
+          // Next.js limpia la cookie de sesión; el backend es opcional.
+          fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+            .catch(function () {})
+            .finally(goLogin);
+        });
+      }
+    });
+    if (!document.documentElement.getAttribute("data-sol-user-global")) {
+      document.documentElement.setAttribute("data-sol-user-global", "1");
+      document.addEventListener("click", function (e) {
+        var t = e.target;
+        if (t && t.closest && t.closest("[data-sol-user-menu='wrap']")) return;
+        document.querySelectorAll("[data-sol-user-menu-panel]").forEach(function (p) {
+          p.classList.add("hidden");
+        });
+        document.querySelectorAll("[data-sol-user-menu-btn]").forEach(function (b) {
+          b.setAttribute("aria-expanded", "false");
+        });
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        document.querySelectorAll("[data-sol-user-menu-panel]").forEach(function (p) {
+          p.classList.add("hidden");
+        });
+      });
+    }
+  }
+
   function wireNotifications() {
     var bells = [];
     document.querySelectorAll("[data-sol-notif-bell]").forEach(function (b) {
@@ -842,6 +915,7 @@
   function paintShell() {
     unifyShell();
     installChrome();
+    installUserMenu(document);
     wireNotifications();
   }
 
@@ -852,6 +926,7 @@
   decorateMenus();
   wireHeaderSearch();
   wireNotifications();
+  installUserMenu(document);
   document.addEventListener("DOMContentLoaded", paintShell);
 })();
 

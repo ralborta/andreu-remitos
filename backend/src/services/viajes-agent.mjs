@@ -338,7 +338,13 @@ async function finalizarAsignacion(pending, { telefonoCliente, slot, nombre, log
     cliente: datos.cliente || pending.nombre || "Cliente WhatsApp",
     origen: datos.origen,
     destino: datos.destino,
-    carga: datos.carga || `${datos.tipo_carga} ${datos.toneladas} t`,
+    carga:
+      datos.carga ||
+      `${datos.tipo_carga} ${
+        Number.isFinite(Number(datos.toneladas))
+          ? Number(Number(datos.toneladas).toFixed(1))
+          : datos.toneladas
+      } t`,
     fecha: asignacion.fecha || fechaIso,
     hora: asignacion.hora || hora || null,
     tipo_carga: datos.tipo_carga || null,

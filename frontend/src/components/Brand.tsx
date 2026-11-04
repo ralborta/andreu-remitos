@@ -122,7 +122,7 @@ export function Brand({
           maxW={company.maxW}
           aspect={COMPANY_ASPECT}
         />
-        <EmpliadosMark size={size === "lg" ? "md" : "sm"} />
+        <EmpliadosMark size={size === "lg" ? "md" : "sm"} onLight={onLight} />
       </span>
     );
   }

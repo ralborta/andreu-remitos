@@ -3,6 +3,24 @@
 
   function $(id) { return document.getElementById(id); }
 
+  function paintViajesCount() {
+    var el = $("sol-met-viajes-count");
+    if (!el) return;
+    fetch("/backend/api/viajes?limit=100", { credentials: "include" })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (data) {
+        var list = (data && (data.viajes || data.items || data)) || [];
+        if (!Array.isArray(list)) list = [];
+        el.textContent = list.length + " viajes";
+      })
+      .catch(function () {
+        el.textContent = "Viajes";
+      });
+  }
+  paintViajesCount();
+
   function decir(texto) {
     var p = $("sol-met-chat");
     if (p) p.textContent = texto;

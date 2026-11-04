@@ -463,21 +463,21 @@
 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
 <!-- Category Tabs -->
 <div class="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0">
-<button class="px-3 py-1.5 rounded-lg bg-tertiary text-on-tertiary font-label-md text-label-md font-semibold whitespace-nowrap shadow-xs">
-              Todos (142)
+<button class="px-3 py-1.5 rounded-lg bg-tertiary text-on-tertiary font-label-md text-label-md font-semibold whitespace-nowrap shadow-xs" data-sol-fin-chip="todas" data-sol-fin-chip-label="Todos" aria-pressed="true">
+              Todos (0)
             </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap flex items-center gap-1.5 transition-colors">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap flex items-center gap-1.5 transition-colors" data-sol-fin-chip="pendientes" data-sol-fin-chip-label="Pendientes" aria-pressed="false">
 <span>Pendientes</span>
-<span class="px-1.5 py-0.2 bg-error text-on-error rounded-full text-[10px] font-bold">8</span>
+<span class="px-1.5 py-0.2 bg-error text-on-error rounded-full text-[10px] font-bold">0</span>
 </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
-              Conciliados Hoy (128)
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors" data-sol-fin-chip="al_dia" data-sol-fin-chip-label="Conciliados" aria-pressed="false">
+              Conciliados (0)
             </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
-              Discrepancias (4)
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors" data-sol-fin-chip="discrepancias" data-sol-fin-chip-label="Discrepancias" aria-pressed="false">
+              Discrepancias (0)
             </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
-              Rechazados (2)
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors" data-sol-fin-chip="rechazados" data-sol-fin-chip-label="Rechazados" aria-pressed="false">
+              Rechazados (0)
             </button>
 </div>
 <!-- Secondary Filters -->
@@ -498,7 +498,7 @@
 <!-- Date Range -->
 <button class="px-2.5 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
 <span class="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_today</span>
-<span>Hoy (26 Oct)</span>
+<span id="sol-fin-hoy-chip">Hoy</span>
 </button>
 <!-- Export -->
 <button class="p-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors" title="Exportar reporte CSV/Excel">

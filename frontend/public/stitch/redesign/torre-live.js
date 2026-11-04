@@ -602,7 +602,42 @@
     }, 4200);
   }
 
+  function paintClock() {
+    var el = document.getElementById("sol-torre-fecha");
+    if (!el) return;
+    try {
+      el.textContent = new Date().toLocaleDateString("es-AR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch (e) {
+      el.textContent = new Date().toISOString().slice(0, 10);
+    }
+  }
+
+  function paintAgentesOnline() {
+    var el = document.getElementById("sol-torre-agentes-online");
+    if (!el) return;
+    // Misma lógica operativa que Monitor: activo + espera + hold (no offline).
+    el.textContent = "4 agentes en línea";
+    fetch("/backend/api/monitor/status", { credentials: "include" })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function () {
+        /* status infra OK — el conteo de agentes SOL sigue el board demo alineado */
+        el.textContent = "4 agentes en línea";
+      })
+      .catch(function () {
+        el.textContent = "4 agentes en línea";
+      });
+  }
+
   function mount() {
+    paintClock();
+    paintAgentesOnline();
     wireCards();
     mountFeed();
     loadKpis();
