@@ -93,12 +93,15 @@
 
   function api(path, init) {
     init = init || {};
+    var method = String(init.method || "GET").toUpperCase();
     var opts = {
-      method: init.method || "GET",
+      method: method,
       credentials: "include",
-      headers: Object.assign({ "Content-Type": "application/json" }, init.headers || {}),
+      headers: Object.assign({}, init.headers || {}),
     };
+    // Fastify rechaza DELETE/GET con Content-Type application/json y body vacío (400).
     if (init.body != null) {
+      opts.headers["Content-Type"] = opts.headers["Content-Type"] || "application/json";
       opts.body = typeof init.body === "string" ? init.body : JSON.stringify(init.body);
     }
     return fetch("/backend" + path, opts).then(function (r) {
@@ -138,16 +141,70 @@
       });
   }
 
+  var MONTHS_ES = [
+    "ene",
+    "feb",
+    "mar",
+    "abr",
+    "may",
+    "jun",
+    "jul",
+    "ago",
+    "sep",
+    "oct",
+    "nov",
+    "dic",
+  ];
+
+  /** Fecha calendario sin corrimiento UTC (input type=date / ISO date-only). */
+  function dateInputToIso(ymd) {
+    var s = String(ymd || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+    return s + "T12:00:00.000Z";
+  }
+
   function fmtDate(iso) {
     if (!iso) return "—";
-    var d = new Date(iso);
+    var s = String(iso);
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) {
+      return Number(m[3]) + " " + MONTHS_ES[Number(m[2]) - 1] + " " + m[1];
+    }
+    var d = new Date(s);
     if (isNaN(d.getTime())) return "—";
     try {
-      return d.toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" });
+      return d.toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
     } catch (e) {
-      return d.toISOString().slice(0, 10);
+      return s.slice(0, 10);
     }
   }
+
+  function truncate(str, max) {
+    var t = String(str == null ? "" : str);
+    if (t.length <= max) return t;
+    return t.slice(0, Math.max(0, max - 1)) + "…";
+  }
+
+  var STATUS_ES = {
+    proposed: "Propuesta",
+    approved: "Aprobada",
+    active: "Activa",
+    finished: "Finalizada",
+    archived: "Archivada",
+    draft: "Borrador",
+    discarded: "Descartada",
+    expired: "Vencida",
+    published: "Publicada",
+    pending_approval: "En aprobación",
+    idea: "Idea",
+    queued: "En cola",
+    in_progress: "En curso",
+    covered: "Cubierta",
+    candidate: "Candidata",
+    recommended: "Recomendada",
+    servicio: "Servicio",
+    producto: "Producto",
+  };
 
   function fmtNum(n) {
     if (n == null || n === "") return "—";
@@ -161,7 +218,9 @@
   }
 
   function badge(status) {
-    var s = String(status || "—").toLowerCase();
+    var raw = String(status || "—");
+    var s = raw.toLowerCase();
+    var label = STATUS_ES[s] || raw;
     var cls = "bg-slate-100 text-slate-700 border-slate-200";
     if (s === "active" || s === "approved" || s === "published" || s === "completed")
       cls = "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -173,10 +232,10 @@
     else if (s === "media") cls = "bg-amber-50 text-amber-800 border-amber-200";
     else if (s === "baja") cls = "bg-sky-50 text-sky-700 border-sky-200";
     return (
-      '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ' +
+      '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide border ' +
       cls +
       '">' +
-      esc(status || "—") +
+      esc(label) +
       "</span>"
     );
   }
@@ -350,7 +409,7 @@
               '<div class="flex items-start justify-between gap-3 py-3 border-b border-slate-100 last:border-0">' +
               "<div>" +
               '<div class="text-[13px] font-semibold text-slate-900">' +
-              esc(c.title) +
+              esc(truncate(c.title, 120)) +
               "</div>" +
               '<div class="mt-0.5 text-[11px] text-slate-500">' +
               esc(c.audience || c.sourceLabel || "") +
@@ -462,13 +521,13 @@
               '<div class="flex items-start justify-between gap-3 py-3 border-b border-slate-100 last:border-0">' +
               "<div>" +
               '<div class="flex items-center gap-2">' +
-              '<span class="text-[13px] font-semibold text-slate-900">' +
-              esc(it.name) +
+              '<span class="text-[13px] font-semibold text-slate-900 break-words">' +
+              esc(truncate(it.name, 120)) +
               "</span>" +
               badge(it.kind) +
               "</div>" +
-              '<p class="mt-1 text-[12px] text-slate-500">' +
-              esc(it.description) +
+              '<p class="mt-1 text-[12px] text-slate-500 break-words">' +
+              esc(truncate(it.description, 240)) +
               "</p>" +
               (it.priceText
                 ? '<div class="mt-1 text-[11px] font-semibold text-slate-700">' +
@@ -538,7 +597,7 @@
               '<div class="flex flex-wrap items-start justify-between gap-2">' +
               "<div>" +
               '<div class="text-[14px] font-bold text-slate-900">' +
-              esc(c.title) +
+              esc(truncate(c.title, 120)) +
               "</div>" +
               '<div class="mt-1 text-[12px] text-slate-500">' +
               esc(c.objective || "") +
@@ -574,7 +633,7 @@
         return (
           '<div class="flex items-center justify-between gap-2 py-2 border-b border-slate-100 last:border-0 text-[12px]">' +
           '<span class="font-semibold text-slate-800 truncate">' +
-          esc(c.title) +
+          esc(truncate(c.title, 120)) +
           "</span>" +
           '<span class="text-slate-500 shrink-0">' +
           esc(fmtDate(c.startsAt)) +
@@ -634,32 +693,32 @@
       '<div class="' +
       CARD +
       '"><h2 class="text-[15px] font-bold text-slate-900 mb-3">Catálogo</h2>' +
-      '<form id="mkt-catalog" class="grid sm:grid-cols-2 gap-3 mb-4">' +
+      '<form id="mkt-catalog" class="grid sm:grid-cols-2 gap-3 mb-4" autocomplete="off">' +
       '<div><label class="' +
       LABEL +
-      '">Tipo</label><select name="kind" class="' +
+      '">Tipo</label><select name="catKind" class="' +
       INPUT +
       '"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div>' +
       '<div><label class="' +
       LABEL +
-      '">Nombre</label><input name="name" class="' +
+      '">Nombre</label><input name="catName" class="' +
       INPUT +
-      '" required minlength="2"/></div>' +
+      '" required minlength="2" maxlength="200" placeholder="Ej: Distribución urbana"/></div>' +
       '<div class="sm:col-span-2"><label class="' +
       LABEL +
-      '">Descripción</label><textarea name="description" class="' +
+      '">Descripción</label><textarea name="catDescription" class="' +
       TEXTAREA +
-      '" required minlength="5"></textarea></div>' +
+      '" required minlength="5" maxlength="4000" placeholder="Qué es, para quién y qué lo hace distinto"></textarea></div>' +
       '<div><label class="' +
       LABEL +
-      '">Precio</label><input name="priceText" class="' +
+      '">Precio</label><input name="catPrice" class="' +
       INPUT +
-      '"/></div>' +
+      '" maxlength="200" placeholder="Ej: Desde $18.500"/></div>' +
       '<div><label class="' +
       LABEL +
-      '">Audiencia</label><input name="audience" class="' +
+      '">Audiencia</label><input name="catAudience" class="' +
       INPUT +
-      '"/></div>' +
+      '" maxlength="1000" placeholder="Público típico"/></div>' +
       '<div class="sm:col-span-2"><button type="submit" class="' +
       BTN_PRIMARY +
       '">Agregar al catálogo</button></div></form>' +
@@ -734,16 +793,28 @@
       cat.addEventListener("submit", function (e) {
         e.preventDefault();
         var fd = new FormData(cat);
+        var name = String(fd.get("catName") || "").trim();
+        var description = String(fd.get("catDescription") || "").trim();
+        var priceText = String(fd.get("catPrice") || "").trim();
+        var audience = String(fd.get("catAudience") || "").trim();
+        if (name.length < 2 || description.length < 5) {
+          toast("Completá nombre y descripción.", "err");
+          return;
+        }
+        if (priceText && !/\d/.test(priceText)) {
+          toast("El precio debe incluir un número (ej: $ 18.500).", "err");
+          return;
+        }
         mut(
           "/api/marketing/catalog",
           {
             method: "POST",
             body: {
-              kind: fd.get("kind"),
-              name: fd.get("name"),
-              description: fd.get("description"),
-              priceText: fd.get("priceText") || undefined,
-              audience: fd.get("audience") || undefined,
+              kind: String(fd.get("catKind") || "servicio"),
+              name: name,
+              description: description,
+              priceText: priceText || undefined,
+              audience: audience || undefined,
             },
           },
           "Ítem agregado",
@@ -756,12 +827,18 @@
         e.preventDefault();
         var fd = new FormData(camp);
         var body = {
-          title: fd.get("title"),
-          objective: fd.get("objective"),
-          audience: fd.get("audience") || undefined,
+          title: String(fd.get("title") || "").trim().slice(0, 200),
+          objective: String(fd.get("objective") || "").trim(),
+          audience: String(fd.get("audience") || "").trim() || undefined,
         };
-        if (fd.get("startsAt")) body.startsAt = new Date(fd.get("startsAt")).toISOString();
-        if (fd.get("endsAt")) body.endsAt = new Date(fd.get("endsAt")).toISOString();
+        if (!body.title || body.title.length < 3 || !body.objective || body.objective.length < 5) {
+          toast("Completá título y objetivo.", "err");
+          return;
+        }
+        var starts = dateInputToIso(fd.get("startsAt"));
+        var ends = dateInputToIso(fd.get("endsAt"));
+        if (starts) body.startsAt = starts;
+        if (ends) body.endsAt = ends;
         mut("/api/marketing/campaigns", { method: "POST", body: body }, "Campaña creada");
       });
     }
@@ -970,7 +1047,7 @@
     var campaigns = data.campaigns || [];
     var campOpts = campaigns
       .map(function (c) {
-        return '<option value="' + esc(c.id) + '">' + esc(c.title) + "</option>";
+        return '<option value="' + esc(c.id) + '">' + esc(truncate(c.title, 80)) + "</option>";
       })
       .join("");
 
@@ -1025,7 +1102,7 @@
               '<div class="flex flex-wrap items-start justify-between gap-2">' +
               "<div>" +
               '<div class="text-[14px] font-bold text-slate-900">' +
-              esc(o.title) +
+              esc(truncate(o.title, 120)) +
               "</div>" +
               '<p class="mt-1 text-[12px] text-slate-600">' +
               esc(o.description) +
@@ -1129,17 +1206,28 @@
             return x.trim();
           })
           .filter(Boolean);
+        var priceText = String(fd.get("priceText") || "").trim();
+        if (priceText && !/\d/.test(priceText)) {
+          toast("El precio debe incluir un número (ej: $ 49.900).", "err");
+          return;
+        }
         var body = {
-          title: fd.get("title"),
-          description: fd.get("description"),
-          priceText: fd.get("priceText") || undefined,
-          discountText: fd.get("discountText") || undefined,
-          terms: fd.get("terms") || undefined,
-          campaignId: fd.get("campaignId") || undefined,
+          title: String(fd.get("title") || "").trim().slice(0, 200),
+          description: String(fd.get("description") || "").trim(),
+          priceText: priceText || undefined,
+          discountText: String(fd.get("discountText") || "").trim() || undefined,
+          terms: String(fd.get("terms") || "").trim() || undefined,
+          campaignId: String(fd.get("campaignId") || "").trim() || undefined,
           channels: channels.length ? channels : ["email", "web"],
         };
-        if (fd.get("startsAt")) body.startsAt = new Date(fd.get("startsAt")).toISOString();
-        if (fd.get("endsAt")) body.endsAt = new Date(fd.get("endsAt")).toISOString();
+        if (!body.title || body.title.length < 3 || !body.description || body.description.length < 5) {
+          toast("Completá título y descripción.", "err");
+          return;
+        }
+        var starts = dateInputToIso(fd.get("startsAt"));
+        var ends = dateInputToIso(fd.get("endsAt"));
+        if (starts) body.startsAt = starts;
+        if (ends) body.endsAt = ends;
         mut("/api/marketing/offers", { method: "POST", body: body }, "Oferta creada");
       });
     }
