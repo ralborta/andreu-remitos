@@ -1,0 +1,457 @@
+/**
+ * SOL Responsive Styles
+ * Mobile y tablet layouts para todas las páginas Stitch
+ */
+
+/* =========================================================================
+   BREAKPOINTS
+   ========================================================================= */
+/* Mobile: < 640px */
+/* Tablet: 640px - 1024px */
+/* Desktop: > 1024px */
+
+/* =========================================================================
+   NAVEGACIÓN RESPONSIVE
+   ========================================================================= */
+
+/* Hamburger menu para mobile */
+@media (max-width: 1279px) {
+  .sol-nav-desktop {
+    display: none;
+  }
+  
+  .sol-nav-mobile {
+    display: flex;
+  }
+  
+  /* Botón hamburger */
+  .sol-hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 200ms;
+  }
+  
+  .sol-hamburger-btn:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+  }
+  
+  /* Mobile sidebar overlay */
+  .sol-mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    background-color: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 300;
+    overflow-y: auto;
+  }
+  
+  .sol-mobile-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  /* Backdrop */
+  .sol-mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms;
+    z-index: 250;
+  }
+  
+  .sol-mobile-backdrop.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+}
+
+@media (min-width: 1280px) {
+  .sol-nav-mobile {
+    display: none;
+  }
+  
+  .sol-hamburger-btn {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   HEADER RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 640px) {
+  /* Header compacto en mobile */
+  header .flex.items-center.gap-6 {
+    gap: 12px;
+  }
+  
+  /* Logo más pequeño */
+  header .w-9.h-9 {
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Esconder busca global en mobile */
+  header .relative.w-80 {
+    display: none;
+  }
+  
+  /* Esconder texto del usuario */
+  header .hidden.lg\\:flex.flex-col {
+    display: none !important;
+  }
+}
+
+/* =========================================================================
+   TABLAS RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 1024px) {
+  /* Scroll horizontal en tablas */
+  .sol-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mínimo width para tablas complejas */
+  .sol-table {
+    min-width: 800px;
+  }
+  
+  /* Columnas opcionales ocultas en tablet */
+  .sol-table .col-optional {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  /* En mobile, tablas super compactas o modo card */
+  .sol-table {
+    min-width: 600px;
+  }
+  
+  .sol-table th,
+  .sol-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  /* Ocultar más columnas en mobile */
+  .sol-table .col-hide-mobile {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   CARDS Y KPIS RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  /* Grid de 4 columnas pasa a 2 en tablet */
+  .grid.grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Grid de 3 columnas pasa a 1 en mobile */
+  .grid.grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Todos los grids pasan a 1 columna en mobile */
+  .grid.grid-cols-2,
+  .grid.grid-cols-3,
+  .grid.grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* KPI cards más compactos */
+  .sol-kpi-card {
+    padding: 16px;
+  }
+  
+  .sol-kpi-value {
+    font-size: 24px;
+  }
+}
+
+/* =========================================================================
+   PAGE HEADER RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  .sol-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .sol-page-header .flex.items-center.gap-4 {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sol-page-title {
+    font-size: 18px;
+  }
+  
+  .sol-page-subtitle {
+    font-size: 13px;
+  }
+}
+
+/* =========================================================================
+   BOTONES RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 640px) {
+  /* Botones más compactos en mobile */
+  .sol-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  /* Botones de acción principales full-width en mobile */
+  .sol-btn-primary-mobile-full {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Esconder texto en botones secundarios, solo íconos */
+  .sol-btn-icon-only-mobile span:not(.material-symbols-outlined) {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   MODALES RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 640px) {
+  /* Modales ocupan toda la pantalla en mobile */
+  [data-sol-modal] .max-w-md {
+    max-width: 100%;
+    margin: 0;
+    height: 100%;
+    border-radius: 0;
+  }
+  
+  [data-sol-modal] {
+    padding: 0;
+    align-items: stretch;
+  }
+}
+
+/* =========================================================================
+   FORMULARIOS RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  /* Inputs y selects full-width en mobile */
+  select,
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    width: 100%;
+  }
+  
+  /* Form layouts pasan de horizontal a vertical */
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* =========================================================================
+   UTILIDADES RESPONSIVE
+   ========================================================================= */
+
+/* Esconder en mobile */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 641px) {
+  .hide-mobile {
+    display: initial;
+  }
+}
+
+/* Esconder en tablet y desktop */
+.show-mobile {
+  display: initial;
+}
+
+@media (min-width: 641px) {
+  .show-mobile {
+    display: none;
+  }
+}
+
+/* Stack vertical en mobile */
+@media (max-width: 640px) {
+  .stack-mobile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Text más pequeño en mobile */
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 13px;
+  }
+  
+  .text-lg-responsive {
+    font-size: 16px;
+  }
+  
+  .text-xl-responsive {
+    font-size: 18px;
+  }
+}
+
+/* =========================================================================
+   ESPACIADO RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 640px) {
+  /* Reducir padding en mobile */
+  .px-space-xl {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .py-space-lg {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  
+  .gap-space-lg {
+    gap: 12px;
+  }
+}
+
+/* =========================================================================
+   WHATSAPP PANEL RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 1024px) {
+  /* Layout de WhatsApp: 3 columnas pasan a 1 en mobile */
+  .whatsapp-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Panel del chat ocupa toda la altura */
+  .whatsapp-chat-panel {
+    min-height: calc(100vh - 200px);
+  }
+  
+  /* Lista de contactos colapsable */
+  .whatsapp-contacts {
+    display: none;
+  }
+  
+  .whatsapp-contacts.show {
+    display: block;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 100;
+  }
+}
+
+/* =========================================================================
+   FINANZAS RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  /* KPIs de finanzas: 4 cols -> 2 cols */
+  .finanzas-kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Filtros apilados verticalmente */
+  .finanzas-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .finanzas-filters select,
+  .finanzas-filters input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  /* KPIs: 2 cols -> 1 col en mobile */
+  .finanzas-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================================
+   TORRE DE CONTROL RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 1024px) {
+  /* Layout de torre: sidebar + main -> stack */
+  .torre-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Mapas y gráficos responsive */
+  .torre-map {
+    height: 300px;
+  }
+  
+  .torre-chart {
+    height: 250px;
+  }
+}
+
+/* =========================================================================
+   VIAJES RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  /* Tabs horizontales -> dropdown en mobile */
+  .viajes-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  /* Acciones de viaje apiladas */
+  .viaje-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .viaje-actions button {
+    width: 100%;
+  }
+}
