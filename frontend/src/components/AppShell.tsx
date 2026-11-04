@@ -4,15 +4,21 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
-import { isStitchRedesignPath } from "@/lib/stitch-redesign";
+import { isStitchRedesignPath, stitchRedesignFor } from "@/lib/stitch-redesign";
+import { StitchFrame } from "./StitchFrame";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   // Pantallas con HTML Stitch a pantalla completa (sin chrome propio)
   const stitchFullBleed = isStitchRedesignPath(pathname);
-
+  
+  // Render persistent Stitch iframe when on Stitch routes
   if (stitchFullBleed) {
+    const screen = stitchRedesignFor(pathname);
+    if (screen) {
+      return <StitchFrame src={screen.src} title={`${screen.title} — Stitch`} />;
+    }
     return <>{children}</>;
   }
 

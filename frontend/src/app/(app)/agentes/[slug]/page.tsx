@@ -26,7 +26,8 @@ export default async function AgentPage({
 
   const stitch = stitchRedesignFor(`/agentes/${slug}`);
   if (stitch) {
-    return <StitchRedesignFrame path={`/agentes/${slug}`} />;
+    // Stitch iframe rendered by AppShell layout
+    return null;
   }
 
   const convos = conversationsFor(slug);

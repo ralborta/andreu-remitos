@@ -1,5 +1,5 @@
-import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 
 export default function Page() {
-  return <StitchRedesignFrame path="/finanzas/conciliacion" />;
+  // Stitch iframe rendered by AppShell layout
+  return null;
 }
