@@ -29,6 +29,20 @@ function Bubble({ msg }: { msg: ConversacionMensaje }) {
   const mine = msg.from === "human" || (msg.dir === "out" && msg.from !== "bot");
   const isBot = msg.from === "bot" || (msg.dir === "out" && msg.from !== "human");
 
+  // Filter out error messages or malformed data
+  const isErrorMessage = typeof msg.texto === "string" && (
+    msg.texto.includes("Cannot read properties") ||
+    msg.texto.includes("undefined") ||
+    msg.texto.startsWith("Error:") ||
+    msg.texto.startsWith("TypeError:")
+  );
+
+  // Don't render error messages to users
+  if (isErrorMessage) {
+    console.error("Filtered error message from chat:", msg.texto);
+    return null;
+  }
+
   return (
     <div className={clsx("flex", mine ? "justify-end" : "justify-start")}>
       <div
@@ -108,6 +122,9 @@ export function ContactoChatThread({
     );
   }
 
+  // Filter out messages with missing required fields
+  const validMensajes = mensajes.filter((m) => m && m.id && m.at);
+
   return (
     <div
       className="flex-1 space-y-2 overflow-y-auto scroll-thin px-3 py-3"
@@ -116,7 +133,7 @@ export function ContactoChatThread({
         backgroundSize: "22px 22px",
       }}
     >
-      {mensajes.map((m) => (
+      {validMensajes.map((m) => (
         <Bubble key={m.id} msg={m} />
       ))}
       {operadorEscribiendo && <TypingBubble />}
