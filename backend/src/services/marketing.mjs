@@ -153,9 +153,21 @@ export function getCatalog() {
   return { workspace: WORKSPACE_SLUG, goals: CAMPAIGN_GOALS, items };
 }
 
+function normalizePriceText(value) {
+  if (value == null || value === "") return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  if (!/\d/.test(text)) {
+    const err = new Error("El precio debe incluir un número (ej: $ 18.500)");
+    err.statusCode = 400;
+    throw err;
+  }
+  return text.slice(0, 200);
+}
+
 export function createCatalogItem(body) {
-  const name = String(body?.name || "").trim();
-  const description = String(body?.description || "").trim();
+  const name = String(body?.name || "").trim().slice(0, 200);
+  const description = String(body?.description || "").trim().slice(0, 4000);
   if (name.length < 2) {
     const err = new Error("El nombre es obligatorio (mín. 2 caracteres)");
     err.statusCode = 400;
@@ -172,8 +184,10 @@ export function createCatalogItem(body) {
     kind,
     name,
     description,
-    priceText: body.priceText ?? null,
-    audience: body.audience ?? null,
+    priceText: normalizePriceText(body.priceText),
+    audience: body.audience != null && String(body.audience).trim()
+      ? String(body.audience).trim().slice(0, 1000)
+      : null,
     active: true,
   });
   return { ok: true, item };
@@ -612,8 +626,8 @@ export function deleteCampaign(id) {
 }
 
 export function createOffer(body) {
-  const title = String(body?.title || "").trim();
-  const description = String(body?.description || "").trim();
+  const title = String(body?.title || "").trim().slice(0, 200);
+  const description = String(body?.description || "").trim().slice(0, 4000);
   if (title.length < 3) {
     const err = new Error("El título es obligatorio (mín. 3 caracteres)");
     err.statusCode = 400;
@@ -642,9 +656,13 @@ export function createOffer(body) {
     campaignId: body.campaignId ?? null,
     title,
     description,
-    priceText: body.priceText ?? null,
-    discountText: body.discountText ?? null,
-    terms: body.terms ?? null,
+    priceText: normalizePriceText(body.priceText),
+    discountText: body.discountText != null && String(body.discountText).trim()
+      ? String(body.discountText).trim().slice(0, 200)
+      : null,
+    terms: body.terms != null && String(body.terms).trim()
+      ? String(body.terms).trim().slice(0, 2000)
+      : null,
     channels: body.channels ?? ["email", "web"],
     status: "draft",
     startsAt: body.startsAt ?? null,
