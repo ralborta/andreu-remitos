@@ -1004,21 +1004,38 @@
     paintSystemStatus();
   }
 
-  // Execute immediately
-  document.querySelectorAll("a, button").forEach(bind);
-  paintShell();
-  injectFinanzas();
-  injectMarketing();
-  decorateMenus();
-  wireHeaderSearch();
-  wireNotifications();
-  installUserMenu(document);
+  // Wait for Material Symbols font before showing icons to prevent text flash
+  function initWithFonts() {
+    document.querySelectorAll("a, button").forEach(bind);
+    paintShell();
+    injectFinanzas();
+    injectMarketing();
+    decorateMenus();
+    wireHeaderSearch();
+    wireNotifications();
+    installUserMenu(document);
+  }
+
+  function waitForFonts(callback) {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(callback).catch(function() {
+        setTimeout(callback, 500); // Fallback timeout
+      });
+    } else {
+      callback(); // No font API support, init immediately
+    }
+  }
+
+  // Execute immediately (after fonts ready)
+  waitForFonts(initWithFonts);
   
   // Also run on DOMContentLoaded to catch late-loading pages
   document.addEventListener("DOMContentLoaded", function() {
-    paintShell();
-    // Re-run system status check after a short delay to ensure header is rendered
-    setTimeout(paintSystemStatus, 500);
+    waitForFonts(function() {
+      paintShell();
+      // Re-run system status check after a short delay to ensure header is rendered
+      setTimeout(paintSystemStatus, 500);
+    });
   });
 })();
 
