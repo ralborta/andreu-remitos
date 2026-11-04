@@ -1301,7 +1301,11 @@
     set("[data-sol-fin-wa-adjunto]", "Factura_" + String(row.numero || row.id).replace(/[^\w.-]+/g, "_") + ".pdf");
     set(
       "[data-sol-fin-wa-hora]",
-      new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
+      new Date().toLocaleTimeString("es-AR", { 
+        hour: "2-digit", 
+        minute: "2-digit",
+        timeZone: "America/Argentina/Buenos_Aires"
+      }),
     );
     set("[data-sol-fin-wa-token]", String(row.id || "sol").slice(-8).toLowerCase());
     var status = panel.querySelector("[data-sol-fin-wa-status]");
