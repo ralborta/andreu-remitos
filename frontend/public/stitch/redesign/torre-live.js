@@ -40,7 +40,11 @@
   ];
 
   function nowTime() {
-    return new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    return new Date().toLocaleTimeString("es-AR", { 
+      hour: "2-digit", 
+      minute: "2-digit",
+      timeZone: "America/Argentina/Buenos_Aires"
+    });
   }
 
   function esc(s) {
@@ -611,6 +615,7 @@
         day: "numeric",
         month: "long",
         year: "numeric",
+        timeZone: "America/Argentina/Buenos_Aires",
       });
     } catch (e) {
       el.textContent = new Date().toISOString().slice(0, 10);
@@ -620,18 +625,23 @@
   function paintAgentesOnline() {
     var el = document.getElementById("sol-torre-agentes-online");
     if (!el) return;
-    // Misma lógica operativa que Monitor: activo + espera + hold (no offline).
-    el.textContent = "4 agentes en línea";
-    fetch("/backend/api/monitor/status", { credentials: "include" })
+    // Count operative agents dynamically (matching agents.ts with status === "operativo")
+    var OPERATIVE_AGENTS = 4; // Remitos, Viajes, Rendición are operativo in current config
+    el.textContent = OPERATIVE_AGENTS + " agentes en línea";
+    
+    // Fetch actual agent status from backend if available
+    fetch("/backend/api/agentes/status", { credentials: "include" })
       .then(function (r) {
         return r.ok ? r.json() : null;
       })
-      .then(function () {
-        /* status infra OK — el conteo de agentes SOL sigue el board demo alineado */
-        el.textContent = "4 agentes en línea";
+      .then(function (data) {
+        if (data && data.operativos != null) {
+          el.textContent = data.operativos + " agentes en línea";
+        }
       })
       .catch(function () {
-        el.textContent = "4 agentes en línea";
+        // Fallback to configured count
+        el.textContent = OPERATIVE_AGENTS + " agentes en línea";
       });
   }
 
