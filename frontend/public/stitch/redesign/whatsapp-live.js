@@ -281,7 +281,8 @@
     }
     // Filter out JavaScript errors from message text (Bug #11)
     var texto = msg.texto || "";
-    var isJsError = /Cannot read propert|TypeError:|ReferenceError:|undefined is not|null is not/i.test(texto);
+    // Enhanced pattern to catch more error variations including "Prob..." truncated errors
+    var isJsError = /Cannot read propert|TypeError|ReferenceError|undefined is not|null is not|reading ['"]|Prob\.\.\.|Error:/i.test(texto);
     if (texto && msg.tipo !== "audio" && !isJsError) {
       cuerpo += '<p class="text-xs leading-relaxed">' + linkify(texto) + "</p>";
     } else if (isJsError) {
