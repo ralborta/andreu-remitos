@@ -700,7 +700,8 @@
     c[1].textContent = [fechaTxt, data.hora].filter(Boolean).join(" - ") || "—";
     c[2].textContent = data.cliente;
     c[3].innerHTML = esc(data.origen || "—") + ' <span class="text-slate-400">→</span> ' + esc(data.destino || "—");
-    c[4].textContent = data.carga || "—";
+    // Format weight with 1 decimal to avoid float artifacts
+    c[4].textContent = data.carga && window.SOL_FORMAT ? window.SOL_FORMAT.weight(parseFloat(data.carga)) : (data.carga || "—");
     c[5].textContent = data.chofer || "Sin asignar";
     c[5].className = tieneChofer(data) ? "py-3 px-4 text-slate-900" : "py-3 px-4 text-slate-400 italic";
     c[6].textContent = data.unidad || "--";
