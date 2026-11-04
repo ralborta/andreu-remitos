@@ -140,7 +140,7 @@
       a.className = anal.className;
       a.href = "/finanzas";
       a.target = "_parent";
-      a.innerHTML = '<span class="px-1.5 py-0.5 text-[9px] font-semibold bg-emerald-100 text-emerald-800 rounded mr-1">Nuevo</span>Finanzas';
+      a.innerHTML = 'Finanzas';
       anal.parentNode.insertBefore(a, anal.nextSibling);
       bind(a);
     }
