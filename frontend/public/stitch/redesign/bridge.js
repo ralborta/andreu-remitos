@@ -312,10 +312,10 @@
   var TOP_LINKS = [
     { label: "Torre de Control", href: "/" },
     { label: "Monitor", href: "/monitor" },
-    { label: "WhatsApp", href: "/contactos", badge: "Nuevo" },
+    { label: "WhatsApp", href: "/contactos" },
     { label: "Métricas", href: "/backoffice" },
     { label: "Finanzas", href: "/finanzas" },
-    { label: "Marketing", href: "/marketing", badge: "Nuevo" },
+    { label: "Marketing", href: "/marketing" },
   ];
   var AGENT_LINKS = [
     { label: "Gestión de Viajes", href: "/agentes/viajes", icon: "local_shipping" },
@@ -328,8 +328,6 @@
     { label: "POP/POD", href: "/agentes/pod", icon: "inventory_2" },
     { label: "Reclamos", href: "/agentes/reclamos", icon: "support_agent" },
     { label: "Analítica", href: "/agentes/analitica", icon: "monitoring" },
-    { label: "Finanzas", href: "/finanzas", icon: "account_balance", nuevo: true },
-    { label: "Marketing", href: "/marketing", icon: "campaign", nuevo: true },
   ];
   var FILE_ROUTES = {
     "torre.html": "/",
