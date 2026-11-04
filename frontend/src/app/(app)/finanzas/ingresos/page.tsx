@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-
 export default function Page() {
-  redirect("/finanzas/conciliacion");
+  // Stitch iframe rendered by AppShell layout
+  return null;
 }

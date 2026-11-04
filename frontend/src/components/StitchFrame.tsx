@@ -81,7 +81,7 @@ export function StitchFrame({
         ref={currentIframeRef}
         title={title}
         src={currentSrc}
-        className="fixed inset-0 z-[60] h-[100dvh] w-full max-w-full border-0 bg-[#f8f9ff] transition-opacity duration-200"
+        className="fixed inset-0 z-[60] h-[100dvh] w-full max-w-full border-0 bg-slate-50 transition-opacity duration-200"
         style={{ opacity: showNext ? 0 : 1, pointerEvents: showNext ? 'none' : 'auto' }}
       />
       
@@ -91,7 +91,7 @@ export function StitchFrame({
           ref={nextIframeRef}
           title={`${title} (loading)`}
           src={nextSrc}
-          className="fixed inset-0 z-[61] h-[100dvh] w-full max-w-full border-0 bg-[#f8f9ff] transition-opacity duration-200"
+          className="fixed inset-0 z-[61] h-[100dvh] w-full max-w-full border-0 bg-slate-50 transition-opacity duration-200"
           style={{ opacity: showNext ? 1 : 0, pointerEvents: showNext ? 'auto' : 'none' }}
         />
       )}

@@ -1,5 +1,4 @@
-import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
-
-export default function BackofficePage() {
-  return <StitchRedesignFrame path="/backoffice" />;
+export default function Page() {
+  // Stitch iframe rendered by AppShell layout
+  return null;
 }

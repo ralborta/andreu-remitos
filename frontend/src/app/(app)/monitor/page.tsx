@@ -1,5 +1,4 @@
-import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
-
-export default function MonitorPage() {
-  return <StitchRedesignFrame path="/monitor" />;
+export default function Page() {
+  // Stitch iframe rendered by AppShell layout
+  return null;
 }

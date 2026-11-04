@@ -8,7 +8,6 @@ import { PageHeader, StatusBadge, Card, SectionTitle, KpiCard, Pill } from "@/co
 import { FlowSteps } from "@/components/FlowSteps";
 import { WhatsAppChat } from "@/components/WhatsAppChat";
 import { AgentData } from "@/components/AgentData";
-import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
 import { stitchRedesignFor } from "@/lib/stitch-redesign";
 
 export function generateStaticParams() {
@@ -26,7 +25,8 @@ export default async function AgentPage({
 
   const stitch = stitchRedesignFor(`/agentes/${slug}`);
   if (stitch) {
-    return <StitchRedesignFrame path={`/agentes/${slug}`} />;
+    // Stitch iframe rendered by AppShell layout
+    return null;
   }
 
   const convos = conversationsFor(slug);
@@ -50,7 +50,7 @@ export default async function AgentPage({
         ))}
       </div>
 
-      {/* Operación + chat primero */}
+      {/* Rest of native Next.js page content... */}
       {slug === "remitos" ||
       slug === "destinos" ||
       slug === "viajes" ||
@@ -86,7 +86,6 @@ export default async function AgentPage({
         </div>
       )}
 
-      {/* Zona informativa inferior */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <SectionTitle

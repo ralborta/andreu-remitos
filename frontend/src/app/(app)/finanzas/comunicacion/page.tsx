@@ -1,5 +1,4 @@
-import { StitchRedesignFrame } from "@/components/StitchRedesignFrame";
-
 export default function Page() {
-  return <StitchRedesignFrame path="/finanzas/comunicacion" />;
+  // Stitch iframe rendered by AppShell layout
+  return null;
 }

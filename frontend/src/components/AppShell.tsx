@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
-import { isStitchRedesignPath } from "@/lib/stitch-redesign";
+import { isStitchRedesignPath, stitchRedesignFor } from "@/lib/stitch-redesign";
+import { StitchFrame } from "./StitchFrame";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -32,6 +33,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   if (stitchFullBleed) {
+    const screen = stitchRedesignFor(pathname);
+    if (screen) {
+      // Persistent StitchFrame at layout level (never unmounts)
+      return <StitchFrame src={screen.src} title={`${screen.title} — Stitch`} />;
+    }
     return <>{children}</>;
   }
 

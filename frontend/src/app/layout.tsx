@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${display.variable} h-full`} data-theme="light" suppressHydrationWarning>
+    <html lang="es" className={`${inter.variable} ${display.variable} h-full`} data-theme="light" suppressHydrationWarning style={{ backgroundColor: '#f1f5f9' }}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -34,7 +34,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full" style={{ backgroundColor: '#f1f5f9' }}>{children}</body>
     </html>
   );
 }
