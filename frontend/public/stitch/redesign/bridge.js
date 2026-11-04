@@ -927,37 +927,28 @@
           var ping = pill.querySelector('span[class*="animate-ping"]');
           
           if (allOk) {
-            pill.className = pill.className.replace(/bg-(rose|amber)-\d+/g, 'bg-emerald-$1');
-            pill.className = pill.className.replace(/text-(rose|amber)-\d+/g, 'text-emerald-$1');
-            pill.className = pill.className.replace(/border-(rose|amber)-\d+/g, 'border-emerald-$1');
-            if (!pill.className.includes('bg-emerald')) {
-              pill.className = pill.className.replace(/bg-\w+-\d+/, 'bg-emerald-50');
-            }
-            if (!pill.className.includes('text-emerald')) {
-              pill.className = pill.className.replace(/text-\w+-\d+/, 'text-emerald-700');
-            }
-            if (!pill.className.includes('border-emerald')) {
-              pill.className = pill.className.replace(/border-\w+-\d+\/?\d*/, 'border-emerald-200/60');
-            }
+            pill.className = pill.className
+              .replace(/bg-rose-\d+/g, 'bg-emerald-50')
+              .replace(/bg-amber-\d+/g, 'bg-emerald-50')
+              .replace(/text-rose-\d+/g, 'text-emerald-700')
+              .replace(/text-amber-\d+/g, 'text-emerald-700')
+              .replace(/border-rose-\d+\/?\d*/g, 'border-emerald-200/60')
+              .replace(/border-amber-\d+\/?\d*/g, 'border-emerald-200/60');
             if (dot) {
-              dot.className = dot.className.replace(/bg-\w+-\d+/, 'bg-emerald-500');
+              dot.className = dot.className
+                .replace(/bg-rose-\d+/, 'bg-emerald-500')
+                .replace(/bg-amber-\d+/, 'bg-emerald-500');
             }
             if (ping) {
-              ping.className = ping.className.replace(/bg-\w+-\d+/, 'bg-emerald-400');
+              ping.className = ping.className
+                .replace(/bg-rose-\d+/, 'bg-emerald-400')
+                .replace(/bg-amber-\d+/, 'bg-emerald-400');
             }
           } else {
-            pill.className = pill.className.replace(/bg-emerald-\d+/g, 'bg-rose-$1');
-            pill.className = pill.className.replace(/text-emerald-\d+/g, 'text-rose-$1');
-            pill.className = pill.className.replace(/border-emerald-\d+/g, 'border-rose-$1');
-            if (pill.className.includes('bg-emerald')) {
-              pill.className = pill.className.replace(/bg-emerald-\d+/, 'bg-rose-50');
-            }
-            if (pill.className.includes('text-emerald')) {
-              pill.className = pill.className.replace(/text-emerald-\d+/, 'text-rose-700');
-            }
-            if (pill.className.includes('border-emerald')) {
-              pill.className = pill.className.replace(/border-emerald-\d+\/?\d*/, 'border-rose-200/60');
-            }
+            pill.className = pill.className
+              .replace(/bg-emerald-\d+/g, 'bg-rose-50')
+              .replace(/text-emerald-\d+/g, 'text-rose-700')
+              .replace(/border-emerald-\d+\/?\d*/g, 'border-rose-200/60');
             if (dot) {
               dot.className = dot.className.replace(/bg-emerald-\d+/, 'bg-rose-500');
             }
