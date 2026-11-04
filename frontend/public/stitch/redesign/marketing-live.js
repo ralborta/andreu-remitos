@@ -165,18 +165,7 @@
 
   function fmtDate(iso) {
     if (!iso) return "—";
-    var s = String(iso);
-    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) {
-      return Number(m[3]) + " " + MONTHS_ES[Number(m[2]) - 1] + " " + m[1];
-    }
-    var d = new Date(s);
-    if (isNaN(d.getTime())) return "—";
-    try {
-      return d.toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-    } catch (e) {
-      return s.slice(0, 10);
-    }
+    return window.SOL_FORMAT ? window.SOL_FORMAT.date(iso) : new Date(iso).toLocaleDateString("es-AR");
   }
 
   function truncate(str, max) {
