@@ -527,19 +527,23 @@
     if (!chrome) {
       chrome = document.createElement("header");
       chrome.setAttribute("data-sol-shell", "chrome");
-      chrome.className = "bg-white border-b border-slate-200 sticky top-0 z-50 lg:ml-64";
+      chrome.className = "bg-white border-b border-slate-200 sticky top-0 z-50";
       chrome.innerHTML =
-        '<div class="mx-auto px-4 sm:px-6 lg:px-8">' +
+        '<div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">' +
         '<div class="flex items-center justify-between h-16 gap-4">' +
-        '<div class="flex items-center gap-4 min-w-0">' +
-        '<button class="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" data-sol-hamburger="1" type="button" aria-label="Abrir menú">' +
-        '<span class="material-symbols-outlined text-xl">menu</span>' +
-        '</button>' +
-        '<div class="relative w-full max-w-md hidden md:block">' +
+        '<div class="flex items-center gap-6 min-w-0">' +
+        '<a class="flex items-center gap-2.5 shrink-0" href="/" target="_parent">' +
+        '<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 font-black text-lg">E</div>' +
+        '<div class="flex flex-col">' +
+        '<span class="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>' +
+        '<span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span>' +
+        "</div></a>" +
+        '<div class="relative w-80 hidden md:block">' +
         '<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><span class="material-symbols-outlined text-base">search</span></div>' +
         '<input class="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-700 placeholder-slate-400 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium outline-none" placeholder="Buscar remito, chofer o patente... ⌘K" type="text"/>' +
         '<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><kbd class="text-[10px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-400 shadow-xs">⌘K</kbd></div>' +
         "</div></div>" +
+        '<nav data-sol-shell="top" class="flex items-center space-x-1 overflow-x-auto"></nav>' +
         '<div class="flex items-center gap-4 shrink-0">' +
         '<div data-sol-system-status class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-medium">' +
         '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>' +
@@ -562,11 +566,6 @@
         "</div></div></div></div></div>";
       document.body.insertBefore(chrome, document.body.firstChild);
       installUserMenu(chrome);
-      
-      var hamburger = chrome.querySelector('[data-sol-hamburger]');
-      if (hamburger) {
-        hamburger.addEventListener('click', toggleSidebar);
-      }
     }
     var top = chrome.querySelector('[data-sol-shell="top"]');
     if (top) {
@@ -920,12 +919,10 @@
       .then(function (data) {
         if (!data) return;
         var allOk = data.ok === true;
-        var degraded = data.degraded === true;
         
         pills.forEach(function (pill) {
-          var dot = pill.querySelector('span[class*="rounded-full"][class*="bg-"]:not([class*="animate-ping"])');
+          var dot = pill.querySelector('span[class*="rounded-full"][class*="bg-"]');
           var ping = pill.querySelector('span[class*="animate-ping"]');
-          var textSpan = pill.querySelector('span:last-child');
           
           if (allOk) {
             pill.className = pill.className
@@ -945,244 +942,28 @@
                 .replace(/bg-rose-\d+/, 'bg-emerald-400')
                 .replace(/bg-amber-\d+/, 'bg-emerald-400');
             }
-            if (textSpan) textSpan.textContent = 'Sistemas activos';
-          } else if (degraded) {
-            pill.className = pill.className
-              .replace(/bg-emerald-\d+/g, 'bg-amber-50')
-              .replace(/bg-rose-\d+/g, 'bg-amber-50')
-              .replace(/text-emerald-\d+/g, 'text-amber-700')
-              .replace(/text-rose-\d+/g, 'text-amber-700')
-              .replace(/border-emerald-\d+\/?\d*/g, 'border-amber-200/60')
-              .replace(/border-rose-\d+\/?\d*/g, 'border-amber-200/60');
-            if (dot) {
-              dot.className = dot.className
-                .replace(/bg-emerald-\d+/, 'bg-amber-500')
-                .replace(/bg-rose-\d+/, 'bg-amber-500');
-            }
-            if (ping) {
-              ping.className = ping.className
-                .replace(/bg-emerald-\d+/, 'bg-amber-400')
-                .replace(/bg-rose-\d+/, 'bg-amber-400');
-            }
-            if (textSpan) textSpan.textContent = 'Servicios degradados';
           } else {
             pill.className = pill.className
               .replace(/bg-emerald-\d+/g, 'bg-rose-50')
-              .replace(/bg-amber-\d+/g, 'bg-rose-50')
               .replace(/text-emerald-\d+/g, 'text-rose-700')
-              .replace(/text-amber-\d+/g, 'text-rose-700')
-              .replace(/border-emerald-\d+\/?\d*/g, 'border-rose-200/60')
-              .replace(/border-amber-\d+\/?\d*/g, 'border-rose-200/60');
+              .replace(/border-emerald-\d+\/?\d*/g, 'border-rose-200/60');
             if (dot) {
-              dot.className = dot.className
-                .replace(/bg-emerald-\d+/, 'bg-rose-500')
-                .replace(/bg-amber-\d+/, 'bg-rose-500');
+              dot.className = dot.className.replace(/bg-emerald-\d+/, 'bg-rose-500');
             }
             if (ping) {
-              ping.className = ping.className
-                .replace(/bg-emerald-\d+/, 'bg-rose-400')
-                .replace(/bg-amber-\d+/, 'bg-rose-400');
+              ping.className = ping.className.replace(/bg-emerald-\d+/, 'bg-rose-400');
             }
-            // Determinar texto específico basado en qué servicio falló
-            var text = 'WhatsApp caído';
-            if (data.services) {
-              var failed = [];
-              if (data.services.whatsapp === false) failed.push('WhatsApp');
-              if (data.services.monitor === false) failed.push('Monitor');
-              if (data.services.agentes === false) failed.push('Agentes');
-              if (failed.length > 1) text = 'Servicios caídos';
-              else if (failed.length === 1) text = failed[0] + ' caído';
-            }
-            if (textSpan) textSpan.textContent = text;
           }
         });
-        
-        // También actualizar footers con "Monitor SOL"
-        updateFooterStatus(data);
       })
       .catch(function () {
         // Keep default state on error
       });
   }
 
-  function updateFooterStatus(data) {
-    // Buscar todos los footers con "Monitor SOL"
-    var footers = [];
-    document.querySelectorAll('footer span').forEach(function(span) {
-      var text = span.textContent || '';
-      if (/Monitor SOL/i.test(text)) {
-        footers.push(span);
-      }
-    });
-    
-    if (!footers.length) return;
-    
-    var allOk = data && data.ok === true;
-    var degraded = data && data.degraded === true;
-    
-    footers.forEach(function(span) {
-      var parent = span.parentElement;
-      if (!parent) return;
-      
-      var dot = parent.querySelector('span[class*="rounded-full"][class*="bg-"]');
-      
-      if (allOk) {
-        if (dot) {
-          dot.className = dot.className
-            .replace(/bg-rose-\d+/, 'bg-emerald-500')
-            .replace(/bg-amber-\d+/, 'bg-emerald-500');
-        }
-        span.textContent = 'Monitor SOL Activo';
-      } else if (degraded) {
-        if (dot) {
-          dot.className = dot.className
-            .replace(/bg-emerald-\d+/, 'bg-amber-500')
-            .replace(/bg-rose-\d+/, 'bg-amber-500');
-        }
-        span.textContent = 'Monitor SOL Degradado';
-      } else {
-        if (dot) {
-          dot.className = dot.className
-            .replace(/bg-emerald-\d+/, 'bg-rose-500')
-            .replace(/bg-amber-\d+/, 'bg-rose-500');
-        }
-        span.textContent = 'Monitor SOL: Sistema Caído';
-      }
-    });
-  }
-
-  function createSidebar() {
-    var existing = document.querySelector('[data-sol-sidebar]');
-    if (existing) return existing;
-    
-    var path = here();
-    var sidebar = document.createElement('aside');
-    sidebar.setAttribute('data-sol-sidebar', '1');
-    sidebar.className = 'fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-y-auto';
-    
-    var sections = [
-      {
-        title: 'Operación',
-        links: [
-          { label: 'Torre', href: '/', icon: 'dashboard' },
-          { label: 'Monitor', href: '/monitor', icon: 'monitor_heart' },
-          { label: 'WhatsApp', href: '/contactos', icon: 'chat' },
-          { label: 'Métricas', href: '/backoffice', icon: 'analytics' }
-        ]
-      },
-      {
-        title: 'Agentes',
-        links: AGENT_LINKS
-      },
-      {
-        title: 'Finanzas',
-        links: FINANCE_LINKS
-      },
-      {
-        title: 'Marketing',
-        links: MARKETING_LINKS
-      }
-    ];
-    
-    var html = '<div class="h-full flex flex-col">';
-    html += '<div class="p-4 border-b border-slate-200">';
-    html += '<a class="flex items-center gap-2.5" href="/" target="_parent">';
-    html += '<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-2 ring-indigo-100 font-black text-lg">E</div>';
-    html += '<div class="flex flex-col"><span class="text-base font-extrabold tracking-tight text-slate-900 leading-tight">EMPLIADOS</span>';
-    html += '<span class="text-[9px] uppercase font-bold tracking-widest text-indigo-600 leading-tight">Logistics Cloud</span></div>';
-    html += '</a></div>';
-    
-    html += '<nav class="flex-1 px-3 py-4 space-y-6">';
-    sections.forEach(function(section) {
-      html += '<div>';
-      html += '<h3 class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">' + section.title + '</h3>';
-      html += '<div class="space-y-0.5">';
-      section.links.forEach(function(link) {
-        var active = isActive(link.href, path);
-        var cls = active 
-          ? 'flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg bg-[#0e1738] text-white'
-          : 'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900';
-        var icon = link.icon ? '<span class="material-symbols-outlined text-[18px]">' + link.icon + '</span>' : '';
-        html += '<a class="' + cls + '" href="' + link.href + '">' + icon + '<span>' + link.label + '</span></a>';
-      });
-      html += '</div></div>';
-    });
-    html += '</nav>';
-    
-    html += '<div class="p-4 border-t border-slate-200">';
-    html += '<div data-sol-system-status class="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-lg text-xs font-medium">';
-    html += '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>';
-    html += '<span>Sistemas activos</span></div></div>';
-    html += '</div>';
-    
-    sidebar.innerHTML = html;
-    sidebar.querySelectorAll('a').forEach(bind);
-    document.body.insertBefore(sidebar, document.body.firstChild);
-    
-    return sidebar;
-  }
-
-  function toggleSidebar() {
-    var sidebar = document.querySelector('[data-sol-sidebar]');
-    var overlay = document.querySelector('[data-sol-sidebar-overlay]');
-    if (!sidebar) return;
-    
-    var isOpen = !sidebar.classList.contains('-translate-x-full');
-    if (isOpen) {
-      sidebar.classList.add('-translate-x-full');
-      if (overlay) overlay.classList.add('hidden');
-    } else {
-      sidebar.classList.remove('-translate-x-full');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.setAttribute('data-sol-sidebar-overlay', '1');
-        overlay.className = 'fixed inset-0 bg-slate-900/50 z-30 lg:hidden';
-        overlay.addEventListener('click', toggleSidebar);
-        document.body.appendChild(overlay);
-      }
-      overlay.classList.remove('hidden');
-    }
-  }
-
-  function adjustMainContent() {
-    var main = document.querySelector('main');
-    if (!main) return;
-    if (!main.classList.contains('lg:ml-64')) {
-      main.classList.add('lg:ml-64');
-    }
-  }
-
-  function hideOldNavigation() {
-    // Esconder headers/navs viejas que ahora están en sidebar
-    document.querySelectorAll('header').forEach(function(header) {
-      if (header.getAttribute('data-sol-shell') === 'chrome') return;
-      if (!header.querySelector('[data-sol-shell]')) {
-        header.style.display = 'none';
-      }
-    });
-    
-    document.querySelectorAll('nav').forEach(function(nav) {
-      if (nav.closest('[data-sol-sidebar], [data-sol-shell="chrome"]')) return;
-      if (nav.closest('main, footer')) return;
-      var text = norm(nav.textContent || '');
-      if (text.indexOf('torre') >= 0 || text.indexOf('agente') >= 0 || text.indexOf('finanzas') >= 0 || text.indexOf('marketing') >= 0) {
-        nav.style.display = 'none';
-      }
-    });
-    
-    // Esconder filas de navegación secundaria (AGENTES, FINANZAS, MARKETING)
-    document.querySelectorAll('[data-sol-shell="agents"], [data-sol-shell="finance"], [data-sol-shell="marketing"], [data-sol-shell="top"]').forEach(function(el) {
-      if (!el.closest('[data-sol-shell="chrome"]')) {
-        el.style.display = 'none';
-      }
-    });
-  }
-
   function paintShell() {
-    createSidebar();
+    unifyShell();
     installChrome();
-    adjustMainContent();
-    hideOldNavigation();
     installUserMenu(document);
     wireNotifications();
     paintSystemStatus();
@@ -1191,6 +972,9 @@
   // Execute immediately
   document.querySelectorAll("a, button").forEach(bind);
   paintShell();
+  injectFinanzas();
+  injectMarketing();
+  decorateMenus();
   wireHeaderSearch();
   wireNotifications();
   installUserMenu(document);
