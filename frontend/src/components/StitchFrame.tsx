@@ -33,17 +33,6 @@ export function StitchFrame({
     const nextIframe = nextIframeRef.current;
     let swapped = false;
 
-    // TIMEOUT DE SEGURIDAD: forzar swap después de 2s si no ocurrió
-    const safetyTimeout = setTimeout(() => {
-      if (!swapped) {
-        console.warn('[StitchFrame] Safety timeout - forcing swap after 2s');
-        swapped = true;
-        setShowNext(true);
-        setCurrentSrc(nextSrc);
-        setNextSrc(null);
-      }
-    }, 2000);
-
     const handleLoad = () => {
       if (swapped) return;
 
@@ -57,7 +46,6 @@ export function StitchFrame({
           .then(() => {
             if (swapped) return;
             swapped = true;
-            clearTimeout(safetyTimeout);
             // Swap: show new, hide old
             setShowNext(true);
             setCurrentSrc(nextSrc);
@@ -67,7 +55,6 @@ export function StitchFrame({
             // Fallback: swap after timeout
             if (swapped) return;
             swapped = true;
-            clearTimeout(safetyTimeout);
             setTimeout(() => {
               setShowNext(true);
               setCurrentSrc(nextSrc);
@@ -77,7 +64,6 @@ export function StitchFrame({
       } else {
         // No fonts API, swap immediately after load
         swapped = true;
-        clearTimeout(safetyTimeout);
         setShowNext(true);
         setCurrentSrc(nextSrc);
         setNextSrc(null);
@@ -85,10 +71,7 @@ export function StitchFrame({
     };
 
     nextIframe.addEventListener('load', handleLoad);
-    return () => {
-      nextIframe.removeEventListener('load', handleLoad);
-      clearTimeout(safetyTimeout);
-    };
+    return () => nextIframe.removeEventListener('load', handleLoad);
   }, [nextSrc]);
 
   return (
