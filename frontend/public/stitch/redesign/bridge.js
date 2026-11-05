@@ -53,7 +53,7 @@
         href: href
       }, '*');
       
-      // Wait for ack from parent (1000ms para conexiones lentas)
+      // Wait for ack from parent
       var timeout = setTimeout(function() {
         if (!navigated) {
           // Fallback: full page reload if parent doesn't respond
@@ -63,7 +63,7 @@
             window.location.href = href;
           }
         }
-      }, 1000);
+      }, 150);
       
       // Listen for ack
       var ackListener = function(event) {
