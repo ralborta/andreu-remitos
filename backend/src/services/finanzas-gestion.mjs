@@ -1,5 +1,6 @@
 import { sendWhatsAppMessage } from "../../../lib/builderbot-send.mjs";
 import {
+  appendMensajeFactura,
   appendPasoFactura,
   ensureSeedFacturasCobrar,
   findFacturaCobrarDuplicada,
@@ -199,7 +200,7 @@ function mensajeDefault(fac) {
   );
 }
 
-export async function comunicarFactura(id, { canal = "whatsapp", mensaje } = {}) {
+export async function comunicarFactura(id, { canal = "whatsapp", mensaje, plantilla } = {}) {
   await ensureFinanzasDemo();
   const fac = await getFacturaInterna(id);
   if (!fac || fac.tipo !== "cobrar") throw new Error("Solo se contacta sobre facturas a cobrar");
@@ -224,9 +225,34 @@ export async function comunicarFactura(id, { canal = "whatsapp", mensaje } = {})
     envio = { ok: false, canal: "email", error: "Email todavía no está conectado" };
   }
 
-  const label = envio.ok
-    ? `Contacto por ${ch}: ${text.slice(0, 80)}`
-    : `Intento de contacto por ${ch} (no salió): ${envio.error || "error"}`;
-  const row = await appendPasoFactura(id, paso("comunicacion", label, { canal: ch, ok: envio.ok }));
+  // Siempre se guarda el mensaje en el historial de la factura (aunque el canal falle).
+  const row = await appendMensajeFactura(id, {
+    direction: "out",
+    canal: ch,
+    from: "mesa",
+    texto: text,
+    ok: !!envio.ok,
+    meta: { plantilla: plantilla || null, envio },
+  });
   return { factura: row, envio, mensaje: text };
+}
+
+/** Registra un mensaje inbound del cliente (consulta) o outbound manual en la factura. */
+export async function registrarMensajeFactura(id, body = {}) {
+  await ensureFinanzasDemo();
+  const fac = await getFacturaInterna(id);
+  if (!fac) throw new Error("Factura no encontrada");
+  const direction = body.direction === "in" ? "in" : "out";
+  const texto = String(body.texto || body.mensaje || "").trim();
+  if (!texto) throw new Error("Falta el texto del mensaje");
+  const canal = body.canal === "email" ? "email" : "whatsapp";
+  const row = await appendMensajeFactura(id, {
+    direction,
+    canal,
+    from: body.from || (direction === "in" ? "cliente" : "mesa"),
+    texto,
+    ok: body.ok !== false,
+    meta: body.meta || null,
+  });
+  return row;
 }
