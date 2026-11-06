@@ -260,7 +260,7 @@ export function Sidebar({
                   "block rounded-lg px-3 py-2 text-sm transition-colors",
                   pathname.startsWith("/finanzas/facturas/cobranzas") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
                 )}>
-                  Facturas de cobranza
+                  Cobranzas
                 </Link>
                 <Link href="/finanzas/conciliacion" onClick={onClose} className={clsx(
                   "block rounded-lg px-3 py-2 text-sm transition-colors",

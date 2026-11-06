@@ -17,7 +17,7 @@ export const STITCH_REDESIGN: Record<string, { src: string; title: string }> = {
   "/finanzas": { src: "/stitch/redesign/finanzas.html", title: "Finanzas" },
   "/finanzas/clientes": { src: "/stitch/redesign/finanzas-clientes.html", title: "Finanzas · Clientes" },
   "/finanzas/facturas/pagos": { src: "/stitch/redesign/finanzas-facturas.html", title: "Finanzas · Facturas de pago" },
-  "/finanzas/facturas/cobranzas": { src: "/stitch/redesign/finanzas-cobranza.html", title: "Finanzas · Facturas de cobranza" },
+  "/finanzas/facturas/cobranzas": { src: "/stitch/redesign/finanzas-cobranza.html", title: "Finanzas · Cobranzas" },
   "/finanzas/conciliacion": { src: "/stitch/redesign/finanzas-conciliacion.html", title: "Finanzas · Conciliación" },
   "/finanzas/comunicacion": { src: "/stitch/redesign/finanzas-comunicacion.html", title: "Finanzas · Enviar mensaje" },
   "/marketing": { src: "/stitch/redesign/marketing.html", title: "Marketing" },
