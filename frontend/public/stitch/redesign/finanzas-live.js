@@ -1965,7 +1965,7 @@
       '<span class="material-symbols-outlined text-[26px]">upload_file</span></div>' +
       '<p class="text-sm font-bold text-slate-800">Arrastrá acá el comprobante o hacé clic para elegir</p>' +
       '<p class="mt-1 text-[11px] text-slate-500">PDF, JPG, PNG · hasta 25 MB</p>' +
-      '<p class="mt-3 text-xs font-semibold text-indigo-700 truncate px-2" data-sol-fin-cargar-name">Ningún archivo seleccionado</p>' +
+      '<p class="mt-3 text-xs font-semibold text-indigo-700 truncate px-2" data-sol-fin-cargar-name>Ningún archivo seleccionado</p>' +
       '<input data-sol-fin-cargar-file type="file" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,application/pdf,image/*" class="hidden"/>' +
       "</div>" +
       '<div class="rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 flex gap-2.5">' +
