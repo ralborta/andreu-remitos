@@ -92,4 +92,20 @@ Hs. Motor Final
 assert.equal(multilineaMiles.km_inicial, "89390");
 assert.equal(multilineaMiles.km_final, "89660");
 
+// Destino: nombre DENOMINAC gana sobre código LOCACION (caso Antonela).
+const destinoDenominac = enriquecerBeraldiDesdeTexto(
+  { destino: "LCAV-174-2 Track-03", destino_locacion: "LCAV-174-2 Track-03" },
+  "ORIGEN LOMA CAMPANA-YPF (1722) DENOMINAC: DENOMINAC LOCACION LCAV-174-2 PESO 31540",
+);
+assert.equal(String(destinoDenominac.destino).toUpperCase(), "DENOMINAC");
+assert.doesNotMatch(String(destinoDenominac.destino), /LCAV/i);
+
+// Preferir odómetro 6 dígitos del OCR si Document AI trajo basura 5+4.
+const kmDocAiMal = enriquecerBeraldiDesdeTexto(
+  { km_inicial: "96848", km_final: "2027" },
+  "Km Inicial 153407 Km Final 154207 Hs. Motor Inicial 8220 Hs. Motor Final 8227",
+);
+assert.equal(kmDocAiMal.km_inicial, "153407");
+assert.equal(kmDocAiMal.km_final, "154207");
+
 console.log("OK verify-beraldi-km");
