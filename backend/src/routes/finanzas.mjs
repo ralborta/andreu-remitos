@@ -9,6 +9,7 @@ import {
 } from "../services/finanzas-facturas.mjs";
 import {
   comunicarFactura,
+  programarComunicacionFactura,
   registrarMensajeFactura,
   conciliarCobro,
   ingestarFacturaSistema,
@@ -101,6 +102,16 @@ export default async function finanzasRoutes(fastify) {
   fastify.post("/facturas/:id/comunicar", async (request, reply) => {
     try {
       const out = await comunicarFactura(request.params.id, request.body ?? {});
+      return out;
+    } catch (err) {
+      return reply.code(400).send({ error: err.message });
+    }
+  });
+
+  /** Programa un recordatorio; queda en el historial (no envía WhatsApp ahora). */
+  fastify.post("/facturas/:id/programar", async (request, reply) => {
+    try {
+      const out = await programarComunicacionFactura(request.params.id, request.body ?? {});
       return out;
     } catch (err) {
       return reply.code(400).send({ error: err.message });

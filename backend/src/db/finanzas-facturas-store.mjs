@@ -120,10 +120,13 @@ export async function appendMensajeFactura(id, mensaje) {
   };
   if (!entry.texto) throw new Error("Mensaje vacío");
   const mensajes = Array.isArray(rows[i].mensajes) ? [...rows[i].mensajes, entry] : [entry];
+  const programmedAt = entry.meta && entry.meta.programado_para;
   const label =
     entry.direction === "in"
       ? `Consulta del cliente (${entry.canal}): ${entry.texto.slice(0, 90)}`
-      : `Mensaje enviado (${entry.canal}): ${entry.texto.slice(0, 90)}`;
+      : programmedAt
+        ? `Envío programado (${entry.canal}) para ${programmedAt}: ${entry.texto.slice(0, 80)}`
+        : `Mensaje enviado (${entry.canal}): ${entry.texto.slice(0, 90)}`;
   const pasos = Array.isArray(rows[i].pasos)
     ? [...rows[i].pasos, { at: entry.at, agente: entry.direction === "in" ? "cliente" : "comunicacion", label, canal: entry.canal, ok: entry.ok, mensaje_id: entry.id }]
     : [{ at: entry.at, agente: entry.direction === "in" ? "cliente" : "comunicacion", label, canal: entry.canal, ok: entry.ok, mensaje_id: entry.id }];
