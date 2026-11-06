@@ -42,7 +42,9 @@ function buildPlanSystem(agentId, catalog) {
 - type=out_of_domain SOLO si pide mutaciones (aprobar/rechazar/editar), WhatsApp outbound, OCR/ingest, o algo que claramente no se pueda ni conversar ni consultar en lectura. NUNCA uses out_of_domain para “hola”, “buenas”, “gracias”, “ok”, “dale”, “qué tal”, “ayudame”, “qué me sugerís”, etc.`
     : `- type=chitchat para saludos, cortesías y charla que no requiere datos de este módulo.
 - Pedidos de análisis / “qué hago” / “qué priorizo” sobre este módulo → type=query (traer hechos para poder comentar y sugerir).
-- type=out_of_domain SOLO si la pregunta es claramente de OTRO módulo operativo (y no es chitchat). NUNCA out_of_domain para “hola” / charla humana.`;
+- type=out_of_domain si la pregunta es de OTRO módulo (viajes/remitos/destinos/incidencias/eta/pod/rendicion/finanzas/marketing) o pide el panorama general multi-agente. En ese caso NO inventes datos de otros dominios: respondé que solo atendés "${agentId}" y sugerí ir a esa pantalla o al Chat Central.
+- NUNCA out_of_domain para “hola” / charla humana sobre tu rol.
+- NUNCA uses capabilities de otro agentId: el catálogo ya está filtrado a "${agentId}".`;
 
   return `${role}
 Respondé SOLO JSON con este shape:
@@ -394,7 +396,7 @@ export async function runDeskChatTurn(opts = {}) {
         : plan.type === "out_of_domain"
           ? agentId === "commander"
             ? "Eso ya se me escapa un poco (mutaciones, WhatsApp o cargas OCR las manejan otros flujos). Igual hablame: te ayudo a mirar Viajes, Incidencias, Rendición, ETA, POD y Remitos."
-            : `Eso no lo manejo desde este módulo. Si querés, te oriento o lo vemos en el Chat Central / el agente que corresponda.`
+            : `Solo atiendo el módulo "${agentId}". Eso es de otro tema: andá a esa pantalla o al Chat Central.`
           : agentId === "commander"
             ? "¡Hola! Acá estoy. Puedo charlar y ayudarte a mirar Viajes, Incidencias, Rendición, ETA, POD y Remitos. ¿Qué necesitás?"
             : "¡Hola! Acá estoy para este módulo. Decime qué necesitás y lo vemos.";

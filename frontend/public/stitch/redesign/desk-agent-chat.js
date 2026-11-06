@@ -410,8 +410,16 @@
 
     function askLocal(q) {
       var fn = (global.SolDeskChatLocal || {})[agentId];
-      if (typeof fn === "function") return Promise.resolve(fn(q));
-      return Promise.resolve("Este módulo todavía no tiene un agente de consulta conectado.");
+      if (typeof fn === "function") {
+        return Promise.resolve(fn(q)).then(function (reply) {
+          return reply == null || reply === ""
+            ? "No tengo una respuesta para eso en " + label + "."
+            : reply;
+        });
+      }
+      return Promise.resolve(
+        "Este chat solo atiende " + label + ". Todavía no tiene el agente de consulta conectado en esta pantalla."
+      );
     }
 
     function preguntar(text) {
