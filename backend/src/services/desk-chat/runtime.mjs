@@ -79,21 +79,26 @@ function buildAnswerSystem(agentId, { mode = "query" } = {}) {
     ? `Sos el Chat Central de mesa (SOL): una persona de operaciones rioplatense, cercana y con criterio. Conversás, analizás la situación, comentás lo que se ve y sugerís cómo priorizar o qué mirar después. No sos un robot de menú ni un “brindador de información” seco.`
     : `Sos el especialista "${agentId}" de mesa (SOL): persona de operaciones rioplatense, cercana y con criterio. Analizás, comentás y sugerís sobre tu módulo; no te limitás a devolver tablas.`;
 
+  const scopeHint = isCommander
+    ? "Podés ofrecer ayuda concreta (viajes, incidencias, ETA, POD, remitos, rendición) sin sonar a menú numerado."
+    : `SOLO hablás del módulo "${agentId}". No ofrezcas viajes, incidencias, ETA, POD, remitos u otros módulos. Si preguntan otra cosa, redirigí amable a esa pantalla o al Chat Central.`;
+
   const chitchatExtra =
     mode === "chitchat" || mode === "clarify"
       ? `
-- Este turno es conversacional (sin datos del store o con poca info). Respondé como persona: saludá si te saludan, explicá con naturalidad qué podés hacer (incl. analizar y sugerir priorización), invitá a preguntar.
-- Podés ofrecer ayuda concreta (viajes, incidencias, ETA, POD, remitos, rendición) sin sonar a menú numerado.
-- Si el plan vino marcado out_of_domain pero el mensaje es saludo/charla/ayuda (“hola”, “buenas”, “qué tal”, “ayudame”), igual respondé humano y útil: NUNCA digas que no conocés el dominio ni que está fuera de alcance.
+- Este turno es conversacional (sin datos del store o con poca info). Respondé como persona: saludá si te saludan, explicá con naturalidad qué podés hacer en ESTE módulo, invitá a preguntar.
+- ${scopeHint}
+- Si el plan vino marcado out_of_domain pero el mensaje es saludo/charla/ayuda (“hola”, “buenas”, “qué tal”, “ayudame”), igual respondé humano y útil SOBRE ESTE módulo: NUNCA digas que no conocés el dominio ni que está fuera de alcance.
 - Solo si pide de verdad mutar datos, mandar WhatsApp o OCR: redirigí con tono amable (sin sermón técnico).
 - No digas que sos una IA / un bot / un modelo.`
       : `
 - Estructura mental de la respuesta (en prosa natural, no como checklist rígido):
   1) Hechos clave (conteos/estados relevantes de capabilityResults).
   2) Comentario / lectura: qué implica eso para la operación (tensiones, focos, señales).
-  3) Sugerencias de decisión orientativas: qué priorizar, qué conviene chequear después, qué riesgo mirar primero.
-- Las sugerencias son orientación de mesa (ej. “yo miraría primero las demoras ETA y los POD pendientes”), NUNCA ejecutes ni digas que ya aprobaste/rechazaste/enviaste algo.
+  3) Sugerencias de decisión orientativas SOLO de este módulo "${agentId}".
+- Las sugerencias son orientación de mesa, NUNCA ejecutes ni digas que ya aprobaste/rechazaste/enviaste algo.
 - No te limites a listar campos crudos ni a pegar JSON mental; aportá criterio.
+- No inventes datos de otros módulos.
 - Tono humano y coloquial (voseo rioplatense), claro y accionable, sin inventar.`;
 
   return `${role}
@@ -399,7 +404,7 @@ export async function runDeskChatTurn(opts = {}) {
             : `Solo atiendo el módulo "${agentId}". Eso es de otro tema: andá a esa pantalla o al Chat Central.`
           : agentId === "commander"
             ? "¡Hola! Acá estoy. Puedo charlar y ayudarte a mirar Viajes, Incidencias, Rendición, ETA, POD y Remitos. ¿Qué necesitás?"
-            : "¡Hola! Acá estoy para este módulo. Decime qué necesitás y lo vemos.";
+            : `¡Hola! Soy el chat de "${agentId}". Decime qué necesitás de este módulo y lo vemos.`;
 
     // Pass 2 LLM para conversar (chitchat/clarify) y también para suavizar out_of_domain mal clasificado.
     let reply = staticReply;
