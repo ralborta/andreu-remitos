@@ -539,17 +539,17 @@
 <label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
               Canal de Comunicación
             </label>
-<div class="grid grid-cols-3 gap-2">
-<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm ring-1 ring-slate-900" type="button">
+<div class="grid grid-cols-3 gap-2" data-sol-fin-tpl-canales>
+<button data-sol-fin-tpl-canal="whatsapp" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm ring-1 ring-slate-900" type="button" aria-pressed="true">
 <i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i>
                 WhatsApp
                 <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-mono font-normal">98%</span>
 </button>
-<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50" type="button">
+<button data-sol-fin-tpl-canal="email" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50" type="button" aria-pressed="false">
 <i class="fa-regular fa-envelope text-slate-400"></i>
                 Email
               </button>
-<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50" type="button">
+<button data-sol-fin-tpl-canal="ambos" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50" type="button" aria-pressed="false">
 <i class="fa-solid fa-arrows-split-up-and-left text-slate-400 text-xs"></i>
                 Ambos
               </button>
@@ -561,17 +561,17 @@
 <label class="text-xs font-bold text-slate-700 uppercase tracking-wider" for="template-selector">
                 PLANTILLA DE RECORDATORIO
               </label>
-<span class="text-[10px] text-brand-600 font-bold hover:underline cursor-pointer">
+<button type="button" data-sol-fin-tpl-edit class="text-[10px] text-brand-600 font-bold hover:underline cursor-pointer">
 <i class="fa-solid fa-pen text-[9px] mr-1"></i> Editar plantilla
-              </span>
+              </button>
 </div>
 <div class="relative">
-<select class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg focus:ring-slate-900 focus:border-slate-900 p-2.5 font-medium appearance-none pr-9" id="template-selector">
-<option selected="">Recordatorio corto (WhatsApp optimizado)</option>
-<option>Aviso previo al vencimiento (Preventivo)</option>
-<option>Intimación formal de cobranza con link DEBIN</option>
-<option>Corte preventivo de servicio de carga</option>
-<option>Notificación con remito POD digital conformado</option>
+<select data-sol-fin-tpl-select class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg focus:ring-slate-900 focus:border-slate-900 p-2.5 font-medium appearance-none pr-9" id="template-selector">
+<option value="corto" selected>Recordatorio corto (WhatsApp optimizado)</option>
+<option value="preventivo">Aviso previo al vencimiento (Preventivo)</option>
+<option value="intimacion">Intimación formal de cobranza con link DEBIN</option>
+<option value="corte">Corte preventivo de servicio de carga</option>
+<option value="pod">Notificación con remito POD digital conformado</option>
 </select>
 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
 <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -638,36 +638,8 @@
                   </span>
 </div>
 <!-- Burbuja de mensaje -->
-<div class="whatsapp-bubble p-3 max-w-[92%] ml-2 border border-slate-200/40 text-xs text-slate-800 leading-relaxed font-sans">
-<p class="font-medium">
-                    Hola <strong class="text-slate-900 font-bold">PepsiCo Central</strong>, te recordamos la factura <strong class="font-mono bg-slate-100 px-1 rounded text-slate-900">FC-A 0001-00482</strong> por servicios de transporte y logística nacional.
-                  </p>
-<div class="my-2 p-2.5 rounded bg-slate-50 border border-slate-200 text-xs space-y-1">
-<div class="flex justify-between">
-<span class="text-slate-500">Saldo pendiente:</span>
-<span class="font-mono font-bold text-slate-900">$1.240.000 ARS</span>
-</div>
-<div class="flex justify-between">
-<span class="text-slate-500">Vencimiento operado:</span>
-<span class="font-mono text-rose-600 font-bold">12/10/2026</span>
-</div>
-<div class="flex justify-between">
-<span class="text-slate-500">Estado de mora:</span>
-<span class="text-rose-600 font-semibold">12 días de atraso</span>
-</div>
-</div>
-<p class="text-[11px] text-slate-600 mb-2">
-                    ¿Nos confirmás la fecha estimada de acreditación? Podés abonar o adjuntar comprobante directamente ingresando en el portal:
-                  </p>
-<!-- Botón simulado dentro del chat -->
-<div class="pt-1 border-t border-slate-100">
-<a class="block w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-center text-xs transition shadow-2xs" href="#">
-<i class="fa-solid fa-qrcode mr-1"></i> Pagar vía DEBIN / QR ($1.240.000)
-                    </a>
-</div>
-<div class="mt-1 text-right">
-<span class="text-[9px] text-slate-400 font-mono">09:30 AM · <i class="fa-solid fa-check-double text-sky-500"></i></span>
-</div>
+<div data-sol-fin-tpl-preview class="whatsapp-bubble p-3 max-w-[92%] ml-2 border border-slate-200/40 text-xs text-slate-800 leading-relaxed font-sans">
+<p class="font-medium">Cargando plantilla…</p>
 </div>
 </div>
 </div>
@@ -787,7 +759,7 @@
     });
   </script>
 <!-- END: InteractiveHandlers -->
-<script src="/stitch/redesign/finanzas-live.js?v=historial-v1"></script>
+<script src="/stitch/redesign/finanzas-live.js?v=plantillas-v1"></script>
 <script src="/stitch/redesign/finance-desk.js?v=desk-api-v1"></script>
 <script src="/stitch/redesign/desk-agent-chat.js?v=desk-api-v1"></script>
 <script src="/stitch/redesign/bridge.js?v=1793757765"></script>

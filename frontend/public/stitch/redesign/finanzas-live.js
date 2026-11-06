@@ -1420,6 +1420,10 @@
       plant.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
+        // Ir a Comunicación con las plantillas operativas (selector + preview).
+        try {
+          sessionStorage.setItem("sol-fin-open-templates", "1");
+        } catch (_) {}
         go("/finanzas/comunicacion");
       });
     }
@@ -3118,6 +3122,235 @@
     renderRows(apiRows.filter(function (r) {
       return saldo(localOf(r)) > 0;
     }));
+    paintComunicacionTemplate();
+  }
+
+  var COM_TEMPLATES = {
+    corto: {
+      name: "Recordatorio corto (WhatsApp optimizado)",
+      body: function (ctx) {
+        return (
+          "Hola <strong>" +
+          esc(ctx.cliente) +
+          "</strong>, te recordamos la factura <strong class=\"font-mono bg-slate-100 px-1 rounded\">" +
+          esc(ctx.numero) +
+          "</strong> por servicios de transporte."
+        );
+      },
+      cta: "Confirmar fecha de pago",
+    },
+    preventivo: {
+      name: "Aviso previo al vencimiento (Preventivo)",
+      body: function (ctx) {
+        return (
+          "Hola <strong>" +
+          esc(ctx.cliente) +
+          "</strong>: la factura <strong class=\"font-mono bg-slate-100 px-1 rounded\">" +
+          esc(ctx.numero) +
+          "</strong> vence el <strong>" +
+          esc(ctx.vto) +
+          "</strong>. Te avisamos con anticipación para coordinar el pago."
+        );
+      },
+      cta: "Agendar pago",
+    },
+    intimacion: {
+      name: "Intimación formal de cobranza con link DEBIN",
+      body: function (ctx) {
+        return (
+          "<strong>" +
+          esc(ctx.cliente) +
+          "</strong>, intimamos el pago de la factura <strong class=\"font-mono bg-slate-100 px-1 rounded\">" +
+          esc(ctx.numero) +
+          "</strong> con saldo <strong>" +
+          esc(ctx.saldo) +
+          "</strong>" +
+          (ctx.mora ? " (" + esc(ctx.mora) + ")" : "") +
+          ". Podés abonar con DEBIN/QR desde el botón."
+        );
+      },
+      cta: "Pagar vía DEBIN / QR",
+    },
+    corte: {
+      name: "Corte preventivo de servicio de carga",
+      body: function (ctx) {
+        return (
+          "<strong>" +
+          esc(ctx.cliente) +
+          "</strong>: ante el saldo pendiente de <strong>" +
+          esc(ctx.saldo) +
+          "</strong> en factura <strong class=\"font-mono bg-slate-100 px-1 rounded\">" +
+          esc(ctx.numero) +
+          "</strong>, evaluamos restricción preventiva de nuevas cargas hasta regularizar."
+        );
+      },
+      cta: "Regularizar ahora",
+    },
+    pod: {
+      name: "Notificación con remito POD digital conformado",
+      body: function (ctx) {
+        return (
+          "Hola <strong>" +
+          esc(ctx.cliente) +
+          "</strong>, adjuntamos el POD digital de la factura <strong class=\"font-mono bg-slate-100 px-1 rounded\">" +
+          esc(ctx.numero) +
+          "</strong>. El saldo pendiente es <strong>" +
+          esc(ctx.saldo) +
+          "</strong>."
+        );
+      },
+      cta: "Ver POD y pagar",
+    },
+  };
+
+  function comunicacionContext() {
+    var row =
+      (selectedId && findRow(selectedId)) ||
+      waTargetRow() ||
+      (apiRows || []).map(localOf).find(function (r) {
+        return saldo(r) > 0;
+      }) ||
+      null;
+    if (!row) {
+      return {
+        cliente: "Cliente",
+        numero: "—",
+        saldo: money(0),
+        vto: "—",
+        mora: "",
+        montoNum: 0,
+      };
+    }
+    row = localOf(row);
+    var s = saldo(row);
+    var today = new Date();
+    var mora = "";
+    if (row.fecha_vto) {
+      var v = new Date(row.fecha_vto + "T12:00:00");
+      var days = Math.floor((today - v) / 86400000);
+      if (days > 0) mora = days + " día" + (days === 1 ? "" : "s") + " de atraso";
+      else if (days === 0) mora = "vence hoy";
+      else mora = "vence en " + Math.abs(days) + " día" + (Math.abs(days) === 1 ? "" : "s");
+    }
+    return {
+      cliente: row.razon_social || "Cliente",
+      numero: row.numero || row.id || "—",
+      saldo: money(s),
+      vto: fmtDate(row.fecha_vto) || row.fecha_vto || "—",
+      mora: mora,
+      montoNum: s,
+      row: row,
+    };
+  }
+
+  function paintComunicacionTemplate() {
+    var sel = document.querySelector("[data-sol-fin-tpl-select]");
+    var box = document.querySelector("[data-sol-fin-tpl-preview]");
+    if (!box) return;
+    var id = sel && sel.value ? sel.value : "corto";
+    var tpl = COM_TEMPLATES[id] || COM_TEMPLATES.corto;
+    var ctx = comunicacionContext();
+    var ctaLabel = tpl.cta + (ctx.montoNum > 0 ? " (" + ctx.saldo + ")" : "");
+    box.innerHTML =
+      '<p class="font-medium">' +
+      tpl.body(ctx) +
+      "</p>" +
+      '<div class="my-2 p-2.5 rounded bg-slate-50 border border-slate-200 text-xs space-y-1">' +
+      '<div class="flex justify-between"><span class="text-slate-500">Saldo pendiente:</span><span class="font-mono font-bold text-slate-900">' +
+      esc(ctx.saldo) +
+      "</span></div>" +
+      '<div class="flex justify-between"><span class="text-slate-500">Vencimiento:</span><span class="font-mono text-rose-600 font-bold">' +
+      esc(ctx.vto) +
+      "</span></div>" +
+      (ctx.mora
+        ? '<div class="flex justify-between"><span class="text-slate-500">Estado:</span><span class="text-rose-600 font-semibold">' +
+          esc(ctx.mora) +
+          "</span></div>"
+        : "") +
+      "</div>" +
+      '<p class="text-[11px] text-slate-600 mb-2">Plantilla: <strong>' +
+      esc(tpl.name) +
+      "</strong></p>" +
+      '<div class="pt-1 border-t border-slate-100">' +
+      '<a class="block w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-center text-xs transition shadow-2xs" href="#">' +
+      esc(ctaLabel) +
+      "</a></div>" +
+      '<div class="mt-1 text-right"><span class="text-[9px] text-slate-400 font-mono">' +
+      esc(
+        new Date().toLocaleTimeString("es-AR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "America/Argentina/Buenos_Aires",
+        }),
+      ) +
+      " · ✓✓</span></div>";
+  }
+
+  function wireComunicacionTemplates() {
+    if (pageKey() !== "comunicacion") return;
+    if (document.documentElement.getAttribute("data-sol-fin-tpl-wired")) {
+      paintComunicacionTemplate();
+      return;
+    }
+    document.documentElement.setAttribute("data-sol-fin-tpl-wired", "1");
+    var sel = document.querySelector("[data-sol-fin-tpl-select]");
+    if (sel) {
+      // Asegurar opciones si el HTML quedó vacío por algún render
+      if (!sel.options.length) {
+        Object.keys(COM_TEMPLATES).forEach(function (id) {
+          var opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = COM_TEMPLATES[id].name;
+          sel.appendChild(opt);
+        });
+      }
+      sel.addEventListener("change", function () {
+        paintComunicacionTemplate();
+        toast("Plantilla: " + ((COM_TEMPLATES[sel.value] || {}).name || sel.value), "ok");
+      });
+    }
+    var edit = document.querySelector("[data-sol-fin-tpl-edit]");
+    if (edit) {
+      edit.addEventListener("click", function (e) {
+        e.preventDefault();
+        var id = sel && sel.value ? sel.value : "corto";
+        var tpl = COM_TEMPLATES[id] || COM_TEMPLATES.corto;
+        toast("Plantilla activa: «" + tpl.name + "». La vista previa ya usa esta plantilla con la factura seleccionada.", "ok");
+        if (sel) {
+          sel.focus();
+          try {
+            sel.showPicker();
+          } catch (_) {}
+        }
+      });
+    }
+    document.querySelectorAll("[data-sol-fin-tpl-canal]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        document.querySelectorAll("[data-sol-fin-tpl-canal]").forEach(function (b) {
+          var on = b === btn;
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+          b.className = on
+            ? "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm ring-1 ring-slate-900"
+            : "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50";
+        });
+        toast("Canal: " + (btn.getAttribute("data-sol-fin-tpl-canal") || "whatsapp"), "ok");
+        paintComunicacionTemplate();
+      });
+    });
+    // Al elegir fila, refrescar preview
+    document.addEventListener(
+      "click",
+      function (e) {
+        if (pageKey() !== "comunicacion") return;
+        var tr = e.target.closest("tr[data-sol-fin-id]");
+        if (!tr) return;
+        selectedId = tr.getAttribute("data-sol-fin-id") || selectedId;
+        setTimeout(paintComunicacionTemplate, 0);
+      },
+      true,
+    );
+    paintComunicacionTemplate();
   }
 
   function refreshTables() {
@@ -3194,6 +3427,7 @@
     wireActions();
     wireWaActionPanel();
     wirePasarelaPanel();
+    wireComunicacionTemplates();
     applyFilters();
     reloadData();
   }
