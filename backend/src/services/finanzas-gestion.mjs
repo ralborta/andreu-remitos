@@ -256,3 +256,40 @@ export async function registrarMensajeFactura(id, body = {}) {
   });
   return row;
 }
+
+function defaultProgramadoPara() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(9, 0, 0, 0);
+  return d.toISOString();
+}
+
+/** Programa un recordatorio (no dispara WhatsApp ahora; queda en el historial de la factura). */
+export async function programarComunicacionFactura(
+  id,
+  { canal = "whatsapp", mensaje, plantilla, programado_para } = {},
+) {
+  await ensureFinanzasDemo();
+  const fac = await getFacturaInterna(id);
+  if (!fac || fac.tipo !== "cobrar") throw new Error("Solo se programa sobre facturas a cobrar");
+  if (estadoCobrar(fac) === "saldada") throw new Error("Esa factura ya está saldada");
+  const text = String(mensaje || "").trim() || mensajeDefault(fac);
+  const ch = canal === "email" ? "email" : "whatsapp";
+  let when = String(programado_para || "").trim() || defaultProgramadoPara();
+  const parsed = new Date(when);
+  if (Number.isNaN(parsed.getTime())) throw new Error("Fecha de programación inválida");
+  when = parsed.toISOString();
+  const row = await appendMensajeFactura(id, {
+    direction: "out",
+    canal: ch,
+    from: "mesa",
+    texto: text,
+    ok: true,
+    meta: {
+      plantilla: plantilla || null,
+      estado: "programado",
+      programado_para: when,
+    },
+  });
+  return { factura: row, programado_para: when, mensaje: text };
+}

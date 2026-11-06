@@ -840,15 +840,20 @@
     var events = [];
     var msgs = Array.isArray(row && row.mensajes) ? row.mensajes : [];
     msgs.forEach(function (m) {
+      var scheduledAt = m.meta && m.meta.programado_para;
+      var isSched = !!scheduledAt || (m.meta && m.meta.estado === "programado");
       events.push({
         at: m.at,
-        kind: m.direction === "in" ? "in" : "out",
-        title: m.direction === "in" ? "Consulta del cliente" : "Mensaje enviado",
-        texto: m.texto || "",
+        kind: m.direction === "in" ? "in" : isSched ? "scheduled" : "out",
+        title: m.direction === "in" ? "Consulta del cliente" : isSched ? "Envío programado" : "Mensaje enviado",
+        texto: isSched
+          ? "[Programado para " + fmtDate(scheduledAt || m.at, true) + "]\n" + (m.texto || "")
+          : m.texto || "",
         canal: m.canal,
         from: m.from || (m.direction === "in" ? "cliente" : "mesa"),
         ok: m.ok,
         mensaje_id: m.id,
+        programado_para: scheduledAt || null,
       });
     });
     var pasos = Array.isArray(row && row.pasos) ? row.pasos : [];
@@ -883,13 +888,28 @@
         .map(function (ev) {
           var isIn = ev.kind === "in";
           var isOut = ev.kind === "out";
-          var dot = isIn ? "bg-emerald-500 ring-emerald-50" : isOut ? "bg-indigo-500 ring-indigo-50" : "bg-slate-400 ring-slate-100";
+          var isSched = ev.kind === "scheduled";
+          var dot = isIn
+            ? "bg-emerald-500 ring-emerald-50"
+            : isSched
+              ? "bg-amber-500 ring-amber-50"
+              : isOut
+                ? "bg-indigo-500 ring-indigo-50"
+                : "bg-slate-400 ring-slate-100";
           var bubble = isIn
             ? "border-emerald-200 bg-emerald-50/60"
-            : isOut
-              ? "border-indigo-200 bg-indigo-50/50"
-              : "border-slate-200 bg-white";
-          var who = isIn ? "Cliente → Mesa" : isOut ? "Mesa → Cliente" : esc(ev.from || "sistema");
+            : isSched
+              ? "border-amber-200 bg-amber-50/60"
+              : isOut
+                ? "border-indigo-200 bg-indigo-50/50"
+                : "border-slate-200 bg-white";
+          var who = isIn
+            ? "Cliente → Mesa"
+            : isSched
+              ? "Mesa → Cliente (programado)"
+              : isOut
+                ? "Mesa → Cliente"
+                : esc(ev.from || "sistema");
           return (
             '<div class="relative flex gap-3 pl-1">' +
             '<div class="mt-1 h-2.5 w-2.5 rounded-full ' +
@@ -1524,22 +1544,7 @@
       var done = 0;
       ids.forEach(function (id) {
         var row = findRow(id) || { id: id };
-        var ctx = {
-          cliente: row.razon_social || "Cliente",
-          numero: row.numero || row.id || "—",
-          saldo: money(saldo(localOf(row))),
-          vto: fmtDate(row.fecha_vto) || row.fecha_vto || "—",
-        };
-        var mensaje =
-          "Hola " +
-          ctx.cliente +
-          ", te recordamos la factura " +
-          ctx.numero +
-          " con saldo " +
-          ctx.saldo +
-          " (vto " +
-          ctx.vto +
-          "). ¿Me confirmás fecha de pago?";
+        var mensaje = mensajeRecordatorio(row);
         api("/api/finanzas/facturas/" + encodeURIComponent(id) + "/comunicar", {
           method: "POST",
           body: JSON.stringify({ canal: "whatsapp", mensaje: mensaje, plantilla: plantilla }),
@@ -1570,6 +1575,144 @@
           });
       });
     }
+  }
+
+  function mensajeRecordatorio(row) {
+    var ctx = {
+      cliente: (row && row.razon_social) || "Cliente",
+      numero: (row && (row.numero || row.id)) || "—",
+      saldo: money(saldo(localOf(row || {}))),
+      vto: (row && (fmtDate(row.fecha_vto) || row.fecha_vto)) || "—",
+    };
+    return (
+      "Hola " +
+      ctx.cliente +
+      ", te recordamos la factura " +
+      ctx.numero +
+      " con saldo " +
+      ctx.saldo +
+      " (vto " +
+      ctx.vto +
+      "). ¿Me confirmás fecha de pago?"
+    );
+  }
+
+  function defaultProgramarLocal() {
+    var d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(9, 0, 0, 0);
+    var pad = function (n) {
+      return String(n).padStart(2, "0");
+    };
+    return (
+      d.getFullYear() +
+      "-" +
+      pad(d.getMonth() + 1) +
+      "-" +
+      pad(d.getDate()) +
+      " " +
+      pad(d.getHours()) +
+      ":" +
+      pad(d.getMinutes())
+    );
+  }
+
+  function parseProgramarInput(raw) {
+    var s = String(raw || "").trim();
+    if (!s) return null;
+    // Acepta "YYYY-MM-DD HH:MM" o ISO.
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})$/);
+    var d;
+    if (m) {
+      d = new Date(
+        Number(m[1]),
+        Number(m[2]) - 1,
+        Number(m[3]),
+        Number(m[4]),
+        Number(m[5]),
+        0,
+        0,
+      );
+    } else {
+      d = new Date(s);
+    }
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString();
+  }
+
+  function resolveComIds(ids) {
+    ids = ids || [];
+    if (!ids.length && selectedId) ids = [selectedId];
+    if (!ids.length) {
+      var panel = document.querySelector("[data-sol-fin-wa-panel]");
+      var waId = panel && panel.getAttribute("data-sol-fin-wa-id");
+      if (waId) ids = [waId];
+    }
+    if (!ids.length) ids = selectedIds();
+    return ids;
+  }
+
+  function demoProgramar(ids) {
+    ids = resolveComIds(ids);
+    if (!ids.length) {
+      toast("Seleccioná al menos una factura.", "err");
+      return;
+    }
+    var whenRaw = window.prompt(
+      "¿Cuándo enviar el recordatorio? (AAAA-MM-DD HH:MM)",
+      defaultProgramarLocal(),
+    );
+    if (whenRaw == null) return;
+    var whenIso = parseProgramarInput(whenRaw);
+    if (!whenIso) {
+      toast("Fecha inválida. Usá AAAA-MM-DD HH:MM.", "err");
+      return;
+    }
+    var sel = document.querySelector("[data-sol-fin-tpl-select]");
+    var plantilla = sel && sel.value ? sel.value : "corto";
+    var done = 0;
+    var lastWhen = whenIso;
+    ids.forEach(function (id) {
+      var row = findRow(id) || { id: id };
+      api("/api/finanzas/facturas/" + encodeURIComponent(id) + "/programar", {
+        method: "POST",
+        body: JSON.stringify({
+          canal: "whatsapp",
+          mensaje: mensajeRecordatorio(row),
+          plantilla: plantilla,
+          programado_para: whenIso,
+        }),
+      })
+        .then(function (res) {
+          if (res && res.programado_para) lastWhen = res.programado_para;
+          if (res && res.factura) {
+            apiRows = (apiRows || []).map(function (r) {
+              return r.id === res.factura.id ? res.factura : r;
+            });
+            if (!apiRows.some(function (r) { return r.id === res.factura.id; })) apiRows.unshift(res.factura);
+          }
+        })
+        .catch(function (err) {
+          toast(err.message || "No se pudo programar.", "err");
+        })
+        .then(function () {
+          done += 1;
+          if (done >= ids.length) {
+            toast(
+              "Envío programado para " +
+                fmtDate(lastWhen, true) +
+                " · guardado en el historial de " +
+                ids.length +
+                " factura(s).",
+              "ok",
+            );
+            refreshTables();
+            syncWaActionPanel();
+            if (selectedId && findRow(selectedId)) openDrawer(findRow(selectedId));
+            else if (ids[0] && findRow(ids[0])) openDrawer(findRow(ids[0]));
+          }
+        });
+    });
   }
 
   function registrarConsultaCliente(row) {
@@ -2379,7 +2522,9 @@
       return;
     }
     if (kind === "programar") {
-      toast("Envío programado en demo para mañana 09:00 (no dispara WhatsApp real).", "ok");
+      var progIds = selectedIds();
+      if (!progIds.length && row && row.id) progIds = [row.id];
+      demoProgramar(progIds);
       return;
     }
     if (kind === "ir_conciliacion") {
