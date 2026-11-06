@@ -1720,7 +1720,10 @@
     document.body.appendChild(programarEl);
 
     programarEl.addEventListener("click", function (e) {
-      if (e.target === programarEl) closeProgramarModal();
+      if (e.target === programarEl) {
+        if (Date.now() - (programarEl._openedAt || 0) < 400) return;
+        closeProgramarModal();
+      }
     });
     programarEl.querySelector("[data-sol-fin-prog-close]").addEventListener("click", closeProgramarModal);
     programarEl.querySelector("[data-sol-fin-prog-cancel]").addEventListener("click", closeProgramarModal);
@@ -1794,12 +1797,14 @@
     el.querySelector("[data-sol-fin-prog-count]").textContent =
       ids.length === 1 ? "1 factura seleccionada" : ids.length + " facturas seleccionadas";
     el.querySelector("[data-sol-fin-prog-list]").textContent = names.join(" · ");
-    el.classList.remove("hidden");
-    el.classList.add("flex");
+    el._openedAt = Date.now();
     setTimeout(function () {
+      el._openedAt = Date.now();
+      el.classList.remove("hidden");
+      el.classList.add("flex");
       var f = el.querySelector("[data-sol-fin-prog-fecha]");
       if (f) f.focus();
-    }, 40);
+    }, 0);
   }
 
   function confirmarProgramarModal() {
@@ -1982,7 +1987,11 @@
     var drop = cargarEl.querySelector("[data-sol-fin-cargar-drop]");
     var fileInp = cargarEl.querySelector("[data-sol-fin-cargar-file]");
     cargarEl.addEventListener("click", function (e) {
-      if (e.target === cargarEl && !cargarBusy) closeCargarFacturaModal();
+      // Ignorar el mismo click que abrió el modal (si no, se cierra al instante).
+      if (e.target === cargarEl && !cargarBusy) {
+        if (Date.now() - (cargarEl._openedAt || 0) < 400) return;
+        closeCargarFacturaModal();
+      }
     });
     cargarEl.querySelector("[data-sol-fin-cargar-close]").addEventListener("click", closeCargarFacturaModal);
     cargarEl.querySelector("[data-sol-fin-cargar-cancel]").addEventListener("click", closeCargarFacturaModal);
@@ -2046,13 +2055,18 @@
     }
     var el = ensureCargarFacturaModal();
     el._file = null;
+    el._openedAt = Date.now();
     var fileInp = el.querySelector("[data-sol-fin-cargar-file]");
     if (fileInp) fileInp.value = "";
     el.querySelector("[data-sol-fin-cargar-name]").textContent = "Ningún archivo seleccionado";
     setCargarStatus("", "");
     setCargarBusy(false);
-    el.classList.remove("hidden");
-    el.classList.add("flex");
+    // Diferir el show: si se agrega el overlay en el mismo click, el evento lo cierra al toque.
+    setTimeout(function () {
+      el._openedAt = Date.now();
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+    }, 0);
   }
 
   function afterFacturaCargada(fac) {
