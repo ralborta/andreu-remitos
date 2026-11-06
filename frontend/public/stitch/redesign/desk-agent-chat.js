@@ -14,6 +14,13 @@
     rendicion: 1,
     eta: 1,
     pod: 1,
+    finanzas: 1,
+    facturas: 1,
+    "facturas-cobro": 1,
+    cobranzas: 1,
+    conciliacion: 1,
+    clientes: 1,
+    comunicacion: 1,
   };
 
   function $(root, sel) {
