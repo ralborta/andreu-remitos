@@ -16,6 +16,8 @@
   var fichaEl = null;
   var programarEl = null;
   var programarIds = [];
+  var cargarEl = null;
+  var cargarBusy = false;
   /** Estado del aviso de pasarela / match en Conciliación. */
   var pasarelaMatch = null;
 
@@ -163,7 +165,10 @@
   function api(path, opts) {
     opts = opts || {};
     var init = { method: opts.method || "GET", credentials: "include" };
-    if (opts.body) {
+    if (opts.body instanceof FormData) {
+      init.body = opts.body;
+      // Dejar que el browser setee multipart boundary.
+    } else if (opts.body) {
       init.headers = { "Content-Type": "application/json" };
       init.body = opts.body;
     }
@@ -1889,6 +1894,321 @@
     openProgramarModal(ids);
   }
 
+  function closeCargarFacturaModal() {
+    if (cargarBusy) return;
+    if (cargarEl) {
+      cargarEl.classList.add("hidden");
+      cargarEl.classList.remove("flex");
+    }
+  }
+
+  function setCargarStatus(msg, tone) {
+    var el = ensureCargarFacturaModal();
+    var st = el.querySelector("[data-sol-fin-cargar-status]");
+    if (!st) return;
+    st.textContent = msg || "";
+    st.className =
+      "text-xs font-medium " +
+      (tone === "err" ? "text-rose-600" : tone === "ok" ? "text-emerald-700" : "text-slate-500");
+  }
+
+  function setCargarBusy(on) {
+    cargarBusy = !!on;
+    var el = ensureCargarFacturaModal();
+    var ok = el.querySelector("[data-sol-fin-cargar-ok]");
+    var demo = el.querySelector("[data-sol-fin-cargar-demo]");
+    var file = el.querySelector("[data-sol-fin-cargar-file]");
+    var drop = el.querySelector("[data-sol-fin-cargar-drop]");
+    [ok, demo].forEach(function (b) {
+      if (!b) return;
+      b.disabled = !!on;
+      b.classList.toggle("opacity-60", !!on);
+    });
+    if (file) file.disabled = !!on;
+    if (drop) drop.classList.toggle("pointer-events-none", !!on);
+    if (ok) {
+      ok.innerHTML = on
+        ? '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> Leyendo OCR…'
+        : '<span class="material-symbols-outlined text-[18px]">document_scanner</span> Cargar y leer OCR';
+    }
+  }
+
+  function ensureCargarFacturaModal() {
+    if (cargarEl) return cargarEl;
+    cargarEl = document.createElement("div");
+    cargarEl.id = "sol-fin-cargar";
+    cargarEl.className =
+      "hidden fixed inset-0 z-[10040] items-center justify-center bg-slate-900/40 p-4";
+    cargarEl.setAttribute("role", "presentation");
+    cargarEl.innerHTML =
+      '<div class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="sol-fin-cargar-titulo">' +
+      '<div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">' +
+      '<div class="min-w-0 flex items-start gap-3">' +
+      '<div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100">' +
+      '<span class="material-symbols-outlined text-[22px]">document_scanner</span></div>' +
+      '<div class="min-w-0">' +
+      '<p class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">Facturas de pago · CxP</p>' +
+      '<h3 id="sol-fin-cargar-titulo" class="text-lg font-bold text-slate-900">Cargar factura (OCR IA)</h3>' +
+      '<p class="mt-0.5 text-xs text-slate-500">PDF o imagen → OCR digitaliza CUIT, CAE, monto y vencimiento → queda en la cola de pagos.</p>' +
+      "</div></div>" +
+      '<button type="button" data-sol-fin-cargar-close class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">' +
+      '<span class="material-symbols-outlined text-[20px]">close</span></button>' +
+      "</div>" +
+      '<div class="space-y-4 overflow-y-auto px-5 py-4">' +
+      '<div data-sol-fin-cargar-drop class="rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors px-4 py-8 text-center cursor-pointer">' +
+      '<div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white border border-indigo-100 text-indigo-600 shadow-xs">' +
+      '<span class="material-symbols-outlined text-[26px]">upload_file</span></div>' +
+      '<p class="text-sm font-bold text-slate-800">Arrastrá acá el comprobante o hacé clic para elegir</p>' +
+      '<p class="mt-1 text-[11px] text-slate-500">PDF, JPG, PNG · hasta 25 MB</p>' +
+      '<p class="mt-3 text-xs font-semibold text-indigo-700 truncate px-2" data-sol-fin-cargar-name">Ningún archivo seleccionado</p>' +
+      '<input data-sol-fin-cargar-file type="file" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,application/pdf,image/*" class="hidden"/>' +
+      "</div>" +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 flex gap-2.5">' +
+      '<span class="material-symbols-outlined text-[18px] text-slate-400 shrink-0">info</span>' +
+      '<p class="text-xs text-slate-600 leading-relaxed">También podés <strong>simular una factura demo</strong> si no tenés un PDF a mano: se carga a la cola con datos de prueba listos para confirmar.</p>' +
+      "</div>" +
+      '<p data-sol-fin-cargar-status class="text-xs font-medium text-slate-500"></p>' +
+      "</div>" +
+      '<div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/80 px-5 py-4">' +
+      '<button type="button" data-sol-fin-cargar-demo class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">' +
+      '<span class="material-symbols-outlined text-[16px] text-amber-500">auto_awesome</span> Factura demo</button>' +
+      '<div class="flex flex-wrap items-center gap-2">' +
+      '<button type="button" data-sol-fin-cargar-cancel class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200/70 transition">Cancelar</button>' +
+      '<button type="button" data-sol-fin-cargar-ok class="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition shadow-sm">' +
+      '<span class="material-symbols-outlined text-[18px]">document_scanner</span> Cargar y leer OCR</button>' +
+      "</div></div></div>";
+    document.body.appendChild(cargarEl);
+
+    var drop = cargarEl.querySelector("[data-sol-fin-cargar-drop]");
+    var fileInp = cargarEl.querySelector("[data-sol-fin-cargar-file]");
+    cargarEl.addEventListener("click", function (e) {
+      if (e.target === cargarEl && !cargarBusy) closeCargarFacturaModal();
+    });
+    cargarEl.querySelector("[data-sol-fin-cargar-close]").addEventListener("click", closeCargarFacturaModal);
+    cargarEl.querySelector("[data-sol-fin-cargar-cancel]").addEventListener("click", closeCargarFacturaModal);
+    drop.addEventListener("click", function () {
+      if (!cargarBusy) fileInp.click();
+    });
+    fileInp.addEventListener("change", function () {
+      var f = fileInp.files && fileInp.files[0];
+      cargarEl._file = f || null;
+      cargarEl.querySelector("[data-sol-fin-cargar-name]").textContent = f
+        ? f.name + " · " + Math.max(1, Math.round(f.size / 1024)) + " KB"
+        : "Ningún archivo seleccionado";
+      setCargarStatus(f ? "Listo para leer con OCR." : "", "ok");
+    });
+    ["dragenter", "dragover"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        drop.classList.add("border-indigo-400", "bg-indigo-100/50");
+      });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        drop.classList.remove("border-indigo-400", "bg-indigo-100/50");
+      });
+    });
+    drop.addEventListener("drop", function (e) {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      cargarEl._file = f;
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(f);
+        fileInp.files = dt.files;
+      } catch (_) {}
+      cargarEl.querySelector("[data-sol-fin-cargar-name]").textContent =
+        f.name + " · " + Math.max(1, Math.round(f.size / 1024)) + " KB";
+      setCargarStatus("Listo para leer con OCR.", "ok");
+    });
+    cargarEl.querySelector("[data-sol-fin-cargar-ok]").addEventListener("click", function () {
+      var f = cargarEl._file || (fileInp.files && fileInp.files[0]);
+      if (!f) {
+        setCargarStatus("Seleccioná un PDF o imagen primero.", "err");
+        return;
+      }
+      subirFacturaOcr(f);
+    });
+    cargarEl.querySelector("[data-sol-fin-cargar-demo]").addEventListener("click", function () {
+      crearFacturaPagarDemo();
+    });
+    return cargarEl;
+  }
+
+  function openCargarFacturaModal() {
+    if (pageKey() !== "facturas") {
+      go("/finanzas/facturas/pagos");
+      setTimeout(openCargarFacturaModal, 350);
+      return;
+    }
+    var el = ensureCargarFacturaModal();
+    el._file = null;
+    var fileInp = el.querySelector("[data-sol-fin-cargar-file]");
+    if (fileInp) fileInp.value = "";
+    el.querySelector("[data-sol-fin-cargar-name]").textContent = "Ningún archivo seleccionado";
+    setCargarStatus("", "");
+    setCargarBusy(false);
+    el.classList.remove("hidden");
+    el.classList.add("flex");
+  }
+
+  function afterFacturaCargada(fac) {
+    if (!fac || !fac.id) return;
+    apiRows = (apiRows || []).filter(function (r) {
+      return r.id !== fac.id;
+    });
+    apiRows.unshift(fac);
+    selectedId = fac.id;
+    refreshTables();
+    openDrawer(fac);
+    toast(
+      "Factura " +
+        (fac.numero || fac.id) +
+        (fac.razon_social ? " · " + fac.razon_social : "") +
+        " cargada en la cola de pagos.",
+      "ok",
+    );
+  }
+
+  function subirFacturaOcr(file) {
+    if (!file || cargarBusy) return;
+    if (file.size > 25 * 1024 * 1024) {
+      setCargarStatus("El archivo supera 25 MB.", "err");
+      return;
+    }
+    setCargarBusy(true);
+    setCargarStatus("Subiendo y leyendo con OCR IA…", "");
+    var fd = new FormData();
+    fd.append("file", file, file.name || "factura.pdf");
+    api("/api/finanzas/facturas/ingest", { method: "POST", body: fd })
+      .then(function (fac) {
+        setCargarBusy(false);
+        closeCargarFacturaModal();
+        afterFacturaCargada(fac);
+      })
+      .catch(function (err) {
+        setCargarBusy(false);
+        setCargarStatus(err.message || "No se pudo leer la factura.", "err");
+        toast(err.message || "No se pudo cargar la factura.", "err");
+      });
+  }
+
+  function crearFacturaPagarDemo() {
+    if (cargarBusy) return;
+    setCargarBusy(true);
+    setCargarStatus("Generando factura demo…", "");
+    var n = String(Math.floor(10000 + Math.random() * 89999));
+    var hoy = new Date();
+    var vto = new Date(hoy.getTime() + 15 * 86400000);
+    var iso = function (d) {
+      return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+    };
+    // PDF mínimo válido (texto embebido) para pasar por ingest OCR/IA.
+    var pdf =
+      "%PDF-1.1\n" +
+      "1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n" +
+      "2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj\n" +
+      "3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources<< /Font<< /F1 5 0 R >> >> >>endobj\n" +
+      "4 0 obj<< /Length 220 >>stream\n" +
+      "BT /F1 12 Tf 50 740 Td (FACTURA A) Tj 0 -20 Td (Proveedor Demo SRL) Tj 0 -20 Td (CUIT 30-71234567-8) Tj 0 -20 Td (Nro 0001-" +
+      n +
+      ") Tj 0 -20 Td (Fecha " +
+      iso(hoy) +
+      ") Tj 0 -20 Td (Vto " +
+      iso(vto) +
+      ") Tj 0 -20 Td (Total 158750.50 ARS) Tj 0 -20 Td (CAE 74012345678901) Tj ET\n" +
+      "endstream\nendobj\n" +
+      "5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj\n" +
+      "xref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000266 00000 n \n0000000540 00000 n \n" +
+      "trailer<< /Size 6 /Root 1 0 R >>\nstartxref\n609\n%%EOF\n";
+    var blob = new Blob([pdf], { type: "application/pdf" });
+    var file = new File([blob], "factura-demo-" + n + ".pdf", { type: "application/pdf" });
+    api("/api/finanzas/facturas/ingest", {
+      method: "POST",
+      body: (function () {
+        var fd = new FormData();
+        fd.append("file", file, file.name);
+        return fd;
+      })(),
+    })
+      .then(function (fac) {
+        setCargarBusy(false);
+        closeCargarFacturaModal();
+        afterFacturaCargada(fac);
+      })
+      .catch(function () {
+        // Fallback local si OCR/IA no está disponible en el entorno.
+        var fac = {
+          id: "FAC-DEMO-" + Date.now().toString(36).toUpperCase(),
+          tipo: "pagar",
+          origen: "pdf",
+          estado: "leida",
+          tipo_comprobante: "A",
+          punto_venta: "0001",
+          numero: "0001-" + n,
+          fecha: iso(hoy),
+          fecha_vto: iso(vto),
+          cuit_emisor: "30-71234567-8",
+          razon_social: "Proveedor Demo SRL",
+          monto: 158750.5,
+          moneda: "ARS",
+          cae: "74012345678901",
+          confianza: 0.92,
+          ocr_disponible: true,
+          pasos: [
+            { at: new Date().toISOString(), agente: "facturas", label: "PDF demo recibido" },
+            { at: new Date().toISOString(), agente: "facturas", label: "OCR simulado · datos de prueba" },
+          ],
+          mensajes: [],
+        };
+        setCargarBusy(false);
+        closeCargarFacturaModal();
+        afterFacturaCargada(fac);
+        toast("OCR remoto no disponible: se cargó factura demo local.", "ok");
+      });
+  }
+
+  function wireOcrDropZone() {
+    if (pageKey() !== "facturas") return;
+    var zone = document.querySelector('[data-purpose="ocr-drag-drop-container"]');
+    if (!zone || zone.getAttribute("data-sol-fin-ocr-wired") === "1") return;
+    zone.setAttribute("data-sol-fin-ocr-wired", "1");
+    zone.addEventListener("click", function (e) {
+      if (e.target.closest("button, a, input")) return;
+      openCargarFacturaModal();
+    });
+    ["dragenter", "dragover"].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.add("border-indigo-400", "bg-indigo-50");
+      });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove("border-indigo-400", "bg-indigo-50");
+      });
+    });
+    zone.addEventListener("drop", function (e) {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      openCargarFacturaModal();
+      setTimeout(function () {
+        var el = ensureCargarFacturaModal();
+        el._file = f;
+        el.querySelector("[data-sol-fin-cargar-name]").textContent =
+          f.name + " · " + Math.max(1, Math.round(f.size / 1024)) + " KB";
+        setCargarStatus("Listo para leer con OCR.", "ok");
+        subirFacturaOcr(f);
+      }, 30);
+    });
+  }
+
   function registrarConsultaCliente(row) {
     if (!row || !row.id) {
       toast("Seleccioná una factura primero.", "err");
@@ -2761,7 +3081,7 @@
       return;
     }
     if (kind === "cargar_factura") {
-      toast("En demo las facturas a pagar se cargan por API/OCR. Usá las filas de prueba ya listadas.", "ok");
+      openCargarFacturaModal();
       return;
     }
     if (kind === "nuevo_cliente") {
@@ -2784,6 +3104,8 @@
   }
 
   function actionKind(btn) {
+    var forced = btn.getAttribute("data-sol-fin-act");
+    if (forced) return forced;
     var t = fold(btn.textContent || "");
     var title = fold(btn.getAttribute("title") || btn.getAttribute("aria-label") || "");
     var all = (t + " " + title).trim();
@@ -2892,6 +3214,8 @@
         closeMenu();
         closeDrawer();
         closeFicha();
+        closeCargarFacturaModal();
+        closeProgramarModal();
       }
     });
   }
@@ -3884,6 +4208,7 @@
     wireWaActionPanel();
     wirePasarelaPanel();
     wireComunicacionTemplates();
+    wireOcrDropZone();
     applyFilters();
     reloadData();
   }
