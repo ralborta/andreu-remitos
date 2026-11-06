@@ -3308,6 +3308,18 @@
         paintComunicacionTemplate();
         toast("Plantilla: " + ((COM_TEMPLATES[sel.value] || {}).name || sel.value), "ok");
       });
+      try {
+        if (sessionStorage.getItem("sol-fin-open-templates") === "1") {
+          sessionStorage.removeItem("sol-fin-open-templates");
+          setTimeout(function () {
+            sel.focus();
+            try {
+              sel.showPicker();
+            } catch (_) {}
+            toast("Elegí una plantilla — la vista previa se actualiza al instante.", "ok");
+          }, 400);
+        }
+      } catch (_) {}
     }
     var edit = document.querySelector("[data-sol-fin-tpl-edit]");
     if (edit) {
