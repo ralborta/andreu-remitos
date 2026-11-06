@@ -14,6 +14,8 @@
   var menuEl = null;
   var drawerEl = null;
   var fichaEl = null;
+  var programarEl = null;
+  var programarIds = [];
   /** Estado del aviso de pasarela / match en Conciliación. */
   var pasarelaMatch = null;
 
@@ -1597,45 +1599,34 @@
     );
   }
 
-  function defaultProgramarLocal() {
+  function pad2(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function defaultProgramarParts() {
     var d = new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(9, 0, 0, 0);
-    var pad = function (n) {
-      return String(n).padStart(2, "0");
+    return {
+      fecha: d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()),
+      hora: pad2(d.getHours()) + ":" + pad2(d.getMinutes()),
+      date: d,
     };
-    return (
-      d.getFullYear() +
-      "-" +
-      pad(d.getMonth() + 1) +
-      "-" +
-      pad(d.getDate()) +
-      " " +
-      pad(d.getHours()) +
-      ":" +
-      pad(d.getMinutes())
-    );
   }
 
-  function parseProgramarInput(raw) {
-    var s = String(raw || "").trim();
-    if (!s) return null;
-    // Acepta "YYYY-MM-DD HH:MM" o ISO.
-    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})$/);
-    var d;
-    if (m) {
-      d = new Date(
-        Number(m[1]),
-        Number(m[2]) - 1,
-        Number(m[3]),
-        Number(m[4]),
-        Number(m[5]),
-        0,
-        0,
-      );
-    } else {
-      d = new Date(s);
-    }
+  function partsToIso(fecha, hora) {
+    var fm = String(fecha || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    var hm = String(hora || "").match(/^(\d{1,2}):(\d{2})$/);
+    if (!fm || !hm) return null;
+    var d = new Date(
+      Number(fm[1]),
+      Number(fm[2]) - 1,
+      Number(fm[3]),
+      Number(hm[1]),
+      Number(hm[2]),
+      0,
+      0,
+    );
     if (Number.isNaN(d.getTime())) return null;
     return d.toISOString();
   }
@@ -1652,22 +1643,200 @@
     return ids;
   }
 
-  function demoProgramar(ids) {
+  function closeProgramarModal() {
+    if (programarEl) {
+      programarEl.classList.add("hidden");
+      programarEl.classList.remove("flex");
+    }
+    programarIds = [];
+  }
+
+  function ensureProgramarModal() {
+    if (programarEl) return programarEl;
+    programarEl = document.createElement("div");
+    programarEl.id = "sol-fin-programar";
+    programarEl.className =
+      "hidden fixed inset-0 z-[10040] items-center justify-center bg-slate-900/40 p-4";
+    programarEl.setAttribute("role", "presentation");
+    programarEl.innerHTML =
+      '<div class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="sol-fin-prog-titulo">' +
+      '<div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">' +
+      '<div class="min-w-0 flex items-start gap-3">' +
+      '<div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100">' +
+      '<span class="material-symbols-outlined text-[22px]">schedule</span></div>' +
+      '<div class="min-w-0">' +
+      '<p class="text-[11px] font-semibold uppercase tracking-wider text-amber-700">Comunicación</p>' +
+      '<h3 id="sol-fin-prog-titulo" class="text-lg font-bold text-slate-900">Programar envío</h3>' +
+      '<p class="mt-0.5 text-xs text-slate-500">Elegí fecha y hora. El recordatorio queda en el historial de cada factura (no envía WhatsApp ahora).</p>' +
+      "</div></div>" +
+      '<button type="button" data-sol-fin-prog-close class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">' +
+      '<span class="material-symbols-outlined text-[20px]">close</span></button>' +
+      "</div>" +
+      '<div class="space-y-4 overflow-y-auto px-5 py-4">' +
+      '<div class="rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-3">' +
+      '<div class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">' +
+      '<span class="material-symbols-outlined text-[16px] text-slate-400">group</span> Destinatarios' +
+      "</div>" +
+      '<p class="mt-1.5 text-sm font-semibold text-slate-900" data-sol-fin-prog-count>—</p>' +
+      '<p class="mt-1 text-xs text-slate-600 leading-relaxed" data-sol-fin-prog-list></p>' +
+      "</div>" +
+      '<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">' +
+      '<label class="block text-xs font-medium text-slate-500">' +
+      '<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-slate-400">calendar_month</span> Fecha</span>' +
+      '<input data-sol-fin-prog-fecha type="date" required class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">' +
+      '<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-slate-400">schedule</span> Hora</span>' +
+      '<input data-sol-fin-prog-hora type="time" required class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"/>' +
+      "</label>" +
+      "</div>" +
+      '<div>' +
+      '<p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Atajos</p>' +
+      '<div class="flex flex-wrap gap-2">' +
+      '<button type="button" data-sol-fin-prog-chip="manana9" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">' +
+      '<span class="material-symbols-outlined text-[14px] text-amber-500">wb_sunny</span> Mañana 09:00</button>' +
+      '<button type="button" data-sol-fin-prog-chip="hoy14" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">' +
+      '<span class="material-symbols-outlined text-[14px] text-indigo-500">light_mode</span> Hoy 14:00</button>' +
+      '<button type="button" data-sol-fin-prog-chip="lun9" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">' +
+      '<span class="material-symbols-outlined text-[14px] text-emerald-500">event</span> Lunes 09:00</button>' +
+      "</div></div>" +
+      '<div class="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3.5 py-3 flex gap-2.5">' +
+      '<span class="material-symbols-outlined text-[18px] text-indigo-500 shrink-0">info</span>' +
+      '<p class="text-xs text-indigo-900/80 leading-relaxed">Al confirmar se guarda un mensaje <strong>programado</strong> en el historial de cada factura seleccionada. Podés verlo con <strong>Ver historial</strong>.</p>' +
+      "</div>" +
+      '<p class="hidden text-xs font-medium text-rose-600" data-sol-fin-prog-err></p>' +
+      "</div>" +
+      '<div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/80 px-5 py-4">' +
+      '<button type="button" data-sol-fin-prog-cancel class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200/70 transition">' +
+      "Cancelar</button>" +
+      '<button type="button" data-sol-fin-prog-ok class="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition shadow-sm">' +
+      '<span class="material-symbols-outlined text-[18px]">schedule_send</span> Programar envío</button>' +
+      "</div></div>";
+    document.body.appendChild(programarEl);
+
+    programarEl.addEventListener("click", function (e) {
+      if (e.target === programarEl) closeProgramarModal();
+    });
+    programarEl.querySelector("[data-sol-fin-prog-close]").addEventListener("click", closeProgramarModal);
+    programarEl.querySelector("[data-sol-fin-prog-cancel]").addEventListener("click", closeProgramarModal);
+    programarEl.querySelector("[data-sol-fin-prog-ok]").addEventListener("click", confirmarProgramarModal);
+    programarEl.querySelectorAll("[data-sol-fin-prog-chip]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        aplicarChipProgramar(btn.getAttribute("data-sol-fin-prog-chip"));
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && programarEl && !programarEl.classList.contains("hidden")) {
+        closeProgramarModal();
+      }
+    });
+    return programarEl;
+  }
+
+  function setProgramarFields(fecha, hora) {
+    var el = ensureProgramarModal();
+    var f = el.querySelector("[data-sol-fin-prog-fecha]");
+    var h = el.querySelector("[data-sol-fin-prog-hora]");
+    if (f) f.value = fecha || "";
+    if (h) h.value = hora || "";
+  }
+
+  function aplicarChipProgramar(chip) {
+    var d = new Date();
+    if (chip === "manana9") {
+      d.setDate(d.getDate() + 1);
+      d.setHours(9, 0, 0, 0);
+    } else if (chip === "hoy14") {
+      d.setHours(14, 0, 0, 0);
+      if (d.getTime() < Date.now()) d.setDate(d.getDate() + 1);
+    } else if (chip === "lun9") {
+      var day = d.getDay(); // 0=dom
+      var add = (1 - day + 7) % 7;
+      if (add === 0) add = 7;
+      d.setDate(d.getDate() + add);
+      d.setHours(9, 0, 0, 0);
+    } else {
+      return;
+    }
+    setProgramarFields(
+      d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()),
+      pad2(d.getHours()) + ":" + pad2(d.getMinutes()),
+    );
+  }
+
+  function openProgramarModal(ids) {
     ids = resolveComIds(ids);
     if (!ids.length) {
       toast("Seleccioná al menos una factura.", "err");
       return;
     }
-    var whenRaw = window.prompt(
-      "¿Cuándo enviar el recordatorio? (AAAA-MM-DD HH:MM)",
-      defaultProgramarLocal(),
-    );
-    if (whenRaw == null) return;
-    var whenIso = parseProgramarInput(whenRaw);
+    programarIds = ids.slice();
+    var el = ensureProgramarModal();
+    var parts = defaultProgramarParts();
+    setProgramarFields(parts.fecha, parts.hora);
+    var err = el.querySelector("[data-sol-fin-prog-err]");
+    if (err) {
+      err.textContent = "";
+      err.classList.add("hidden");
+    }
+    var names = ids.slice(0, 4).map(function (id) {
+      var row = findRow(id) || localOf({ id: id });
+      var nom = (row && row.razon_social) || "Factura";
+      var nro = (row && row.numero) || id;
+      return nom + " · " + nro;
+    });
+    if (ids.length > 4) names.push("+" + (ids.length - 4) + " más");
+    el.querySelector("[data-sol-fin-prog-count]").textContent =
+      ids.length === 1 ? "1 factura seleccionada" : ids.length + " facturas seleccionadas";
+    el.querySelector("[data-sol-fin-prog-list]").textContent = names.join(" · ");
+    el.classList.remove("hidden");
+    el.classList.add("flex");
+    setTimeout(function () {
+      var f = el.querySelector("[data-sol-fin-prog-fecha]");
+      if (f) f.focus();
+    }, 40);
+  }
+
+  function confirmarProgramarModal() {
+    var el = ensureProgramarModal();
+    var fecha = el.querySelector("[data-sol-fin-prog-fecha]").value;
+    var hora = el.querySelector("[data-sol-fin-prog-hora]").value;
+    var err = el.querySelector("[data-sol-fin-prog-err]");
+    var whenIso = partsToIso(fecha, hora);
     if (!whenIso) {
-      toast("Fecha inválida. Usá AAAA-MM-DD HH:MM.", "err");
+      if (err) {
+        err.textContent = "Completá fecha y hora válidas.";
+        err.classList.remove("hidden");
+      }
       return;
     }
+    if (new Date(whenIso).getTime() < Date.now() - 60 * 1000) {
+      if (err) {
+        err.textContent = "La fecha/hora tiene que ser futura.";
+        err.classList.remove("hidden");
+      }
+      return;
+    }
+    if (err) {
+      err.textContent = "";
+      err.classList.add("hidden");
+    }
+    var ids = programarIds.slice();
+    var okBtn = el.querySelector("[data-sol-fin-prog-ok]");
+    if (okBtn) {
+      okBtn.disabled = true;
+      okBtn.classList.add("opacity-60");
+    }
+    ejecutarProgramar(ids, whenIso, function () {
+      if (okBtn) {
+        okBtn.disabled = false;
+        okBtn.classList.remove("opacity-60");
+      }
+      closeProgramarModal();
+    });
+  }
+
+  function ejecutarProgramar(ids, whenIso, onDone) {
     var sel = document.querySelector("[data-sol-fin-tpl-select]");
     var plantilla = sel && sel.value ? sel.value : "corto";
     var done = 0;
@@ -1692,8 +1861,8 @@
             if (!apiRows.some(function (r) { return r.id === res.factura.id; })) apiRows.unshift(res.factura);
           }
         })
-        .catch(function (err) {
-          toast(err.message || "No se pudo programar.", "err");
+        .catch(function (e) {
+          toast((e && e.message) || "No se pudo programar.", "err");
         })
         .then(function () {
           done += 1;
@@ -1710,9 +1879,14 @@
             syncWaActionPanel();
             if (selectedId && findRow(selectedId)) openDrawer(findRow(selectedId));
             else if (ids[0] && findRow(ids[0])) openDrawer(findRow(ids[0]));
+            if (typeof onDone === "function") onDone();
           }
         });
     });
+  }
+
+  function demoProgramar(ids) {
+    openProgramarModal(ids);
   }
 
   function registrarConsultaCliente(row) {
