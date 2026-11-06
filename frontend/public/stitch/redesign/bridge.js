@@ -23,7 +23,13 @@
     "dashboard de cobranzas": "/finanzas",
     "clientes": "/finanzas/clientes",
     "facturas": "/finanzas/facturas/pagos",
+    "facturas de pago": "/finanzas/facturas/pagos",
+    "facturas a pagar": "/finanzas/facturas/pagos",
+    "pagos": "/finanzas/facturas/pagos",
     "cobranza": "/finanzas/facturas/cobranzas",
+    "facturas de cobranza": "/finanzas/facturas/cobranzas",
+    "facturas a cobrar": "/finanzas/facturas/cobranzas",
+    "cobranzas": "/finanzas/facturas/cobranzas",
     "conciliacion": "/finanzas/conciliacion",
     "enviar mensaje": "/finanzas/comunicacion",
     "marketing": "/marketing",
@@ -152,8 +158,8 @@
         '<nav class="space-y-0.5 px-3">' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas"><span>Dashboard</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/clientes"><span>Clientes</span></a>' +
-        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/pagos"><span>Facturas</span></a>' +
-        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/cobranzas"><span>Cobranza</span></a>' +
+        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/pagos"><span>Facturas de pago</span></a>' +
+        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/cobranzas"><span>Facturas de cobranza</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/conciliacion"><span>Conciliación</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/comunicacion"><span>Enviar Mensaje</span></a>' +
         "</nav>";
@@ -226,7 +232,9 @@
     "dashboard": "dashboard",
     "clientes": "corporate_fare",
     "facturas": "receipt_long",
+    "facturas de pago": "receipt_long",
     "cobranza": "handshake",
+    "facturas de cobranza": "handshake",
     "conciliacion": "balance",
     "enviar mensaje": "send",
     "planificador": "calendar_month",
@@ -424,8 +432,8 @@
   var FINANCE_LINKS = [
     { label: "Dashboard", href: "/finanzas", icon: "dashboard" },
     { label: "Clientes", href: "/finanzas/clientes", icon: "corporate_fare" },
-    { label: "Facturas", href: "/finanzas/facturas/pagos", icon: "receipt_long" },
-    { label: "Cobranza", href: "/finanzas/facturas/cobranzas", icon: "handshake" },
+    { label: "Facturas de pago", href: "/finanzas/facturas/pagos", icon: "receipt_long" },
+    { label: "Facturas de cobranza", href: "/finanzas/facturas/cobranzas", icon: "handshake" },
     { label: "Conciliación", href: "/finanzas/conciliacion", icon: "balance" },
     { label: "Enviar Mensaje", href: "/finanzas/comunicacion", icon: "send" },
   ];

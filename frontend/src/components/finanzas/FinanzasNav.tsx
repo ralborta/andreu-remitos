@@ -45,14 +45,14 @@ export function FinanzasNav() {
     <aside className="flex w-56 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--panel)] px-2 py-3">
       <div className="mb-2 px-3 py-2">
         <p className="text-sm font-bold text-white">Finanzas</p>
-        <p className="text-[10px] text-[var(--text-faint)]">Cobranzas y pagos</p>
+        <p className="text-[10px] text-[var(--text-faint)]">Pago y cobranza</p>
       </div>
       <nav className="space-y-0.5">
         <Label>Operaciones</Label>
         <Item href="/finanzas" label="Dashboard" icon={LayoutDashboard} exact />
         <Item href="/finanzas/clientes" label="Clientes" icon={Users} />
-        <Item href="/finanzas/facturas/pagos" label="Facturas" icon={FileText} />
-        <Item href="/finanzas/facturas/cobranzas" label="Cobranza" icon={Banknote} />
+        <Item href="/finanzas/facturas/pagos" label="Facturas de pago" icon={FileText} />
+        <Item href="/finanzas/facturas/cobranzas" label="Facturas de cobranza" icon={Banknote} />
 
         <Label>Cobros</Label>
         <Item href="/finanzas/conciliacion" label="Conciliación" icon={Scale} />

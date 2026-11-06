@@ -101,7 +101,9 @@ export function FacturasFinanzasPanel({ modo }: { modo: "pagar" | "cobrar" }) {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{modo === "pagar" ? "Facturas" : "Cobranza"}</h1>
+          <h1 className="text-2xl font-bold text-white">
+            {modo === "pagar" ? "Facturas de pago" : "Facturas de cobranza"}
+          </h1>
           <p className="mt-0.5 text-sm text-[var(--text-dim)]">
             {modo === "pagar"
               ? "Facturas a pagar: se cargan con el PDF del proveedor"

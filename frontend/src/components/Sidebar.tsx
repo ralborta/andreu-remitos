@@ -250,17 +250,17 @@ export function Sidebar({
             </button>
             {finanzasExpanded && (
               <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[var(--border-soft)] pl-2">
-                <Link href="/finanzas/facturas/cobranzas" onClick={onClose} className={clsx(
-                  "block rounded-lg px-3 py-2 text-sm transition-colors",
-                  pathname.startsWith("/finanzas/facturas/cobranzas") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
-                )}>
-                  Cobranzas
-                </Link>
                 <Link href="/finanzas/facturas/pagos" onClick={onClose} className={clsx(
                   "block rounded-lg px-3 py-2 text-sm transition-colors",
                   pathname.startsWith("/finanzas/facturas/pagos") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
                 )}>
-                  Facturas
+                  Facturas de pago
+                </Link>
+                <Link href="/finanzas/facturas/cobranzas" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname.startsWith("/finanzas/facturas/cobranzas") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Facturas de cobranza
                 </Link>
                 <Link href="/finanzas/conciliacion" onClick={onClose} className={clsx(
                   "block rounded-lg px-3 py-2 text-sm transition-colors",
