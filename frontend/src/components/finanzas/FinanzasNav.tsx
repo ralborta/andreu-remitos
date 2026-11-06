@@ -52,7 +52,7 @@ export function FinanzasNav() {
         <Item href="/finanzas" label="Dashboard" icon={LayoutDashboard} exact />
         <Item href="/finanzas/clientes" label="Clientes" icon={Users} />
         <Item href="/finanzas/facturas/pagos" label="Facturas de pago" icon={FileText} />
-        <Item href="/finanzas/facturas/cobranzas" label="Cobranzas" icon={Banknote} />
+        <Item href="/finanzas/facturas/cobranzas" label="Facturas de cobranza" icon={Banknote} />
 
         <Label>Cobros</Label>
         <Item href="/finanzas/conciliacion" label="Conciliación" icon={Scale} />
