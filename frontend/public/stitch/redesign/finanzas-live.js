@@ -836,6 +836,41 @@
     el.classList.remove("hidden");
   }
 
+  function pasosTimelineHtml(row) {
+    var pasos = Array.isArray(row && row.pasos) ? row.pasos.slice() : [];
+    if (!pasos.length) {
+      return '<p class="py-4 text-center text-sm text-slate-500">Sin gestiones ni contactos registrados en esta factura todavía.</p>';
+    }
+    pasos = pasos.slice().sort(function (a, b) {
+      return String(a.at || "").localeCompare(String(b.at || ""));
+    });
+    return (
+      '<div class="space-y-3">' +
+      pasos
+        .map(function (p) {
+          return (
+            '<div class="relative flex gap-3 pl-1">' +
+            '<div class="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-50 shrink-0"></div>' +
+            '<div class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white p-3">' +
+            '<div class="flex flex-wrap items-start justify-between gap-2">' +
+            '<p class="text-sm font-semibold text-slate-900">' +
+            esc(p.label || "Gestión") +
+            "</p>" +
+            '<span class="text-[11px] text-slate-400">' +
+            esc(fmtDate(p.at, true)) +
+            "</span></div>" +
+            '<p class="mt-1 text-[11px] text-slate-500">' +
+            esc(p.agente || "sistema") +
+            (p.canal ? " · " + p.canal : "") +
+            (p.ok === false ? " · falló" : p.ok === true ? " · ok" : "") +
+            "</p></div></div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
   function openDrawer(row) {
     if (!row) return;
     if ((pageKey() === "clientes" || pageKey() === "cobranza") && (row._cliente_key || (!row.numero && row.razon_social))) {
@@ -850,17 +885,22 @@
     selectedId = row.id || null;
     var d = ensureDrawer();
     var st = estadoFactura(row);
-    d.querySelector("[data-sol-fin-drawer-title]").textContent = row.numero || row.razon_social || "Registro";
+    var key = pageKey();
+    var isCobro = key === "facturas-cobro" || key === "cobranza" || row.tipo === "cobrar";
+    d.querySelector("[data-sol-fin-drawer-title]").textContent =
+      (isCobro ? "Historial · " : "") + (row.numero || row.razon_social || "Registro");
     d.querySelector("[data-sol-fin-drawer-body]").innerHTML =
       '<div class="rounded-xl border border-slate-100 bg-slate-50/70 p-3 space-y-2">' +
-      '<div class="flex justify-between gap-3"><span class="text-slate-500">Cliente</span><strong class="text-slate-800 text-right">' +
+      '<div class="flex justify-between gap-3"><span class="text-slate-500">' +
+      (isCobro ? "Cliente" : "Proveedor") +
+      '</span><strong class="text-slate-800 text-right">' +
       esc(row.razon_social || "—") +
       "</strong></div>" +
       '<div class="flex justify-between gap-3"><span class="text-slate-500">CUIT</span><span class="font-mono text-slate-700">' +
       esc(row.cuit || row.cuit_emisor || row.cuit_receptor || "—") +
       "</span></div>" +
       '<div class="flex justify-between gap-3"><span class="text-slate-500">Vencimiento</span><span>' +
-      esc(row.fecha_vto || "—") +
+      esc(fmtDate(row.fecha_vto) || row.fecha_vto || "—") +
       "</span></div>" +
       '<div class="flex justify-between gap-3"><span class="text-slate-500">Saldo</span><strong class="font-mono">' +
       esc(money(saldo(row))) +
@@ -877,20 +917,32 @@
         : "") +
       (row.demo_nota ? '<div class="text-[11px] text-slate-500">' + esc(row.demo_nota) + "</div>" : "") +
       "</div>" +
-      '<p class="text-[11px] text-slate-400">Datos de prueba · las acciones demuestran el flujo sin inventar cobros bancarios reales.</p>';
+      '<section class="mt-3 rounded-xl border border-slate-200 bg-white overflow-hidden">' +
+      '<header class="px-3 py-2.5 border-b border-slate-100 bg-white flex items-center gap-2">' +
+      '<span class="material-symbols-outlined text-[16px] text-indigo-600">history</span>' +
+      '<h3 class="text-sm font-bold text-slate-900">Historial de contactos y gestiones</h3></header>' +
+      '<div class="p-3">' +
+      pasosTimelineHtml(row) +
+      "</div></section>" +
+      '<p class="mt-2 text-[11px] text-slate-400">Historial por factura · gestiones, WhatsApp y promesas registradas en esta CxC.</p>';
     var acts = d.querySelector("[data-sol-fin-drawer-actions]");
-    var key = pageKey();
     var buttons =
       key === "facturas"
         ? [
             { id: "pagar", label: "Pagar / Autorizar", primary: true },
             { id: "comunicar", label: "Comunicar" },
           ]
-        : [
-            { id: "cobrar", label: "Registrar cobro", primary: true },
-            { id: "comunicar", label: "Comunicar" },
-            { id: "ir_conciliacion", label: "Conciliación" },
-          ];
+        : key === "facturas-cobro"
+          ? [
+              { id: "comunicar", label: "Comunicar", primary: true },
+              { id: "ficha_cliente", label: "Ver cliente" },
+              { id: "ir_conciliacion", label: "Conciliación" },
+            ]
+          : [
+              { id: "cobrar", label: "Registrar cobro", primary: true },
+              { id: "comunicar", label: "Comunicar" },
+              { id: "ir_conciliacion", label: "Conciliación" },
+            ];
     acts.innerHTML = buttons
       .map(function (b) {
         return (
@@ -2132,16 +2184,16 @@
       openMenu(btn, row);
       return;
     }
-    if (kind === "detalle") {
-      if (pageKey() === "clientes" || pageKey() === "cobranza") {
+    if (kind === "historial" || kind === "gestionar" || kind === "detalle") {
+      if (kind === "detalle" && (pageKey() === "clientes" || pageKey() === "cobranza")) {
         openCuentaFicha(row || selectedClienteKey, "cliente");
         return;
       }
-      if (pageKey() === "facturas") {
+      if (kind === "detalle" && pageKey() === "facturas") {
         openCuentaFicha(row || selectedClienteKey, "proveedor");
         return;
       }
-      openDrawer(row || { numero: "Sin ID", razon_social: "Fila de demostración" });
+      openDrawer(row || { numero: "Sin ID", razon_social: "Fila de demostración", pasos: [] });
       return;
     }
     if (kind === "ver_cobranza" || kind === "ficha_cliente") {
@@ -2292,6 +2344,8 @@
     if (/notifications/.test(btn.textContent || "") && btn.querySelector(".material-symbols-outlined")) return null;
     if (all.indexOf("nuevo cobro") >= 0) return "nuevo_cobro";
     if (all.indexOf("ver cobranza") >= 0 || all.indexOf("ver cobranzas") >= 0) return "ver_cobranza";
+    if (all.indexOf("ver historial") >= 0 || all.indexOf("historial") >= 0) return "historial";
+    if (all.indexOf("ver / gestionar") >= 0 || all.indexOf("ver/gestionar") >= 0 || all.indexOf("gestionar") >= 0) return "gestionar";
     if (all.indexOf("ver cliente") >= 0 || all.indexOf("historia clinica") >= 0) return "ficha_cliente";
     if (all.indexOf("ver proveedor") >= 0 || all.indexOf("ver recibo") >= 0) return pageKey() === "facturas" ? "ficha_proveedor" : "detalle";
     if (all === "cobrar" || all.indexOf("registrar pago") >= 0) return "cobrar";
@@ -2353,13 +2407,17 @@
         var facRow = e.target.closest("tr[data-sol-fin-id]");
         if (
           facRow &&
-          (pageKey() === "facturas" || pageKey() === "cobranza") &&
+          (pageKey() === "facturas" || pageKey() === "facturas-cobro" || pageKey() === "cobranza") &&
           !e.target.closest("button, a, input, label") &&
           !e.target.closest("#sol-fin-ficha, #sol-fin-drawer")
         ) {
           e.preventDefault();
           e.stopPropagation();
           closeMenu();
+          if (pageKey() === "facturas-cobro") {
+            openDrawer(rowFromEl(facRow));
+            return;
+          }
           openCuentaFicha(rowFromEl(facRow), pageKey() === "facturas" ? "proveedor" : "cliente");
           return;
         }
