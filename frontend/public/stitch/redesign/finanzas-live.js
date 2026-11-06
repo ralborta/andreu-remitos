@@ -51,11 +51,17 @@
     }
     var file = (location.pathname || "").split("/").pop() || "";
     if (file.indexOf("finanzas-clientes") === 0 || p.indexOf("/finanzas/clientes") === 0) return "clientes";
+    if (file.indexOf("finanzas-facturas-cobro") === 0 || p.indexOf("/finanzas/facturas/cobro") === 0) return "facturas-cobro";
     if (file.indexOf("finanzas-facturas") === 0 || p.indexOf("/finanzas/facturas/pagos") === 0) return "facturas";
     if (file.indexOf("finanzas-cobranza") === 0 || p.indexOf("/cobranzas") >= 0) return "cobranza";
     if (file.indexOf("finanzas-conciliacion") === 0 || p.indexOf("/conciliacion") >= 0) return "conciliacion";
     if (file.indexOf("finanzas-comunicacion") === 0 || p.indexOf("/comunicacion") >= 0) return "comunicacion";
     return "dashboard";
+  }
+
+  function isFacturasList() {
+    var k = pageKey();
+    return k === "facturas" || k === "facturas-cobro";
   }
 
   function loadStore() {
@@ -470,6 +476,14 @@
       items = [
         { id: "ficha_proveedor", label: "Ver proveedor / historial" },
         { id: "pagar", label: "Pagar / Autorizar (demo)" },
+        { id: "export_row", label: "Copiar N° factura" },
+        { id: "ir_conciliacion", label: "Ir a conciliación" },
+      ];
+    } else if (key === "facturas-cobro") {
+      items = [
+        { id: "detalle", label: "Ver cliente / historial" },
+        { id: "cobrar", label: "Registrar cobro (demo)" },
+        { id: "comunicar", label: "Comunicar" },
         { id: "export_row", label: "Copiar N° factura" },
         { id: "ir_conciliacion", label: "Ir a conciliación" },
       ];
@@ -2473,6 +2487,12 @@
         '<button type="button" class="p-1 text-outline hover:text-on-surface rounded" title="Más opciones"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>'
       );
     }
+    if (key === "facturas-cobro") {
+      return (
+        '<button type="button" class="px-2 py-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded text-xs font-semibold" title="Registrar Pago">Cobrar</button>' +
+        '<button type="button" class="p-1 text-outline hover:text-on-surface rounded" title="Más opciones"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>'
+      );
+    }
     if (key === "clientes") {
       return (
         '<button type="button" class="px-2 py-1 border border-slate-200 rounded text-xs font-semibold">Ver cobranza</button>' +
@@ -2782,13 +2802,21 @@
           );
         })
         .join("");
-    } else if (key === "facturas") {
+    } else if (isFacturasList()) {
+      var cobroList = key === "facturas-cobro";
       tbody.innerHTML = rows
         .slice(0, 40)
         .map(function (r) {
           var st = estadoFactura(r);
           var paid = st.key === "al_dia";
           var ck = clienteKeyOf(r);
+          var primaryBtn = cobroList
+            ? paid
+              ? '<button type="button" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded">Ver historial</button>'
+              : '<button type="button" class="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded shadow-xs">Ver / Gestionar</button>'
+            : paid
+              ? '<button type="button" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded">Ver Recibo</button>'
+              : '<button type="button" class="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded shadow-xs">Pagar / Autorizar</button>';
           return (
             '<tr class="hover:bg-slate-50/80 transition-colors cursor-pointer" data-sol-fin-id="' +
             esc(r.id) +
@@ -2803,7 +2831,7 @@
             '" class="font-bold text-slate-900 hover:text-blue-600 cursor-pointer">' +
             esc(r.razon_social || "—") +
             '</div><div class="text-[11px] text-slate-400 font-normal">' +
-            esc(r.descripcion || r.concepto || (r.tipo === "pagar" ? "Factura a pagar" : "Factura a cobrar")) +
+            esc(r.descripcion || r.concepto || (cobroList ? "Factura a cobrar" : "Factura a pagar")) +
             "</div></td>" +
             '<td class="py-3.5 px-4 whitespace-nowrap font-mono text-slate-600 text-[11px]">' +
             esc(r.cuit || r.cuit_emisor || r.cuit_receptor || "—") +
@@ -2823,9 +2851,7 @@
             esc(paid && r.tipo === "pagar" ? "Pagada" : st.label) +
             "</span></td>" +
             '<td class="py-3.5 px-4 whitespace-nowrap text-right"><div class="inline-flex items-center gap-1.5 justify-end">' +
-            (paid
-              ? '<button type="button" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded">Ver Recibo</button>'
-              : '<button type="button" class="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded shadow-xs">Pagar / Autorizar</button>') +
+            primaryBtn +
             '<button type="button" class="p-1 text-slate-400 hover:text-slate-700 rounded" title="Más opciones"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>' +
             "</div></td></tr>"
           );
@@ -3062,6 +3088,7 @@
   function reloadData() {
     var key = pageKey();
     var tipo = key === "facturas" ? "pagar" : "cobrar";
+    var facturasUi = key === "facturas" || key === "facturas-cobro";
     return Promise.all([
       api("/api/finanzas/resumen").catch(function (e) {
         return { __err: e };
@@ -3086,7 +3113,7 @@
       } else {
         apiRows = apiRows.length ? apiRows : key === "facturas" ? demoPagarRows() : [];
       }
-      if (key === "cobranza" || key === "clientes" || key === "comunicacion" || key === "dashboard" || key === "conciliacion") {
+      if (key === "cobranza" || key === "clientes" || key === "comunicacion" || key === "dashboard" || key === "conciliacion" || key === "facturas-cobro") {
         apiRows = enrichCobrarDemo(apiRows);
       }
       refreshTables();
@@ -3102,7 +3129,7 @@
   function boot() {
     bannerDemo();
     paintHoyChip();
-    if (pageKey() === "facturas" || pageKey() === "cobranza") filter = "todas";
+    if (pageKey() === "facturas" || pageKey() === "facturas-cobro" || pageKey() === "cobranza") filter = "todas";
     wireChips();
     wireSearch();
     wireCheckboxes();

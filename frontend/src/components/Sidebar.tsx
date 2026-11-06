@@ -256,11 +256,19 @@ export function Sidebar({
                 )}>
                   Facturas de pago
                 </Link>
+                <Link href="/finanzas/facturas/cobro" onClick={onClose} className={clsx(
+                  "block rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/finanzas/facturas/cobro" || pathname.startsWith("/finanzas/facturas/cobro/")
+                    ? "bg-[var(--panel-2)] font-medium text-[var(--text)]"
+                    : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
+                )}>
+                  Facturas de cobranza
+                </Link>
                 <Link href="/finanzas/facturas/cobranzas" onClick={onClose} className={clsx(
                   "block rounded-lg px-3 py-2 text-sm transition-colors",
                   pathname.startsWith("/finanzas/facturas/cobranzas") ? "bg-[var(--panel-2)] font-medium text-[var(--text)]" : "text-[var(--text-dim)] hover:bg-[var(--panel-2)]"
                 )}>
-                  Facturas de cobranza
+                  Gestión de cobranza
                 </Link>
                 <Link href="/finanzas/conciliacion" onClick={onClose} className={clsx(
                   "block rounded-lg px-3 py-2 text-sm transition-colors",

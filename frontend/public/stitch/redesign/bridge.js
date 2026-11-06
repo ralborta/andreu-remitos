@@ -26,14 +26,17 @@
     "facturas de pago": "/finanzas/facturas/pagos",
     "facturas a pagar": "/finanzas/facturas/pagos",
     "pagos": "/finanzas/facturas/pagos",
-    "cobranza": "/finanzas/facturas/cobranzas",
-    "cobranzas": "/finanzas/facturas/cobranzas",
-    "facturas de cobranza": "/finanzas/facturas/cobranzas",
-    "facturas a cobrar": "/finanzas/facturas/cobranzas",
-    "cxc": "/finanzas/facturas/cobranzas",
-    "cuentas a cobrar": "/finanzas/facturas/cobranzas",
     "cxp": "/finanzas/facturas/pagos",
     "cuentas a pagar": "/finanzas/facturas/pagos",
+    "facturas de cobranza": "/finanzas/facturas/cobro",
+    "facturas de cobro": "/finanzas/facturas/cobro",
+    "facturas a cobrar": "/finanzas/facturas/cobro",
+    "cxc": "/finanzas/facturas/cobro",
+    "cuentas a cobrar": "/finanzas/facturas/cobro",
+    "cobranza": "/finanzas/facturas/cobranzas",
+    "cobranzas": "/finanzas/facturas/cobranzas",
+    "gestion de cobranza": "/finanzas/facturas/cobranzas",
+    "gestión de cobranza": "/finanzas/facturas/cobranzas",
     "conciliacion": "/finanzas/conciliacion",
     "enviar mensaje": "/finanzas/comunicacion",
     "marketing": "/marketing",
@@ -163,7 +166,8 @@
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas"><span>Dashboard</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/clientes"><span>Clientes</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/pagos"><span>Facturas de pago</span></a>' +
-        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/cobranzas"><span>Facturas de cobranza</span></a>' +
+        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/cobro"><span>Facturas de cobranza</span></a>' +
+        '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/facturas/cobranzas"><span>Gestión de cobranza</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/conciliacion"><span>Conciliación</span></a>' +
         '<a class="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900" href="/finanzas/comunicacion"><span>Enviar Mensaje</span></a>' +
         "</nav>";
@@ -239,7 +243,10 @@
     "facturas de pago": "receipt_long",
     "cobranza": "handshake",
     "cobranzas": "handshake",
-    "facturas de cobranza": "handshake",
+    "facturas de cobranza": "request_quote",
+    "facturas de cobro": "request_quote",
+    "gestion de cobranza": "handshake",
+    "gestión de cobranza": "handshake",
     "conciliacion": "balance",
     "enviar mensaje": "send",
     "planificador": "calendar_month",
@@ -395,6 +402,7 @@
     "finanzas.html": "/finanzas",
     "finanzas-clientes.html": "/finanzas/clientes",
     "finanzas-facturas.html": "/finanzas/facturas/pagos",
+    "finanzas-facturas-cobro.html": "/finanzas/facturas/cobro",
     "finanzas-cobranza.html": "/finanzas/facturas/cobranzas",
     "finanzas-conciliacion.html": "/finanzas/conciliacion",
     "finanzas-comunicacion.html": "/finanzas/comunicacion",
@@ -438,7 +446,8 @@
     { label: "Dashboard", href: "/finanzas", icon: "dashboard" },
     { label: "Clientes", href: "/finanzas/clientes", icon: "corporate_fare" },
     { label: "Facturas de pago", href: "/finanzas/facturas/pagos", icon: "receipt_long" },
-    { label: "Facturas de cobranza", href: "/finanzas/facturas/cobranzas", icon: "handshake" },
+    { label: "Facturas de cobranza", href: "/finanzas/facturas/cobro", icon: "request_quote" },
+    { label: "Gestión de cobranza", href: "/finanzas/facturas/cobranzas", icon: "handshake" },
     { label: "Conciliación", href: "/finanzas/conciliacion", icon: "balance" },
     { label: "Enviar Mensaje", href: "/finanzas/comunicacion", icon: "send" },
   ];

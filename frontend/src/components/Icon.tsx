@@ -14,6 +14,7 @@ import {
   Scale,
   Megaphone,
   Wallet,
+  Handshake,
   type LucideProps,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ const MAP = {
   Scale,
   Megaphone,
   Wallet,
+  Handshake,
 } as const;
 
 export type IconName = keyof typeof MAP;

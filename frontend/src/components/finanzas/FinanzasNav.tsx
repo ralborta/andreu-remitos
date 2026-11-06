@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Scale, Send, Users, Banknote } from "lucide-react";
+import { LayoutDashboard, FileText, Scale, Send, Users, Banknote, Handshake } from "lucide-react";
 import clsx from "clsx";
 
 function Item({
@@ -52,7 +52,8 @@ export function FinanzasNav() {
         <Item href="/finanzas" label="Dashboard" icon={LayoutDashboard} exact />
         <Item href="/finanzas/clientes" label="Clientes" icon={Users} />
         <Item href="/finanzas/facturas/pagos" label="Facturas de pago" icon={FileText} />
-        <Item href="/finanzas/facturas/cobranzas" label="Facturas de cobranza" icon={Banknote} />
+        <Item href="/finanzas/facturas/cobro" label="Facturas de cobranza" icon={Banknote} />
+        <Item href="/finanzas/facturas/cobranzas" label="Gestión de cobranza" icon={Handshake} />
 
         <Label>Cobros</Label>
         <Item href="/finanzas/conciliacion" label="Conciliación" icon={Scale} />
