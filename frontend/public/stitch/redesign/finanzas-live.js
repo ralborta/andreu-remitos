@@ -836,33 +836,82 @@
     el.classList.remove("hidden");
   }
 
-  function pasosTimelineHtml(row) {
-    var pasos = Array.isArray(row && row.pasos) ? row.pasos.slice() : [];
-    if (!pasos.length) {
-      return '<p class="py-4 text-center text-sm text-slate-500">Sin gestiones ni contactos registrados en esta factura todavía.</p>';
-    }
-    pasos = pasos.slice().sort(function (a, b) {
+  function historialEvents(row) {
+    var events = [];
+    var msgs = Array.isArray(row && row.mensajes) ? row.mensajes : [];
+    msgs.forEach(function (m) {
+      events.push({
+        at: m.at,
+        kind: m.direction === "in" ? "in" : "out",
+        title: m.direction === "in" ? "Consulta del cliente" : "Mensaje enviado",
+        texto: m.texto || "",
+        canal: m.canal,
+        from: m.from || (m.direction === "in" ? "cliente" : "mesa"),
+        ok: m.ok,
+        mensaje_id: m.id,
+      });
+    });
+    var pasos = Array.isArray(row && row.pasos) ? row.pasos : [];
+    pasos.forEach(function (p) {
+      // Evitar duplicar pasos que ya están representados por un mensaje.
+      if (p.mensaje_id && msgs.some(function (m) { return m.id === p.mensaje_id; })) return;
+      var isIn = String(p.agente || "") === "cliente" || /consulta del cliente/i.test(String(p.label || ""));
+      events.push({
+        at: p.at,
+        kind: isIn ? "in" : "gestion",
+        title: p.label || "Gestión",
+        texto: "",
+        canal: p.canal,
+        from: p.agente || "sistema",
+        ok: p.ok,
+      });
+    });
+    events.sort(function (a, b) {
       return String(a.at || "").localeCompare(String(b.at || ""));
     });
+    return events;
+  }
+
+  function pasosTimelineHtml(row) {
+    var events = historialEvents(row);
+    if (!events.length) {
+      return '<p class="py-4 text-center text-sm text-slate-500">Sin mensajes ni gestiones en esta factura todavía. Acá también figuran las consultas del cliente.</p>';
+    }
     return (
       '<div class="space-y-3">' +
-      pasos
-        .map(function (p) {
+      events
+        .map(function (ev) {
+          var isIn = ev.kind === "in";
+          var isOut = ev.kind === "out";
+          var dot = isIn ? "bg-emerald-500 ring-emerald-50" : isOut ? "bg-indigo-500 ring-indigo-50" : "bg-slate-400 ring-slate-100";
+          var bubble = isIn
+            ? "border-emerald-200 bg-emerald-50/60"
+            : isOut
+              ? "border-indigo-200 bg-indigo-50/50"
+              : "border-slate-200 bg-white";
+          var who = isIn ? "Cliente → Mesa" : isOut ? "Mesa → Cliente" : esc(ev.from || "sistema");
           return (
             '<div class="relative flex gap-3 pl-1">' +
-            '<div class="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-50 shrink-0"></div>' +
-            '<div class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white p-3">' +
+            '<div class="mt-1 h-2.5 w-2.5 rounded-full ' +
+            dot +
+            ' ring-4 shrink-0"></div>' +
+            '<div class="min-w-0 flex-1 rounded-lg border ' +
+            bubble +
+            ' p-3">' +
             '<div class="flex flex-wrap items-start justify-between gap-2">' +
             '<p class="text-sm font-semibold text-slate-900">' +
-            esc(p.label || "Gestión") +
+            esc(ev.title) +
             "</p>" +
             '<span class="text-[11px] text-slate-400">' +
-            esc(fmtDate(p.at, true)) +
+            esc(fmtDate(ev.at, true)) +
             "</span></div>" +
+            (ev.texto
+              ? '<p class="mt-1.5 text-[13px] text-slate-800 whitespace-pre-wrap">' + esc(ev.texto) + "</p>"
+              : "") +
             '<p class="mt-1 text-[11px] text-slate-500">' +
-            esc(p.agente || "sistema") +
-            (p.canal ? " · " + p.canal : "") +
-            (p.ok === false ? " · falló" : p.ok === true ? " · ok" : "") +
+            who +
+            (ev.canal ? " · " + esc(ev.canal) : "") +
+            (ev.ok === false ? " · falló" : ev.ok === true ? " · ok" : "") +
             "</p></div></div>"
           );
         })
@@ -919,12 +968,12 @@
       "</div>" +
       '<section class="mt-3 rounded-xl border border-slate-200 bg-white overflow-hidden">' +
       '<header class="px-3 py-2.5 border-b border-slate-100 bg-white flex items-center gap-2">' +
-      '<span class="material-symbols-outlined text-[16px] text-indigo-600">history</span>' +
-      '<h3 class="text-sm font-bold text-slate-900">Historial de contactos y gestiones</h3></header>' +
+      '<span class="material-symbols-outlined text-[16px] text-indigo-600">forum</span>' +
+      '<h3 class="text-sm font-bold text-slate-900">Historial de mensajes y gestiones</h3></header>' +
       '<div class="p-3">' +
       pasosTimelineHtml(row) +
       "</div></section>" +
-      '<p class="mt-2 text-[11px] text-slate-400">Historial por factura · gestiones, WhatsApp y promesas registradas en esta CxC.</p>';
+      '<p class="mt-2 text-[11px] text-slate-400">Incluye mensajes enviados por mesa y consultas del cliente sobre esta factura.</p>';
     var acts = d.querySelector("[data-sol-fin-drawer-actions]");
     var buttons =
       key === "facturas"
@@ -935,12 +984,13 @@
         : key === "facturas-cobro"
           ? [
               { id: "comunicar", label: "Comunicar", primary: true },
+              { id: "msg_cliente", label: "Registrar consulta cliente" },
               { id: "ficha_cliente", label: "Ver cliente" },
-              { id: "ir_conciliacion", label: "Conciliación" },
             ]
           : [
               { id: "cobrar", label: "Registrar cobro", primary: true },
               { id: "comunicar", label: "Comunicar" },
+              { id: "msg_cliente", label: "Consulta cliente" },
               { id: "ir_conciliacion", label: "Conciliación" },
             ];
     acts.innerHTML = buttons
@@ -1469,21 +1519,92 @@
     });
 
     function ejecutarComunicar() {
+      var sel = document.querySelector("[data-sol-fin-tpl-select]");
+      var plantilla = sel && sel.value ? sel.value : "corto";
+      var done = 0;
       ids.forEach(function (id) {
-        patchLocal(id, {
-          demo_comunicada: true,
-          demo_comunicada_at: new Date().toLocaleString("es-AR"),
-          demo_nota: "Recordatorio WhatsApp enviado (canal SOL)",
-        });
+        var row = findRow(id) || { id: id };
+        var ctx = {
+          cliente: row.razon_social || "Cliente",
+          numero: row.numero || row.id || "—",
+          saldo: money(saldo(localOf(row))),
+          vto: fmtDate(row.fecha_vto) || row.fecha_vto || "—",
+        };
+        var mensaje =
+          "Hola " +
+          ctx.cliente +
+          ", te recordamos la factura " +
+          ctx.numero +
+          " con saldo " +
+          ctx.saldo +
+          " (vto " +
+          ctx.vto +
+          "). ¿Me confirmás fecha de pago?";
         api("/api/finanzas/facturas/" + encodeURIComponent(id) + "/comunicar", {
           method: "POST",
-          body: JSON.stringify({ canal: "whatsapp", mensaje: "" }),
-        }).catch(function () {});
+          body: JSON.stringify({ canal: "whatsapp", mensaje: mensaje, plantilla: plantilla }),
+        })
+          .then(function (res) {
+            if (res && res.factura) {
+              apiRows = (apiRows || []).map(function (r) {
+                return r.id === res.factura.id ? res.factura : r;
+              });
+              if (!apiRows.some(function (r) { return r.id === res.factura.id; })) apiRows.unshift(res.factura);
+            }
+          })
+          .catch(function () {
+            patchLocal(id, {
+              demo_comunicada: true,
+              demo_comunicada_at: new Date().toLocaleString("es-AR"),
+              demo_nota: "Recordatorio WhatsApp (local)",
+            });
+          })
+          .then(function () {
+            done += 1;
+            if (done >= ids.length) {
+              toast("Mensaje guardado en el historial de " + ids.length + " factura(s).", "ok");
+              refreshTables();
+              syncWaActionPanel();
+              if (selectedId && findRow(selectedId)) openDrawer(findRow(selectedId));
+            }
+          });
       });
-      toast("Recordatorio WhatsApp registrado en " + ids.length + " factura(s).", "ok");
-      refreshTables();
-      syncWaActionPanel();
     }
+  }
+
+  function registrarConsultaCliente(row) {
+    if (!row || !row.id) {
+      toast("Seleccioná una factura primero.", "err");
+      return;
+    }
+    var texto = window.prompt(
+      "Consulta del cliente sobre " + (row.numero || row.id) + ":",
+      "¿Pueden confirmar si recibieron el comprobante / reenviar POD?",
+    );
+    if (texto == null) return;
+    texto = String(texto).trim();
+    if (!texto) {
+      toast("Mensaje vacío.", "err");
+      return;
+    }
+    api("/api/finanzas/facturas/" + encodeURIComponent(row.id) + "/mensajes", {
+      method: "POST",
+      body: JSON.stringify({ direction: "in", canal: "whatsapp", texto: texto, from: "cliente" }),
+    })
+      .then(function (fac) {
+        if (fac && fac.id) {
+          apiRows = (apiRows || []).map(function (r) {
+            return r.id === fac.id ? fac : r;
+          });
+          if (!apiRows.some(function (r) { return r.id === fac.id; })) apiRows.unshift(fac);
+          openDrawer(fac);
+        }
+        toast("Consulta del cliente guardada en el historial de la factura.", "ok");
+        refreshTables();
+      })
+      .catch(function (err) {
+        toast(err.message || "No se pudo guardar la consulta.", "err");
+      });
   }
 
   function demoCobrar(row) {
@@ -2197,7 +2318,11 @@
         openCuentaFicha(row || selectedClienteKey, "proveedor");
         return;
       }
-      openDrawer(row || { numero: "Sin ID", razon_social: "Fila de demostración", pasos: [] });
+      openDrawer(row || { numero: "Sin ID", razon_social: "Fila de demostración", pasos: [], mensajes: [] });
+      return;
+    }
+    if (kind === "msg_cliente") {
+      registrarConsultaCliente(row);
       return;
     }
     if (kind === "ver_cobranza" || kind === "ficha_cliente") {

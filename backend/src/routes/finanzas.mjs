@@ -9,6 +9,7 @@ import {
 } from "../services/finanzas-facturas.mjs";
 import {
   comunicarFactura,
+  registrarMensajeFactura,
   conciliarCobro,
   ingestarFacturaSistema,
   listarCobrosFinanzas,
@@ -101,6 +102,16 @@ export default async function finanzasRoutes(fastify) {
     try {
       const out = await comunicarFactura(request.params.id, request.body ?? {});
       return out;
+    } catch (err) {
+      return reply.code(400).send({ error: err.message });
+    }
+  });
+
+  /** Historial de mensajes por factura: out (mesa) o in (consulta del cliente). */
+  fastify.post("/facturas/:id/mensajes", async (request, reply) => {
+    try {
+      const row = await registrarMensajeFactura(request.params.id, request.body ?? {});
+      return row;
     } catch (err) {
       return reply.code(400).send({ error: err.message });
     }

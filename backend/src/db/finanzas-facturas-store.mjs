@@ -99,6 +99,39 @@ export async function appendPasoFactura(id, paso) {
   return publicRow(rows[i]);
 }
 
+/**
+ * Mensaje de cobro asociado a la factura (out = mesa → cliente, in = cliente → mesa).
+ * { id, at, direction: "out"|"in", canal, texto, from, ok?, meta? }
+ */
+export async function appendMensajeFactura(id, mensaje) {
+  const rows = readAll();
+  const i = rows.findIndex((r) => r.id === id);
+  if (i < 0) return null;
+  const now = new Date().toISOString();
+  const entry = {
+    id: mensaje?.id || `msg_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+    at: mensaje?.at || now,
+    direction: mensaje?.direction === "in" ? "in" : "out",
+    canal: mensaje?.canal || "whatsapp",
+    texto: String(mensaje?.texto || "").trim(),
+    from: mensaje?.from || (mensaje?.direction === "in" ? "cliente" : "mesa"),
+    ok: mensaje?.ok,
+    meta: mensaje?.meta || null,
+  };
+  if (!entry.texto) throw new Error("Mensaje vacío");
+  const mensajes = Array.isArray(rows[i].mensajes) ? [...rows[i].mensajes, entry] : [entry];
+  const label =
+    entry.direction === "in"
+      ? `Consulta del cliente (${entry.canal}): ${entry.texto.slice(0, 90)}`
+      : `Mensaje enviado (${entry.canal}): ${entry.texto.slice(0, 90)}`;
+  const pasos = Array.isArray(rows[i].pasos)
+    ? [...rows[i].pasos, { at: entry.at, agente: entry.direction === "in" ? "cliente" : "comunicacion", label, canal: entry.canal, ok: entry.ok, mensaje_id: entry.id }]
+    : [{ at: entry.at, agente: entry.direction === "in" ? "cliente" : "comunicacion", label, canal: entry.canal, ok: entry.ok, mensaje_id: entry.id }];
+  rows[i] = { ...rows[i], mensajes, pasos, updated_at: now };
+  writeAll(rows);
+  return publicRow(rows[i]);
+}
+
 export async function findFacturaCobrarDuplicada({ numero, excludeId } = {}) {
   const nro = String(numero || "").replace(/\s/g, "").toLowerCase();
   if (!nro) return null;
@@ -168,11 +201,50 @@ export async function ensureSeedFacturasCobrar() {
           label: "WhatsApp a TSB: recordatorio factura A-0003-00018421 vencida · saldo $1.482.500",
           canal: "whatsapp",
           ok: true,
+          mensaje_id: "msg-tsb-out-1",
+        },
+        {
+          at: isoAtOffset(-2, 14),
+          agente: "cliente",
+          label: "Consulta del cliente (whatsapp): ¿Pueden reenviar el POD y confirmar si aceptan transferencia parcial?",
+          canal: "whatsapp",
+          ok: true,
+          mensaje_id: "msg-tsb-in-1",
         },
         {
           at: isoAtOffset(-2, 16),
           agente: "cobranzas",
           label: "Promesa de pago para hoy (mesa)",
+        },
+      ],
+      mensajes: [
+        {
+          id: "msg-tsb-out-1",
+          at: isoAtOffset(-2, 11),
+          direction: "out",
+          canal: "whatsapp",
+          from: "mesa",
+          ok: true,
+          texto:
+            "Hola TSB Logística S.A., te recordamos la factura A-0003-00018421 vencida. Saldo $1.482.500. ¿Me confirmás fecha de pago?",
+        },
+        {
+          id: "msg-tsb-in-1",
+          at: isoAtOffset(-2, 14),
+          direction: "in",
+          canal: "whatsapp",
+          from: "cliente",
+          ok: true,
+          texto: "¿Pueden reenviar el POD y confirmar si aceptan transferencia parcial esta semana?",
+        },
+        {
+          id: "msg-tsb-out-2",
+          at: isoAtOffset(-2, 15),
+          direction: "out",
+          canal: "whatsapp",
+          from: "mesa",
+          ok: true,
+          texto: "Sí, reenviamos POD y aceptamos parcial. ¿Qué monto y qué día acreditan?",
         },
       ],
       created_at: emitida,
@@ -318,6 +390,7 @@ export async function ensureSeedFacturasCobrar() {
   const needsStory =
     have.length < 5 ||
     (tsb && (tsb.pasos || []).length < 2) ||
+    (tsb && !(tsb.mensajes || []).some((m) => m.direction === "in")) ||
     (mye && Number(mye.monto_aplicado || 0) < 1);
   if (have.length === 5 && !needsStory) return false;
   const others = rows.filter((r) => !demo.has(r.id));
