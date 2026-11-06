@@ -18,6 +18,8 @@
   var programarIds = [];
   var cargarEl = null;
   var cargarBusy = false;
+  var importarEl = null;
+  var importarBusy = false;
   /** Estado del aviso de pasarela / match en Conciliación. */
   var pasarelaMatch = null;
 
@@ -2223,6 +2225,445 @@
     });
   }
 
+  function closeImportarErpModal() {
+    if (importarBusy) return;
+    if (importarEl) {
+      importarEl.classList.add("hidden");
+      importarEl.classList.remove("flex");
+    }
+  }
+
+  function setImportarStatus(msg, tone) {
+    var el = ensureImportarErpModal();
+    var st = el.querySelector("[data-sol-fin-imp-status]");
+    if (!st) return;
+    st.textContent = msg || "";
+    st.className =
+      "text-xs font-medium " +
+      (tone === "err" ? "text-rose-600" : tone === "ok" ? "text-emerald-700" : "text-slate-500");
+  }
+
+  function setImportarBusy(on) {
+    importarBusy = !!on;
+    var el = ensureImportarErpModal();
+    el.querySelectorAll("[data-sol-fin-imp-ok], [data-sol-fin-imp-demo], [data-sol-fin-imp-csv]").forEach(function (b) {
+      b.disabled = !!on;
+      b.classList.toggle("opacity-60", !!on);
+    });
+    var ok = el.querySelector("[data-sol-fin-imp-ok]");
+    if (ok) {
+      ok.innerHTML = on
+        ? '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> Importando…'
+        : '<span class="material-symbols-outlined text-[18px]">upload</span> Importar factura';
+    }
+  }
+
+  function isoPlusDays(days) {
+    var d = new Date();
+    d.setDate(d.getDate() + (days || 0));
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
+  function ensureImportarErpModal() {
+    if (importarEl) return importarEl;
+    importarEl = document.createElement("div");
+    importarEl.id = "sol-fin-importar";
+    importarEl.className =
+      "hidden fixed inset-0 z-[10040] items-center justify-center bg-slate-900/40 p-4";
+    importarEl.setAttribute("role", "presentation");
+    importarEl.innerHTML =
+      '<div class="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="sol-fin-imp-titulo">' +
+      '<div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">' +
+      '<div class="min-w-0 flex items-start gap-3">' +
+      '<div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">' +
+      '<span class="material-symbols-outlined text-[22px]">upload_file</span></div>' +
+      '<div class="min-w-0">' +
+      '<p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Facturas de cobranza · CxC</p>' +
+      '<h3 id="sol-fin-imp-titulo" class="text-lg font-bold text-slate-900">Importar ERP / Excel</h3>' +
+      '<p class="mt-0.5 text-xs text-slate-500">Traé cartera desde el ERP (CSV) o cargá una factura a cobrar manualmente. Queda con historial vacío listo para gestionar.</p>' +
+      "</div></div>" +
+      '<button type="button" data-sol-fin-imp-close class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">' +
+      '<span class="material-symbols-outlined text-[20px]">close</span></button>' +
+      "</div>" +
+      '<div class="space-y-4 overflow-y-auto px-5 py-4">' +
+      '<div data-sol-fin-imp-drop class="rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/70 transition-colors px-4 py-5 text-center cursor-pointer">' +
+      '<div class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white border border-emerald-100 text-emerald-600 shadow-xs">' +
+      '<span class="material-symbols-outlined text-[22px]">table_view</span></div>' +
+      '<p class="text-sm font-bold text-slate-800">Arrastrá un CSV del ERP o hacé clic</p>' +
+      '<p class="mt-1 text-[11px] text-slate-500">Columnas: numero, cliente, cuit, monto, fecha, vencimiento, telefono</p>' +
+      '<p class="mt-2 text-xs font-semibold text-emerald-700 truncate px-2" data-sol-fin-imp-name>Ningún archivo seleccionado</p>' +
+      '<input data-sol-fin-imp-file type="file" accept=".csv,text/csv,text/plain" class="hidden"/>' +
+      "</div>" +
+      '<div class="flex items-center gap-2">' +
+      '<div class="h-px flex-1 bg-slate-200"></div>' +
+      '<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">o alta manual</span>' +
+      '<div class="h-px flex-1 bg-slate-200"></div>' +
+      "</div>" +
+      '<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">' +
+      '<label class="block text-xs font-medium text-slate-500 sm:col-span-2">Cliente / razón social' +
+      '<input data-sol-fin-imp-cliente type="text" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="Ej. TSB Logística S.A."/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">CUIT' +
+      '<input data-sol-fin-imp-cuit type="text" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="30-71234567-8"/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">Nº factura' +
+      '<input data-sol-fin-imp-numero type="text" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="A-0003-00018499"/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">Monto' +
+      '<input data-sol-fin-imp-monto type="number" min="1" step="0.01" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="158750.50"/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">Teléfono WhatsApp' +
+      '<input data-sol-fin-imp-tel type="text" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" placeholder="54911…"/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">Fecha' +
+      '<input data-sol-fin-imp-fecha type="date" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"/>' +
+      "</label>" +
+      '<label class="block text-xs font-medium text-slate-500">Vencimiento' +
+      '<input data-sol-fin-imp-vto type="date" class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"/>' +
+      "</label>" +
+      "</div>" +
+      '<p data-sol-fin-imp-status class="text-xs font-medium text-slate-500"></p>' +
+      "</div>" +
+      '<div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/80 px-5 py-4">' +
+      '<button type="button" data-sol-fin-imp-demo class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">' +
+      '<span class="material-symbols-outlined text-[16px] text-amber-500">auto_awesome</span> Factura demo</button>' +
+      '<div class="flex flex-wrap items-center gap-2">' +
+      '<button type="button" data-sol-fin-imp-cancel class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200/70 transition">Cancelar</button>' +
+      '<button type="button" data-sol-fin-imp-ok class="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition shadow-sm">' +
+      '<span class="material-symbols-outlined text-[18px]">upload</span> Importar factura</button>' +
+      "</div></div></div>";
+    document.body.appendChild(importarEl);
+
+    var drop = importarEl.querySelector("[data-sol-fin-imp-drop]");
+    var fileInp = importarEl.querySelector("[data-sol-fin-imp-file]");
+    importarEl.addEventListener("click", function (e) {
+      if (e.target === importarEl && !importarBusy) {
+        if (Date.now() - (importarEl._openedAt || 0) < 400) return;
+        closeImportarErpModal();
+      }
+    });
+    importarEl.querySelector("[data-sol-fin-imp-close]").addEventListener("click", closeImportarErpModal);
+    importarEl.querySelector("[data-sol-fin-imp-cancel]").addEventListener("click", closeImportarErpModal);
+    drop.addEventListener("click", function () {
+      if (!importarBusy) fileInp.click();
+    });
+    fileInp.addEventListener("change", function () {
+      var f = fileInp.files && fileInp.files[0];
+      importarEl._file = f || null;
+      importarEl.querySelector("[data-sol-fin-imp-name]").textContent = f
+        ? f.name + " · " + Math.max(1, Math.round(f.size / 1024)) + " KB"
+        : "Ningún archivo seleccionado";
+      if (f) importarCsvFile(f);
+    });
+    ["dragenter", "dragover"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        drop.classList.add("border-emerald-400", "bg-emerald-100/50");
+      });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        drop.classList.remove("border-emerald-400", "bg-emerald-100/50");
+      });
+    });
+    drop.addEventListener("drop", function (e) {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      importarEl._file = f;
+      importarEl.querySelector("[data-sol-fin-imp-name]").textContent =
+        f.name + " · " + Math.max(1, Math.round(f.size / 1024)) + " KB";
+      importarCsvFile(f);
+    });
+    importarEl.querySelector("[data-sol-fin-imp-ok]").addEventListener("click", confirmarImportarManual);
+    importarEl.querySelector("[data-sol-fin-imp-demo]").addEventListener("click", importarFacturaDemo);
+    return importarEl;
+  }
+
+  function openImportarErpModal() {
+    if (pageKey() !== "facturas-cobro") {
+      go("/finanzas/facturas/cobro");
+      setTimeout(openImportarErpModal, 350);
+      return;
+    }
+    var el = ensureImportarErpModal();
+    el._file = null;
+    el._openedAt = Date.now();
+    var fileInp = el.querySelector("[data-sol-fin-imp-file]");
+    if (fileInp) fileInp.value = "";
+    el.querySelector("[data-sol-fin-imp-name]").textContent = "Ningún archivo seleccionado";
+    el.querySelector("[data-sol-fin-imp-cliente]").value = "";
+    el.querySelector("[data-sol-fin-imp-cuit]").value = "";
+    el.querySelector("[data-sol-fin-imp-numero]").value = "";
+    el.querySelector("[data-sol-fin-imp-monto]").value = "";
+    el.querySelector("[data-sol-fin-imp-tel]").value = "";
+    el.querySelector("[data-sol-fin-imp-fecha]").value = isoPlusDays(0);
+    el.querySelector("[data-sol-fin-imp-vto]").value = isoPlusDays(30);
+    setImportarStatus("", "");
+    setImportarBusy(false);
+    setTimeout(function () {
+      el._openedAt = Date.now();
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+      var c = el.querySelector("[data-sol-fin-imp-cliente]");
+      if (c) c.focus();
+    }, 0);
+  }
+
+  function afterFacturaCobrarImportada(fac, extraMsg) {
+    if (!fac || !fac.id) return;
+    apiRows = (apiRows || []).filter(function (r) {
+      return r.id !== fac.id;
+    });
+    apiRows.unshift(fac);
+    selectedId = fac.id;
+    refreshTables();
+    openDrawer(fac);
+    toast(
+      extraMsg ||
+        ("Factura " +
+          (fac.numero || fac.id) +
+          (fac.razon_social ? " · " + fac.razon_social : "") +
+          " importada a cartera CxC."),
+      "ok",
+    );
+  }
+
+  function postFacturaSistema(body) {
+    return api("/api/finanzas/facturas/sistema", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  function confirmarImportarManual() {
+    var el = ensureImportarErpModal();
+    var numero = String(el.querySelector("[data-sol-fin-imp-numero]").value || "").trim();
+    var monto = Number(el.querySelector("[data-sol-fin-imp-monto]").value);
+    var cliente = String(el.querySelector("[data-sol-fin-imp-cliente]").value || "").trim();
+    if (!numero) {
+      setImportarStatus("Completá el número de factura.", "err");
+      return;
+    }
+    if (!Number.isFinite(monto) || monto <= 0) {
+      setImportarStatus("Monto inválido.", "err");
+      return;
+    }
+    setImportarBusy(true);
+    setImportarStatus("Importando a cartera…", "");
+    postFacturaSistema({
+      numero: numero,
+      monto: monto,
+      razon_social: cliente || "Cliente importado",
+      cuit: el.querySelector("[data-sol-fin-imp-cuit]").value || null,
+      telefono: el.querySelector("[data-sol-fin-imp-tel]").value || null,
+      fecha: el.querySelector("[data-sol-fin-imp-fecha]").value || null,
+      fecha_vto: el.querySelector("[data-sol-fin-imp-vto]").value || null,
+      tipo_comprobante: "A",
+    })
+      .then(function (fac) {
+        setImportarBusy(false);
+        closeImportarErpModal();
+        afterFacturaCobrarImportada(fac);
+      })
+      .catch(function (err) {
+        setImportarBusy(false);
+        setImportarStatus(err.message || "No se pudo importar.", "err");
+        toast(err.message || "No se pudo importar.", "err");
+      });
+  }
+
+  function importarFacturaDemo() {
+    if (importarBusy) return;
+    setImportarBusy(true);
+    setImportarStatus("Generando factura demo…", "");
+    var n = "A-0003-" + String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);
+    postFacturaSistema({
+      numero: n,
+      monto: 248500 + Math.floor(Math.random() * 900000),
+      razon_social: "Cliente Demo Import ERP",
+      cuit: "30-70998877-1",
+      telefono: "5491133788190",
+      fecha: isoPlusDays(-5),
+      fecha_vto: isoPlusDays(20),
+      tipo_comprobante: "A",
+    })
+      .then(function (fac) {
+        setImportarBusy(false);
+        closeImportarErpModal();
+        afterFacturaCobrarImportada(fac, "Factura demo importada a cartera CxC.");
+      })
+      .catch(function (err) {
+        setImportarBusy(false);
+        setImportarStatus(err.message || "No se pudo crear la demo.", "err");
+      });
+  }
+
+  function parseCsvLine(line) {
+    var out = [];
+    var cur = "";
+    var q = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch === '"') {
+        if (q && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else q = !q;
+      } else if ((ch === "," || ch === ";") && !q) {
+        out.push(cur.trim());
+        cur = "";
+      } else cur += ch;
+    }
+    out.push(cur.trim());
+    return out;
+  }
+
+  function parseCsvFacturas(text) {
+    var lines = String(text || "")
+      .replace(/^\uFEFF/, "")
+      .split(/\r?\n/)
+      .filter(function (l) {
+        return l.trim();
+      });
+    if (!lines.length) return [];
+    var headers = parseCsvLine(lines[0]).map(function (h) {
+      return fold(h);
+    });
+    var idx = function (names) {
+      for (var i = 0; i < names.length; i++) {
+        var j = headers.indexOf(names[i]);
+        if (j >= 0) return j;
+      }
+      return -1;
+    };
+    var iNum = idx(["numero", "nro", "factura", "nro_factura", "comprobante"]);
+    var iCli = idx(["cliente", "razon_social", "razon social", "nombre"]);
+    var iCuit = idx(["cuit", "cuit_cliente", "cuit emisor"]);
+    var iMonto = idx(["monto", "importe", "total", "saldo"]);
+    var iFecha = idx(["fecha", "fecha_emision", "emision"]);
+    var iVto = idx(["vencimiento", "fecha_vto", "vto", "fecha_vencimiento"]);
+    var iTel = idx(["telefono", "tel", "whatsapp", "celular"]);
+    var rows = [];
+    for (var r = 1; r < lines.length; r++) {
+      var cols = parseCsvLine(lines[r]);
+      var numero = iNum >= 0 ? cols[iNum] : cols[0];
+      var montoRaw = iMonto >= 0 ? cols[iMonto] : cols[3];
+      var monto = Number(String(montoRaw || "").replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, ""));
+      if (!numero || !Number.isFinite(monto) || monto <= 0) continue;
+      rows.push({
+        numero: numero,
+        razon_social: (iCli >= 0 ? cols[iCli] : cols[1]) || "Cliente CSV",
+        cuit: iCuit >= 0 ? cols[iCuit] : null,
+        monto: monto,
+        fecha: iFecha >= 0 ? cols[iFecha] : isoPlusDays(0),
+        fecha_vto: iVto >= 0 ? cols[iVto] : isoPlusDays(30),
+        telefono: iTel >= 0 ? cols[iTel] : null,
+        tipo_comprobante: "A",
+      });
+    }
+    return rows;
+  }
+
+  function importarCsvFile(file) {
+    if (!file || importarBusy) return;
+    var name = String(file.name || "").toLowerCase();
+    if (/\.xlsx?$/.test(name)) {
+      setImportarStatus("Por ahora usá CSV (exportá el Excel a CSV). O cargá una Factura demo.", "err");
+      return;
+    }
+    setImportarBusy(true);
+    setImportarStatus("Leyendo CSV…", "");
+    var reader = new FileReader();
+    reader.onload = function () {
+      var rows = parseCsvFacturas(String(reader.result || ""));
+      if (!rows.length) {
+        setImportarBusy(false);
+        setImportarStatus("No encontré filas válidas. Revisá columnas numero/cliente/monto.", "err");
+        return;
+      }
+      setImportarStatus("Importando " + rows.length + " factura(s)…", "");
+      var done = 0;
+      var ok = 0;
+      var last = null;
+      var fail = null;
+      rows.slice(0, 25).forEach(function (body) {
+        postFacturaSistema(body)
+          .then(function (fac) {
+            ok += 1;
+            last = fac;
+            if (fac && fac.id) {
+              apiRows = (apiRows || []).filter(function (r) {
+                return r.id !== fac.id;
+              });
+              apiRows.unshift(fac);
+            }
+          })
+          .catch(function (err) {
+            fail = err.message || "Error";
+          })
+          .then(function () {
+            done += 1;
+            if (done >= Math.min(rows.length, 25)) {
+              setImportarBusy(false);
+              refreshTables();
+              if (ok) {
+                closeImportarErpModal();
+                if (last) openDrawer(last);
+                toast("Importadas " + ok + " factura(s) desde CSV a cartera CxC.", "ok");
+              } else {
+                setImportarStatus(fail || "No se pudo importar ninguna fila.", "err");
+              }
+            }
+          });
+      });
+    };
+    reader.onerror = function () {
+      setImportarBusy(false);
+      setImportarStatus("No se pudo leer el archivo.", "err");
+    };
+    reader.readAsText(file);
+  }
+
+  function wireErpImportDropZone() {
+    if (pageKey() !== "facturas-cobro") return;
+    var zone = document.querySelector('[data-purpose="erp-import-drop-container"]');
+    if (!zone || zone.getAttribute("data-sol-fin-erp-wired") === "1") return;
+    zone.setAttribute("data-sol-fin-erp-wired", "1");
+    zone.addEventListener("click", function (e) {
+      if (e.target.closest("button, a, input")) return;
+      openImportarErpModal();
+    });
+    ["dragenter", "dragover"].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.add("border-indigo-400", "bg-indigo-50");
+      });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove("border-indigo-400", "bg-indigo-50");
+      });
+    });
+    zone.addEventListener("drop", function (e) {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      openImportarErpModal();
+      if (!f) return;
+      setTimeout(function () {
+        var el = ensureImportarErpModal();
+        el._file = f;
+        el.querySelector("[data-sol-fin-imp-name]").textContent =
+          f.name + " · " + Math.max(1, Math.round(f.size / 1024)) + " KB";
+        importarCsvFile(f);
+      }, 40);
+    });
+  }
+
   function registrarConsultaCliente(row) {
     if (!row || !row.id) {
       toast("Seleccioná una factura primero.", "err");
@@ -3098,6 +3539,10 @@
       openCargarFacturaModal();
       return;
     }
+    if (kind === "importar_erp") {
+      openImportarErpModal();
+      return;
+    }
     if (kind === "nuevo_cliente") {
       toast("Alta de cliente: en esta demo los clientes salen de las facturas a cobrar.", "ok");
       go("/finanzas/clientes");
@@ -3152,6 +3597,7 @@
     if (all.indexOf("sincronizar") >= 0) return "sync";
     if (all.indexOf("exportar") >= 0 || all.indexOf("descargar informe") >= 0) return "export";
     if (all.indexOf("cargar factura") >= 0 || all.indexOf("ocr") >= 0) return "cargar_factura";
+    if (all.indexOf("importar erp") >= 0 || all.indexOf("importar excel") >= 0 || all.indexOf("importar") >= 0) return "importar_erp";
     if (all.indexOf("registrar nuevo cliente") >= 0) return "nuevo_cliente";
     if (all.indexOf("nueva plantilla") >= 0 || all.indexOf("editar plantilla") >= 0) return "plantilla";
     if (all.indexOf("detalle") >= 0 || all.indexOf("ver detalle") >= 0) return "detalle";
@@ -3230,6 +3676,7 @@
         closeFicha();
         closeCargarFacturaModal();
         closeProgramarModal();
+        closeImportarErpModal();
       }
     });
   }
@@ -4223,6 +4670,7 @@
     wirePasarelaPanel();
     wireComunicacionTemplates();
     wireOcrDropZone();
+    wireErpImportDropZone();
     applyFilters();
     reloadData();
   }

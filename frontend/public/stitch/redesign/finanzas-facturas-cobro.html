@@ -192,7 +192,7 @@
 </svg>
           Sincronizar AFIP / Comprobantes
         </button>
-<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-slate-900/20" type="button">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-slate-900/20" type="button" data-sol-fin-act="importar_erp">
 <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path>
 </svg>
@@ -277,7 +277,7 @@
 </section>
 <!-- END: KpiMetricsCards -->
 <!-- BEGIN: OcrDropZone -->
-<section class="border-2 border-dashed border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-200 rounded-xl p-5 sm:p-6 text-center cursor-pointer shadow-xs group" data-purpose="ocr-drag-drop-container">
+<section class="border-2 border-dashed border-indigo-200 bg-white hover:bg-indigo-50/30 transition-all duration-200 rounded-xl p-5 sm:p-6 text-center cursor-pointer shadow-xs group" data-purpose="erp-import-drop-container">
 <div class="max-w-xl mx-auto flex flex-col items-center">
 <!-- Center Icon with subtle glowing ring -->
 <div class="w-12 h-12 mb-3 rounded-full bg-indigo-50 group-hover:bg-indigo-100 group-hover:scale-105 border border-indigo-100 flex items-center justify-center text-indigo-600 transition-all shadow-xs">
@@ -289,11 +289,11 @@
           Importá cartera desde ERP o Excel, o cargá una factura a cobrar de forma manual.
         </h3>
 <p class="text-[11px] text-slate-500 mt-1 max-w-lg leading-relaxed">
-<span class="font-semibold text-indigo-600">Document AI v4.2 Activo</span> · Extrae CUIT, CAE, punto de venta, fecha, vencimiento e ítems de flete de terceros, combustible y repuestos.
+<span class="font-semibold text-indigo-600">Importador CxC</span> · CSV / Excel exportado del ERP · alta manual · historial de contactos por factura.
         </p>
 <!-- Formats & Compliance Badges -->
 <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-500">
-<span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono font-medium rounded">.PDF, .JPG, .PNG, .TIFF (hasta 25 MB)</span>
+<span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono font-medium rounded">.CSV, .XLSX (hasta 10 MB)</span>
 <span class="flex items-center gap-1 text-slate-600 font-medium">
 <svg class="w-3 h-3 text-emerald-500" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg>
             Validación CUIT en AFIP
@@ -661,7 +661,7 @@
 </div>
 </footer>
 <!-- END: MainFooter -->
-<script src="/stitch/redesign/finanzas-live.js?v=cargar-ocr-v3"></script>
+<script src="/stitch/redesign/finanzas-live.js?v=importar-erp-v1"></script>
 <script src="/stitch/redesign/finance-desk.js?v=desk-api-v1"></script>
 <script src="/stitch/redesign/desk-agent-chat.js?v=desk-api-v1"></script>
 <script src="/stitch/redesign/bridge.js?v=1793757765"></script>
