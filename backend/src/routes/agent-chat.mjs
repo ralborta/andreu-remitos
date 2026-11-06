@@ -15,6 +15,13 @@ const SUPPORTED = new Set([
   "remitos",
   "destinos",
   "commander",
+  "finanzas",
+  "facturas",
+  "facturas-cobro",
+  "cobranzas",
+  "conciliacion",
+  "clientes",
+  "comunicacion",
 ]);
 
 function titleFromConversation(row) {
