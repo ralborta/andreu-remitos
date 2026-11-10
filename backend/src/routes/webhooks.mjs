@@ -8,6 +8,8 @@ import {
   mensajeSaludo,
   mensajeCorinaListoParaFoto,
   mensajeCorinaFaltaCliente,
+  mensajeCorinaRepedirCliente,
+  esSaludoSimple,
   parseClienteMarcaCorina,
   parseTenantServicioAlternativo,
   etiquetaTenantRemito,
@@ -158,7 +160,7 @@ function esConfirmacionOk(texto) {
 }
 
 function esNegacion(texto) {
-  return /^(no|nop|nope|incorrecto|mal|est[aá]\s*mal|no\s+est[aá]|negativo)$/i.test(
+  return /^(no|nop|nope|incorrecto|mal|est[aá]\s*mal|no\s+est[aá]|negativo|modificar|corregir|cambiar)$/i.test(
     String(texto ?? "").trim(),
   );
 }
@@ -266,7 +268,12 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
     }
     if (!conv?.corina_cliente_marca) {
       const chofer = await master.resolverChoferPorTelefono(phone);
-      const msg = mensajeSaludo("corina", chofer?.nombre);
+      const rawTxt = String(texto ?? "").trim();
+      const msg = !rawTxt
+        ? mensajeSaludo("corina", chofer?.nombre)
+        : esSaludoSimple(rawTxt)
+          ? mensajeCorinaRepedirCliente()
+          : mensajeCorinaRepedirCliente({ noEntendido: true });
       if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
       return respuestaWebhook({ message: msg, flow: "corina_esperando_cliente" });
     }
