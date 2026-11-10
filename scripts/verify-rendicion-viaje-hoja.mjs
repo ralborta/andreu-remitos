@@ -12,6 +12,7 @@ import {
   mensajeViajeHojaConfirmado,
   pareceHojaRuta,
   pareceRendicionGasto,
+  pareceCorreccionRemitoVsGasto,
 } from "../lib/rendicion-wa.mjs";
 
 assert.equal(pareceHojaRuta("te mando la hoja de ruta"), true);
@@ -19,6 +20,14 @@ assert.equal(pareceHojaRuta("hoja ruta del viaje"), true);
 assert.equal(pareceHojaRuta("ticket de peaje"), false);
 assert.equal(pareceRendicionGasto("peaje ypf"), true);
 assert.equal(pareceHojaRuta("peaje ypf"), false);
+
+// Caso producción: corrección Semi/Remolque + Destino NO es gasto de remolque
+const correccionSemi =
+  "Semi/ Remolque:AH318WC Destino: Tron 25 Laje";
+assert.equal(pareceCorreccionRemitoVsGasto(correccionSemi), true);
+assert.equal(pareceRendicionGasto(correccionSemi), false);
+assert.equal(pareceRendicionGasto("tengo un remolque para rendir"), true);
+assert.equal(pareceRendicionGasto("gasto de grúa"), true);
 
 assert.equal(extraerNumeroViaje("24831"), "24831");
 assert.equal(extraerNumeroViaje("es el VJ-24831"), "VJ-24831");
