@@ -69,6 +69,7 @@ export function listRemitos(params?: {
   estado?: string;
   pendientes?: boolean;
   desde?: string;
+  hasta?: string;
   limit?: number;
 }) {
   const q = new URLSearchParams();
@@ -76,6 +77,7 @@ export function listRemitos(params?: {
   if (params?.estado) q.set("estado", params.estado);
   if (params?.pendientes) q.set("pendientes", "true");
   if (params?.desde) q.set("desde", params.desde);
+  if (params?.hasta) q.set("hasta", params.hasta);
   if (params?.limit) q.set("limit", String(params.limit));
   const qs = q.toString();
   return api<RemitoRow[]>(`/api/remitos${qs ? `?${qs}` : ""}`);

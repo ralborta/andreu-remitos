@@ -27,6 +27,7 @@ export async function listRemitos({
   estado,
   pendientes,
   desde,
+  hasta,
   limit = 50,
   includeOcr = false,
 } = {}) {
@@ -47,6 +48,15 @@ export async function listRemitos({
       rows = rows.filter((r) => {
         const t = new Date(r.created_at).getTime();
         return !Number.isNaN(t) && t >= t0;
+      });
+    }
+  }
+  if (hasta) {
+    const t1 = new Date(hasta).getTime();
+    if (!Number.isNaN(t1)) {
+      rows = rows.filter((r) => {
+        const t = new Date(r.created_at).getTime();
+        return !Number.isNaN(t) && t <= t1;
       });
     }
   }
