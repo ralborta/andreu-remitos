@@ -88,54 +88,49 @@ export function RemitosResumen() {
 
   return (
     <Card>
-      <SectionTitle
-        right={
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex flex-wrap justify-end gap-1">
-              {PERIODOS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPeriodo(p.id)}
-                  className={
-                    periodo === p.id
-                      ? "rounded-lg bg-[var(--violet)]/25 px-2.5 py-1 text-xs font-semibold text-white ring-1 ring-[var(--violet)]/50"
-                      : "rounded-lg bg-white/5 px-2.5 py-1 text-xs font-medium text-[var(--text-dim)] hover:bg-white/10"
-                  }
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-            {periodo === "rango" ? (
-              <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-[var(--text-dim)]">
-                <label className="flex items-center gap-1.5">
-                  <span>Desde</span>
-                  <input
-                    type="date"
-                    value={rangoDesde}
-                    max={rangoHasta || undefined}
-                    onChange={(e) => setRangoDesde(e.target.value)}
-                    className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:ring-1 focus:ring-[var(--violet)]/50"
-                  />
-                </label>
-                <label className="flex items-center gap-1.5">
-                  <span>Hasta</span>
-                  <input
-                    type="date"
-                    value={rangoHasta}
-                    min={rangoDesde || undefined}
-                    onChange={(e) => setRangoHasta(e.target.value)}
-                    className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:ring-1 focus:ring-[var(--violet)]/50"
-                  />
-                </label>
-              </div>
-            ) : null}
+      <div className="mb-3 flex flex-col gap-2">
+        <div className="flex flex-wrap gap-1">
+          {PERIODOS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setPeriodo(p.id)}
+              className={
+                periodo === p.id
+                  ? "rounded-lg bg-[var(--violet)]/25 px-2.5 py-1 text-xs font-semibold text-white ring-1 ring-[var(--violet)]/50"
+                  : "rounded-lg bg-white/5 px-2.5 py-1 text-xs font-medium text-[var(--text-dim)] hover:bg-white/10"
+              }
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {periodo === "rango" ? (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-dim)]">
+            <label className="flex items-center gap-1.5">
+              <span>Desde</span>
+              <input
+                type="date"
+                value={rangoDesde}
+                max={rangoHasta || undefined}
+                onChange={(e) => setRangoDesde(e.target.value)}
+                className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:ring-1 focus:ring-[var(--violet)]/50"
+              />
+            </label>
+            <label className="flex items-center gap-1.5">
+              <span>Hasta</span>
+              <input
+                type="date"
+                value={rangoHasta}
+                min={rangoDesde || undefined}
+                onChange={(e) => setRangoHasta(e.target.value)}
+                className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:ring-1 focus:ring-[var(--violet)]/50"
+              />
+            </label>
           </div>
-        }
-      >
-        Resumen
-      </SectionTitle>
+        ) : null}
+      </div>
+      <SectionTitle>Resumen</SectionTitle>
       <div className={`flex flex-wrap gap-4 ${loading ? "opacity-60" : ""}`}>
         <div>
           <p className="text-2xl font-bold tabular text-white">{total}</p>
