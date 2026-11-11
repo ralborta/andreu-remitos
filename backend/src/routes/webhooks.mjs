@@ -9,6 +9,8 @@ import {
   mensajeCorinaListoParaFoto,
   mensajeCorinaFaltaCliente,
   mensajeCorinaRepedirCliente,
+  mensajeCorinaFueraDeServicio,
+  corinaFueraDeServicio,
   esSaludoSimple,
   parseClienteMarcaCorina,
   parseTenantServicioAlternativo,
@@ -245,6 +247,23 @@ async function procesarTextoChofer(ev, tenantCfg, texto, log, { remitoCtx: remit
   const pausado = conv?.bot_pausado;
   const remitoCtx = remitoCtxIn ?? (await resolverRemitoCorreccion(phone, conv, tenantCfg));
   const tenantEfectivo = remitoCtx?.tenant ?? tenantCfg ?? conv?.tenant;
+
+  // Corina de baja: cualquier mensaje al servicio Corina (salvo cambiar a Beraldi/TSB/MYE)
+  if (tenantEfectivo === "corina" && phone && corinaFueraDeServicio()) {
+    const tenantAlt = parseTenantServicioAlternativo(texto);
+    if (tenantAlt) {
+      await convStore.setTenantServicioConversacion(phone, tenantAlt);
+      const label = etiquetaTenantRemito(tenantAlt);
+      const msg =
+        `Perfecto — servicio *${label}*.\n\n` +
+        `Ahora mandame una *foto clara* del remito ${label}.`;
+      if (!pausado) await notificarChofer(phone, msg, { tenant: tenantAlt, log });
+      return respuestaWebhook({ message: msg, flow: "servicio_alternativo_ok", tenant: tenantAlt });
+    }
+    const msg = mensajeCorinaFueraDeServicio();
+    if (!pausado) await notificarChofer(phone, msg, { tenant: "corina", log });
+    return respuestaWebhook({ message: msg, flow: "corina_fuera_de_servicio" });
+  }
 
   // Corina: elegir Cervecería vs Eco antes de la foto / sin remito abierto
   if (tenantEfectivo === "corina" && phone && !flujoRemitoAbierto(conv)) {
@@ -573,7 +592,10 @@ async function procesarBufferComoRemito(ev, buffer, filename, tenantCfg, log) {
 
   // Solo forzar Corina si el chofer ya eligió Cervecería/Eco.
   // Si quedó pegado en Corina pero manda papel Beraldi/TSB/MYE, el OCR manda.
-  const forzarCorina = tenantFoto === "corina" && Boolean(convFoto?.corina_cliente_marca);
+  const forzarCorina =
+          !corinaFueraDeServicio() &&
+          tenantFoto === "corina" &&
+          Boolean(convFoto?.corina_cliente_marca);
 
   if (telefono && !pausado) {
     await notificarChofer(telefono, mensajeProcesandoRemito(), {
@@ -601,13 +623,19 @@ async function procesarBufferComoRemito(ev, buffer, filename, tenantCfg, log) {
     await convStore.setUltimoRemito(telefono, resultado.id, resultado.tenant);
     if (resultado.tenant && resultado.tenant !== "corina") {
       await convStore.setTenantServicioConversacion(telefono, resultado.tenant);
-    } else if (resultado.tenant === "corina" && !convFoto?.corina_cliente_marca && !pausado) {
+    } else if (resultado.tenant === "corina" &&
+          !corinaFueraDeServicio() &&
+          !convFoto?.corina_cliente_marca &&
+          !pausado) {
       const hint = mensajeCorinaFaltaCliente();
       await notificarChofer(telefono, hint, { tenant: "corina", log });
     }
   }
 
-  const message = mensajeWhatsApp(resultado);
+  const message =
+          resultado.tenant === "corina" && corinaFueraDeServicio()
+            ? mensajeCorinaFueraDeServicio()
+            : mensajeWhatsApp(resultado);
 
   if (telefono && !pausado) {
     await notificarChofer(telefono, message, {
