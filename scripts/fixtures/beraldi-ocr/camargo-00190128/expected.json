@@ -1,0 +1,19 @@
+{
+  "nro_remito": "00190128-4",
+  "fecha_remito": "2026-11-17",
+  "ot": "354070",
+  "tractor": "AH860KH",
+  "semi": "AD215TD",
+  "origen": "LOMA CAMPANA",
+  "destino": "TRON-24",
+  "peso_kg": 31340,
+  "seed_entidades": {
+    "fecha": "17/12/2026",
+    "ot": null,
+    "tractor": "AH860KH",
+    "semi": "AD215TD",
+    "origen": "coma campana",
+    "destino": "TRON 24",
+    "peso": "31,34"
+  }
+}

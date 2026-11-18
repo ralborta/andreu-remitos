@@ -491,6 +491,18 @@ export function remitoProcesable(row: RemitoRow): { ok: boolean; motivos: string
   if (row.estado === "error_lectura") {
     return { ok: false, motivos: ["Error de lectura — corregir campos"] };
   }
+  if (row.estado === "bloqueado" || row.estado === "incompleto") {
+    const fromVal = [
+      ...(row.validacion?.errores ?? []),
+      ...(row.validacion?.faltantes ?? []).map((f) => `Falta: ${f}`),
+    ];
+    return {
+      ok: false,
+      motivos: fromVal.length
+        ? fromVal
+        : [row.estado === "bloqueado" ? "Remito bloqueado — corregir datos" : "Remito incompleto"],
+    };
+  }
 
   if (row.tenant === "tsb" || row.tenant === "mye") {
     const bloqueos = motivosBloqueoProcesoTsbUi(row.validacion);
