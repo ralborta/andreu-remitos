@@ -1,0 +1,23 @@
+{
+  "nro_remito": "00189159-4",
+  "fecha_remito": "2026-11-17",
+  "ot": "353896",
+  "tractor": "AH860KG",
+  "semi": "AH318WC",
+  "origen": "CIMSA",
+  "destino": "TRON-22",
+  "peso_kg": 31340,
+  "km_inicial": "146309",
+  "km_final": "146761",
+  "seed_entidades": {
+    "fecha": "17/12/2026",
+    "ot": null,
+    "tractor": "UN100AD",
+    "semi": "AH318WC",
+    "origen": "CIMSA",
+    "destino": "Iron 22",
+    "peso": "31,34",
+    "km_inicial": "146309",
+    "km_final": "146761"
+  }
+}

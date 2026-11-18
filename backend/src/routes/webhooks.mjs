@@ -148,6 +148,8 @@ function esConfirmacionOk(texto) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
+    // "0k" (cero + k) es OK tipográfico frecuente en WhatsApp
+    .replace(/\b0k\b/g, "ok")
     .replace(/[.!?,¿¡]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -220,6 +222,31 @@ async function aplicarConfirmacionChofer({ phone, conv, tenantCfg, pausado, log 
       "OK del chofer — aplicando correcciones pendientes",
     );
     return aplicarCorreccionesChofer({ phone, conv, tenantCfg, correcciones: pendientes, pausado, log });
+  }
+
+  // No cerrar revisión si el remito sigue con errores/faltantes (reclamo Antonela).
+  const val = remito.validacion;
+  const tieneProblemas =
+    remito.estado === "bloqueado" ||
+    remito.estado === "incompleto" ||
+    remito.estado === "error_lectura" ||
+    (val && (val.valido === false || (val.errores?.length ?? 0) > 0 || (val.faltantes?.length ?? 0) > 0));
+
+  if (tieneProblemas) {
+    const msg = mensajeWhatsApp({
+      ...remito,
+      lectura: remito.datos,
+      estado: remito.estado === "pendiente_revision" ? "bloqueado" : remito.estado,
+      validacion: val,
+    });
+    log?.info?.(
+      { remito_id: remito.id, estado: remito.estado, errores: val?.errores, faltantes: val?.faltantes },
+      "OK del chofer rechazado — remito con datos inválidos",
+    );
+    if (phone && !pausado) {
+      await notificarChofer(phone, msg, { tenant: remito.tenant ?? tenantCfg, remito_id: remito.id, log });
+    }
+    return { message: msg, flow: "confirmacion_rechazada_validacion", remito_id: remito.id };
   }
 
   const msg = "✅ Perfecto, queda registrado. ¡Buen viaje!";

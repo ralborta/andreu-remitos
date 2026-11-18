@@ -38,6 +38,9 @@ WhatsApp/
 !scripts/gcp/schema-beraldi.json
 !scripts/gcp/schema-tsb.json
 !scripts/gcp/dataset-init.json
+!scripts/fixtures/**/*.json
+!scripts/fixtures/**/*.png
+!scripts/fixtures/**/*.txt
 
 samples/remitos/*
 !samples/remitos/.gitkeep

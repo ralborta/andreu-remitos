@@ -10,6 +10,7 @@ import {
   validarUnidadesConMaestros,
   mergeValidacionRemito,
 } from "../../../lib/validacion-maestros.mjs";
+import { validarCalidadBeraldi } from "../../../lib/validacion-calidad-beraldi.mjs";
 import { canonicalizarConMaestros } from "../../../lib/maestros-match.mjs";
 import {
   evaluarProcesable,
@@ -36,7 +37,7 @@ async function validacionCompleta(datos, tenant, opts = {}) {
     opts.unidades ?? master.listCollection("unidades", { tenant, activo: true }),
   ]);
 
-  const datosCanon = canonicalizarConMaestros(datos, tenant, {
+  let datosCanon = canonicalizarConMaestros(datos, tenant, {
     localidades,
     choferes,
     unidades,
@@ -48,7 +49,33 @@ async function validacionCompleta(datos, tenant, opts = {}) {
   const destinoVal = validarDestinoConMaestros(datosCanon, tenant, localidades);
   const unidadesVal = validarUnidadesConMaestros(datosCanon, tenant, unidades);
   const validacionHorarios = datosCanon.horarios?.validacion ?? null;
-  const validacion = mergeValidacionRemito(validacionHorarios, destinoVal, unidadesVal);
+
+  let calidadVal = { ok: true, errores: [], faltantes: [], advertencias: [] };
+  if (tenant === "beraldi") {
+    calidadVal = validarCalidadBeraldi(datosCanon, {
+      localidades,
+      createdAt: opts.createdAt ?? null,
+      duplicadoNro: Boolean(opts.duplicadoNro),
+    });
+    // Aplicar correcciones automáticas de fecha/km cuando la calidad las propone.
+    if (calidadVal.fecha_remito && calidadVal.fecha_remito !== datosCanon.fecha_remito) {
+      datosCanon = { ...datosCanon, fecha_remito: calidadVal.fecha_remito };
+      if (datosCanon.horarios) {
+        datosCanon.horarios = { ...datosCanon.horarios, fecha_remito: calidadVal.fecha_remito };
+      }
+    }
+    if (calidadVal.km_inicial && calidadVal.km_inicial !== String(datosCanon.km_inicial ?? "")) {
+      datosCanon = { ...datosCanon, km_inicial: calidadVal.km_inicial };
+    }
+    if (calidadVal.km_final && calidadVal.km_final !== String(datosCanon.km_final ?? "")) {
+      datosCanon = { ...datosCanon, km_final: calidadVal.km_final };
+    }
+    if (calidadVal.origen_maestro?.nombre && datosCanon.origen) {
+      datosCanon = { ...datosCanon, origen: calidadVal.origen_maestro.nombre };
+    }
+  }
+
+  const validacion = mergeValidacionRemito(validacionHorarios, destinoVal, unidadesVal, calidadVal);
   return { validacion, datos: datosCanon };
 }
 
@@ -79,11 +106,12 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
   }
   // Beraldi: siempre completar KM vacíos desde OCR (aunque haya edición manual de otros campos).
   if (row.tenant === "beraldi" && row.texto_ocr) {
+    const enrichOpts = { referenciaFecha: row.created_at ?? null };
     if (!editadoManual) {
-      datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
+      datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr, enrichOpts);
       datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
     } else {
-      const enriq = enriquecerBeraldiDesdeTexto({}, row.texto_ocr);
+      const enriq = enriquecerBeraldiDesdeTexto({}, row.texto_ocr, enrichOpts);
       if (!datosNorm.km_inicial && enriq.km_inicial) datosNorm.km_inicial = enriq.km_inicial;
       if (!datosNorm.km_final && enriq.km_final) datosNorm.km_final = enriq.km_final;
     }
@@ -114,7 +142,10 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
 
   if (!needsReval) return row;
 
-  const { validacion, datos } = await validacionCompleta(datosNorm, row.tenant, maestros ?? {});
+  const { validacion, datos } = await validacionCompleta(datosNorm, row.tenant, {
+    ...(maestros ?? {}),
+    createdAt: row.created_at ?? null,
+  });
   let estado = calcularEstado(datos, validacion, row.tenant);
   if (row.estado === "confirmado") {
     const candidato = { ...row, datos, validacion, estado };
@@ -178,6 +209,8 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
     }
   }
 
+  // Snapshot de la primera lectura (antes de canonicalizar / defaults).
+  const lecturaCruda = { ...(resultado.lectura ?? {}) };
   resultado.lectura = normalizarDatosRemito(resultado.lectura, resultado.tenant);
 
   if (resultado.tenant === "corina") {
@@ -192,14 +225,45 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
   const imagenPath = path.join(uploadDir(), `${id}${ext}`);
   fs.writeFileSync(imagenPath, buffer);
 
+  const nroCanon = nroRemitoCanonico(resultado.lectura);
+  let duplicadoNro = false;
+  let existenteMismoTenant = null;
+  if (nroCanon) {
+    const existente = await store.findRemitoByNroCanonico(nroCanon);
+    if (existente && existente.tenant !== resultado.tenant) {
+      // Cross-tenant: se resuelve más abajo tras validar (mismo flujo histórico).
+    } else if (existente && existente.tenant === resultado.tenant) {
+      duplicadoNro = true;
+      existenteMismoTenant = existente;
+    }
+  }
+
   const { validacion, datos: datosCanon } = await validacionCompleta(resultado.lectura, resultado.tenant, {
     telefono,
     choferDesdeTelefono,
+    createdAt: new Date().toISOString(),
+    duplicadoNro,
   });
   resultado.lectura = datosCanon;
-  const estado = calcularEstado(datosCanon, validacion, resultado.tenant);
+  let estado = calcularEstado(datosCanon, validacion, resultado.tenant);
+  // Duplicado same-tenant: no crear otra fila; devolver el existente con motivo.
+  if (duplicadoNro && existenteMismoTenant) {
+    try {
+      fs.unlinkSync(imagenPath);
+    } catch {
+      /* ignore */
+    }
+    return {
+      id: existenteMismoTenant.id,
+      ...resultado,
+      tenant: existenteMismoTenant.tenant,
+      validacion,
+      estado: existenteMismoTenant.estado,
+      duplicado: true,
+      mensaje: `Remito ${datosCanon.nro_remito ?? nroCanon} ya existe — no se creó duplicado`,
+    };
+  }
 
-  const nroCanon = nroRemitoCanonico(datosCanon);
   if (nroCanon) {
     const existente = await store.findRemitoByNroCanonico(nroCanon);
     if (existente && existente.tenant !== resultado.tenant) {
@@ -212,6 +276,9 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
           validacion,
           texto_ocr: resultado.ocr.texto,
           imagen_path: imagenPath,
+          ocr_engine: resultado.ocr?.motor ?? null,
+          ocr_processor_id: resultado.ocr?.processor_id ?? null,
+          lectura_original: resultado.lectura_original ?? null,
         });
         return {
           id: existente.id,
@@ -249,11 +316,56 @@ export async function ingestarRemito(buffer, { filename, telefono, tenantForzado
     texto_ocr: resultado.ocr.texto,
     datos: datosCanon,
     validacion,
+    ocr_engine: resultado.ocr?.motor ?? null,
+    ocr_processor_id: resultado.ocr?.processor_id ?? null,
+    ocr_processor_version: resultado.ocr?.processor_version ?? null,
+    lectura_original: resultado.lectura_original
+      ? {
+          ...resultado.lectura_original,
+          datos: resultado.lectura_original.datos ?? snapshotLecturaOriginal(lecturaCruda),
+        }
+      : {
+          motor: resultado.ocr?.motor ?? null,
+          entidades: resultado.ocr?.entidades ?? [],
+          texto_len: resultado.ocr?.texto?.length ?? 0,
+          datos: snapshotLecturaOriginal(lecturaCruda),
+        },
   };
 
   await store.insertRemito(row);
 
   return { id, ...resultado, validacion, estado };
+}
+
+/** Campos clave de la primera lectura (antes de correcciones de mesa/chofer). */
+function snapshotLecturaOriginal(datos) {
+  if (!datos || typeof datos !== "object") return null;
+  const keys = [
+    "nro_remito",
+    "nro_guia",
+    "fecha_remito",
+    "fecha_guia",
+    "ot",
+    "chofer",
+    "conductor",
+    "tractor",
+    "semi",
+    "chasis",
+    "acoplado",
+    "origen",
+    "destino",
+    "destino_nombre",
+    "destino_locacion",
+    "peso_kg",
+    "km_inicial",
+    "km_final",
+  ];
+  /** @type {Record<string, unknown>} */
+  const out = {};
+  for (const k of keys) {
+    if (datos[k] != null && datos[k] !== "") out[k] = datos[k];
+  }
+  return out;
 }
 
 /** Vuelve a correr Document AI sobre la foto guardada (sin crear remito nuevo). */
@@ -288,6 +400,7 @@ export async function reprocesarRemito(id) {
   const { validacion, datos: datosCanon } = await validacionCompleta(lectura, resultado.tenant, {
     telefono: row.telefono_chofer ?? undefined,
     choferDesdeTelefono,
+    createdAt: row.created_at ?? new Date().toISOString(),
   });
   let estado = calcularEstado(datosCanon, validacion, resultado.tenant);
 
@@ -302,6 +415,9 @@ export async function reprocesarRemito(id) {
     validacion,
     estado,
     texto_ocr: resultado.ocr?.texto ?? row.texto_ocr,
+    ocr_engine: resultado.ocr?.motor ?? row.ocr_engine ?? null,
+    ocr_processor_id: resultado.ocr?.processor_id ?? row.ocr_processor_id ?? null,
+    lectura_original: row.lectura_original ?? resultado.lectura_original ?? null,
   });
 
   return remitoConDatosLimpiosAsync(updated, { persistir: false });
@@ -396,12 +512,18 @@ export async function actualizarCampos(id, datosParciales) {
   if ("peso_kg" in resto && resto.peso_kg != null && resto.peso_kg !== "") {
     const normalizado =
       typeof resto.peso_kg === "number" ? resto.peso_kg : normalizarPeso(String(resto.peso_kg));
-    if (normalizado != null) datos.peso_kg = normalizado;
+    if (normalizado != null) {
+      datos.peso_kg = normalizado;
+      delete datos._peso_estimado;
+    }
   }
   if ("peso" in resto && resto.peso != null && resto.peso !== "" && !("peso_kg" in resto)) {
     const normalizado =
       typeof resto.peso === "number" ? resto.peso : normalizarPeso(String(resto.peso));
-    if (normalizado != null) datos.peso_kg = normalizado;
+    if (normalizado != null) {
+      datos.peso_kg = normalizado;
+      delete datos._peso_estimado;
+    }
   }
 
   if (horariosIncoming?.horarios) {
@@ -446,7 +568,9 @@ export async function actualizarCampos(id, datosParciales) {
     }
   }
 
-  const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant);
+  const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant, {
+    createdAt: row.created_at ?? null,
+  });
   datos = datosCanon;
   let estado = calcularEstado(datos, validacion, row.tenant);
   if (row.estado === "confirmado") {

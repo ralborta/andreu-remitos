@@ -21,6 +21,14 @@ export interface RemitoRow {
     advertencias?: string[];
     viaje_nocturno?: boolean;
   } | null;
+  /** Motor OCR real: beraldi-foundation-v1 | openai-vision-beraldi | … */
+  ocr_engine?: string | null;
+  ocr_processor_id?: string | null;
+  lectura_original?: {
+    motor?: string | null;
+    texto_len?: number;
+    datos?: Record<string, unknown>;
+  } | null;
   created_at?: string;
   updated_at?: string;
   procesado_at?: string;
