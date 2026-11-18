@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+const TIMEZONE = "America/Argentina/Buenos_Aires";
+
 export function LiveClock() {
   const [now, setNow] = useState<Date | null>(null);
 
@@ -23,11 +25,13 @@ export function LiveClock() {
     weekday: "short",
     day: "2-digit",
     month: "short",
+    timeZone: TIMEZONE,
   });
   const hora = now.toLocaleTimeString("es-AR", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    timeZone: TIMEZONE,
   });
 
   return (

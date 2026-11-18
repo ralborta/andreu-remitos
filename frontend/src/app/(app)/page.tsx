@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const incidenciasAltas = incidencias.filter(
     (i) => i.estado !== "Resuelta" && i.criticidad === "Alta",
   ).length;
+  const agentesOperativos = agents.filter((a) => a.status === "operativo").length;
 
   return (
     <div className="space-y-6">
@@ -45,7 +46,7 @@ export default function DashboardPage() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--green)]" />
             </span>
             <span className="text-xs font-semibold text-[var(--green)]">
-              8 agentes en línea
+              {agentesOperativos} agentes en línea
             </span>
           </div>
         }

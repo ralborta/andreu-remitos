@@ -46,6 +46,7 @@ function fmtFecha(iso?: string | null) {
       month: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "America/Argentina/Buenos_Aires",
     });
   } catch {
     return iso;
@@ -56,7 +57,7 @@ function fmtFecha(iso?: string | null) {
 function fmtFechaCola(g: GastoRendicion) {
   const raw = g.fechaComprobante || g.createdAt || null;
   if (!raw) return "—";
-  // YYYY-MM-DD o ISO
+  // YYYY-MM-DD o ISO - parse date-only as local noon to avoid timezone shift
   try {
     const d = /^\d{4}-\d{2}-\d{2}$/.test(raw)
       ? new Date(`${raw}T12:00:00`)
@@ -66,6 +67,7 @@ function fmtFechaCola(g: GastoRendicion) {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+      timeZone: "America/Argentina/Buenos_Aires",
     });
   } catch {
     return raw;

@@ -114,7 +114,11 @@ export function confianzaPct(row: RemitoRow) {
 export function horaCorta(iso?: string) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    return new Date(iso).toLocaleTimeString("es-AR", { 
+      hour: "2-digit", 
+      minute: "2-digit",
+      timeZone: "America/Argentina/Buenos_Aires",
+    });
   } catch {
     return "—";
   }
@@ -317,6 +321,7 @@ export function fechaHoraRemito(row: RemitoRow) {
       year: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "America/Argentina/Buenos_Aires",
     });
   } catch {
     return "—";
@@ -434,9 +439,11 @@ function compareHoraMm(a: string, b: string) {
 }
 
 function sumarDiasIso(iso: string, dias: number) {
+  // Parse date-only as local noon to avoid timezone shifts
   const d = new Date(`${iso}T12:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
-  d.setUTCDate(d.getUTCDate() + dias);
+  // Add days in local time
+  d.setDate(d.getDate() + dias);
   return d.toISOString().slice(0, 10);
 }
 
