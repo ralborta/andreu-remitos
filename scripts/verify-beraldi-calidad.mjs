@@ -80,6 +80,29 @@ const normPeso = normalizarDatosRemito({ nro_remito: "00190128-4" }, "beraldi");
 assert.equal(normPeso.peso_kg, 31500);
 assert.equal(normPeso._peso_estimado, true);
 
+// Corregir peso limpia el flag estimado (Codex P1).
+const pesoCorregido = normalizarDatosRemito(
+  { nro_remito: "00190128-4", peso_kg: 31340, _peso_estimado: true, _editado_manual: true },
+  "beraldi",
+);
+assert.equal(pesoCorregido.peso_kg, 31340);
+assert.equal(pesoCorregido._peso_estimado, undefined);
+assert.equal(validarPesoBeraldi(pesoCorregido.peso_kg, { estimado: pesoCorregido._peso_estimado === true }).ok, true);
+
+// Enrich con created_at fijo no reescribe fecha al “hoy” futuro (Codex P1).
+const fechaEstable = enriquecerBeraldiDesdeTexto(
+  { fecha_remito: "2026-11-17" },
+  "FECHA: 17-11-26 CLIENTE YPF",
+  { referenciaFecha: "2026-11-17T18:00:00.000Z" },
+);
+assert.equal(fechaEstable.fecha_remito, "2026-11-17");
+const fechaNoTocarManual = enriquecerBeraldiDesdeTexto(
+  { fecha_remito: "2026-11-17", _editado_manual: true },
+  "FECHA: 17-12-26",
+  { referenciaFecha: "2026-12-18T12:00:00.000Z" },
+);
+assert.equal(fechaNoTocarManual.fecha_remito, "2026-11-17");
+
 // ——— Aliases lugar ———
 assert.match(normalizarAliasLugarBeraldi("Iron 22") ?? "", /TRON-22/i);
 assert.match(normalizarAliasLugarBeraldi("TQN-22") ?? "", /TRON-22/i);

@@ -106,11 +106,12 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
   }
   // Beraldi: siempre completar KM vacíos desde OCR (aunque haya edición manual de otros campos).
   if (row.tenant === "beraldi" && row.texto_ocr) {
+    const enrichOpts = { referenciaFecha: row.created_at ?? null };
     if (!editadoManual) {
-      datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr);
+      datosNorm = enriquecerBeraldiDesdeTexto(datosNorm, row.texto_ocr, enrichOpts);
       datosNorm = normalizarDatosRemito(datosNorm, row.tenant);
     } else {
-      const enriq = enriquecerBeraldiDesdeTexto({}, row.texto_ocr);
+      const enriq = enriquecerBeraldiDesdeTexto({}, row.texto_ocr, enrichOpts);
       if (!datosNorm.km_inicial && enriq.km_inicial) datosNorm.km_inicial = enriq.km_inicial;
       if (!datosNorm.km_final && enriq.km_final) datosNorm.km_final = enriq.km_final;
     }
@@ -141,7 +142,10 @@ async function remitoConDatosLimpiosAsync(row, { persistir = false, maestros } =
 
   if (!needsReval) return row;
 
-  const { validacion, datos } = await validacionCompleta(datosNorm, row.tenant, maestros ?? {});
+  const { validacion, datos } = await validacionCompleta(datosNorm, row.tenant, {
+    ...(maestros ?? {}),
+    createdAt: row.created_at ?? null,
+  });
   let estado = calcularEstado(datos, validacion, row.tenant);
   if (row.estado === "confirmado") {
     const candidato = { ...row, datos, validacion, estado };
@@ -396,6 +400,7 @@ export async function reprocesarRemito(id) {
   const { validacion, datos: datosCanon } = await validacionCompleta(lectura, resultado.tenant, {
     telefono: row.telefono_chofer ?? undefined,
     choferDesdeTelefono,
+    createdAt: row.created_at ?? new Date().toISOString(),
   });
   let estado = calcularEstado(datosCanon, validacion, resultado.tenant);
 
@@ -410,6 +415,9 @@ export async function reprocesarRemito(id) {
     validacion,
     estado,
     texto_ocr: resultado.ocr?.texto ?? row.texto_ocr,
+    ocr_engine: resultado.ocr?.motor ?? row.ocr_engine ?? null,
+    ocr_processor_id: resultado.ocr?.processor_id ?? row.ocr_processor_id ?? null,
+    lectura_original: row.lectura_original ?? resultado.lectura_original ?? null,
   });
 
   return remitoConDatosLimpiosAsync(updated, { persistir: false });
@@ -504,12 +512,18 @@ export async function actualizarCampos(id, datosParciales) {
   if ("peso_kg" in resto && resto.peso_kg != null && resto.peso_kg !== "") {
     const normalizado =
       typeof resto.peso_kg === "number" ? resto.peso_kg : normalizarPeso(String(resto.peso_kg));
-    if (normalizado != null) datos.peso_kg = normalizado;
+    if (normalizado != null) {
+      datos.peso_kg = normalizado;
+      delete datos._peso_estimado;
+    }
   }
   if ("peso" in resto && resto.peso != null && resto.peso !== "" && !("peso_kg" in resto)) {
     const normalizado =
       typeof resto.peso === "number" ? resto.peso : normalizarPeso(String(resto.peso));
-    if (normalizado != null) datos.peso_kg = normalizado;
+    if (normalizado != null) {
+      datos.peso_kg = normalizado;
+      delete datos._peso_estimado;
+    }
   }
 
   if (horariosIncoming?.horarios) {
@@ -554,7 +568,9 @@ export async function actualizarCampos(id, datosParciales) {
     }
   }
 
-  const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant);
+  const { validacion, datos: datosCanon } = await validacionCompleta(datos, row.tenant, {
+    createdAt: row.created_at ?? null,
+  });
   datos = datosCanon;
   let estado = calcularEstado(datos, validacion, row.tenant);
   if (row.estado === "confirmado") {
