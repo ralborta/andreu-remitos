@@ -83,6 +83,142 @@
     .dashed-route {
       stroke-dasharray: 4, 4;
     }
+
+    .board-job.is-new { animation: boardIn .28s ease; }
+    .board-job.is-open { background: #f8fafc; border-radius: 12px; }
+    .board-job + .board-job { border-top: 1px solid #f1f5f9; }
+    @keyframes boardIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: none; }
+    }
+    .board-head,
+    .board-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 108px 84px;
+      gap: 12px;
+      align-items: center;
+    }
+    .board-head {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .board-row {
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      background: transparent;
+      align-items: start;
+    }
+    .board-row:hover { background: #f8fafc; }
+    .board-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 84px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .board-pill.ok,
+    .board-pill.done { background: #dcfce7; color: #15803d; }
+    .board-pill.warn { background: #fef3c7; color: #b45309; }
+    .board-pill.delay { background: #ffe4e6; color: #e11d48; }
+    @media (max-width: 720px) {
+      .board-head { display: none; }
+      .board-row { grid-template-columns: 1fr; gap: 8px; }
+    }
+    .sol-ico {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .sol-ico .material-symbols-outlined { font-size: 22px; }
+    .sol-ico-wrap {
+      position: relative;
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+    }
+    .sol-ico-wrap .sol-ico { display: flex; }
+    .sol-foco {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+    }
+    .sol-foco.ok,
+    .sol-foco.done { background: #22c55e; }
+    .sol-foco.warn { background: #f59e0b; }
+    .sol-foco.delay {
+      background: #e11d48;
+      animation: foco-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes foco-pulse {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08), 0 0 0 0 rgba(225, 29, 72, 0.45); }
+      50% { box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08), 0 0 0 5px rgba(225, 29, 72, 0); }
+    }
+    .kpi-tile {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .kpi-tile .sol-ico { width: 40px; height: 40px; margin: 0; border-radius: 14px; }
+    .kpi-tile.is-alert { background: #fffbeb; border-color: #fde68a; }
+    .kpi-tile [data-kpi-num] { display: inline-block; transform-origin: left center; }
+    .kpi-tile.is-tick [data-kpi-num] { animation: kpi-tick 0.7s ease; }
+    .kpi-tile.is-alert.is-tick [data-kpi-num] { color: #d97706; }
+    @keyframes kpi-tick {
+      0% { transform: scale(1.12); color: #0284c7; }
+      100% { transform: scale(1); }
+    }
+    .story-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 230px;
+      flex-shrink: 0;
+    }
+    @media (min-width: 1280px) {
+      .story-identity {
+        padding-right: 16px;
+        border-right: 1px solid #e2e8f0;
+      }
+    }
+    #story-resultado-wrap { border: 1px solid #fde68a; }
+    .story-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      font-size: 12px;
+      color: #334155;
+    }
+    .story-check {
+      width: 18px; height: 18px; border-radius: 999px;
+      background: #22c55e; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .story-check .material-symbols-outlined { font-size: 12px; font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20; }
+    .story-chevron { color: #cbd5e1; font-weight: 700; flex-shrink: 0; }
+    #sol-board-feed { scrollbar-gutter: stable; }
   </style>
 <!-- END: Custom Styling for Maps, Gauges & Timeline -->
 </head>
@@ -151,7 +287,7 @@
 <!-- 8 agentes en linea badge -->
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-<span id="sol-torre-agentes-online">— agentes en línea</span>
+<span id="sol-torre-agentes-online">22 agentes en línea</span>
 </div>
 <!-- Date indicator -->
 <span id="sol-torre-fecha" class="text-xs text-slate-500 font-medium"></span>
@@ -223,7 +359,7 @@
 <span class="text-xs font-semibold text-slate-500 uppercase">Remitos procesados</span>
 <div class="text-4xl font-extrabold text-slate-900 tracking-tight mt-1">518</div>
 <div class="text-xs font-medium text-slate-500 mt-0.5">
-<span class="font-bold text-slate-800">97,1%</span> lectura automática
+<span class="font-bold text-slate-800">97,1%</span> llegaron por WhatsApp
                 </div>
 </div>
 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
@@ -236,7 +372,7 @@
 <!-- Bottom SLA Gauge -->
 <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
 <div>
-<span class="text-[11px] font-semibold text-slate-400 block uppercase">SLA</span>
+<span class="text-[11px] font-semibold text-slate-400 block uppercase">A tiempo</span>
 <span class="text-2xl font-extrabold text-slate-900">94,2%</span>
 </div>
 <!-- Half Gauge -->
@@ -255,9 +391,34 @@
 </div>
 </div>
 </div>
-<!-- CENTER COLUMN: Chat Central -->
+<!-- CENTER COLUMN: Actividad de agentes -->
 <div class="lg:col-span-6 min-w-0">
-<div data-sol-desk-chat data-agent-id="commander" data-label="Chat Central" data-subtitle="Consultá viajes, remitos, incidencias, ETA y POD con datos reales." data-suggestions="¿Cuántos camiones están por salir?|¿Qué incidencias tenemos?|¿Qué camiones tienen demora?|¿Qué viajes están pendientes?" data-icon="forum" data-tenant="tsb"></div>
+<section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm flex flex-col h-full min-h-[476px] p-5">
+<div class="flex items-start justify-between gap-3 mb-3">
+<h2 class="text-[22px] leading-none font-extrabold text-slate-900 tracking-tight">Actividad de agentes</h2>
+<button type="button" id="sol-board-live" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+En vivo
+</button>
+</div>
+<div class="flex flex-wrap items-center gap-2 mb-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[12px] font-semibold">
+<span id="sol-board-n" class="font-extrabold tabular-nums">11</span> en tiempo
+</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 text-[12px] font-semibold">
+<span id="sol-board-warn" class="font-extrabold tabular-nums">0</span> en atención
+</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 text-[12px] font-semibold">
+<span id="sol-board-delay" class="font-extrabold tabular-nums">0</span> con retraso
+</span>
+</div>
+<div class="board-head">
+<span>Agente y actividad</span>
+<span>Estado</span>
+<span class="text-right">Hora</span>
+</div>
+<div id="sol-board-feed" class="flex-1 min-h-0 overflow-y-auto" aria-live="polite"></div>
+</section>
 </div>
 
 <!-- RIGHT COLUMN: Flota en tiempo real (Map Card) & Incidencias -->
@@ -318,171 +479,172 @@
 </div>
 <!-- END: MainHeroGrid -->
 <!-- BEGIN: OperacionEnMovimientoSection -->
-<section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 space-y-6">
-<!-- Section Header -->
-<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
-<h2 class="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Operación en movimiento</h2>
-<div class="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold border border-emerald-200/60">
-<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-<span>Operación actualizada en tiempo real</span>
-</div>
-</div>
-<!-- Section Body Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-<!-- Feed: ACTIVIDAD DE AGENTES (Col 1-5) — simulación en vivo -->
-<div class="lg:col-span-5 flex flex-col min-h-0">
-<div class="flex items-center justify-between gap-3 mb-3">
-<h3 class="text-xs font-extrabold text-slate-700 tracking-wider uppercase">Actividad de agentes</h3>
-<span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600">
-<span class="relative flex h-2 w-2">
-<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-60"></span>
-<span class="relative inline-flex h-2 w-2 rounded-full bg-indigo-500"></span>
-</span>
+<section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 space-y-5">
+<div class="flex items-center gap-3">
+<h2 class="text-[22px] leading-none font-extrabold text-slate-900 tracking-tight">Operación en movimiento</h2>
+<span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-emerald-500">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
 En vivo
 </span>
 </div>
-<div class="rounded-xl border border-slate-100 bg-slate-50/40 max-h-[420px] overflow-y-auto scroll-thin" id="sol-torre-activity-feed" aria-live="polite" data-sol-activity-sim="1">
-<!-- Filas inyectadas por torre-live.js (simulación) -->
-</div>
-<p class="mt-2 text-[10px] text-slate-400 font-medium">Simulación demostrativa · no refleja eventos reales de la operación.</p>
-</div>
-<!-- Charts Grid (Col 6-12) -->
-<div class="lg:col-span-7 flex flex-col gap-6">
-<!-- VIAJES POR DÍA (Area Line Chart) -->
-<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100">
-<div class="flex justify-between items-center mb-2">
-<span class="text-xs font-extrabold text-slate-700 uppercase">Viajes por día</span>
-</div>
-<div class="h-32 w-full relative">
-<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 500 120">
-<defs>
-<lineargradient id="areaGrad" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"></stop>
-<stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"></stop>
-</lineargradient>
-</defs>
-<!-- Grid guidelines -->
-<line stroke="#e2e8f0" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="500" y1="20" y2="20"></line>
-<line stroke="#e2e8f0" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="500" y1="60" y2="60"></line>
-<line stroke="#e2e8f0" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="500" y1="100" y2="100"></line>
-<!-- Values on Y axis -->
-<text fill="#94a3b8" font-size="9" x="2" y="24">30</text>
-<text fill="#94a3b8" font-size="9" x="2" y="64">20</text>
-<text fill="#94a3b8" font-size="9" x="2" y="104">10</text>
-<!-- Shaded Area -->
-<path d="M 20,80 Q 100,65 170,55 T 320,25 T 400,60 T 480,75 L 480,110 L 20,110 Z" fill="url(#areaGrad)"></path>
-<!-- Main Trend Line (Blue) -->
-<path d="M 20,80 Q 100,65 170,55 T 320,25 T 400,60 T 480,75" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="2.5"></path>
-<!-- Secondary Line (Green) -->
-<path d="M 20,95 Q 100,85 170,75 T 320,55 T 400,80 T 480,90" fill="none" stroke="#10b981" stroke-linecap="round" stroke-width="1.8"></path>
-<!-- Peak marker on Thursday (Jue) -->
-<circle cx="320" cy="25" fill="#2563eb" r="4" stroke="#ffffff" stroke-width="2"></circle>
-<circle cx="320" cy="55" fill="#10b981" r="3.5" stroke="#ffffff" stroke-width="2"></circle>
-</svg>
-</div>
-<!-- X axis days labels -->
-<div class="flex justify-between text-[11px] font-semibold text-slate-400 mt-2 px-3">
-<span>Lun</span>
-<span>Mar</span>
-<span>Mié</span>
-<span class="text-blue-600 font-bold">Jue</span>
-<span>Vie</span>
-<span>Sáb</span>
-<span>Dom</span>
-</div>
-</div>
-<!-- Bottom Sub-Charts: Incidencias por tipo & SLA por zona -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<!-- Incidencias por Tipo (Donut Chart) -->
-<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center justify-between">
-<span class="text-xs font-extrabold text-slate-700 uppercase w-full text-left mb-2">Incidencias por tipo</span>
-<!-- Donut representation -->
-<div class="relative w-28 h-28 my-1 flex items-center justify-center">
-<div class="w-full h-full rounded-full donut-chart-incidencias shadow-inner"></div>
-<div class="w-18 h-18 bg-white rounded-full absolute flex flex-col items-center justify-center shadow-xs">
-<span class="text-base font-black text-slate-800 leading-tight">140</span>
-<span class="text-[9px] text-slate-400 font-medium">eventos</span>
-</div>
-</div>
-<!-- Quick tiny legend dots -->
-<div class="flex items-center justify-center gap-2 text-[10px] text-slate-500 font-medium mt-2">
-<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Ruta</span>
-<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> Bultos</span>
-<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Demora</span>
-<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Doc</span>
-</div>
-</div>
-<!-- SLA por Zona (Horizontal Progress Bars) -->
-<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col justify-between">
-<span class="text-xs font-extrabold text-slate-700 uppercase mb-2">SLA por zona</span>
-<div class="space-y-2 text-xs">
-<!-- AMBA -->
 <div>
-<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
-<span>AMBA</span>
-<span class="font-bold text-slate-800">97%</span>
+<h3 class="text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-3">Lo que está pasando ahora en la calle</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+<div class="kpi-tile" data-kpi="avisos">
+<div class="min-w-0">
+<p id="kpi-avisos" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">41</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Dadores avisados</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">ETA y Notificación Proactiva</p>
 </div>
-<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-<div class="bg-blue-600 h-1.5 rounded-full" style="width: 97%"></div>
+<span class="sol-ico" style="background:#e0f2fe;color:#0284c7"><span class="material-symbols-outlined">notifications</span></span>
+</div>
+<div class="kpi-tile" data-kpi="etas">
+<div class="min-w-0">
+<p id="kpi-etas" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">18</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Arribos recalculados</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">ETA y Notificación Proactiva</p>
+</div>
+<span class="sol-ico" style="background:#ecfeff;color:#0891b2"><span class="material-symbols-outlined">schedule</span></span>
+</div>
+<div class="kpi-tile" data-kpi="pods">
+<div class="min-w-0">
+<p id="kpi-pods" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">27</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Entregas verificadas</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">Evidencias de Transporte</p>
+</div>
+<span class="sol-ico" style="background:#dcfce7;color:#16a34a"><span class="material-symbols-outlined">attach_file</span></span>
+</div>
+<div class="kpi-tile" data-kpi="ocr">
+<div class="min-w-0">
+<p id="kpi-ocr" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">65</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Remitos de choferes</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">Agente de Remitos</p>
+</div>
+<span class="sol-ico" style="background:#eff6ff;color:#2563eb"><span class="material-symbols-outlined">description</span></span>
+</div>
+<div class="kpi-tile" data-kpi="choferes">
+<div class="min-w-0">
+<p id="kpi-choferes" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">39</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Choferes contactados</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">Gestión de Incidencias</p>
+</div>
+<span class="sol-ico" style="background:#dcfce7;color:#16a34a"><span class="material-symbols-outlined">chat</span></span>
+</div>
+<div class="kpi-tile" data-kpi="incCerradas">
+<div class="min-w-0">
+<p id="kpi-inc-cerradas" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">9</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Problemas resueltos</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">Gestión de Incidencias</p>
+</div>
+<span class="sol-ico" style="background:#dcfce7;color:#16a34a"><span class="material-symbols-outlined">check_circle</span></span>
+</div>
+<div class="kpi-tile is-alert" data-kpi="demoras">
+<div class="min-w-0">
+<p id="kpi-demoras" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">4</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Unidades con demora</p>
+<p class="text-[12px] text-slate-600 font-medium mt-0.5">Gestión de Incidencias</p>
+</div>
+<span class="sol-ico" style="background:#fef3c7;color:#d97706"><span class="material-symbols-outlined">warning</span></span>
+</div>
+<div class="kpi-tile" data-kpi="conciliadas">
+<div class="min-w-0">
+<p id="kpi-conciliadas" data-kpi-num class="text-[36px] leading-none font-extrabold text-slate-900 tracking-tight tabular-nums">6</p>
+<p class="text-[13px] font-extrabold text-slate-900 mt-2">Pagos conciliados</p>
+<p class="text-[12px] text-slate-500 font-medium mt-0.5">Agente de Conciliación</p>
+</div>
+<span class="sol-ico" style="background:#eff6ff;color:#2563eb"><span class="material-symbols-outlined">account_balance</span></span>
 </div>
 </div>
-<!-- Centro -->
+</div>
 <div>
-<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
-<span>Centro</span>
-<span class="font-bold text-slate-800">95%</span>
+<div class="flex items-center justify-between gap-3 mb-3">
+<h3 class="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Actividad en tiempo real del equipo</h3>
+<span id="story-time" class="text-[12px] tabular-nums text-slate-400 font-medium"></span>
 </div>
-<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-<div class="bg-sky-500 h-1.5 rounded-full" style="width: 95%"></div>
-</div>
-</div>
-<!-- Litoral -->
-<div>
-<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
-<span>Litoral</span>
-<span class="font-bold text-slate-800">93%</span>
-</div>
-<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-<div class="bg-teal-500 h-1.5 rounded-full" style="width: 93%"></div>
+<div class="flex flex-col xl:flex-row xl:items-center gap-3 xl:gap-4">
+<div class="story-identity">
+<span class="sol-ico-wrap">
+<span id="story-icon" class="sol-ico"><span class="material-symbols-outlined">receipt_long</span></span>
+<span id="story-foco" class="sol-foco done" title="Sin novedad"></span>
+</span>
+<div class="min-w-0">
+<p id="story-agent" class="text-[14px] font-extrabold tracking-tight text-slate-900 truncate">Agente de Remitos</p>
+<p id="story-task" class="text-[12px] text-slate-500 font-medium truncate">F. Ledesma terminó de enviar el remito R-0048244</p>
 </div>
 </div>
-<!-- Cuyo -->
-<div>
-<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
-<span>Cuyo</span>
-<span class="font-bold text-slate-800">91%</span>
+<div class="flex-1 flex flex-wrap items-center gap-x-2 gap-y-2 min-w-0">
+<div class="story-step">
+<span class="story-check"><span class="material-symbols-outlined">check</span></span>
+<p class="min-w-0 truncate"><span class="font-bold text-slate-800">Observó:</span> <span id="story-observo">Foto del remito por WhatsApp</span></p>
 </div>
-<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 91%"></div>
+<span class="story-chevron hidden sm:inline" aria-hidden="true">›</span>
+<div class="story-step">
+<span class="story-check"><span class="material-symbols-outlined">check</span></span>
+<p class="min-w-0 truncate"><span class="font-bold text-slate-800">Analizó:</span> <span id="story-analizo">Unidad AD 392 CD · YPF</span></p>
 </div>
+<span class="story-chevron hidden sm:inline" aria-hidden="true">›</span>
+<div class="story-step">
+<span class="story-check"><span class="material-symbols-outlined">check</span></span>
+<p class="min-w-0 truncate"><span class="font-bold text-slate-800">Actuó:</span> <span id="story-actuo">Confirmó bultos y destino</span></p>
 </div>
-<!-- NOA -->
-<div>
-<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
-<span>NOA</span>
-<span class="font-bold text-slate-800">88%</span>
-</div>
-<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-<div class="bg-amber-500 h-1.5 rounded-full" style="width: 88%"></div>
-</div>
-</div>
-<!-- Patagonia -->
-<div>
-<div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
-<span>Patagonia</span>
-<span class="font-bold text-slate-800">92%</span>
-</div>
-<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-<div class="bg-blue-500 h-1.5 rounded-full" style="width: 92%"></div>
-</div>
-</div>
-</div>
+<span class="story-chevron hidden sm:inline" aria-hidden="true">›</span>
+<div id="story-resultado-wrap" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 min-w-0">
+<span class="material-symbols-outlined text-amber-500 text-[18px]">schedule</span>
+<p class="min-w-0 truncate text-[12px]"><span class="font-bold text-amber-700">Resultado:</span> <span id="story-resultado" class="text-slate-800">Remito cargado</span></p>
 </div>
 </div>
 </div>
 </div>
 </section>
 <!-- END: OperacionEnMovimientoSection -->
+<!-- BEGIN: Chat Central -->
+<section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-12 min-h-[420px]">
+<aside class="md:col-span-3 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50/70 flex flex-col">
+<div class="px-3 py-3 border-b border-slate-200">
+<p class="text-xs font-extrabold text-slate-800 tracking-tight">Historial</p>
+<p class="text-[10px] text-slate-400">Chats de Chat Central</p>
+</div>
+<div class="flex-1 p-2 space-y-1 text-[12px]">
+<button class="w-full text-left px-2.5 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-slate-800 font-medium">¿Qué camiones tienen demora?</button>
+<button class="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white text-slate-600">cuantos camiones hay en ruta ahora</button>
+<button class="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white text-slate-600">dame status del VJ-24820</button>
+<button class="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white text-slate-600">cuantos viajes llegaron tarde ayer</button>
+<button class="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white text-slate-600">cuantos camiones a Salta mandamos ayer</button>
+</div>
+<p class="px-3 py-3 text-[10px] text-slate-400 border-t border-slate-200">Solo consulta. No aprueba ni envía WhatsApp desde este chat.</p>
+</aside>
+<div class="md:col-span-9 flex flex-col min-h-[420px]">
+<div class="px-5 py-3 border-b border-slate-100">
+<p class="text-sm font-bold text-slate-900">Chat Central</p>
+<p class="text-[11px] text-slate-400">Consultá viajes, remitos, incidencias, ETA y POD con datos de la operación.</p>
+</div>
+<div class="flex-1 px-5 py-8 flex flex-col items-center justify-center text-center">
+<div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+<span class="material-symbols-outlined">forum</span>
+</div>
+<h3 class="text-base font-bold text-slate-800">¿Qué necesitás saber de Chat Central?</h3>
+<p class="text-xs text-slate-400 mt-1 max-w-md">Consultá viajes, remitos, incidencias, ETA y POD. La actividad de los agentes sigue arriba, al lado del mapa.</p>
+<div class="flex flex-wrap justify-center gap-2 mt-4">
+<span class="px-3 py-1.5 rounded-full border border-slate-200 text-[11px] text-slate-600">¿Cuántos camiones están por salir?</span>
+<span class="px-3 py-1.5 rounded-full border border-slate-200 text-[11px] text-slate-600">¿Qué incidencias tenemos?</span>
+<span class="px-3 py-1.5 rounded-full border border-slate-200 text-[11px] text-slate-600">¿Qué camiones tienen demora?</span>
+<span class="px-3 py-1.5 rounded-full border border-slate-200 text-[11px] text-slate-600">¿Qué viajes están pendientes?</span>
+</div>
+</div>
+<div class="px-5 pb-4">
+<div class="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 shadow-sm">
+<input class="flex-1 text-sm outline-none placeholder-slate-400 bg-transparent" placeholder="Preguntale a Chat Central..." readonly/>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">mic</span>
+<span class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Chat Central -->
 <!-- BEGIN: ViajesEnGestionTable -->
 <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
 <!-- Table Header Title Bar -->
@@ -710,4 +872,5 @@ En vivo
 <script src="/stitch/redesign/desk-agent-chat.js?v=desk-scope-v1"></script>
 <script src="/stitch/redesign/bridge.js?v=1793757765"></script>
 <script src="/stitch/redesign/ux-fixes.js?v=1793850100"></script>
+<script src="/stitch/redesign/torre-vivo-board.js?v=28"></script>
 </body></html>
